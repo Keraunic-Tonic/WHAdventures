@@ -2224,12 +2224,12 @@ MonoBehaviour:
   rectTransformID: 13953742
   uiTransitionType: 1
   uiPositionType: 0
-  isLocked: 0
+  isLocked: 1
   id: 4
   title: InGame
-  manualSize: {x: 7.3, y: 5.966667}
+  manualSize: {x: 7.300001, y: 6.577778}
   positionType: 1
-  manualPosition: {x: 15.33, y: 349.25998}
+  manualPosition: {x: 70.08001, y: 1044.48}
   positionSmoothing: 0
   alignment: 6
   toggleKey: 
@@ -2298,13 +2298,13 @@ MonoBehaviour:
   speechProximityLimit: 0
   speechProximityDistance: 10
   deleteUIWhenTurnOff: 0
-  biggestElementSize: {x: 28.56, y: 19.380001}
+  biggestElementSize: {x: 130.56001, y: 61.440002}
   rect:
     serializedVersion: 2
     x: 0
-    y: 338.52
-    width: 30.66
-    height: 21.480001
+    y: 1008.96
+    width: 140.16002
+    height: 71.04
   showInFilter: 1
 --- !u!114 &-4722573033327940459
 MonoBehaviour:
@@ -3597,10 +3597,10 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 2.1
-    y: 2.1
-    width: 10.5
-    height: 39.6
+    x: 9.6
+    y: 9.6
+    width: 48
+    height: 118.8
   relativePosition: {x: 0, y: 0}
   numSlots: 1
   uiButton: {fileID: 0}
@@ -3737,10 +3737,10 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 2.1
-    y: 2.1
-    width: 26.46
-    height: 17.28
+    x: 9.6
+    y: 9.6
+    width: 120.96001
+    height: 51.840004
   relativePosition: {x: 0, y: 0}
   numSlots: 1
   uiButton: {fileID: 0}
@@ -4457,10 +4457,10 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 14.700001
-    y: 2.1
-    width: 382.19998
-    height: 39.6
+    x: 67.2
+    y: 9.6
+    width: 1747.2001
+    height: 118.8
   relativePosition: {x: 0, y: 0}
   numSlots: 13
   uiSlots:
@@ -6336,10 +6336,10 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 0
-    y: 0
-    width: 10.5
-    height: 39.6
+    x: 1862.4
+    y: 12.250144
+    width: 48
+    height: 118.8
   relativePosition: {x: 97, y: 9}
   numSlots: 1
   uiButton: {fileID: 0}
@@ -6578,17 +6578,17 @@ MonoBehaviour:
   rectTransformID: 1765320
   uiTransitionType: 1
   uiPositionType: 0
-  isLocked: 0
+  isLocked: 1
   id: 3
   title: Inventory
   manualSize: {x: 100, y: 12.60303}
   positionType: 1
-  manualPosition: {x: 210, y: 22.685453}
+  manualPosition: {x: 960, y: 68.05636}
   positionSmoothing: 0
   alignment: 0
   toggleKey: 
   ignoreMouseClicks: 0
-  pauseWhenEnabled: 0
+  pauseWhenEnabled: 1
   showWhenPaused: 0
   canClickInCutscene: 0
   enabledOnStart: 0
@@ -6661,8 +6661,8 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 420
-    height: 45.370907
+    width: 1920
+    height: 136.11272
   showInFilter: 1
 --- !u!114 &7212251628712399608
 MonoBehaviour:
