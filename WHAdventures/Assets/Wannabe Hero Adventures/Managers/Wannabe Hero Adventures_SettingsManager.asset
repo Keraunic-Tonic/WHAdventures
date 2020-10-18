@@ -25,20 +25,12 @@ MonoBehaviour:
   sceneAttributes: []
   actionListOnStart: {fileID: 0}
   blackOutWhenSkipping: 0
-  playerSwitching: 0
-  player: {fileID: 0}
+  playerSwitching: 1
+  player: {fileID: 531029160363389066, guid: f9e2e0b56e702154f989cb8e42d560f2, type: 3}
   players:
   - playerOb: {fileID: 0}
     ID: 0
     isDefault: 1
-    startingSceneIndex: 0
-    chooseSceneBy: 0
-    startingSceneName: 
-    useSceneDefaultPlayerStart: 1
-    startingPlayerStartID: 0
-  - playerOb: {fileID: 0}
-    ID: 1
-    isDefault: 0
     startingSceneIndex: 0
     chooseSceneBy: 0
     startingSceneName: 
