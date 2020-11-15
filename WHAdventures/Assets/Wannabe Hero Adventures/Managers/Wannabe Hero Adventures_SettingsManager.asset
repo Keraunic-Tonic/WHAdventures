@@ -22,8 +22,27 @@ MonoBehaviour:
   orderSavesByUpdateTime: 0
   reloadSceneWhenLoading: 0
   useJsonSerialization: 0
-  sceneAttributes: []
-  actionListOnStart: {fileID: 0}
+  sceneAttributes:
+  - label: Property 1
+    id: 0
+    type: 0
+    val: 0
+    floatVal: 0
+    textVal: 
+    popUps: []
+    vector3Val: {x: 0, y: 0, z: 0}
+    link: 0
+    pmVar: 
+    updateLinkOnStart: 0
+    canTranslate: 1
+    popUpID: 0
+    textValLineID: -1
+    popUpsLineID: -1
+    description: 
+    showInFilter: 0
+    limitToCategories: 0
+    categoryIDs: 
+  actionListOnStart: {fileID: 11400000, guid: 6a787f27ffc180c45863cd1ad44d5fae, type: 2}
   blackOutWhenSkipping: 0
   playerSwitching: 1
   player: {fileID: 531029160363389066, guid: f9e2e0b56e702154f989cb8e42d560f2, type: 3}
@@ -153,12 +172,12 @@ MonoBehaviour:
   navMeshLayer: NavMesh
   backgroundImageLayer: BackgroundImage
   deactivatedLayer: Ignore Raycast
-  useLoadingScreen: 0
+  useLoadingScreen: 1
   manualSceneActivation: 0
-  loadingSceneIs: 0
+  loadingSceneIs: 1
   loadingSceneName: 
   loadingScene: 0
-  useAsyncLoading: 0
+  useAsyncLoading: 1
   loadingDelay: 0
   blackOutWhenInitialising: 1
   playMusicWhilePaused: 0
