@@ -632,7 +632,7 @@ MonoBehaviour:
   slotSpacing: 0
   lineID: 80
   alternativeInputButton: 
-  font: {fileID: 12800000, guid: c6e3b07edbe7e4f62837dde56356b819, type: 3}
+  font: {fileID: 12800000, guid: 4506bf6ca285b494ab0993e12703d5e6, type: 3}
   fontScaleFactor: 2
   fontColor: {r: 1, g: 1, b: 1, a: 1}
   fontHighlightColor: {r: 1, g: 1, b: 1, a: 1}
@@ -794,7 +794,7 @@ MonoBehaviour:
   slotSpacing: 0
   lineID: 81
   alternativeInputButton: 
-  font: {fileID: 12800000, guid: c6e3b07edbe7e4f62837dde56356b819, type: 3}
+  font: {fileID: 12800000, guid: 4506bf6ca285b494ab0993e12703d5e6, type: 3}
   fontScaleFactor: 2
   fontColor: {r: 1, g: 1, b: 1, a: 1}
   fontHighlightColor: {r: 1, g: 1, b: 1, a: 1}
@@ -827,11 +827,11 @@ MonoBehaviour:
   anchor: 4
   textEffects: 0
   outlineSize: 2
-  buttonClickType: 1
+  buttonClickType: 0
   actionList: {fileID: 0}
   parameterID: -1
   parameterValue: 0
-  doFade: 0
+  doFade: 1
   switchMenuTitle: Pause
   inventoryBoxTitle: 
   shiftInventory: 0
@@ -1079,10 +1079,10 @@ MonoBehaviour:
   textEffects: 0
   outlineSize: 2
   buttonClickType: 0
-  actionList: {fileID: 0}
+  actionList: {fileID: 11400000, guid: f226f83fa78daf94ba7f246f161ab033, type: 2}
   parameterID: -1
   parameterValue: 0
-  doFade: 0
+  doFade: 1
   switchMenuTitle: Pause
   inventoryBoxTitle: 
   shiftInventory: 0
@@ -1535,7 +1535,7 @@ MonoBehaviour:
   canClickInCutscene: 0
   enabledOnStart: 0
   actionListOnTurnOn: {fileID: 0}
-  actionListOnTurnOff: {fileID: 0}
+  actionListOnTurnOff: {fileID: 11400000, guid: f226f83fa78daf94ba7f246f161ab033, type: 2}
   updateWhenFadeOut: 1
   hideDuringSaveScreenshots: 1
   fitWithinScreen: 1
@@ -2506,7 +2506,7 @@ MonoBehaviour:
   slotSpacing: 0
   lineID: 108
   alternativeInputButton: 
-  font: {fileID: 12800000, guid: c6e3b07edbe7e4f62837dde56356b819, type: 3}
+  font: {fileID: 12800000, guid: 4506bf6ca285b494ab0993e12703d5e6, type: 3}
   fontScaleFactor: 2
   fontColor: {r: 1, g: 1, b: 1, a: 1}
   fontHighlightColor: {r: 1, g: 1, b: 1, a: 1}
@@ -3700,8 +3700,8 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 643.2
-    y: 9.6
+    x: 786.624
+    y: 57.408
     width: 307.2
     height: 54
   relativePosition: {x: 0, y: 0}
@@ -4966,8 +4966,8 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 9.6
-    y: 9.6
+    x: 57.408
+    y: 57.408
     width: 307.2
     height: 54
   relativePosition: {x: 0, y: 0}
@@ -4980,8 +4980,8 @@ MonoBehaviour:
   anchor: 4
   textEffects: 0
   outlineSize: 2
-  buttonClickType: 0
-  actionList: {fileID: 0}
+  buttonClickType: 3
+  actionList: {fileID: 11400000, guid: 6adbaf719bf8a144793d88c10bb9db34, type: 2}
   parameterID: -1
   parameterValue: 0
   doFade: 1
@@ -5280,9 +5280,9 @@ MonoBehaviour:
   isLocked: 0
   id: 15
   title: Title
-  manualSize: {x: 66.5, y: 6.7777777}
-  positionType: 0
-  manualPosition: {x: 960, y: 540}
+  manualSize: {x: 78.94999, y: 15.631112}
+  positionType: 2
+  manualPosition: {x: 50, y: 80}
   positionSmoothing: 0
   alignment: 4
   toggleKey: Menu
@@ -5296,7 +5296,7 @@ MonoBehaviour:
   updateWhenFadeOut: 1
   hideDuringSaveScreenshots: 1
   fitWithinScreen: 1
-  backgroundTexture: {fileID: 2800000, guid: 5f4f3dd6223164fe49aea7eb6c0bc529, type: 3}
+  backgroundTexture: {fileID: 2800000, guid: 5b95c83b193a4a34096499087c4f7f36, type: 3}
   visibleElements:
   - {fileID: 3735566735403181507}
   - {fileID: 9007167992448714682}
@@ -5319,7 +5319,7 @@ MonoBehaviour:
   - {fileID: -223582264011813083}
   - {fileID: -2547955839150967943}
   - {fileID: 5089168452989068406}
-  spacing: 0.5
+  spacing: 2.99
   sizeType: 0
   autoSizeEveryFrame: 0
   orientation: 0
@@ -5358,13 +5358,13 @@ MonoBehaviour:
   speechProximityLimit: 0
   speechProximityDistance: 10
   deleteUIWhenTurnOff: 0
-  biggestElementSize: {x: 1267.2, y: 63.6}
+  biggestElementSize: {x: 1458.4319, y: 111.408005}
   rect:
     serializedVersion: 2
-    x: 321.60004
-    y: 503.4
-    width: 1276.7999
-    height: 73.2
+    x: 202.08008
+    y: 779.592
+    width: 1515.8398
+    height: 168.81601
   showInFilter: 1
 --- !u!114 &4785899703876083930
 MonoBehaviour:
@@ -5468,8 +5468,8 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 960
-    y: 9.6
+    x: 1151.2319
+    y: 57.408
     width: 307.2
     height: 54
   relativePosition: {x: 0, y: 0}
@@ -5619,7 +5619,7 @@ MonoBehaviour:
   canClickInCutscene: 0
   enabledOnStart: 0
   actionListOnTurnOn: {fileID: 0}
-  actionListOnTurnOff: {fileID: 0}
+  actionListOnTurnOff: {fileID: 11400000, guid: f226f83fa78daf94ba7f246f161ab033, type: 2}
   updateWhenFadeOut: 1
   hideDuringSaveScreenshots: 1
   fitWithinScreen: 1
@@ -7268,8 +7268,8 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 326.40002
-    y: 9.6
+    x: 422.016
+    y: 57.408
     width: 307.2
     height: 54
   relativePosition: {x: 0, y: 0}
