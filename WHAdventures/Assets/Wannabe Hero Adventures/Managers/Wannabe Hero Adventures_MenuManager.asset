@@ -5549,7 +5549,7 @@ MonoBehaviour:
   slotSpacing: 0
   lineID: 70
   alternativeInputButton: 
-  font: {fileID: 12800000, guid: c6e3b07edbe7e4f62837dde56356b819, type: 3}
+  font: {fileID: 12800000, guid: 4506bf6ca285b494ab0993e12703d5e6, type: 3}
   fontScaleFactor: 2
   fontColor: {r: 1, g: 1, b: 1, a: 1}
   fontHighlightColor: {r: 1, g: 1, b: 1, a: 1}
