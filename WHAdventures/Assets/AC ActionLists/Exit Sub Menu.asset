@@ -38,14 +38,14 @@ MonoBehaviour:
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
-  resultActionTrue: 2
-  skipActionTrue: 2
+  resultActionTrue: 0
+  skipActionTrue: 1
   skipActionTrueActual: {fileID: -4906646410425229449}
   linkedCutsceneTrue: {fileID: 0}
   linkedAssetTrue: {fileID: 0}
-  resultActionFail: 0
+  resultActionFail: 2
   skipActionFail: 2
-  skipActionFailActual: {fileID: 0}
+  skipActionFailActual: {fileID: 4571844965397586035}
   linkedCutsceneFail: {fileID: 0}
   linkedAssetFail: {fileID: 0}
   chooseSceneBy: 1
@@ -58,6 +58,56 @@ MonoBehaviour:
   playerID: -1
   playerParameterID: -1
   intCondition: 0
+--- !u!114 &-7099068517272579441
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74813bf97090c47b39d9f3d0ec84a80b, type: 3}
+  m_Name: ActionMenuState
+  m_EditorClassIdentifier: 
+  id: 0
+  category: 10
+  title: Change state
+  description: Provides various options to show and hide both menus and menu elements.
+  isDisplayed: 1
+  showComment: 0
+  comment: 
+  numSockets: 1
+  willWait: 0
+  endAction: 1
+  skipAction: 3
+  skipActionActual: {fileID: -7099068517272579441}
+  linkedCutscene: {fileID: 0}
+  linkedAsset: {fileID: 0}
+  isEnabled: 1
+  isAssetFile: 1
+  isBreakPoint: 0
+  nodeRect:
+    serializedVersion: 2
+    x: 611
+    y: 267
+    width: 300
+    height: 152
+  overrideColor: {r: 1, g: 1, b: 1, a: 1}
+  showOutputSockets: 1
+  parentActionListInEditor: {fileID: 0}
+  changeType: 1
+  removeJournalPageMethod: 0
+  menuToChange: Freeze
+  menuToChangeParameterID: -1
+  elementToChange: 
+  elementToChangeParameterID: -1
+  journalText: 
+  onlyAddNewJournal: 0
+  doFade: 1
+  lineID: -1
+  journalPageIndex: -1
+  journalPageIndexParameterID: -1
 --- !u!114 &-4906646410425229449
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -79,9 +129,9 @@ MonoBehaviour:
   comment: 
   numSockets: 1
   willWait: 0
-  endAction: 0
-  skipAction: -1
-  skipActionActual: {fileID: 0}
+  endAction: 1
+  skipAction: 1
+  skipActionActual: {fileID: -4906646410425229449}
   linkedCutscene: {fileID: 0}
   linkedAsset: {fileID: 0}
   isEnabled: 1
@@ -108,7 +158,33 @@ MonoBehaviour:
   lineID: -1
   journalPageIndex: -1
   journalPageIndexParameterID: -1
---- !u!114 &-4558116805965443511
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cc1f751990d444ef9e1381090933b8b, type: 3}
+  m_Name: Exit Sub Menu
+  m_EditorClassIdentifier: 
+  actions:
+  - {fileID: -7669436437330644921}
+  - {fileID: -4906646410425229449}
+  - {fileID: 4571844965397586035}
+  - {fileID: -7099068517272579441}
+  isSkippable: 1
+  actionListType: 1
+  unfreezePauseMenus: 1
+  useParameters: 0
+  canRunMultipleInstances: 0
+  canSurviveSceneChanges: 0
+  revertToDefaultParametersAfterRunning: 0
+  parameters: []
+  tagID: 0
+--- !u!114 &4571844965397586035
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -129,9 +205,9 @@ MonoBehaviour:
   comment: 
   numSockets: 1
   willWait: 0
-  endAction: 1
-  skipAction: -1
-  skipActionActual: {fileID: 0}
+  endAction: 0
+  skipAction: 3
+  skipActionActual: {fileID: -7099068517272579441}
   linkedCutscene: {fileID: 0}
   linkedAsset: {fileID: 0}
   isEnabled: 1
@@ -139,8 +215,8 @@ MonoBehaviour:
   isBreakPoint: 0
   nodeRect:
     serializedVersion: 2
-    x: 227
-    y: 285
+    x: 181
+    y: 269
     width: 300
     height: 152
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
@@ -158,28 +234,3 @@ MonoBehaviour:
   lineID: -1
   journalPageIndex: -1
   journalPageIndexParameterID: -1
---- !u!114 &11400000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3cc1f751990d444ef9e1381090933b8b, type: 3}
-  m_Name: Exit Sub Menu
-  m_EditorClassIdentifier: 
-  actions:
-  - {fileID: -7669436437330644921}
-  - {fileID: -4558116805965443511}
-  - {fileID: -4906646410425229449}
-  isSkippable: 1
-  actionListType: 1
-  unfreezePauseMenus: 1
-  useParameters: 0
-  canRunMultipleInstances: 0
-  canSurviveSceneChanges: 0
-  revertToDefaultParametersAfterRunning: 0
-  parameters: []
-  tagID: 0

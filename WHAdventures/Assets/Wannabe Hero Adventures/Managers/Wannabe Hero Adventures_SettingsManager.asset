@@ -42,7 +42,7 @@ MonoBehaviour:
     showInFilter: 0
     limitToCategories: 0
     categoryIDs: 
-  actionListOnStart: {fileID: 11400000, guid: 6a787f27ffc180c45863cd1ad44d5fae, type: 2}
+  actionListOnStart: {fileID: 11400000, guid: a76889ef8fd8172468933631f7eb1743, type: 2}
   blackOutWhenSkipping: 0
   playerSwitching: 1
   player: {fileID: 531029160363389066, guid: f9e2e0b56e702154f989cb8e42d560f2, type: 3}
@@ -198,6 +198,6 @@ MonoBehaviour:
   defaultMusicVolume: 0.6
   defaultSpeechVolume: 1
   showDebugLogs: 0
-  printActionCommentsInConsole: 0
+  printActionCommentsInConsole: 1
   showActiveActionLists: 0
   showHierarchyIcons: 1
