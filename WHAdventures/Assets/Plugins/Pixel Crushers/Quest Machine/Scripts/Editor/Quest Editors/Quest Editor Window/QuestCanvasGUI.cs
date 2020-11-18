@@ -134,7 +134,7 @@ namespace PixelCrushers.QuestMachine
                 GUI.skin.horizontalScrollbar = GUIStyle.none;
 
                 canvasScrollPosition = GUI.BeginScrollView(new Rect(0, 0, (1 / m_zoom) * position.width, (1 / m_zoom) * position.height), canvasScrollPosition, new Rect(0, 0, canvasScrollView.x, canvasScrollView.y), false, false);
-                HandleInput();
+                HandleInput(position);
                 DrawConnectionArrows();
                 DrawNodes();
                 DrawLasso();
@@ -320,7 +320,7 @@ namespace PixelCrushers.QuestMachine
 
         #region Handle Input
 
-        private void HandleInput()
+        private void HandleInput(Rect position)
         {
             m_mousePos = Event.current.mousePosition;
             var isNodeSelected = QuestEditorWindow.selectedNodeListIndex != -1;
@@ -350,7 +350,7 @@ namespace PixelCrushers.QuestMachine
             else if (leftMouseDown && !(alt || ctrl))
             {
                 m_connecting = m_draggingCanvas = false;
-                var clickedOnNode = ClickOnCanvas();
+                var clickedOnNode = ClickOnCanvas(position);
                 if (!m_connecting && QuestEditorWindow.selectedNodeListIndex != -1)
                 {
                     m_draggingNodes = true;
@@ -369,7 +369,7 @@ namespace PixelCrushers.QuestMachine
             else if (rightMouseDown || (leftMouseDown && ctrl))
             {
                 m_connecting = m_draggingNodes = m_draggingCanvas = m_lassoing = false;
-                if (IsMouseOnNode()) ClickOnCanvas();
+                if (IsMouseOnNode()) ClickOnCanvas(position);
                 ShowContextMenu();
             }
             else if (middleMouseDown || (leftMouseDown && alt))
@@ -419,8 +419,9 @@ namespace PixelCrushers.QuestMachine
             return false;
         }
 
-        private bool ClickOnCanvas() // Return true if clicked on node.
+        private bool ClickOnCanvas(Rect position) // Return true if clicked on node.
         {
+            if (GetGearMenuRect(position).Contains(m_mousePos)) return false;
             var clickedOnNode = false;
             for (int i = 0; i < m_nodeListProperty.arraySize; i++)
             {
@@ -1076,9 +1077,14 @@ namespace PixelCrushers.QuestMachine
 
         #region Gear Menu
 
+        protected Rect GetGearMenuRect(Rect position)
+        {
+            return new Rect(position.width - 2 - MoreEditorGuiUtility.GearWidth, 2, MoreEditorGuiUtility.GearWidth, MoreEditorGuiUtility.GearHeight);
+        }
+
         protected virtual void DrawGearMenu(Rect position)
         {
-            if (MoreEditorGuiUtility.DoGearMenu(new Rect(position.width - 2 - MoreEditorGuiUtility.GearWidth, 2, MoreEditorGuiUtility.GearWidth, MoreEditorGuiUtility.GearHeight)))
+            if (MoreEditorGuiUtility.DoGearMenu(GetGearMenuRect(position)))
             {
                 EditorGUIZoomArea.End(); // Stop zoom so we can place menu properly.
                 var menu = new GenericMenu();
@@ -1093,6 +1099,14 @@ namespace PixelCrushers.QuestMachine
 
         protected virtual void AddCanvasControlMenuItems(GenericMenu menu)
         {
+            if (m_quest == null)
+            {
+                menu.AddDisabledItem(new GUIContent("Quest Properties..."));
+            }
+            else
+            {
+                menu.AddItem(new GUIContent("Quest Properties..."), false, InspectQuestProperties);
+            }
             menu.AddItem(new GUIContent("Pan/Top Left"), false, PanTopLeft, null);
             menu.AddItem(new GUIContent("Zoom/Lock"), QuestEditorPrefs.zoomLock, ToggleZoomLock, null);
             menu.AddItem(new GUIContent("Zoom/25%"), false, Zoom, 0.25f);
@@ -1228,6 +1242,14 @@ namespace PixelCrushers.QuestMachine
             var filename = EditorUtility.SaveFilePanelInProject("Save Quest As", "New Quest", "asset", "Save quest as");
             if (string.IsNullOrEmpty(filename)) return;
             QuestEditorAssetUtility.SaveQuestAsAsset(m_quest, filename, true);
+        }
+
+        private void InspectQuestProperties()
+        {
+            QuestEditorWindow.selectedNodeListIndex = -1;
+            QuestEditorWindow.SetSelectionToQuest();
+            QuestEditorWindow.RepaintNow();
+            QuestEditorWindow.RepaintCurrentEditorNow();
         }
 
         private void OpenTagsToTextTableWizard()
@@ -1371,7 +1393,7 @@ namespace PixelCrushers.QuestMachine
             public List<int> parentQuests;
             public List<int> childQuests;
         }
-        private List<QuestRelationRecord> questRelationRecords = new List<QuestRelationRecord>();
+        private List<QuestRelationRecord> m_questRelationRecords = new List<QuestRelationRecord>();
         private QuestDatabase m_currentDatabase = null;
         private Rect m_lastWindowSize = new Rect(0, 0, 0, 0);
 
@@ -1383,9 +1405,9 @@ namespace PixelCrushers.QuestMachine
                 SetupQuestRelations(database);
             }
             EditorGUILayout.LabelField(database.name, QuestEditorStyles.questNameGUIStyle);
-            for (int i = 0; i < questRelationRecords.Count; i++)
+            for (int i = 0; i < m_questRelationRecords.Count; i++)
             {
-                var record = questRelationRecords[i];
+                var record = m_questRelationRecords[i];
                 var edit = GUI.Button(record.rect, record.label, QuestEditorStyles.questNodeWindowGUIStyle);
                 if (edit)
                 {
@@ -1394,12 +1416,12 @@ namespace PixelCrushers.QuestMachine
                 }
                 for (int j = 0; j < record.childQuests.Count; j++)
                 {
-                    var otherRecord = questRelationRecords[record.childQuests[j]];
+                    var otherRecord = m_questRelationRecords[record.childQuests[j]];
                     DrawNodeCurve(record.rect, otherRecord.rect, QuestEditorStyles.ChildRelationConnectorColor);
                 }
                 for (int j = 0; j < record.parentQuests.Count; j++)
                 {
-                    var otherRecord = questRelationRecords[record.childQuests[j]];
+                    var otherRecord = m_questRelationRecords[record.parentQuests[j]];
                     DrawNodeCurve(record.rect, otherRecord.rect, QuestEditorStyles.ParentRelationConnectorColor);
                 }
             }
@@ -1413,7 +1435,7 @@ namespace PixelCrushers.QuestMachine
             int numColumns = Mathf.Max(1, (int)(windowWidth / (QuestNode.DefaultNodeWidth * 2)));
 
             // Set quest record positions:
-            questRelationRecords.Clear();
+            m_questRelationRecords.Clear();
             for (int i = 0; i < database.questAssets.Count; i++)
             {
                 var record = new QuestRelationRecord();
@@ -1427,17 +1449,17 @@ namespace PixelCrushers.QuestMachine
                 record.label = label;
                 record.childQuests = new List<int>();
                 record.parentQuests = new List<int>();
-                questRelationRecords.Add(record);
+                m_questRelationRecords.Add(record);
             }
 
             // Determine links:
-            for (int i = 0; i < questRelationRecords.Count; i++)
+            for (int i = 0; i < m_questRelationRecords.Count; i++)
             {
-                var record = questRelationRecords[i];
-                for (int j = 0; j < questRelationRecords.Count; j++)
+                var record = m_questRelationRecords[i];
+                for (int j = 0; j < m_questRelationRecords.Count; j++)
                 {
                     if (i == j) continue;
-                    var otherQuest = questRelationRecords[j].quest;
+                    var otherQuest = m_questRelationRecords[j].quest;
                     if (IsQuestChild(record.quest, otherQuest))
                     {
                         record.childQuests.Add(j);

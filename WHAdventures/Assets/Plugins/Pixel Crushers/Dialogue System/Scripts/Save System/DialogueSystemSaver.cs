@@ -54,7 +54,15 @@ namespace PixelCrushers.DialogueSystem
             // Start() methods need to read values from it.
             var data = SaveSystem.currentSavedGameData.GetData(key);
             if (string.IsNullOrEmpty(data)) return;
-            PersistentDataManager.ApplyLuaInternal(data, false);
+            if (saveRawData)
+            {
+                var rawData = SaveSystem.Deserialize<RawData>(data);
+                if (rawData != null && rawData.bytes != null) PersistentDataManager.ApplyRawData(rawData.bytes);
+            }
+            else
+            {
+                PersistentDataManager.ApplyLuaInternal(data, false);
+            }
             m_appliedImmediate = true;
         }
 

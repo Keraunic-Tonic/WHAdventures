@@ -120,10 +120,12 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     {
                         menu.AddItem(new GUIContent("Center on Current Entry"), false, GotoCurrentRuntimeEntry);
                     }
+                    menu.AddItem(new GUIContent("Conversation Properties"), false, InspectConversationProperties);
                 }
                 else
                 {
                     menu.AddDisabledItem(new GUIContent("Center on START"));
+                    menu.AddDisabledItem(new GUIContent("Conversation Properties"));
                 }
                 menu.AddItem(new GUIContent("New Conversation"), false, AddNewConversationToNodeEditor);
                 if (currentConversation != null)

@@ -192,6 +192,72 @@ namespace PixelCrushers.QuestMachine
 
         #endregion
 
+        #region Give Quest
+
+        public static Quest GiveQuest(StringField questID)
+        {
+            return GiveQuestToQuester(questID, StringField.empty);
+        }
+
+        public static Quest GiveQuest(string questID)
+        {
+            return GiveQuestToQuester(questID, string.Empty);
+        }
+
+        public static Quest GiveQuest(Quest quest)
+        {
+            return GiveQuestToQuester(quest, string.Empty);
+        }
+
+        public static Quest GiveQuestToQuester(StringField questID, StringField questerID)
+        {
+            return GiveQuestToQuester(StringField.GetStringValue(questID), StringField.GetStringValue(questerID));
+        }
+
+        public static Quest GiveQuestToQuester(Quest quest, StringField questerID)
+        {
+            return GiveQuestToQuester(quest, GetQuestJournal(questerID));
+        }
+
+        public static Quest GiveQuestToQuester(Quest quest, string questerID)
+        {
+            return GiveQuestToQuester(quest, GetQuestJournal(questerID));
+        }
+
+        public static Quest GiveQuestToQuester(string questID, string questerID)
+        {
+            return GiveQuestToQuester(GetQuestAsset(questID), GetQuestJournal(questerID));
+        }
+
+        public static Quest GiveQuestToQuester(Quest quest, QuestJournal questJournal)
+        {
+            if (quest == null)
+            {
+                if (Debug.isDebugBuild) Debug.LogWarning("Quest Machine: GiveQuestToQuester() quest is null.");
+                return null;
+            }
+            else if (questJournal == null)
+            {
+                if (Debug.isDebugBuild) Debug.LogWarning("Quest Machine: GiveQuestToQuester() quest journal is null.");
+                return null;
+            }
+            else
+            {
+                if (quest.isAsset) quest = quest.Clone();
+                // Add the copy to the quester and activate it:
+                var questerTextInfo = new QuestParticipantTextInfo(questJournal.id, questJournal.displayName, questJournal.image, null);
+                quest.AssignQuester(questerTextInfo);
+                quest.timesAccepted = 1;
+                questJournal.deletedStaticQuests.Remove(StringField.GetStringValue(quest.id));
+                questJournal.AddQuest(quest);
+                quest.SetState(QuestState.Active);
+                QuestMachineMessages.RefreshIndicators(quest);
+                return quest;
+            }
+        }
+
+        #endregion
+
         #region Quest Asset Registry
 
         private static string GetQuestKey(Quest quest)
@@ -569,9 +635,9 @@ namespace PixelCrushers.QuestMachine
             return (audioClip != null) ? audioClip.name : string.Empty;
         }
 
-#endregion
+        #endregion
 
-#region Quest Counters
+        #region Quest Counters
 
         /// <summary>
         /// Looks up a quest's counter.
@@ -607,9 +673,9 @@ namespace PixelCrushers.QuestMachine
             return GetQuestCounter(StringField.GetStringValue(questID), StringField.GetStringValue(counterName), (questerID != null) ? StringField.GetStringValue(questerID) : null);
         }
 
-#endregion
+        #endregion
 
-#region Quest States
+        #region Quest States
 
         /// <summary>
         /// Looks up a quest's state.
@@ -725,7 +791,7 @@ namespace PixelCrushers.QuestMachine
             SetQuestNodeState(StringField.GetStringValue(questID), StringField.GetStringValue(questNodeID), state, questerID);
         }
 
-#endregion
+        #endregion
 
     }
 }

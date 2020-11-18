@@ -86,7 +86,7 @@ namespace PixelCrushers.DialogueSystem
         /// The current conversation ID. When this changes (in GotoState), the Lua environment
         /// needs to set the Dialog[] table to the new conversation's table.
         /// </summary>
-        private static int m_currentDialogTableConversationID = -1;
+        private int m_currentDialogTableConversationID = -1;
 
         /// <summary>
         /// Initializes a new ConversationModel.
@@ -653,7 +653,10 @@ namespace PixelCrushers.DialogueSystem
             }
             else
             {
-                return UITools.CreateSprite(DialogueManager.LoadAsset(imageName) as Texture2D);
+                // Check if named image is already assigned to actor. Otherwise load as asset.
+                var sprite = actor.GetPortraitSprite(imageName);
+                return (sprite != null) ? sprite 
+                    : UITools.CreateSprite(DialogueManager.LoadAsset(imageName) as Texture2D);
             }
         }
 

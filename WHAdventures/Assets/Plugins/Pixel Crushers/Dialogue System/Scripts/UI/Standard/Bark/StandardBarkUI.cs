@@ -130,10 +130,12 @@ namespace PixelCrushers.DialogueSystem
         {
             if (keepInView && isPlaying)
             {
-                var pos = Camera.main.WorldToViewportPoint(canvas.transform.position);
+                var mainCamera = Camera.main;
+                if (mainCamera == null) return;
+                var pos = mainCamera.WorldToViewportPoint(canvas.transform.position);
                 pos.x = Mathf.Clamp01(pos.x);
                 pos.y = Mathf.Clamp01(pos.y);
-                canvas.transform.position = Camera.main.ViewportToWorldPoint(pos);
+                canvas.transform.position = mainCamera.ViewportToWorldPoint(pos);
             }
         }
 

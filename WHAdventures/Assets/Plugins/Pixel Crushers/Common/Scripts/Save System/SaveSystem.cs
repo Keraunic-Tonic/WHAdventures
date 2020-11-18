@@ -798,15 +798,25 @@ namespace PixelCrushers
 
         /// <summary>
         /// Clears the SaveSystem's saved game data cache and loads a
-        /// starting scene.
+        /// starting scene. Same as ResetGameState except loads a starting scene.
         /// </summary>
         /// <param name="startingSceneName"></param>
         public static void RestartGame(string startingSceneName)
         {
+            ResetGameState();
+            instance.StartCoroutine(LoadSceneInternal(startingSceneName));
+        }
+
+        /// <summary>
+        /// Clears the SaveSystem's saved game data cache. Same as
+        /// RestartGame except it doesn't load a scene after resetting.
+        /// </summary>
+        /// <param name="startingSceneName"></param>
+        public static void ResetGameState()
+        {
             ClearSavedGameData();
             BeforeSceneChange();
             SaversRestartGame();
-            instance.StartCoroutine(LoadSceneInternal(startingSceneName));
         }
 
         /// <summary>

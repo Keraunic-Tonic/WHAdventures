@@ -1,7 +1,7 @@
 ﻿/*
 --------------------------
       Quest Machine
-      Version 1.2.10
+      Version 1.2.12
 
 Copyright © Pixel Crushers
 --------------------------

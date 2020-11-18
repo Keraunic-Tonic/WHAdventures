@@ -142,7 +142,10 @@ namespace PixelCrushers.DialogueSystem
         /// Gets the current usable.
         /// </summary>
         /// <value>The usable.</value>
-        public Usable CurrentUsable { get { return currentUsable; } }
+        public Usable CurrentUsable { 
+            get { return currentUsable; } 
+            set { SetCurrentUsable(value); }
+        }
 
         /// <summary>
         /// Gets the GUI style.
@@ -382,7 +385,7 @@ namespace PixelCrushers.DialogueSystem
             }
         }
 
-        protected virtual void SetCurrentUsable(Usable usable)
+        public virtual void SetCurrentUsable(Usable usable)
         {
             currentUsable = usable;
             if (usable != null)

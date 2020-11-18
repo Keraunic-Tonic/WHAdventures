@@ -36,6 +36,16 @@ namespace PixelCrushers.DialogueSystem
         /// <value><c>true</c> if has instance; otherwise, <c>false</c>.</value>
         public static bool hasInstance { get { return instance != null; } }
 
+#if UNITY_2019_3_OR_NEWER
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void InitStaticVariables()
+        {
+            m_instance = null;
+        }
+#endif
+
+
+
         /// <summary>
         /// Gets the database manager.
         /// </summary>

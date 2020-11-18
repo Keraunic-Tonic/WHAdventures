@@ -759,7 +759,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
             if (!actorPortraitCache.ContainsKey(actorID))
             {
                 var actor = database.GetActor(actorID);
-                actorPortraitCache.Add(actorID, (actor != null) ? actor.GetPortraitSprite() : null);
+                actorPortraitCache.Add(actorID, (actor != null) ? actor.GetPortraitSprite(1) : null);
             }
             return actorPortraitCache[actorID];
         }
@@ -1254,10 +1254,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     }
                     else if (newSelectedLink == null && Event.current.button != MiddleMouseButton)
                     {
-                        currentEntry = null;
-                        selectedLink = null;
-                        multinodeSelection.nodes.Clear();
-                        inspectorSelection = currentConversation;
+                        InspectConversationProperties();
                     }
                     break;
                 case EventType.MouseDrag:
@@ -1275,6 +1272,14 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     break;
             }
             if (Event.current.isMouse) e.Use();
+        }
+
+        private void InspectConversationProperties()
+        {
+            currentEntry = null;
+            selectedLink = null;
+            multinodeSelection.nodes.Clear();
+            inspectorSelection = currentConversation;
         }
 
         private void DrawLasso()

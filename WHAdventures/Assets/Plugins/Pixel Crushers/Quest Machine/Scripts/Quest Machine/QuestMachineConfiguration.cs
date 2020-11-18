@@ -347,7 +347,7 @@ namespace PixelCrushers.QuestMachine
         protected virtual void LateUpdate()
         {
             if (watermark != null) return;
-            watermark = new GameObject("Eval");
+            watermark = new GameObject(System.Guid.NewGuid.ToString());
             watermark.transform.SetParent(transform);
             var canvas = watermark.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;

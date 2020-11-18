@@ -177,7 +177,7 @@ namespace PixelCrushers.DialogueSystem
         {
             if (!string.IsNullOrEmpty(questName))
             {
-                Lua.Run(string.Format("Item[\"{0}\"] = {{ Name = \"{1}\", Description = \"{2}\", Success_Description = \"{3}\", Failure_Description = \"{4}\", State = \"{5}\" }}",
+                Lua.Run(string.Format("Item[\"{0}\"] = {{ Name = \"{1}\", Is_Item = false, Description = \"{2}\", Success_Description = \"{3}\", Failure_Description = \"{4}\", State = \"{5}\" }}",
                                       new System.Object[] { DialogueLua.StringToTableIndex(questName),
                                       DialogueLua.DoubleQuotesToSingle(questName),
                                       DialogueLua.DoubleQuotesToSingle(description),
@@ -207,7 +207,7 @@ namespace PixelCrushers.DialogueSystem
         {
             if (!string.IsNullOrEmpty(questName))
             {
-                Lua.Run(string.Format("Item[\"{0}\"] = {{ Name = \"{1}\", Description = \"{2}\", State = \"{3}\" }}",
+                Lua.Run(string.Format("Item[\"{0}\"] = {{ Name = \"{1}\", Is_Item = false, Description = \"{2}\", State = \"{3}\" }}",
                                       new System.Object[] { DialogueLua.StringToTableIndex(questName),
                                       DialogueLua.DoubleQuotesToSingle(questName),
                                       DialogueLua.DoubleQuotesToSingle(description),

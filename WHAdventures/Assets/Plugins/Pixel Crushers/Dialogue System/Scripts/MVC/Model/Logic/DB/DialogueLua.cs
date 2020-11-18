@@ -422,7 +422,7 @@ namespace PixelCrushers.DialogueSystem
             return dialogTable;
         }
 
-        private static LuaValue GetFieldLuaValue(Field field)
+        public static LuaValue GetFieldLuaValue(Field field)
         {
             if (field == null) return LuaNil.Nil;
             switch (field.type)

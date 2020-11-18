@@ -251,7 +251,7 @@ namespace PixelCrushers.DialogueSystem
         /// don't start the conversation.
         /// </summary>
         [Tooltip("Only trigger if at least one entry's Conditions are currently true.")]
-        public bool skipIfNoValidEntries = true;
+        public bool skipIfNoValidEntries = false;
 
         /// <summary>
         /// Set <c>true</c> to stop the conversation if the actor leaves the trigger area.

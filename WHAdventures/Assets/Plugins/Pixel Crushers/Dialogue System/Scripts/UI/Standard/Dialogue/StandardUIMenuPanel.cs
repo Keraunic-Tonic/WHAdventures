@@ -280,6 +280,7 @@ namespace PixelCrushers.DialogueSystem
         {
             firstSelected = null;
             DestroyInstantiatedButtons();
+            var hasDisabledButton = false;
 
             // Prep autonumber format:
             if (autonumber.enabled)
@@ -343,7 +344,11 @@ namespace PixelCrushers.DialogueSystem
                             buttonGameObject.SetActive(true);
                             StandardUIResponseButton responseButton = buttonGameObject.GetComponent<StandardUIResponseButton>();
                             SetResponseButton(responseButton, responses[i], target, buttonNumber++);
-                            if (responseButton != null) buttonGameObject.name = "Response: " + responseButton.text;
+                            if (responseButton != null)
+                            {
+                                buttonGameObject.name = "Response: " + responseButton.text;
+                                if (explicitNavigationForTemplateButtons && !responseButton.isClickable) hasDisabledButton = true;
+                            }
                             if (firstSelected == null) firstSelected = buttonGameObject;
 
                         }
@@ -381,7 +386,7 @@ namespace PixelCrushers.DialogueSystem
                 }
             }
 
-            if (explicitNavigationForTemplateButtons) SetupTemplateButtonNavigation();
+            if (explicitNavigationForTemplateButtons) SetupTemplateButtonNavigation(hasDisabledButton);
 
             NotifyContentChanged();
         }
@@ -436,17 +441,29 @@ namespace PixelCrushers.DialogueSystem
             return 5;
         }
 
-        public virtual void SetupTemplateButtonNavigation()
+        public virtual void SetupTemplateButtonNavigation(bool hasDisabledButton)
         {
             // Assumes buttons are active (since uses GetComponent), so call after activating panel.
             if (instantiatedButtons == null || instantiatedButtons.Count == 0) return;
-            for (int i = 0; i < instantiatedButtons.Count; i++)
+            var buttons = new List<GameObject>();
+            if (hasDisabledButton)
             {
-                var button = instantiatedButtons[i].GetComponent<StandardUIResponseButton>().button;
-                var above = (i == 0) ? (loopExplicitNavigation ? instantiatedButtons[instantiatedButtons.Count - 1].GetComponent<StandardUIResponseButton>().button : null)
-                    : instantiatedButtons[i - 1].GetComponent<StandardUIResponseButton>().button;
-                var below = (i == instantiatedButtons.Count - 1) ? (loopExplicitNavigation ? instantiatedButtons[0].GetComponent<StandardUIResponseButton>().button : null)
-                    : instantiatedButtons[i + 1].GetComponent<StandardUIResponseButton>().button;
+                // If some buttons are disabled, make a list of only the clickable ones:
+                buttons.AddRange(instantiatedButtons.FindAll(x => x.GetComponent<StandardUIResponseButton>().isClickable));
+            }
+            else
+            {
+                buttons.AddRange(instantiatedButtons);
+            }
+
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                var button = buttons[i].GetComponent<UnityEngine.UI.Button>();
+                if (button == null) continue;
+                var above = (i == 0) ? (loopExplicitNavigation ? buttons[buttons.Count - 1].GetComponent<UnityEngine.UI.Button>() : null)
+                    : buttons[i - 1].GetComponent<UnityEngine.UI.Button>();
+                var below = (i == buttons.Count - 1) ? (loopExplicitNavigation ? buttons[0].GetComponent<UnityEngine.UI.Button>() : null)
+                    : buttons[i + 1].GetComponent<UnityEngine.UI.Button>();
                 var navigation = new UnityEngine.UI.Navigation();
 
                 navigation.mode = UnityEngine.UI.Navigation.Mode.Explicit;

@@ -1,6 +1,25 @@
 ﻿/*
 Quest Machine Release Notes
 
+Version 1.2.12
+[November 9, 2020]
+- Added: QuestMachine.GiveQuest()/GiveQuestToQuester() convenience methods.
+- Added: Give Quest To Quester action.
+- Improved: Quest properties are now accessible from gear menu > Quest Properties in addition to clicking blank canvas space.
+- Fixed: Quest Database > Show Quest Relations issue now shows parent relations.
+- Fixed: Always Face Camera component issue with z-axis when Only Y-Axis is ticked.
+- Save System: Added SaveSystem.ResetGameState().
+- Dialogue System: Lua functions now register in Awake.
+- Opsive Controllers: Updated integration.
+- ORK Framework: Updated and fixed save data issue.
+
+
+Version 1.2.11
+[October 11, 2020]
+- Added: Scene events. Use UnityEvents in the inspector to hook up scene behavior in your quests.
+- Save System: Fixed potential timing issue with AutoSaveLoad and DiskSavedGameDataStorer.
+
+
 Version 1.2.10
 [September 14, 2020]
 - CHANGED: QuestJournal Remember Completed Quests checkbox is now observed. You may want to tick it on your player/quester QuestJournals.
@@ -14,7 +33,7 @@ Version 1.2.10
 - Dialogue System: Added Allow Original UI During Conversations; added custom lua functions to "..." dropdown menus.
 - Save System: Added option to automatically unload any additively-loaded scenes when changing scenes.
 - Save System: Fixed AutoSaveLoad save issue when quitting application.
-- Invector: Updated for 2.5.3
+- Invector: Updated for 2.5.3.
 - Opsive Character Controllers: Updated interaction script to work with UCC multiplayer.
 - Opsive Ultimate Inventory System: Added support.
 - ORK: Fixed inspector bug in ORK Icon quest content; ORK Give Exp action can now give rewards to any stat type.
