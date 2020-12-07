@@ -1,4 +1,15 @@
 <?xml version='1.0' encoding='utf8'?>
 <Project name="Wannabe Hero Text" ID="KnX-jur-m2Yd" api_version="0.3">
-  <Scenes ID="content" name="Content" tags=""/>
+  <!--START #id:content-->
+  <Scenes ID="content" name="Content" tags="">
+    <!--START #id:PTE-mmd-2Dhk-->
+    <Scene ID="PTE-mmd-2Dhk" name="Classroom" tags="" status="status1">
+      <Content ID="f6F-zYU-ncSs" name="About Jojo" tags="" status="status2" type="3pc-MQ8-zAA8"/>
+      <Content ID="eKH-ZSe-cUZc" name="About Blaze" tags="" status="status2" type="3pc-MQ8-zAA8"/>
+      <Content ID="oKw-E3q-9waa" name="About Egan Tree" tags="" status="status2" type="3pc-MQ8-zAA8"/>
+      <Content ID="N8M-aVK-notp" name="About Egan" tags="" status="status2" type="3pc-MQ8-zAA8"/>
+    </Scene>
+    <!--END #id:PTE-mmd-2Dhk-->
+  </Scenes>
+  <!--END #id:content-->
 </Project>

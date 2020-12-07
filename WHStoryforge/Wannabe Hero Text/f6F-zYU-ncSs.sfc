@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:QrS-gS2-7ZPz-->
+    <Dialogue ID="QrS-gS2-7ZPz" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:PBB-nrT-h3nn-->
+      <Phrase ID="PBB-nrT-h3nn">
+        <!--START #id:Fcn-e3x-KVE2-->
+        <Text ID="Fcn-e3x-KVE2"><![CDATA[This is Joanne Lunabone, but she prefers to go by Jojo.]]></Text>
+        <!--END #id:Fcn-e3x-KVE2-->
+      </Phrase>
+      <!--END #id:PBB-nrT-h3nn-->
+    </Dialogue>
+    <!--END #id:QrS-gS2-7ZPz-->
+    <!--START #id:PAU-teH-dGkx-->
+    <Dialogue ID="PAU-teH-dGkx" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:com-dNR-sovh-->
+      <Phrase ID="com-dNR-sovh">
+        <!--START #id:6BW-vkf-sKQi-->
+        <Text ID="6BW-vkf-sKQi"><![CDATA[She's a red panda fur who is kind of always running late.]]></Text>
+        <!--END #id:6BW-vkf-sKQi-->
+      </Phrase>
+      <!--END #id:com-dNR-sovh-->
+    </Dialogue>
+    <!--END #id:PAU-teH-dGkx-->
+    <!--START #id:Gg2-VTv-CCGW-->
+    <Dialogue ID="Gg2-VTv-CCGW" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:TbH-yYv-cVSz-->
+      <Phrase ID="TbH-yYv-cVSz">
+        <!--START #id:beD-CTe-BszG-->
+        <Text ID="beD-CTe-BszG"><![CDATA[We're next door neighbors, and we've been friends since we were little.]]></Text>
+        <!--END #id:beD-CTe-BszG-->
+      </Phrase>
+      <!--END #id:TbH-yYv-cVSz-->
+    </Dialogue>
+    <!--END #id:Gg2-VTv-CCGW-->
+    <!--START #id:4Xy-rLM-p2ps-->
+    <Dialogue ID="4Xy-rLM-p2ps" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:kQD-iDh-UJgk-->
+      <Phrase ID="kQD-iDh-UJgk">
+        <!--START #id:6Ac-67o-Pak7-->
+        <Text ID="6Ac-67o-Pak7"><![CDATA[She's always the first one to jump into a new opportunity, and just brave overall.]]></Text>
+        <!--END #id:6Ac-67o-Pak7-->
+      </Phrase>
+      <!--END #id:kQD-iDh-UJgk-->
+    </Dialogue>
+    <!--END #id:4Xy-rLM-p2ps-->
+    <!--START #id:d2g-esf-r8yp-->
+    <Dialogue ID="d2g-esf-r8yp" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:768-Rsg-S4KV-->
+      <Phrase ID="768-Rsg-S4KV" direction="Blushing">
+        <!--START #id:4W4-f3L-XMdM-->
+        <Text ID="4W4-f3L-XMdM"><![CDATA[...]]></Text>
+        <!--END #id:4W4-f3L-XMdM-->
+      </Phrase>
+      <!--END #id:768-Rsg-S4KV-->
+    </Dialogue>
+    <!--END #id:d2g-esf-r8yp-->
+    <!--START #id:YNb-XPG-F8g8-->
+    <Dialogue ID="YNb-XPG-F8g8" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:mb4-ofo-w7Nw-->
+      <Phrase ID="mb4-ofo-w7Nw">
+        <!--START #id:H2j-2mg-uVMx-->
+        <Text ID="H2j-2mg-uVMx"><![CDATA[I wish I could be more like her.]]></Text>
+        <!--END #id:H2j-2mg-uVMx-->
+      </Phrase>
+      <!--END #id:mb4-ofo-w7Nw-->
+    </Dialogue>
+    <!--END #id:YNb-XPG-F8g8-->
+  </Body>
+  <Fieldsets/>
+</Content>
