@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:4S8-dHx-296b-->
+    <Dialogue ID="4S8-dHx-296b" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:Lr2-KLA-aqtZ-->
+      <Phrase ID="Lr2-KLA-aqtZ">
+        <!--START #id:UtV-s27-uJYM-->
+        <Text ID="UtV-s27-uJYM"><![CDATA[This is Levina Winston, one of the few humans in our class.]]></Text>
+        <!--END #id:UtV-s27-uJYM-->
+      </Phrase>
+      <!--END #id:Lr2-KLA-aqtZ-->
+    </Dialogue>
+    <!--END #id:4S8-dHx-296b-->
+    <!--START #id:4Xg-e3y-9WZP-->
+    <Dialogue ID="4Xg-e3y-9WZP" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:BSK-8bG-p7hs-->
+      <Phrase ID="BSK-8bG-p7hs">
+        <!--START #id:Juz-uL7-WrrK-->
+        <Text ID="Juz-uL7-WrrK"><![CDATA[I wouldn't say she's my rival exactly, but we're both the strongest magic users in the class, and she likes to rub it in when she can learn a spell faster than I can.]]></Text>
+        <!--END #id:Juz-uL7-WrrK-->
+      </Phrase>
+      <!--END #id:BSK-8bG-p7hs-->
+    </Dialogue>
+    <!--END #id:4Xg-e3y-9WZP-->
+    <!--START #id:MBF-HUo-2isz-->
+    <Dialogue ID="MBF-HUo-2isz" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:6fR-BZV-xsTk-->
+      <Phrase ID="6fR-BZV-xsTk">
+        <!--START #id:5gD-mH3-a3Jd-->
+        <Text ID="5gD-mH3-a3Jd"><![CDATA[Just because it's a little easier for non-humans to do magic, doesn't mean I don't work hard to do it.]]></Text>
+        <!--END #id:5gD-mH3-a3Jd-->
+      </Phrase>
+      <!--END #id:6fR-BZV-xsTk-->
+    </Dialogue>
+    <!--END #id:MBF-HUo-2isz-->
+    <!--START #id:VFM-B7h-nKZZ-->
+    <Dialogue ID="VFM-B7h-nKZZ" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:Boe-rMT-WWJw-->
+      <Phrase ID="Boe-rMT-WWJw">
+        <!--START #id:QtW-Fa9-8FZa-->
+        <Text ID="QtW-Fa9-8FZa"><![CDATA[A little Ms. Perfect, that Levina.]]></Text>
+        <!--END #id:QtW-Fa9-8FZa-->
+      </Phrase>
+      <!--END #id:Boe-rMT-WWJw-->
+    </Dialogue>
+    <!--END #id:VFM-B7h-nKZZ-->
+  </Body>
+  <Fieldsets/>
+</Content>

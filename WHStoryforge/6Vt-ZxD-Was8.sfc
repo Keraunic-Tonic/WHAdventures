@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:2ak-Hw7-rFX6-->
+    <Dialogue ID="2ak-Hw7-rFX6" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:QVJ-p8i-U67S-->
+      <Phrase ID="QVJ-p8i-U67S">
+        <!--START #id:Nwo-9HC-bUzo-->
+        <Text ID="Nwo-9HC-bUzo"><![CDATA[This is Mr. Whittrapper, our homeroom instructor who is also a lizard scale.]]></Text>
+        <!--END #id:Nwo-9HC-bUzo-->
+      </Phrase>
+      <!--END #id:QVJ-p8i-U67S-->
+    </Dialogue>
+    <!--END #id:2ak-Hw7-rFX6-->
+    <!--START #id:bA7-UHt-Xwcv-->
+    <Dialogue ID="bA7-UHt-Xwcv" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:LvW-XXR-Q8jo-->
+      <Phrase ID="LvW-XXR-Q8jo">
+        <!--START #id:3oZ-EuM-YVnV-->
+        <Text ID="3oZ-EuM-YVnV"><![CDATA[He has a very...laid-back style of teaching.]]></Text>
+        <!--END #id:3oZ-EuM-YVnV-->
+      </Phrase>
+      <!--END #id:LvW-XXR-Q8jo-->
+    </Dialogue>
+    <!--END #id:bA7-UHt-Xwcv-->
+    <!--START #id:fU8-wSP-DYPM-->
+    <Dialogue ID="fU8-wSP-DYPM" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:ax5-RaF-nAE5-->
+      <Phrase ID="ax5-RaF-nAE5">
+        <!--START #id:PuF-ytG-CUpU-->
+        <Text ID="PuF-ytG-CUpU"><![CDATA[...]]></Text>
+        <!--END #id:PuF-ytG-CUpU-->
+      </Phrase>
+      <!--END #id:ax5-RaF-nAE5-->
+    </Dialogue>
+    <!--END #id:fU8-wSP-DYPM-->
+    <!--START #id:HNZ-SNS-zrqW-->
+    <Dialogue ID="HNZ-SNS-zrqW" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:crz-u34-hWMs-->
+      <Phrase ID="crz-u34-hWMs">
+        <!--START #id:22q-DmP-T3tT-->
+        <Text ID="22q-DmP-T3tT"><![CDATA[What I'm trying to say is that he likes to nap a lot.]]></Text>
+        <!--END #id:22q-DmP-T3tT-->
+      </Phrase>
+      <!--END #id:crz-u34-hWMs-->
+    </Dialogue>
+    <!--END #id:HNZ-SNS-zrqW-->
+    <!--START #id:3FG-QRr-Aux4-->
+    <Dialogue ID="3FG-QRr-Aux4" character="Noah" character_id="MYf-5td-3u6G" character_game_id="Noah">
+      <!--START #id:Fzu-svh-mRM9-->
+      <Phrase ID="Fzu-svh-mRM9">
+        <!--START #id:LnM-AYZ-YKhn-->
+        <Text ID="LnM-AYZ-YKhn"><![CDATA[I'm surprised none of us has told the principal about it, but I think we all appreciate the extra time to not be supervised.]]></Text>
+        <!--END #id:LnM-AYZ-YKhn-->
+      </Phrase>
+      <!--END #id:Fzu-svh-mRM9-->
+    </Dialogue>
+    <!--END #id:3FG-QRr-Aux4-->
+    <!--START #id:b2f-34W-f6wp-->
+    <Dialogue ID="b2f-34W-f6wp" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:Xzp-N8b-wRHe-->
+      <Phrase ID="Xzp-N8b-wRHe">
+        <!--START #id:fkd-ncM-XUHL-->
+        <Text ID="fkd-ncM-XUHL"><![CDATA[Hoo boy.]]></Text>
+        <!--END #id:fkd-ncM-XUHL-->
+      </Phrase>
+      <!--END #id:Xzp-N8b-wRHe-->
+    </Dialogue>
+    <!--END #id:b2f-34W-f6wp-->
+  </Body>
+  <Fieldsets/>
+</Content>

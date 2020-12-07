@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:kuY-T7a-93uw-->
+    <Dialogue ID="kuY-T7a-93uw" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:Aq6-EHv-YB7w-->
+      <Phrase ID="Aq6-EHv-YB7w">
+        <!--START #id:A6R-s8s-jXXB-->
+        <Text ID="A6R-s8s-jXXB"><![CDATA[This is Acubrumigan Dairli, but they prefer to go by Egan.]]></Text>
+        <!--END #id:A6R-s8s-jXXB-->
+      </Phrase>
+      <!--END #id:Aq6-EHv-YB7w-->
+    </Dialogue>
+    <!--END #id:kuY-T7a-93uw-->
+    <!--START #id:nQG-5Yv-8vnd-->
+    <Dialogue ID="nQG-5Yv-8vnd" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:VPu-Auy-UojX-->
+      <Phrase ID="VPu-Auy-UojX">
+        <!--START #id:iGo-tae-bHGJ-->
+        <Text ID="iGo-tae-bHGJ"><![CDATA[They're a dryad, meaning that they can easily transform into a tree. In their case, a red maple tree!]]></Text>
+        <!--END #id:iGo-tae-bHGJ-->
+      </Phrase>
+      <!--END #id:VPu-Auy-UojX-->
+    </Dialogue>
+    <!--END #id:nQG-5Yv-8vnd-->
+    <!--START #id:Mah-Mni-UjUP-->
+    <Dialogue ID="Mah-Mni-UjUP" character="V V" character_id="Q4J-YUS-uEL3" character_game_id="VV">
+      <!--START #id:dm2-vMU-kACn-->
+      <Phrase ID="dm2-vMU-kACn">
+        <!--START #id:cWE-D6o-GsBi-->
+        <Text ID="cWE-D6o-GsBi"><![CDATA[Egan's a bit shy, so I often find them being a wallflower, or I guess a walltree in their case.]]></Text>
+        <!--END #id:cWE-D6o-GsBi-->
+      </Phrase>
+      <!--END #id:dm2-vMU-kACn-->
+    </Dialogue>
+    <!--END #id:Mah-Mni-UjUP-->
+  </Body>
+  <Fieldsets/>
+</Content>
