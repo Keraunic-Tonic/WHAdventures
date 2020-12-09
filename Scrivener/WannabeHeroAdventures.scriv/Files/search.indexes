@@ -33,21 +33,75 @@ Huh?
 V.V.
 Nothing.
 Options
-1.
-2.
-End</Text>
+1. How have you been?
+V.V.
+So...how are things?
+LEVINA
+V.V., you can drop the act. I know what you're doing.
+V.V.
+And what is that?
+LEVINA
+You're trying to stall getting your permission slip in to Noah until Jojo gets here.
+V.V.
+That's not--
+V.V.
+Okay, that's exactly what I'm doing.
+LEVINA
+You know what, I have a question for you.
+LEVINA
+Why do you jump through hoops for her?
+V.V.
+It's not jumping through hoops, it's just being a good friend. If I was the one late to class today, she would be doing the same for me.
+V.V.
+Technically, she would probably start a fire in the school somewhere, but she wouldn't want me to miss out on this opportunity either.
+LEVINA
+Sigh...
+LEVINA
+You're such a hopeless platonic, V.V.
+V.V.
+(squints)
+That doesn't make any sense.
+V.V.
+I so am not on the ocean sea floor and crashing amongst myself.
+LEVINA
+Not tectonic! Oh my goodness.
+V.V.
+Well if you know what I'm doing, are you going to wake up Mr. Whittrapper?
+LEVINA
+I guess I won't. Truth be told I'm not looking forward to this &quot;field trip&quot;. I wish we could spend our time learning more about the different principles of magic as a whole.
+V.V.
+Yeah, but at the end of the day, this is a mercenary academy. One day, we're all going to be mercenaries. And mercenaries can't learn how to be swing a sword through a book.
+LEVINA
+Actually there's a section on fencing and other swordfighting tactics over on that shelf--
+V.V.
+Levina.
+LEVINA
+All right, I get what you're saying.
+2. Still focusing on your advanced studies?
+V.V.
+Anything else you've been reading ahead on?
+LEVINA
+If you must know, I have been figuring out how to trap lightning in a bottle.
+V.V.
+Like capturing a specific moment?
+LEVINA
+No, I mean literally catching zappy zap lightning in a plinky plink glass jar.
+V.V.
+Why?
+LEVINA
+It's a riddle that only the greatest mages of time past have been able to do. But none of my solutions have worked so far.
+V.V.
+Hmm...that does seem pretty hard. Well try to be careful when you try to find your answer.
+LEVINA
+I appreciate your concern, although it is unwarranted.
+End. Talk to you later!
+V.V.
+All right, Levina, I'll leave you to your books.
+LEVINA
+Much appreciated. Talk to you later.</Text>
         </Document>
         <Document ID="0CFDB3CF-B07B-4B2A-B2F9-15C290FF1B21">
             <Title>Templates</Title>
-        </Document>
-        <Document ID="25262B67-8DBA-4F1D-B2BB-F57453D030B5">
-            <Title>Talking with Noah</Title>
-            <Synopsis>Heart to Heart</Synopsis>
-            <Text>Talking with Noah
-Options
-1.
-2.
-End</Text>
         </Document>
         <Document ID="30A2B5D1-82FA-4695-A131-1A71C88C2655">
             <Title>Talking with Egan</Title>
@@ -646,7 +700,7 @@ But aren't you guys next door neighbors?
 V.V.
 Yeah...
 RAY
-And somehow you manage to get to class on time or early every day.
+And somehow you manage to get to class early or on time every day.
 V.V.
 ...
 RAY
@@ -1022,30 +1076,54 @@ Talking with Egan
 Talking with Dahlia
 Talking with Ray
 Talking with Levina
-Talking with Noah
-Since Egan is in their tree form, it may not be obvious that the player hasn't talked with everyone. This scenario is if the player tries to proceed to Mr. Whittrapper without speaking to Egan. (Thusly, there should be conditions stating who is left to talk to)
+Since Egan is in their tree form, it may not be obvious that the player hasn't talked with everyone. 
+
+This scenario is if the player tries to proceed to Mr. Whittrapper without speaking to Egan. (Thusly, there should be conditions stating who is left to talk to)
 V.V.
 I can't talk with Mr. Whittrapper yet. After all, that tree in the corner is looking awfully lonely.
 After talking with everyone, Jojo rushes in.
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-V.V. walks across the room to find Mr. Whittrapper by his desk. When she gets out her permission slip and hands it to him, a dialogue starts
+JOJO
+I'm here! I'm not late! The classroom door was jammed.
+LEVINA
+For twenty minutes?
+JOJO
+...
+JOJO
+Yes. Absolutely.
+DAHLIA
+I gotta say, *Dodo*,if nothing else, I appreciate your ability to stand your ground.
+RAY
+Even if that ground is unstable.
+JOJO
+Point is, I'm here. And I have my permission slip.
+BLAZE
+Great! We're all one step closer to starting our super splendiferous field trip.
+EGAN
+Ugh...I don't want to go outside today.
+NOAH
+A-he-hem!
+V.V.
+Oh, boy, here he comes.
+NOAH
+Jojo Lunabone and V.V. Lowbrook. You haven't turned in your permission slips to me yet. The two of you are causing a completely unnecessary disruption to today's schedule.
+JOJO
+Eye roll. Just because teacher's give you things to do, doesn't make you any less invisible to the whole class.
+NOAH
+My feelings would be hurt if the words actually came from someone who had competence.
 WHITTRAPPER
-Good morning, V.V., and thank you for your permission slip. If only your friend, Jojo could follow your example of punctuality.
+Kids, that's enough.
 V.V.
-She should be here any minute!
-V.V.
-....I hope.
+(to herself)
+Whoops.
 WHITTRAPPER
-In the meantime, I'm having everyone read over the 
-Fundamentals of Freelance. You can join them while we wait.
-V.V.
-Again? But we already read them, like, 500 times.
+Jojo, V.V., please hand me the permission slips. While I go over them and make sure everything is in order, I want you all to read over the Fundamentals of Freelance.
+JOJO
+Again? But we already read them, like 500 times.
 WHITTRAPPER
 Well now you can read it for the 501st time.
 V.V.
 Sigh...yes, sir.
-V.V. returns to her desk, and opens up the textbook. It has a basic 10 or so rules about being a mercenary.
+The kids are now sitting at their desks and V.V. opens up the textbook. It has a basic 10 or so rules about being a mercenary.
 BOOK
 Rule 1: Closure doesn't exist.
 BOOK
@@ -1058,6 +1136,9 @@ V.V.
 Golly, reading this now is as much fun as the first time.
 V.V.
 Which is to say, not at all.
+JOJO
+You got that right.
+[Insert convo between jojo and v.v. here]
 NOAH
 Hey, do mind keeping your ramblings to yourself? You're making me lose my focus.
 V.V.
@@ -1076,20 +1157,8 @@ V.V.
 'Fangy'?
 NOAH
 Yeah, not my best work.
-Jojo rushes into the room, a little out of breath.
-JOJO
-Uh...I'm not late, the classroom door was jammed.
-WHITTRAPPER
-For twenty minutes?
-JOJO
-Yes, absolutely.
-WHITTRAPPER
-Ms. Jojo Lunabone, I must say, if nothing else, I do appreciate your ability to stand your ground. Even if that ground is unstable.
-JOJO
-Thanks, teach! Here's my permission slip.
 WHITTRAPPER
 Thank you. Now please take your seat so that we may all proceed with today's schedule.
-Change Scene so that Jojo and the rest of the students are sitting in their seats.
 WHITTRAPPER
 As you all know, we have a field trip today.
 JOJO
