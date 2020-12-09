@@ -1138,7 +1138,6 @@ V.V.
 Which is to say, not at all.
 JOJO
 You got that right.
-[Insert convo between jojo and v.v. here]
 NOAH
 Hey, do mind keeping your ramblings to yourself? You're making me lose my focus.
 V.V.
@@ -1158,7 +1157,7 @@ V.V.
 NOAH
 Yeah, not my best work.
 WHITTRAPPER
-Thank you. Now please take your seat so that we may all proceed with today's schedule.
+All right, everyone. Now please take your seat so that we may all proceed with today's schedule.
 WHITTRAPPER
 As you all know, we have a field trip today.
 JOJO
@@ -1171,27 +1170,56 @@ WHITTRAPPER
 (Somber)
 Indeed.
 WHITTRAPPER
-However, this will not only be a field trip, but an impromptu exam. One that will test everything you've learned at the Adventure Guild Academy thus far.
+However, this will not only be a field trip, but an impromptu exam.
+EGAN
+Oh boy.
+DAHLIA
+Great...
 WHITTRAPPER
-You will all be working in pairs of two. There are three areas you will all be traveling to, each with an item that you must return to me by the end of the day.
+One that will test everything you've learned at the Adventure Guild Academy thus far.
+WHITTRAPPER
+You will all be working in pairs of two. There are three areas you will all be traveling to, each with an item that you must return to me by the end of the school day.
 RAY
-The end of the day? That only gives us 5 hours.
+The end of the school day? That only gives us 5 hours.
 WHITTRAPPER
 Actually about 4 and half hours. You can thank Jojo for that.
 JOJO
 (Discouraged)
 Mm.
+LEVINA
+It's all right, Jojo. Nothing we can do about it now.
 WHITTRAPPER
-I will now hand out 
+There's another important thing to think about while you're doing this exam.
+WHITTRAPPER
+The pair of students who is last in arriving to the school with their three items will be kicked out of the academy.
+DAHLIA
+What?
+RAY
+For real?
+V.V.
+Why?
+WHITTRAPPER
+I will now hand out the list of items that you all must collect. Any questions?
 Options
-1. Where are we going for the field trip?
+1. How are you going to supervise all of us?
 V.V.
-So...I know I was paying attention yesterday, but did you ever mention where we're going today?
+How are you going to supervise all of us if we're splitting up into teams?
 WHITTRAPPER
-As a matter of fact, V.V., I did not. Today's field trip will be a pleasant surprise for everyone.
+To be blunt, I won't be. This is to give you real life experience with a mission, and as such, there's no safety net.
+WHITTRAPPER
+Which also means I won't be putting any forest fires any of you might start, Ms. Lunabone.
+JOJO
+You accidentally spark a match once, and people can never let it go.
+2. Why does the losing pair get kicked out of the school?
 V.V.
-Hmm...all right.
-2. 
+Why does the last pair to arrive get kicked out?
+WHITTRAPPER
+You're all training to one day become mercenaries of some sort. And one thing that you all must learn is that you won't always come in first place, but there are consequences for coming in last.
+V.V.
+I...I see.
+V.V.
+(to herself)
+So that means I won't ever see two of these people in class again after today.
 3.
 PAGE &lt;$N&gt;
 PANEL &lt;$SN&gt;
