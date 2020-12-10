@@ -874,7 +874,7 @@ Mention common phrases that are taught to the students, like “Closure doesn’
 V.V. and Jojo are at the Adventure Guild  Academy. Today is the day they have an exam.
 In order to pass the test, they must retrieve an item and send it to a client
 Even though they’ve all been training their physical abilities in test scenarios, they must learn how to properly complete a mission.
-In the classroom, V.V. hopes that Ray will pick her to be partners, but Dahlia beats her to the punch. Jojo comes in late, and hops up to be V.V’s partner, and she accepts.
+V.V. hopes that Ray will pick her to be partners, but Dahlia beats her to the punch. Jojo comes in late, and hops up to be V.V’s partner, and she accepts.
 The instructor tells a few tutorial points (V.V. has to go in their inventory to give the instructor their permission slip)
 The whole class will be competing to collect multiple items on a scavenger hunt and deliver it back to the instructor.
 Before proceeding to the mission, the teacher has some final preparations to make. To pass the time, V.V. decides to talk with their classmates. This would include Blaze, Egan, Ray, Dahlia, Levina, and Ziggy (to be decided later, this NPC won’t survive the trip-maybe their injured)
@@ -1196,16 +1196,16 @@ DAHLIA
 What?
 RAY
 For real?
-V.V.
-Why?
 WHITTRAPPER
-I will now hand out the list of items that you all must collect. Any questions?
+Once you all pick your partner for this challenge, I will hand out the list of items that you all must collect and where you can find them.
+WHITTRAPPER
+But before we get started, any remaining questions?
 Options
 1. How are you going to supervise all of us?
 V.V.
 How are you going to supervise all of us if we're splitting up into teams?
 WHITTRAPPER
-To be blunt, I won't be. This is to give you real life experience with a mission, and as such, there's no safety net.
+I won't be. I'm going to remain here This is to give you real life experience with a mission, and as such, there's no safety net.
 WHITTRAPPER
 Which also means I won't be putting any forest fires any of you might start, Ms. Lunabone.
 JOJO
@@ -1220,101 +1220,19 @@ I...I see.
 V.V.
 (to herself)
 So that means I won't ever see two of these people in class again after today.
-3.
+V.V.
+(to herself)
+Cause I'm sure as heck not going to be kicked out.
+V.V.
+(to herself.)
+Mm-mm. No ma'am. My parents would not be happy about that.
+3. Let's get started.
+V.V.
+(herself)
+All right. If that's what it takes, let's do this.
 PAGE &lt;$N&gt;
 PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
-PAGE &lt;$N&gt;
-PANEL &lt;$SN&gt;
+Fade to black. When the fade comes back, all the students are standing. 
 PAGE &lt;$N&gt;
 PANEL &lt;$SN&gt;
 PAGE &lt;$N&gt;
