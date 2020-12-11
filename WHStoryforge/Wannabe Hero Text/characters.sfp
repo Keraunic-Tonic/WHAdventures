@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='utf8'?>
+<Characters>
+  <!--START #id:bMZ-raq-z436-->
+  <Character ID="bMZ-raq-z436" game_id="VV" display_name="VV" desc="" synth_voice_osx="" synth_voice_win="Microsoft Zira Desktop - English (United States)">
+    <SubtitleName>
+      <!--START #id:8Lv-PG5-Ugqp-->
+      <Text ID="8Lv-PG5-Ugqp"><![CDATA[V.V.]]></Text>
+      <!--END #id:8Lv-PG5-Ugqp-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:bMZ-raq-z436-->
+  <!--START #id:Q6H-5DC-L4Cx-->
+  <Character ID="Q6H-5DC-L4Cx" game_id="Jojo" display_name="Jojo" desc="" synth_voice_osx="" synth_voice_win="Microsoft Zira Desktop - English (United States)">
+    <SubtitleName>
+      <!--START #id:m8k-H7m-64k6-->
+      <Text ID="m8k-H7m-64k6"><![CDATA[Jojo]]></Text>
+      <!--END #id:m8k-H7m-64k6-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:Q6H-5DC-L4Cx-->
+  <!--START #id:9nU-eFn-GWns-->
+  <Character ID="9nU-eFn-GWns" game_id="Blaze" display_name="Blaze" desc="" synth_voice_osx="" synth_voice_win="">
+    <SubtitleName>
+      <!--START #id:eNh-9G5-Ko2J-->
+      <Text ID="eNh-9G5-Ko2J"><![CDATA[Blaze]]></Text>
+      <!--END #id:eNh-9G5-Ko2J-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:9nU-eFn-GWns-->
+  <!--START #id:6VW-Jvf-Eapx-->
+  <Character ID="6VW-Jvf-Eapx" game_id="Dahlia" display_name="Dahlia" desc="" synth_voice_osx="" synth_voice_win="Microsoft Zira Desktop - English (United States)">
+    <SubtitleName>
+      <!--START #id:M4E-Ukt-NKTL-->
+      <Text ID="M4E-Ukt-NKTL"><![CDATA[Dahlia]]></Text>
+      <!--END #id:M4E-Ukt-NKTL-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:6VW-Jvf-Eapx-->
+  <!--START #id:77m-iyV-HQeL-->
+  <Character ID="77m-iyV-HQeL" game_id="Egan" display_name="Egan" desc="" synth_voice_osx="" synth_voice_win="">
+    <SubtitleName>
+      <!--START #id:KJk-Lcw-prTd-->
+      <Text ID="KJk-Lcw-prTd"><![CDATA[Egan]]></Text>
+      <!--END #id:KJk-Lcw-prTd-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:77m-iyV-HQeL-->
+  <!--START #id:h4k-ypD-kRyN-->
+  <Character ID="h4k-ypD-kRyN" game_id="Ray" display_name="Ray" desc="" synth_voice_osx="" synth_voice_win="">
+    <SubtitleName>
+      <!--START #id:Kvq-GLa-bhBr-->
+      <Text ID="Kvq-GLa-bhBr"><![CDATA[Ray]]></Text>
+      <!--END #id:Kvq-GLa-bhBr-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:h4k-ypD-kRyN-->
+  <!--START #id:bMA-zgK-NoW6-->
+  <Character ID="bMA-zgK-NoW6" game_id="Levina" display_name="Levina" desc="" synth_voice_osx="" synth_voice_win="Microsoft Zira Desktop - English (United States)">
+    <SubtitleName>
+      <!--START #id:UBm-34s-WkbQ-->
+      <Text ID="UBm-34s-WkbQ"><![CDATA[Levina]]></Text>
+      <!--END #id:UBm-34s-WkbQ-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:bMA-zgK-NoW6-->
+  <!--START #id:SyR-pVR-8DFa-->
+  <Character ID="SyR-pVR-8DFa" game_id="Noah" display_name="Noah" desc="" synth_voice_osx="" synth_voice_win="">
+    <SubtitleName>
+      <!--START #id:gN6-8Kb-Mykh-->
+      <Text ID="gN6-8Kb-Mykh"><![CDATA[Noah]]></Text>
+      <!--END #id:gN6-8Kb-Mykh-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:SyR-pVR-8DFa-->
+  <!--START #id:Vet-C4i-b8TB-->
+  <Character ID="Vet-C4i-b8TB" game_id="Whittrapper" display_name="Whittrapper" desc="" synth_voice_osx="" synth_voice_win="">
+    <SubtitleName>
+      <!--START #id:iPp-oXk-ETui-->
+      <Text ID="iPp-oXk-ETui"><![CDATA[Mr. Whittrapper]]></Text>
+      <!--END #id:iPp-oXk-ETui-->
+    </SubtitleName>
+    <Fieldsets/>
+  </Character>
+  <!--END #id:Vet-C4i-b8TB-->
+</Characters>

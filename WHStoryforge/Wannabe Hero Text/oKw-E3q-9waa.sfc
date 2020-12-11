@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:FQc-UQZ-JDEE-->
+    <Dialogue ID="FQc-UQZ-JDEE" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:XPP-Spt-p3nQ-->
+      <Phrase ID="XPP-Spt-p3nQ">
+        <!--START #id:VJQ-hSh-SDw7-->
+        <Text ID="VJQ-hSh-SDw7"><![CDATA[Most people give me a weird look for talking to trees, but what can I say? This tree is my favorite.]]></Text>
+        <!--END #id:VJQ-hSh-SDw7-->
+      </Phrase>
+      <!--END #id:XPP-Spt-p3nQ-->
+    </Dialogue>
+    <!--END #id:FQc-UQZ-JDEE-->
+    <!--START #id:DaF-MdG-qFKb-->
+    <Dialogue ID="DaF-MdG-qFKb" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:nCi-ECk-nNak-->
+      <Phrase ID="nCi-ECk-nNak">
+        <!--START #id:PxC-dBD-bRXj-->
+        <Text ID="PxC-dBD-bRXj"><![CDATA[Never any shame in talking to plant life. You never know what they're going to say.]]></Text>
+        <!--END #id:PxC-dBD-bRXj-->
+      </Phrase>
+      <!--END #id:nCi-ECk-nNak-->
+    </Dialogue>
+    <!--END #id:DaF-MdG-qFKb-->
+  </Body>
+  <Fieldsets/>
+</Content>

@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:9sZ-URo-pmLr-->
+    <Dialogue ID="9sZ-URo-pmLr" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:4Qh-iWR-EX38-->
+      <Phrase ID="4Qh-iWR-EX38">
+        <!--START #id:Hwj-974-QDgm-->
+        <Text ID="Hwj-974-QDgm"><![CDATA[This is Blazenguarde Armbow, though he prefers to go by Blaze.]]></Text>
+        <!--END #id:Hwj-974-QDgm-->
+      </Phrase>
+      <!--END #id:4Qh-iWR-EX38-->
+    </Dialogue>
+    <!--END #id:9sZ-URo-pmLr-->
+    <!--START #id:5af-Pex-fRpW-->
+    <Dialogue ID="5af-Pex-fRpW" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:QLB-hCU-fLrx-->
+      <Phrase ID="QLB-hCU-fLrx">
+        <!--START #id:eix-Vva-Ltsy-->
+        <Text ID="eix-Vva-Ltsy"><![CDATA[I always wondered why someone of such social standing would be allowed to become a mercenary, but since his sister is the heir apparent, I guess his family is okay with letting the others do as they please.]]></Text>
+        <!--END #id:eix-Vva-Ltsy-->
+      </Phrase>
+      <!--END #id:QLB-hCU-fLrx-->
+    </Dialogue>
+    <!--END #id:5af-Pex-fRpW-->
+    <!--START #id:HtG-acS-YinR-->
+    <Dialogue ID="HtG-acS-YinR" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:2vu-uNW-aA82-->
+      <Phrase ID="2vu-uNW-aA82">
+        <!--START #id:TER-TMy-QcY3-->
+        <Text ID="TER-TMy-QcY3"><![CDATA[He's a dragon scale who's born to the powerful and influential Armbow family. He's the youngest out of his 8 or so siblings.]]></Text>
+        <!--END #id:TER-TMy-QcY3-->
+      </Phrase>
+      <!--END #id:2vu-uNW-aA82-->
+    </Dialogue>
+    <!--END #id:HtG-acS-YinR-->
+  </Body>
+  <Fieldsets/>
+</Content>
