@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Template="No" Version="2.0" Identifier="299C9B8F-2A7A-424C-B9D5-7E012B5DDAC8" Creator="SCRWIN-2.9.9.13" Device="DESKTOP-699RUQL" Modified="2020-12-09 23:36:18 -0500" ModID="9B5E2962-F1BD-4BB8-82D4-DD4D1F78F239">
+<ScrivenerProject Template="No" Version="2.0" Identifier="299C9B8F-2A7A-424C-B9D5-7E012B5DDAC8" Creator="SCRWIN-2.9.9.13" Device="LAPTOP-SV3NS5KB" Modified="2020-12-11 16:00:24 -0500" ModID="8F04DE5F-DD8F-4ECE-9602-7782179C146C">
     <Binder>
         <BinderItem UUID="2881C731-847C-417A-9187-BEFF08B42526" Type="DraftFolder" Created="2020-10-14 17:12:25 -0500" Modified="2020-10-25 16:06:18 -0500">
             <Title>Wannabe Adventures</Title>
@@ -13,7 +13,7 @@
                 </CorkboardSettings>
             </CorkboardAndOutliner>
             <Children>
-                <BinderItem UUID="ED3A4D8F-59E7-4809-AF34-C2199A63D4D6" Type="Text" Created="2020-10-14 17:12:25 -0500" Modified="2020-12-09 21:10:30 -0500">
+                <BinderItem UUID="ED3A4D8F-59E7-4809-AF34-C2199A63D4D6" Type="Text" Created="2020-10-14 17:12:25 -0500" Modified="2020-12-11 16:00:20 -0500">
                     <Title>General Script</Title>
                     <MetaData>
                         <StatusID>2</StatusID>
@@ -21,7 +21,7 @@
                         <IconFileName>Blackboard.tiff</IconFileName>
                     </MetaData>
                     <TextSettings>
-                        <TextSelection>498,0</TextSelection>
+                        <TextSelection Caret="1711">1377,334</TextSelection>
                     </TextSettings>
                 </BinderItem>
                 <BinderItem UUID="F2BA42A9-E413-4579-A578-F0CBE0256353" Type="Text" Created="2020-10-26 18:50:21 -0500" Modified="2020-12-09 21:19:44 -0500">
@@ -106,7 +106,7 @@
                                 <Bookmark BinderUUID="F2BA42A9-E413-4579-A578-F0CBE0256353">Scene 1: Classroom</Bookmark>
                             </Bookmarks>
                         </BinderItem>
-                        <BinderItem UUID="0959213A-85ED-45B5-B330-AAE4C2F2C589" Type="Text" Created="2020-11-29 18:43:22 -0500" Modified="2020-12-08 21:46:42 -0500">
+                        <BinderItem UUID="0959213A-85ED-45B5-B330-AAE4C2F2C589" Type="Text" Created="2020-11-29 18:43:22 -0500" Modified="2020-12-11 14:40:23 -0500">
                             <Title>Talking with Levina</Title>
                             <MetaData>
                                 <LabelID>7</LabelID>
@@ -114,7 +114,7 @@
                             </MetaData>
                             <TextSettings>
                                 <TextMode>Script</TextMode>
-                                <TextSelection>2694,0</TextSelection>
+                                <TextSelection>2122,0</TextSelection>
                             </TextSettings>
                             <Bookmarks>
                                 <Bookmark BinderUUID="F2BA42A9-E413-4579-A578-F0CBE0256353">Scene 1: Classroom</Bookmark>
@@ -288,7 +288,7 @@
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="No" Deadline="2020-10-14 17:12:25 -0400" IgnoreDeadline="Yes">0</DraftTarget>
         <SessionTarget Type="Words" CountDraftOnly="No" AllowNegatives="No" ResetType="Time" ResetTime="01:00" DeterminedFromDeadline="No" CanWriteOnDeadlineDate="Yes" WritingDays="">0</SessionTarget>
-        <PreviousSession Words="191" Characters="1032" Date="2020-12-09 23:36:18 -0500"/>
+        <PreviousSession Words="2" Characters="12" Date="2020-12-11 16:00:24 -0500"/>
     </ProjectTargets>
     <AutoCompleteList>
         <Completion Scope="2">V.V.</Completion>
@@ -305,11 +305,11 @@
         <Completion Scope="2">LEVINA</Completion>
     </AutoCompleteList>
     <TemplateFolderUUID>0CFDB3CF-B07B-4B2A-B2F9-15C290FF1B21</TemplateFolderUUID>
-    <RecentWritingHistory Date="2020-12-09 00:00:00 -0500">
-        <DraftWordCount>10</DraftWordCount>
-        <DraftCharCount>16</DraftCharCount>
-        <OtherWordCount>0</OtherWordCount>
-        <OtherCharCount>0</OtherCharCount>
+    <RecentWritingHistory Date="2020-12-11 00:00:00 -0500">
+        <DraftWordCount>0</DraftWordCount>
+        <DraftCharCount>0</DraftCharCount>
+        <OtherWordCount>-3</OtherWordCount>
+        <OtherCharCount>-16</OtherCharCount>
     </RecentWritingHistory>
     <PrintSettings PaperType="letter" LeftMargin="72" RightMargin="72" TopMargin="72" BottomMargin="72" Orientation="Portrait" Collates="No" ReverseOrder="No"/>
 </ScrivenerProject>
