@@ -33,4 +33,5 @@
     <Day dwc="108" dcc="624" dtwc="2047" owc="396" occ="2170" dtcc="11384">2020-12-08</Day>
     <Day dwc="10" dcc="16" owc="0" occ="0">2020-12-09</Day>
     <Day dwc="0" dcc="0" dtwc="2057" owc="-3" occ="-16" dtcc="11400">2020-12-11</Day>
+    <Day dwc="0" dcc="0" owc="0" occ="-81">2020-12-20</Day>
 </WritingHistory>

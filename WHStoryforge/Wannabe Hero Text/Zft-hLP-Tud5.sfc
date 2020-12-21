@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:ngv-Ave-zhn8-->
+    <Dialogue ID="ngv-Ave-zhn8" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:SAT-JyT-ygvr-->
+      <Phrase ID="SAT-JyT-ygvr">
+        <!--START #id:AXr-Rik-TajP-->
+        <Text ID="AXr-Rik-TajP"><![CDATA[This is Levina Winston, one of the few humans in our class.]]></Text>
+        <!--END #id:AXr-Rik-TajP-->
+      </Phrase>
+      <!--END #id:SAT-JyT-ygvr-->
+    </Dialogue>
+    <!--END #id:ngv-Ave-zhn8-->
+    <!--START #id:YhC-E6X-Xx8x-->
+    <Dialogue ID="YhC-E6X-Xx8x" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:2RW-XWu-UjQa-->
+      <Phrase ID="2RW-XWu-UjQa">
+        <!--START #id:CRi-G5G-zwtE-->
+        <Text ID="CRi-G5G-zwtE"><![CDATA[I wouldn't say she's my rival exactly, but we're both the strongest magic users in class.]]></Text>
+        <!--END #id:CRi-G5G-zwtE-->
+      </Phrase>
+      <!--END #id:2RW-XWu-UjQa-->
+    </Dialogue>
+    <!--END #id:YhC-E6X-Xx8x-->
+    <!--START #id:4BC-jx9-ZLVW-->
+    <Dialogue ID="4BC-jx9-ZLVW" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:Zp8-jmB-bm9v-->
+      <Phrase ID="Zp8-jmB-bm9v">
+        <!--START #id:5pN-rvL-tGHs-->
+        <Text ID="5pN-rvL-tGHs"><![CDATA[She likes to rub it in when she can learn a spell faster than I can.]]></Text>
+        <!--END #id:5pN-rvL-tGHs-->
+      </Phrase>
+      <!--END #id:Zp8-jmB-bm9v-->
+    </Dialogue>
+    <!--END #id:4BC-jx9-ZLVW-->
+    <!--START #id:5eM-SFm-uvhE-->
+    <Dialogue ID="5eM-SFm-uvhE" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:Rnm-dnF-KL5V-->
+      <Phrase ID="Rnm-dnF-KL5V">
+        <!--START #id:kkQ-wtD-nhjA-->
+        <Text ID="kkQ-wtD-nhjA"><![CDATA[Just because it's a little easier for non-humans to do magic, doesn't mean I don't work hard to do it.]]></Text>
+        <!--END #id:kkQ-wtD-nhjA-->
+      </Phrase>
+      <!--END #id:Rnm-dnF-KL5V-->
+    </Dialogue>
+    <!--END #id:5eM-SFm-uvhE-->
+    <!--START #id:GWy-QAh-jdTW-->
+    <Dialogue ID="GWy-QAh-jdTW" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:bgs-Lpo-oncP-->
+      <Phrase ID="bgs-Lpo-oncP">
+        <!--START #id:HCy-DiL-a6hw-->
+        <Text ID="HCy-DiL-a6hw"><![CDATA[A little Ms. Perfect, that Levina.]]></Text>
+        <!--END #id:HCy-DiL-a6hw-->
+      </Phrase>
+      <!--END #id:bgs-Lpo-oncP-->
+    </Dialogue>
+    <!--END #id:GWy-QAh-jdTW-->
+  </Body>
+  <Fieldsets/>
+</Content>

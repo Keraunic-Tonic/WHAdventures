@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:dbz-qjt-Ysrm-->
+    <Dialogue ID="dbz-qjt-Ysrm" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:NA6-FVJ-eNz3-->
+      <Phrase ID="NA6-FVJ-eNz3">
+        <!--START #id:JGZ-RfB-7W6Z-->
+        <Text ID="JGZ-RfB-7W6Z"><![CDATA[This really cute elf is Ramon Bellcot, but he likes to be called Ray.]]></Text>
+        <!--END #id:JGZ-RfB-7W6Z-->
+      </Phrase>
+      <!--END #id:NA6-FVJ-eNz3-->
+    </Dialogue>
+    <!--END #id:dbz-qjt-Ysrm-->
+    <!--START #id:YPY-69f-FVQd-->
+    <Dialogue ID="YPY-69f-FVQd" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:jkj-9jL-os8G-->
+      <Phrase ID="jkj-9jL-os8G">
+        <!--START #id:8ck-ic4-c2Q3-->
+        <Text ID="8ck-ic4-c2Q3"><![CDATA[He comes from a long line of successful and famous mercenaries, so he has a lot to live up to. ]]></Text>
+        <!--END #id:8ck-ic4-c2Q3-->
+      </Phrase>
+      <!--END #id:jkj-9jL-os8G-->
+    </Dialogue>
+    <!--END #id:YPY-69f-FVQd-->
+    <!--START #id:bbw-9eH-ayWb-->
+    <Dialogue ID="bbw-9eH-ayWb" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:T2J-NYk-5A2z-->
+      <Phrase ID="T2J-NYk-5A2z">
+        <!--START #id:kgp-nWT-Jkh7-->
+        <Text ID="kgp-nWT-Jkh7"><![CDATA[He's top in the class and makes it look easy.]]></Text>
+        <!--END #id:kgp-nWT-Jkh7-->
+      </Phrase>
+      <!--END #id:T2J-NYk-5A2z-->
+    </Dialogue>
+    <!--END #id:bbw-9eH-ayWb-->
+    <!--START #id:fuF-nEf-cSno-->
+    <Dialogue ID="fuF-nEf-cSno" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:Yqa-gyo-2xFt-->
+      <Phrase ID="Yqa-gyo-2xFt">
+        <!--START #id:2Mf-kNf-iWJD-->
+        <Text ID="2Mf-kNf-iWJD"><![CDATA[Also his eyes are pretty and his floofy hair just dances in the wind.]]></Text>
+        <!--END #id:2Mf-kNf-iWJD-->
+      </Phrase>
+      <!--END #id:Yqa-gyo-2xFt-->
+    </Dialogue>
+    <!--END #id:fuF-nEf-cSno-->
+    <!--START #id:QoR-VSj-HKF3-->
+    <Dialogue ID="QoR-VSj-HKF3" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:mtV-c7C-8Qco-->
+      <Phrase ID="mtV-c7C-8Qco">
+        <!--START #id:NUm-3Xo-ccNt-->
+        <Text ID="NUm-3Xo-ccNt"><![CDATA[Ahem. And he's pretty cool too.]]></Text>
+        <!--END #id:NUm-3Xo-ccNt-->
+      </Phrase>
+      <!--END #id:mtV-c7C-8Qco-->
+    </Dialogue>
+    <!--END #id:QoR-VSj-HKF3-->
+  </Body>
+  <Fieldsets/>
+</Content>

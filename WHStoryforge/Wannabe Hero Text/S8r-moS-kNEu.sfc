@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf8'?>
+<Content>
+  <Description><![CDATA[]]></Description>
+  <Body>
+    <!--START #id:DR2-xD2-tNhe-->
+    <Dialogue ID="DR2-xD2-tNhe" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:SkP-CrJ-cszK-->
+      <Phrase ID="SkP-CrJ-cszK">
+        <!--START #id:fXw-eN4-NKeK-->
+        <Text ID="fXw-eN4-NKeK"><![CDATA[This is Mr. Whittrapper, our homeroom]]></Text>
+        <!--END #id:fXw-eN4-NKeK-->
+      </Phrase>
+      <!--END #id:SkP-CrJ-cszK-->
+    </Dialogue>
+    <!--END #id:DR2-xD2-tNhe-->
+    <!--START #id:EJ3-2ty-qREC-->
+    <Dialogue ID="EJ3-2ty-qREC" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:Wyt-eWM-egLh-->
+      <Phrase ID="Wyt-eWM-egLh">
+        <!--START #id:X5W-98D-EAct-->
+        <Text ID="X5W-98D-EAct"><![CDATA[He's kind of bland and unassuming, so I think that's why he tries to endear himself to teachers a lot.]]></Text>
+        <!--END #id:X5W-98D-EAct-->
+      </Phrase>
+      <!--END #id:Wyt-eWM-egLh-->
+    </Dialogue>
+    <!--END #id:EJ3-2ty-qREC-->
+    <!--START #id:CNu-cQT-9SJf-->
+    <Dialogue ID="CNu-cQT-9SJf" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:KhE-i2r-FsFR-->
+      <Phrase ID="KhE-i2r-FsFR">
+        <!--START #id:cou-ei3-g7Ha-->
+        <Text ID="cou-ei3-g7Ha"><![CDATA[Also, for some reason, he's constantly shushing me whe we have our free time in class.]]></Text>
+        <!--END #id:cou-ei3-g7Ha-->
+      </Phrase>
+      <!--END #id:KhE-i2r-FsFR-->
+    </Dialogue>
+    <!--END #id:CNu-cQT-9SJf-->
+    <!--START #id:6rm-4NZ-CHZS-->
+    <Dialogue ID="6rm-4NZ-CHZS" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:QZ7-WvR-hiXF-->
+      <Phrase ID="QZ7-WvR-hiXF">
+        <!--START #id:4ZR-FWo-6cR7-->
+        <Text ID="4ZR-FWo-6cR7"><![CDATA[It's not like my voice carries more than anyone else.]]></Text>
+        <!--END #id:4ZR-FWo-6cR7-->
+      </Phrase>
+      <!--END #id:QZ7-WvR-hiXF-->
+    </Dialogue>
+    <!--END #id:6rm-4NZ-CHZS-->
+    <!--START #id:STV-XcJ-YEAw-->
+    <Dialogue ID="STV-XcJ-YEAw" character="VV" character_id="bMZ-raq-z436" character_game_id="VV">
+      <!--START #id:UKR-B3h-HcEY-->
+      <Phrase ID="UKR-B3h-HcEY">
+        <!--START #id:V3Z-d5o-LtXj-->
+        <Text ID="V3Z-d5o-LtXj"><![CDATA[Hoo boy.]]></Text>
+        <!--END #id:V3Z-d5o-LtXj-->
+      </Phrase>
+      <!--END #id:UKR-B3h-HcEY-->
+    </Dialogue>
+    <!--END #id:STV-XcJ-YEAw-->
+  </Body>
+  <Fieldsets/>
+</Content>
