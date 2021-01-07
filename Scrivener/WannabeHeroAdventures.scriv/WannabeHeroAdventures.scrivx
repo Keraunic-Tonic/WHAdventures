@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Template="No" Version="2.0" Identifier="299C9B8F-2A7A-424C-B9D5-7E012B5DDAC8" Creator="SCRWIN-2.9.9.13" Device="LAPTOP-SV3NS5KB" Modified="2020-12-20 15:45:24 -0500" ModID="0FB0572F-D4A6-41E2-9089-FBC529FD5A24">
+<ScrivenerProject Template="No" Version="2.0" Identifier="299C9B8F-2A7A-424C-B9D5-7E012B5DDAC8" Creator="SCRWIN-2.9.9.14" Device="LAPTOP-SV3NS5KB" Modified="2021-01-07 16:07:25 -0500" ModID="360B094B-6842-4E7F-ADE0-05268FD3C3CD">
     <Binder>
         <BinderItem UUID="2881C731-847C-417A-9187-BEFF08B42526" Type="DraftFolder" Created="2020-10-14 17:12:25 -0500" Modified="2020-10-25 16:06:18 -0500">
             <Title>Wannabe Adventures</Title>
@@ -64,7 +64,7 @@
                                 <Bookmark BinderUUID="F2BA42A9-E413-4579-A578-F0CBE0256353">Scene 1: Classroom</Bookmark>
                             </Bookmarks>
                         </BinderItem>
-                        <BinderItem UUID="30A2B5D1-82FA-4695-A131-1A71C88C2655" Type="Text" Created="2020-11-29 18:39:19 -0500" Modified="2020-11-29 18:39:27 -0500">
+                        <BinderItem UUID="30A2B5D1-82FA-4695-A131-1A71C88C2655" Type="Text" Created="2020-11-29 18:39:19 -0500" Modified="2021-01-07 16:05:47 -0500">
                             <Title>Talking with Egan</Title>
                             <MetaData>
                                 <LabelID>7</LabelID>
@@ -72,13 +72,13 @@
                             </MetaData>
                             <TextSettings>
                                 <TextMode>Script</TextMode>
-                                <TextSelection>0,0</TextSelection>
+                                <TextSelection>1972,0</TextSelection>
                             </TextSettings>
                             <Bookmarks>
                                 <Bookmark BinderUUID="F2BA42A9-E413-4579-A578-F0CBE0256353">Scene 1: Classroom</Bookmark>
                             </Bookmarks>
                         </BinderItem>
-                        <BinderItem UUID="9F05D13E-008D-4E74-AEBA-7E985A75A37D" Type="Text" Created="2020-11-29 18:40:59 -0500" Modified="2020-11-29 18:41:13 -0500">
+                        <BinderItem UUID="9F05D13E-008D-4E74-AEBA-7E985A75A37D" Type="Text" Created="2020-11-29 18:40:59 -0500" Modified="2021-01-07 15:59:21 -0500">
                             <Title>Talking with Dahlia</Title>
                             <MetaData>
                                 <LabelID>7</LabelID>
@@ -86,13 +86,13 @@
                             </MetaData>
                             <TextSettings>
                                 <TextMode>Script</TextMode>
-                                <TextSelection>0,0</TextSelection>
+                                <TextSelection>1509,0</TextSelection>
                             </TextSettings>
                             <Bookmarks>
                                 <Bookmark BinderUUID="F2BA42A9-E413-4579-A578-F0CBE0256353">Scene 1: Classroom</Bookmark>
                             </Bookmarks>
                         </BinderItem>
-                        <BinderItem UUID="B9179783-EF55-4074-A313-935D35F2CBE6" Type="Text" Created="2020-11-29 18:41:51 -0500" Modified="2020-12-08 20:11:47 -0500">
+                        <BinderItem UUID="B9179783-EF55-4074-A313-935D35F2CBE6" Type="Text" Created="2020-11-29 18:41:51 -0500" Modified="2021-01-07 15:54:44 -0500">
                             <Title>Talking with Ray</Title>
                             <MetaData>
                                 <LabelID>7</LabelID>
@@ -100,7 +100,7 @@
                             </MetaData>
                             <TextSettings>
                                 <TextMode>Script</TextMode>
-                                <TextSelection>823,0</TextSelection>
+                                <TextSelection>1522,0</TextSelection>
                             </TextSettings>
                             <Bookmarks>
                                 <Bookmark BinderUUID="F2BA42A9-E413-4579-A578-F0CBE0256353">Scene 1: Classroom</Bookmark>
@@ -288,7 +288,7 @@
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="No" Deadline="2020-10-14 17:12:25 -0400" IgnoreDeadline="Yes">0</DraftTarget>
         <SessionTarget Type="Words" CountDraftOnly="No" AllowNegatives="No" ResetType="Time" ResetTime="01:00" DeterminedFromDeadline="No" CanWriteOnDeadlineDate="Yes" WritingDays="">0</SessionTarget>
-        <PreviousSession Words="0" Characters="0" Date="2020-12-20 15:45:24 -0500"/>
+        <PreviousSession Words="17" Characters="112" Date="2021-01-07 16:07:25 -0500"/>
     </ProjectTargets>
     <AutoCompleteList>
         <Completion Scope="2">V.V.</Completion>
@@ -305,11 +305,11 @@
         <Completion Scope="2">LEVINA</Completion>
     </AutoCompleteList>
     <TemplateFolderUUID>0CFDB3CF-B07B-4B2A-B2F9-15C290FF1B21</TemplateFolderUUID>
-    <RecentWritingHistory Date="2020-12-20 00:00:00 -0500">
+    <RecentWritingHistory Date="2021-01-07 00:00:00 -0500">
         <DraftWordCount>0</DraftWordCount>
         <DraftCharCount>0</DraftCharCount>
-        <OtherWordCount>0</OtherWordCount>
-        <OtherCharCount>-81</OtherCharCount>
+        <OtherWordCount>17</OtherWordCount>
+        <OtherCharCount>-33</OtherCharCount>
     </RecentWritingHistory>
     <PrintSettings PaperType="letter" LeftMargin="72" RightMargin="72" TopMargin="72" BottomMargin="72" Orientation="Portrait" Collates="No" ReverseOrder="No"/>
 </ScrivenerProject>
