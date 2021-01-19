@@ -10,13 +10,7 @@ public class StoryforgeTest : MonoBehaviour
     void Start()
     {
         Storyforge sf = Storyforge.Get();
-        RetrieveScene(sf);
-
-    }
-
-    public void RetrieveScene(Storyforge storyForge)
-    {
-        Script scriptById = storyForge.GetSceneItem<Script>("Fcn-e3x-KVE2");
+        Script scriptById = sf.GetSceneItem<Script>("Fcn-e3x-KVE2");
         print(scriptById);
     }
 
