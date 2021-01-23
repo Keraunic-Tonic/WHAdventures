@@ -17,7 +17,7 @@
         <SearchResultsSort Titles="Ascending" Dates="Ascending">None</SearchResultsSort>
     </Binder>
     <Inspector Show="No" View="Notes">
-        <ShowProjectBookmarks>Yes</ShowProjectBookmarks>
+        <ShowProjectBookmarks>No</ShowProjectBookmarks>
         <ShowSimilarTexts>No</ShowSimilarTexts>
         <Collapse>CustomMetaData</Collapse>
         <FootnoteNumbers Prompt="No">No</FootnoteNumbers>
@@ -68,7 +68,7 @@
                 <Content>
                     <ItemID>BCE2CB75-C863-4553-90E1-5E6123290638</ItemID>
                 </Content>
-                <NavigationHistory CurrentIndex="166">
+                <NavigationHistory CurrentIndex="173">
                     <HistoryItem Type="BinderItems" ViewMode="Single">ED3A4D8F-59E7-4809-AF34-C2199A63D4D6</HistoryItem>
                     <HistoryItem Type="BinderItems" ViewMode="Corkboard">9660A53E-5753-409D-8B0A-1937755587FF</HistoryItem>
                     <HistoryItem Type="BinderItems" ViewMode="Single">ED3A4D8F-59E7-4809-AF34-C2199A63D4D6</HistoryItem>
@@ -236,6 +236,13 @@
                     <HistoryItem Type="BinderItems" ViewMode="Single">EF62B2C3-10AD-4626-917E-74C40FEF571A</HistoryItem>
                     <HistoryItem Type="BinderItems" ViewMode="Single">ED3A4D8F-59E7-4809-AF34-C2199A63D4D6</HistoryItem>
                     <HistoryItem Type="BinderItems" ViewMode="Single">BCE2CB75-C863-4553-90E1-5E6123290638</HistoryItem>
+                    <HistoryItem Type="BinderItems" ViewMode="Single">ABA88A91-CB92-40DE-BFF0-F3AF8DFE2131</HistoryItem>
+                    <HistoryItem Type="BinderItems" ViewMode="Single">3B11619E-5110-4DC2-8DD7-279FBC024E60</HistoryItem>
+                    <HistoryItem Type="BinderItems" ViewMode="Single">ABA88A91-CB92-40DE-BFF0-F3AF8DFE2131</HistoryItem>
+                    <HistoryItem Type="BinderItems" ViewMode="Single">BCE2CB75-C863-4553-90E1-5E6123290638</HistoryItem>
+                    <HistoryItem Type="BinderItems" ViewMode="Single">ABA88A91-CB92-40DE-BFF0-F3AF8DFE2131</HistoryItem>
+                    <HistoryItem Type="BinderItems" ViewMode="Corkboard">F0171F0F-DCEF-4027-B3DE-AA1C24BC6B9C</HistoryItem>
+                    <HistoryItem Type="BinderItems" ViewMode="Single">BCE2CB75-C863-4553-90E1-5E6123290638</HistoryItem>
                 </NavigationHistory>
             </View>
             <Text>
@@ -266,7 +273,7 @@
                 <SectionsArrangement>Wrap</SectionsArrangement>
                 <LabelThreadsUseColumns>No</LabelThreadsUseColumns>
             </Corkboard>
-            <Copyholder PreferredOrientation="None" VerticalPos="Top" HorizontalPos="Right">
+            <Copyholder PreferredOrientation="None" VerticalPos="Right" HorizontalPos="Top">
                 <Content></Content>
                 <Text>
                     <ShowRuler>No</ShowRuler>
@@ -395,7 +402,7 @@
                 <SectionsArrangement>Wrap</SectionsArrangement>
                 <LabelThreadsUseColumns>No</LabelThreadsUseColumns>
             </Corkboard>
-            <Copyholder PreferredOrientation="None" VerticalPos="Top" HorizontalPos="Right">
+            <Copyholder PreferredOrientation="None" VerticalPos="Right" HorizontalPos="Top">
                 <Content></Content>
                 <Text>
                     <ShowRuler>No</ShowRuler>
