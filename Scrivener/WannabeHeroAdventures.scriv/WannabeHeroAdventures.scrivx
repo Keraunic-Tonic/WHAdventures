@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Template="No" Version="2.0" Identifier="299C9B8F-2A7A-424C-B9D5-7E012B5DDAC8" Creator="SCRWIN-2.9.9.15" Device="AsusLaptop" Modified="2021-01-22 17:47:51 -0500" ModID="2210EBD9-5B95-4BB7-B58A-D3FF45789E69">
+<ScrivenerProject Template="No" Version="2.0" Identifier="299C9B8F-2A7A-424C-B9D5-7E012B5DDAC8" Creator="SCRWIN-2.9.9.15" Device="HomeConsole" Modified="2021-01-23 21:56:44 -0500" ModID="CACDF587-098F-4425-8CC1-FAAA55611B97">
     <Binder>
         <BinderItem UUID="2881C731-847C-417A-9187-BEFF08B42526" Type="DraftFolder" Created="2020-10-14 17:12:25 -0500" Modified="2020-10-25 16:06:18 -0500">
             <Title>Wannabe Adventures</Title>
@@ -24,14 +24,17 @@
                         <TextSelection Caret="1711">1377,334</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="BCE2CB75-C863-4553-90E1-5E6123290638" Type="Text" Created="2021-01-18 22:26:02 -0500" Modified="2021-01-22 12:56:37 -0500">
+                <BinderItem UUID="BCE2CB75-C863-4553-90E1-5E6123290638" Type="Text" Created="2021-01-18 22:26:02 -0500" Modified="2021-01-23 21:53:51 -0500">
                     <Title>Story Summary</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
                     </MetaData>
                     <TextSettings>
-                        <TextSelection>32,0</TextSelection>
+                        <TextSelection>463,0</TextSelection>
                     </TextSettings>
+                    <Bookmarks>
+                        <Bookmark BinderUUID="BCE2CB75-C863-4553-90E1-5E6123290638">Story Summary</Bookmark>
+                    </Bookmarks>
                 </BinderItem>
                 <BinderItem UUID="F2BA42A9-E413-4579-A578-F0CBE0256353" Type="Text" Created="2020-10-26 18:50:21 -0500" Modified="2020-12-09 21:19:44 -0500">
                     <Title>Scene 1: Classroom</Title>
@@ -281,7 +284,7 @@
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="No" Deadline="2020-10-14 17:12:25 -0400" IgnoreDeadline="Yes">0</DraftTarget>
         <SessionTarget Type="Words" CountDraftOnly="No" AllowNegatives="No" ResetType="Time" ResetTime="01:00" DeterminedFromDeadline="No" CanWriteOnDeadlineDate="Yes" WritingDays="">0</SessionTarget>
-        <PreviousSession Words="0" Characters="0" Date="2021-01-22 17:47:51 -0500"/>
+        <PreviousSession Words="76" Characters="431" Date="2021-01-23 21:56:44 -0500"/>
     </ProjectTargets>
     <AutoCompleteList>
         <Completion Scope="2">V.V.</Completion>
@@ -298,11 +301,11 @@
         <Completion Scope="2">LEVINA</Completion>
     </AutoCompleteList>
     <TemplateFolderUUID>0CFDB3CF-B07B-4B2A-B2F9-15C290FF1B21</TemplateFolderUUID>
-    <RecentWritingHistory Date="2021-01-22 00:00:00 -0500">
-        <DraftWordCount>0</DraftWordCount>
-        <DraftCharCount>0</DraftCharCount>
-        <OtherWordCount>-7</OtherWordCount>
-        <OtherCharCount>-46</OtherCharCount>
+    <RecentWritingHistory Date="2021-01-23 00:00:00 -0500">
+        <DraftWordCount>76</DraftWordCount>
+        <DraftCharCount>431</DraftCharCount>
+        <OtherWordCount>0</OtherWordCount>
+        <OtherCharCount>0</OtherCharCount>
     </RecentWritingHistory>
     <PrintSettings PaperType="letter" LeftMargin="72" RightMargin="72" TopMargin="72" BottomMargin="72" Orientation="Portrait" Collates="No" ReverseOrder="No"/>
 </ScrivenerProject>
