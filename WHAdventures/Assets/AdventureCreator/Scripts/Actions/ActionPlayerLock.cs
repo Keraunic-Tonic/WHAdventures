@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionPlayerLock.cs"
  * 
@@ -36,15 +36,11 @@ namespace AC
 		public Paths movePath;
 
 		
-		public ActionPlayerLock ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Player;
-			title = "Constrain";
-			description = "Locks and unlocks various aspects of Player control. When using Direct or First Person control, can also be used to specify a Path object to restrict movement to.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Player; }}
+		public override string Title { get { return "Constrain"; }}
+		public override string Description { get { return "Locks and unlocks various aspects of Player control. When using Direct or First Person control, can also be used to specify a Path object to restrict movement to."; }}
+
+
 		public override float Run ()
 		{
 			if (KickStarter.player == null)
@@ -260,8 +256,6 @@ namespace AC
 			{
 				doHotspotHeadTurnLock = (LockType) EditorGUILayout.EnumPopup ("Hotspot head-turning?", doHotspotHeadTurnLock);
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -338,7 +332,7 @@ namespace AC
 		 */
 		public static ActionPlayerLock CreateNew (LockType movementLock, LockType jumpLock = LockType.NoChange, LockType freeAimLock = LockType.NoChange, LockType cursorLock = LockType.NoChange, PlayerMoveLock movementSpeedLock = PlayerMoveLock.NoChange, LockType gravityLock = LockType.NoChange, LockType hotspotHeadTurnLock = LockType.NoChange, Paths limitToPath = null)
 		{
-			ActionPlayerLock newAction = (ActionPlayerLock) CreateInstance <ActionPlayerLock>();
+			ActionPlayerLock newAction = CreateNew<ActionPlayerLock> ();
 			newAction.doUpLock = movementLock;
 			newAction.doLeftLock = movementLock;
 			newAction.doRightLock = movementLock;
@@ -369,7 +363,7 @@ namespace AC
 		 */
 		public static ActionPlayerLock CreateNew (LockType upMovementLock, LockType downMovementLock, LockType leftMovementLock, LockType rightMovementLock, LockType jumpLock = LockType.NoChange, LockType freeAimLock = LockType.NoChange, LockType cursorLock = LockType.NoChange, PlayerMoveLock movementSpeedLock = PlayerMoveLock.NoChange, LockType gravityLock = LockType.NoChange, LockType hotspotHeadTurnLock = LockType.NoChange, Paths limitToPath = null)
 		{
-			ActionPlayerLock newAction = (ActionPlayerLock) CreateInstance <ActionPlayerLock>();
+			ActionPlayerLock newAction = CreateNew<ActionPlayerLock> ();
 			newAction.doUpLock = upMovementLock;
 			newAction.doLeftLock = leftMovementLock;
 			newAction.doRightLock = rightMovementLock;

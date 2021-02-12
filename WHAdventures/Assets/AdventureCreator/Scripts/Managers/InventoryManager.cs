@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"InventoryManager.cs"
  * 
@@ -51,22 +51,20 @@ namespace AC
 	
 		
 		#if UNITY_EDITOR
-		
-		private SettingsManager settingsManager;
-		private CursorManager cursorManager;
-		
+
 		private string nameFilter = "";
 		private int categoryFilter = 0;
 		private bool filterOnStart = false;
+		private ObjectivesFilter objectivesFilter = ObjectivesFilter.Title;
+		private enum ObjectivesFilter { Title, Description };
 		
 		private InvItem selectedItem;
 		private InvVar selectedInvVar;
 		private Recipe selectedRecipe;
+		private Ingredient selectedIngredient;
+		private int sideIngredient = -1;
 		private int sideItem = -1;
-		private int sideInteraction = -1;
-		private int invNumber = 0;
-		private int binNumber = -1;
-
+		
 		private Vector2 scrollPos;
 		private bool showItemsTab = true;
 		private bool showBinsTab = false;
@@ -81,33 +79,17 @@ namespace AC
 
 		private bool showCraftingList = true;
 		private bool showCraftingProperties = true;
+		private bool showCraftingIntegredients = true;
+		private bool showCraftingIntegredientProperties = true;
 		private bool showPropertiesList = true;
 		private bool showPropertiesProperties = true;
 
-		private static GUILayoutOption
-			buttonWidth = GUILayout.MaxWidth (20f);
-		
-		private static GUIContent
-			deleteContent = new GUIContent("-", "Delete item");
-		
 		
 		/**
 		 * Shows the GUI.
 		 */
 		public void ShowGUI (Rect windowRect)
 		{
-			if (AdvGame.GetReferences ())
-			{
-				if (AdvGame.GetReferences ().settingsManager)
-				{
-					settingsManager = AdvGame.GetReferences ().settingsManager;
-				}
-				if (AdvGame.GetReferences ().cursorManager)
-				{
-					cursorManager = AdvGame.GetReferences ().cursorManager;
-				}
-			}
-			
 			EditorGUILayout.Space ();
 			GUILayout.BeginHorizontal ();
 
@@ -195,21 +177,18 @@ namespace AC
 			{
 				unhandledCombine = ActionListAssetMenu.AssetGUI ("Combine:", unhandledCombine, "Inventory_Unhandled_Combine", "AC.KickStarter.runtimeInventory.unhandledCombine", "The default ActionList asset to run if an inventory combination is unhandled");
 				unhandledHotspot = ActionListAssetMenu.AssetGUI ("Use on hotspot:", unhandledHotspot, "Inventory_Unhandled_Hotspot", "AC.KickStarter.runtimeInventory.unhandledHotspot", "The default ActionList asset to run if using an inventory item on a Hotspot is unhandled");
-				if (settingsManager != null && settingsManager.CanGiveItems ())
+				if (KickStarter.settingsManager != null && KickStarter.settingsManager.CanGiveItems ())
 				{
 					unhandledGive = ActionListAssetMenu.AssetGUI ("Give:", unhandledGive, "Inventory_Unhandled_Give", "AC.KickStarter.runtimeInventory.unhandledGive", "The default ActionList asset to run if giving an inventory item to an NPC is unhandled ");
 				}
 
-				if (unhandledHotspot != null)
+				passUnhandledHotspotAsParameter = CustomGUILayout.ToggleLeft ("Pass Hotspot as GameObject parameter to unhandled interactions?", passUnhandledHotspotAsParameter, "AC.KickStarter.inventoryManager.passUnhandledHotspotAsParameter", "If True, the Hotspot clicked on to initiate unhandledHotspot will be sent as a parameter to the ActionList asset");
+				if (passUnhandledHotspotAsParameter && unhandledHotspot != null)
 				{
-					passUnhandledHotspotAsParameter = CustomGUILayout.ToggleLeft ("Pass Hotspot as GameObject parameter?", passUnhandledHotspotAsParameter, "AC.KickStarter.inventoryManager.passUnhandledHotspotAsParameter", "If True, the Hotspot clicked on to initiate unhandledHotspot will be sent as a parameter to the ActionList asset");
-					if (passUnhandledHotspotAsParameter)
-					{
-						EditorGUILayout.HelpBox ("The Hotspot will be set as " + unhandledHotspot.name + "'s first parameter, which must be set to type 'GameObject'.", MessageType.Info);
-					}
+					EditorGUILayout.HelpBox ("The Hotspot will be set as " + unhandledHotspot.name + "'s first parameter, which must be set to type 'GameObject'.", MessageType.Info);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			List<string> binList = new List<string>();
 			foreach (InvBin bin in bins)
@@ -229,254 +208,9 @@ namespace AC
 				showItemProperties = CustomGUILayout.ToggleHeader (showItemProperties, "Inventory item '" + selectedItem.label + "' settings");
 				if (showItemProperties)
 				{
-					selectedItem.label = CustomGUILayout.TextField ("Name:", selectedItem.label, apiPrefix + ".label", "The item's Editor name");
-					selectedItem.altLabel = CustomGUILayout.TextField ("Label (if not name):", selectedItem.altLabel, apiPrefix + ".altLabel", "The item's in-game name, if not label");
-					
-					EditorGUILayout.BeginHorizontal ();
-					EditorGUILayout.LabelField (new GUIContent ("Category:", "The category that the item belongs to"), GUILayout.Width (146f));
-					if (bins.Count > 0)
-					{
-						binNumber = GetBinSlot (selectedItem.binID);
-						binNumber = CustomGUILayout.Popup (binNumber, binList.ToArray(), apiPrefix + ".binID");
-						selectedItem.binID = bins[binNumber].id;
-					}
-					else
-					{
-						selectedItem.binID = -1;
-						EditorGUILayout.LabelField ("No categories defined!", EditorStyles.miniLabel, GUILayout.Width (146f));
-					}
-					EditorGUILayout.EndHorizontal ();
-
-					selectedItem.carryOnStart = CustomGUILayout.Toggle ("Carry on start?", selectedItem.carryOnStart, apiPrefix + ".carryOnStart", "If True, the Player carries the item when the game begins");
-					if (selectedItem.carryOnStart && AdvGame.GetReferences ().settingsManager && AdvGame.GetReferences ().settingsManager.playerSwitching == PlayerSwitching.Allow && !AdvGame.GetReferences ().settingsManager.shareInventory)
-					{
-						selectedItem.carryOnStartNotDefault = CustomGUILayout.Toggle ("Non-default Player(s)?", selectedItem.carryOnStartNotDefault, apiPrefix + ".carryOnStartNotDefault", "If True, then a Player prefab that is not the default carries the item when the game begins");
-						if (selectedItem.carryOnStartNotDefault)
-						{
-							selectedItem.Upgrade ();
-							selectedItem.carryOnStartIDs = ChoosePlayerGUI (selectedItem.carryOnStartIDs, apiPrefix + ".carryOnStartID");
-						}
-					}
-					
-					selectedItem.canCarryMultiple = CustomGUILayout.Toggle ("Can carry multiple?", selectedItem.canCarryMultiple, apiPrefix + ".canCarryMultiple", "If True, then multiple instances of the item can be carried at once");
-
-					if (selectedItem.carryOnStart && selectedItem.canCarryMultiple)
-					{
-						selectedItem.count = CustomGUILayout.IntField ("Quantity on start:", selectedItem.count, apiPrefix + ".count", "The number of instances that the player is carrying when the game begins");
-					}
-					else
-					{
-						selectedItem.count = 1;
-					}
-
-					if (selectedItem.canCarryMultiple)
-					{
-						selectedItem.useSeparateSlots = CustomGUILayout.Toggle ("Place in separate slots?", selectedItem.useSeparateSlots, apiPrefix + ".useSeparateSlots", "If True, then multiple instances of the same item will be listed in separate InventoryBox menu element slots");
-
-						if (!selectedItem.useSeparateSlots)
-						{
-							selectedItem.selectSingle = CustomGUILayout.Toggle ("Select one-at-a-time?", selectedItem.selectSingle, apiPrefix + ".selectSingle", "If True, then only one instance of the item will be selectable at a time");
-							//selectedItem.maxCount = CustomGUILayout.IntField ("Maximum slot count:", selectedItem.maxCount, apiPrefix + ".maxCount", "The number of instances of the item that can occupy a single inventory slot");
-						}
-					}
-
-					selectedItem.overrideUseSyntax = CustomGUILayout.Toggle ("Override 'Use' syntax?", selectedItem.overrideUseSyntax, apiPrefix + ".overrideUseSyntax", "If True, then the item has its own 'Use X on Y' syntax when selected");
-					if (selectedItem.overrideUseSyntax)
-					{
-						EditorGUILayout.BeginHorizontal ();
-						EditorGUILayout.LabelField ("Use syntax:", GUILayout.Width (100f));
-						selectedItem.hotspotPrefix1.label = EditorGUILayout.TextField (selectedItem.hotspotPrefix1.label, GUILayout.MaxWidth (80f));
-						EditorGUILayout.LabelField ("(item)", GUILayout.MaxWidth (40f));
-						selectedItem.hotspotPrefix2.label = EditorGUILayout.TextField (selectedItem.hotspotPrefix2.label, GUILayout.MaxWidth (80f));
-						EditorGUILayout.LabelField ("(hotspot)", GUILayout.MaxWidth (55f));
-						EditorGUILayout.EndHorizontal ();
-					}
-
-					selectedItem.linkedPrefab = (GameObject) CustomGUILayout.ObjectField <GameObject> ("Linked prefab:", selectedItem.linkedPrefab, false, apiPrefix + ".linkedPrefab", "A GameObject that can be associated with the item, for the creation of e.g. 3D inventory items (through scripting only)");
-					if (selectedItem.linkedPrefab != null)
-					{
-						EditorGUILayout.HelpBox ("This reference is accessible through scripting, or via Inventory parameter in the 'Object: Add or remove' Action.", MessageType.Info);
-					}
-
-					GUILayout.Box ("", GUILayout.ExpandWidth (true), GUILayout.Height (1));
-
-					EditorGUILayout.BeginHorizontal ();
-					EditorGUILayout.LabelField (new GUIContent ("Main graphic:", "The item's main graphic"), GUILayout.Width (145));
-					selectedItem.tex = (Texture) CustomGUILayout.ObjectField <Texture> (selectedItem.tex, false, GUILayout.Width (70), GUILayout.Height (70), apiPrefix + ".tex");
-					EditorGUILayout.EndHorizontal ();
-
-					EditorGUILayout.BeginHorizontal ();
-					EditorGUILayout.LabelField (new GUIContent ("Active graphic:", "The item's 'highlighted' graphic"), GUILayout.Width (145));
-					selectedItem.activeTex = (Texture) CustomGUILayout.ObjectField <Texture> (selectedItem.activeTex, false, GUILayout.Width (70), GUILayout.Height (70), apiPrefix + ".activeTex");
-					EditorGUILayout.EndHorizontal ();
-
-					if (AdvGame.GetReferences ().settingsManager != null && AdvGame.GetReferences ().settingsManager.selectInventoryDisplay == SelectInventoryDisplay.ShowSelectedGraphic)
-					{
-						EditorGUILayout.BeginHorizontal ();
-						EditorGUILayout.LabelField (new GUIContent ("Selected graphic:", "The item's 'selected' graphic"), GUILayout.Width (145));
-						selectedItem.selectedTex = (Texture) CustomGUILayout.ObjectField<Texture> (selectedItem.selectedTex, false, GUILayout.Width (70), GUILayout.Height (70), apiPrefix + ".selectedTex");
-						EditorGUILayout.EndHorizontal ();
-					}
-					if (AdvGame.GetReferences ().cursorManager != null)
-					{
-						CursorManager cursorManager = AdvGame.GetReferences ().cursorManager;
-						if (cursorManager.inventoryHandling == InventoryHandling.ChangeCursor || cursorManager.inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel)
-						{
-							GUILayout.Box ("", GUILayout.ExpandWidth (true), GUILayout.Height (1));
-							selectedItem.cursorIcon.ShowGUI (true, true, "Cursor (optional):", cursorManager.cursorRendering, apiPrefix + ".cursorIcon", "A Cursor that, if assigned, will be used in place of the 'tex' Texture when the item is selected on the cursor");
-							GUILayout.Box ("", GUILayout.ExpandWidth (true), GUILayout.Height (1));
-						}
-					}
-
-					EditorGUILayout.Space ();
-					EditorGUILayout.LabelField ("Standard interactions",  CustomStyles.subHeader);
-					if (settingsManager && settingsManager.interactionMethod != AC_InteractionMethod.ContextSensitive && settingsManager.inventoryInteractions == InventoryInteractions.Multiple && AdvGame.GetReferences ().cursorManager)
-					{
-						CursorManager cursorManager = AdvGame.GetReferences ().cursorManager;
-						
-						List<string> iconList = new List<string>();
-						foreach (CursorIcon icon in cursorManager.cursorIcons)
-						{
-							iconList.Add (icon.id.ToString () + ": " + icon.label);
-						}
-						
-						if (cursorManager.cursorIcons.Count > 0)
-						{
-							foreach (InvInteraction interaction in selectedItem.interactions)
-							{
-								EditorGUILayout.BeginHorizontal ();
-								invNumber = GetIconSlot (interaction.icon.id);
-								invNumber = EditorGUILayout.Popup (invNumber, iconList.ToArray());
-								interaction.icon = cursorManager.cursorIcons[invNumber];
-
-								int i = selectedItem.interactions.IndexOf (interaction);
-								string autoName = selectedItem.label + "_" + interaction.icon.label;
-								interaction.actionList = ActionListAssetMenu.AssetGUI ("", interaction.actionList, autoName, apiPrefix + ".interactions[" + i + "].actionList", "The ActionList to run when the interaction is triggered");
-
-								if (GUILayout.Button ("", CustomStyles.IconCog))
-								{
-									SideInteractionMenu (selectedItem, selectedItem.interactions.IndexOf (interaction));
-								}
-
-								EditorGUILayout.EndHorizontal ();
-							}
-						}
-						else
-						{
-							EditorGUILayout.HelpBox ("No interaction icons defined - please use the Cursor Manager", MessageType.Warning);
-						}
-						if (GUILayout.Button ("Add interaction"))
-						{
-							Undo.RecordObject (this, "Add new interaction");
-							selectedItem.interactions.Add (new InvInteraction (cursorManager.cursorIcons[0]));
-						}
-					}
-					else
-					{
-						string autoName = selectedItem.label + "_Use";
-						selectedItem.useActionList = ActionListAssetMenu.AssetGUI ("Use:", selectedItem.useActionList, autoName, apiPrefix + ".useActionList", "The ActionList asset to run when using the item is used");
-						if (cursorManager && cursorManager.allowInteractionCursorForInventory && cursorManager.cursorIcons.Count > 0)
-						{
-							int useCursor_int = cursorManager.GetIntFromID (selectedItem.useIconID) + 1;
-							if (selectedItem.useIconID == -1) useCursor_int = 0;
-							useCursor_int = CustomGUILayout.Popup ("Use cursor icon:", useCursor_int, cursorManager.GetLabelsArray (true), apiPrefix + ".useIconID", "The Cursor to show when hovering over the item");
-
-							if (useCursor_int == 0)
-							{
-								selectedItem.useIconID = -1;
-							}
-							else if (cursorManager.cursorIcons.Count > (useCursor_int - 1))
-							{
-								selectedItem.useIconID = cursorManager.cursorIcons[useCursor_int-1].id;
-							}
-						}
-						else
-						{
-							selectedItem.useIconID = 0;
-						}
-						autoName = selectedItem.label + "_Examine";
-						selectedItem.lookActionList = ActionListAssetMenu.AssetGUI ("Examine:", selectedItem.lookActionList, autoName, apiPrefix + ".lookActionList", "The ActionListAsset to run when the item is examined");
-					}
-					
-					if (settingsManager != null && settingsManager.CanSelectItems (false))
-					{
-						EditorGUILayout.Space ();
-						EditorGUILayout.LabelField ("Unhandled interactions",  CustomStyles.subHeader);
-						string autoName = selectedItem.label + "_Unhandled_Hotspot";
-						selectedItem.unhandledActionList = ActionListAssetMenu.AssetGUI ("Unhandled use on Hotspot:", selectedItem.unhandledActionList, autoName, apiPrefix + ".unhandledActionList", "The ActionList asset to run when using the item on a Hotspot is unhandled");
-						autoName = selectedItem.label + "_Unhandled_Combine";
-						selectedItem.unhandledCombineActionList = ActionListAssetMenu.AssetGUI ("Unhandled combine:", selectedItem.unhandledCombineActionList, autoName, apiPrefix + ".unhandledCombineActionList", "The ActionListAsset to run when using the item on another InvItem is unhandled");
-					}
-					
-					EditorGUILayout.Space ();
-					EditorGUILayout.LabelField ("Combine interactions",  CustomStyles.subHeader);
-					for (int i=0; i<selectedItem.combineActionList.Count; i++)
-					{
-						EditorGUILayout.BeginHorizontal ();
-						invNumber = GetArraySlot (selectedItem.combineID[i]);
-						invNumber = EditorGUILayout.Popup (invNumber, GetLabelList ());
-						selectedItem.combineID[i] = items[invNumber].id;
-
-						string autoName = selectedItem.label + "_Combine_" + GetLabelList () [invNumber];
-						selectedItem.combineActionList[i] = ActionListAssetMenu.AssetGUI ("", selectedItem.combineActionList[i], autoName, apiPrefix + ".combineActionList[" + i + "]", "A List of all 'Combine' InvInteraction objects associated with the item");
-						
-						if (GUILayout.Button (deleteContent, EditorStyles.miniButtonRight, buttonWidth))
-						{
-							Undo.RecordObject (this, "Delete combine event");
-							selectedItem.combineActionList.RemoveAt (i);
-							selectedItem.combineID.RemoveAt (i);
-							break;
-						}
-						EditorGUILayout.EndHorizontal ();
-					}
-					if (GUILayout.Button ("Add combine event"))
-					{
-						Undo.RecordObject (this, "Add new combine event");
-						selectedItem.combineActionList.Add (null);
-						selectedItem.combineID.Add (0);
-					}
-					
-					// List all "reverse" inventory combinations
-					string reverseCombinations = "";
-					foreach (InvItem otherItem in items)
-					{
-						if (otherItem != selectedItem)
-						{
-							if (otherItem.combineID.Contains (selectedItem.id))
-							{
-								reverseCombinations += "- " + otherItem.label + "\n";
-								continue;
-							}
-						}
-					}
-					if (reverseCombinations.Length > 0)
-					{
-						EditorGUILayout.Space ();
-						EditorGUILayout.HelpBox ("The following inventory items have combine interactions that reference this item:\n" + reverseCombinations, MessageType.Info);
-					}
-					
-					if (invVars.Count > 0)
-					{
-						EditorGUILayout.Space ();
-						EditorGUILayout.LabelField ("Properties",  CustomStyles.subHeader);
-						
-						RebuildProperties (selectedItem);
-						
-						// UI for setting property values
-						if (selectedItem.vars.Count > 0)
-						{
-							foreach (InvVar invVar in selectedItem.vars)
-							{
-								invVar.ShowGUI (apiPrefix + ".GetProperty (" + invVar.id + ")");
-							}
-						}
-						else
-						{
-							EditorGUILayout.HelpBox ("No properties have been defined that this inventory item can use.", MessageType.Info);
-						}
-					}
+					selectedItem.ShowGUI (apiPrefix, binList);
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 		}
 
@@ -534,9 +268,20 @@ namespace AC
 
 					DeactivateAllCategories ();
 					ActivateCategory (newBin);
+
+					if (bins.Count == 1)
+					{
+						foreach (InvItem invItem in items)
+						{
+							if (invItem.binID == -1)
+							{
+								invItem.binID = bins[0].id;
+							}
+						}
+					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 
@@ -549,7 +294,7 @@ namespace AC
 				{
 					selectedCategory.label = CustomGUILayout.TextField ("Category name:", selectedCategory.label, "AC.KickStarter.inventoryManager.GetCategory (" + selectedCategory.id + ").label", "The category's editor name");
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 		}
 
@@ -579,6 +324,9 @@ namespace AC
 							DeactivateAllCategories ();
 						}
 						bins.RemoveAt (sideCategory);
+						break;
+
+					default:
 						break;
 				}
 			}
@@ -665,57 +413,25 @@ namespace AC
 					}
 					EditorGUILayout.EndToggleGroup ();
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 			
 			if (GUI.changed)
 			{
 				foreach (InvItem item in items)
 				{
-					RebuildProperties (item);
+					item.RebuildProperties ();
 				}
 			}
 		}
 		
-		
-		private void RebuildProperties (InvItem item)
-		{
-			// Which properties are available?
-			List<int> availableVarIDs = new List<int>();
-			foreach (InvVar invVar in invVars)
-			{
-				if (!invVar.limitToCategories || bins.Count == 0 || invVar.categoryIDs.Contains (item.binID))
-				{
-					availableVarIDs.Add (invVar.id);
-				}
-			}
-			
-			// Create new properties / transfer existing values
-			List<InvVar> newInvVars = new List<InvVar>();
-			foreach (InvVar invVar in invVars)
-			{
-				if (availableVarIDs.Contains (invVar.id))
-				{
-					InvVar newInvVar = new InvVar (invVar);
-					InvVar oldInvVar = item.GetProperty (invVar.id);
-					if (oldInvVar != null)
-					{
-						newInvVar.TransferValues (oldInvVar);
-					}
-					newInvVar.popUpID = invVar.popUpID;
-					newInvVars.Add (newInvVar);
-				}
-			}
-			
-			item.vars = newInvVars;
-		}
-
 
 		private void ResetFilter ()
 		{
 			nameFilter = string.Empty;
 			categoryFilter = 0;
 			filterOnStart = false;
+			objectivesFilter = ObjectivesFilter.Title;
 		}
 
 
@@ -783,7 +499,7 @@ namespace AC
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 
@@ -799,7 +515,7 @@ namespace AC
 				}
 				else
 				{
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 			}
 		}
@@ -817,7 +533,7 @@ namespace AC
 			}
 			if (sideDocument > 0 || sideDocument < documents.Count-1)
 			{
-				menu.AddSeparator ("");
+				menu.AddSeparator (string.Empty);
 			}
 			if (sideDocument > 0)
 			{
@@ -830,12 +546,12 @@ namespace AC
 				menu.AddItem (new GUIContent ("Re-arrange/Move to bottom"), false, DocumentCallback, "Move to bottom");
 			}
 
-			menu.AddSeparator ("");
+			menu.AddSeparator (string.Empty);
 			menu.AddItem (new GUIContent ("Find references"), false, DocumentCallback, "Find references");
 
 			if (Application.isPlaying)
 			{
-				menu.AddSeparator ("");
+				menu.AddSeparator (string.Empty);
 				if (KickStarter.runtimeDocuments.DocumentIsInCollection (document.ID))
 				{
 					menu.AddDisabledItem (new GUIContent ("Held by Player"));
@@ -903,6 +619,9 @@ namespace AC
 					case "Give to Player":
 						KickStarter.runtimeDocuments.AddToCollection (tempDocument);
 						ACDebug.Log ("Document " + tempDocument.ID.ToString () + " added to Player's inventory");
+						break;
+
+					default:
 						break;
 				}
 			}
@@ -993,32 +712,79 @@ namespace AC
 			showObjectivesList = CustomGUILayout.ToggleHeader (showObjectivesList, "Objectives");
 			if (showObjectivesList)
 			{
-				scrollPos = EditorGUILayout.BeginScrollView (scrollPos, GUILayout.Height (Mathf.Min (objectives.Count * 22, ACEditorPrefs.MenuItemsBeforeScroll * 22) + 9));
-				foreach (Objective objective in objectives)
+				if (objectives != null && objectives.Count > 0)
 				{
-					EditorGUILayout.BeginHorizontal ();
+					objectivesFilter = (ObjectivesFilter) EditorGUILayout.EnumPopup ("Filter by:", objectivesFilter);
+					nameFilter = EditorGUILayout.TextField (objectivesFilter.ToString () + " filter:", nameFilter);
 					
-					if (GUILayout.Toggle (selectedObjective == objective, objective.ID + ": " + objective.Title, "Button"))
+					EditorGUILayout.Space ();
+				}
+
+				int numObjectivesInFilter = objectives.Count;
+				if (!string.IsNullOrEmpty (nameFilter))
+				{
+					numObjectivesInFilter = 0;
+					foreach (Objective objective in objectives)
 					{
-						if (selectedObjective != objective)
+						switch (objectivesFilter)
 						{
-							DeactivateAllObjectives ();
-							ActivateObjective (objective);
+							case ObjectivesFilter.Title:
+							default:
+								if (objective.Title.ToLower ().Contains (nameFilter.ToLower ())) numObjectivesInFilter ++;
+								break;
+
+							case ObjectivesFilter.Description:
+								if (objective.description.ToLower ().Contains (nameFilter.ToLower ())) numObjectivesInFilter ++;
+								break;
 						}
 					}
-
-					if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
-					{
-						SideMenu (objective);
-					}
-					
-					EditorGUILayout.EndHorizontal ();
 				}
-				EditorGUILayout.EndScrollView ();
+
+				if (numObjectivesInFilter > 0)
+				{
+					scrollPos = EditorGUILayout.BeginScrollView (scrollPos, GUILayout.Height (Mathf.Min (numObjectivesInFilter * 22, ACEditorPrefs.MenuItemsBeforeScroll * 22) + 9));
+					foreach (Objective objective in objectives)
+					{
+						if (!string.IsNullOrEmpty (nameFilter))
+						{
+							switch (objectivesFilter)
+							{
+								case ObjectivesFilter.Title:
+								default:
+									if (!objective.Title.ToLower ().Contains (nameFilter.ToLower ())) continue;
+									break;
+
+								case ObjectivesFilter.Description:
+									if (!objective.description.ToLower ().Contains (nameFilter.ToLower ())) continue;
+									break;
+							}
+						}
+
+						EditorGUILayout.BeginHorizontal ();
+					
+						if (GUILayout.Toggle (selectedObjective == objective, objective.ID + ": " + objective.Title, "Button"))
+						{
+							if (selectedObjective != objective)
+							{
+								DeactivateAllObjectives ();
+								ActivateObjective (objective);
+							}
+						}
+
+						if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
+						{
+							SideMenu (objective);
+						}
+					
+						EditorGUILayout.EndHorizontal ();
+					}
+					EditorGUILayout.EndScrollView ();
+				}
 
 				EditorGUILayout.Space ();
 				if (GUILayout.Button ("Create new Objective"))
 				{
+					ResetFilter ();
 					Undo.RecordObject (this, "Create new Objective");
 
 					List<int> idArray = new List<int>();
@@ -1035,7 +801,7 @@ namespace AC
 					ActivateObjective (newObjective);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 
@@ -1051,7 +817,7 @@ namespace AC
 				}
 				else
 				{
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 			}
 		}
@@ -1083,6 +849,7 @@ namespace AC
 			}
 
 			menu.AddSeparator (string.Empty);
+			menu.AddItem (new GUIContent ("Find references"), false, ObjectiveCallback, "Find references");
 
 			menu.ShowAsContext ();
 		}
@@ -1093,6 +860,7 @@ namespace AC
 			if (sideObjective >= 0)
 			{
 				Objective tempObjective = objectives[sideObjective];
+				ResetFilter ();
 
 				switch (obj.ToString ())
 				{
@@ -1138,6 +906,13 @@ namespace AC
 						Undo.RecordObject (this, "Move Objective to bottom");
 						objectives.Add (tempObjective);
 						objectives.RemoveAt (sideObjective);
+						break;
+
+					case "Find references":
+						FindReferences (tempObjective);
+						break;
+
+					default:
 						break;
 				}
 			}
@@ -1306,11 +1081,11 @@ namespace AC
 
 				if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
 				{
-					ExportSideMenu ();
+					ItemsSideMenu ();
 				}
 				EditorGUILayout.EndHorizontal ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -1374,7 +1149,7 @@ namespace AC
 					EditorGUILayout.BeginHorizontal ();
 					
 					string buttonLabel = invVar.label;
-					if (buttonLabel == "")
+					if (string.IsNullOrEmpty (buttonLabel))
 					{
 						buttonLabel = "(Untitled)";	
 					}
@@ -1388,7 +1163,7 @@ namespace AC
 						}
 					}
 					
-					if (GUILayout.Button ("", CustomStyles.IconCog))
+					if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
 					{
 						SideMenu (invVar);
 					}
@@ -1407,7 +1182,7 @@ namespace AC
 					ActivateItem (newInvVar);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 		
 		
@@ -1447,24 +1222,84 @@ namespace AC
 		private void DeactivateAllRecipes ()
 		{
 			selectedRecipe = null;
+			selectedIngredient = null;
 		}
 
 
-		private void ExportSideMenu ()
+		private void ActivateIngredient (Ingredient ingredient)
 		{
-			GenericMenu menu = new GenericMenu ();
-			menu.AddItem (new GUIContent ("Import items..."), false, ExportCallback, "Import");
-			menu.AddItem (new GUIContent ("Export items..."), false, ExportCallback, "Export");
+			selectedIngredient = ingredient;
+		}
 
-			if (Application.isPlaying && items.Count > 0)
-			{
-				menu.AddItem (new GUIContent ("Give all to Player"), false, ExportCallback, "Give all to Player");
-			}
+
+		private void DeactivateAllIngredients ()
+		{
+			selectedIngredient = null;
+		}
+
+
+		private void SideMenu (Ingredient ingredient)
+		{
+			if (selectedRecipe == null) return;
+
+			GenericMenu menu = new GenericMenu ();
+			sideIngredient = selectedRecipe.ingredients.IndexOf (ingredient);
+
+			menu.AddItem (new GUIContent ("Delete"), false, IngredientCallback, "Delete");
 			menu.ShowAsContext ();
 		}
 
 
-		private void ExportCallback (object obj)
+		private void IngredientCallback (object obj)
+		{
+			if (sideIngredient >= 0)
+			{
+				Ingredient tempIngredient = selectedRecipe.ingredients[sideIngredient];
+
+				switch (obj.ToString ())
+				{
+					case "Delete":
+						Undo.RecordObject (this, "Delete ingredient");
+						if (tempIngredient == selectedIngredient)
+						{
+							DeactivateAllIngredients ();
+						}
+						selectedRecipe.ingredients.RemoveAt (sideIngredient);
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			EditorUtility.SetDirty (this);
+			AssetDatabase.SaveAssets ();
+
+			sideCategory = -1;
+		}
+
+
+		private void ItemsSideMenu ()
+		{
+			GenericMenu menu = new GenericMenu ();
+			
+			menu.AddItem (new GUIContent ("Import items..."), false, ItemsCallback, "Import");
+			menu.AddItem (new GUIContent ("Export items..."), false, ItemsCallback, "Export");
+
+			if (Application.isPlaying && items.Count > 0)
+			{
+				menu.AddItem (new GUIContent ("Give all to Player"), false, ItemsCallback, "Give all to Player");
+			}
+
+			menu.AddSeparator (string.Empty);
+			menu.AddItem (new GUIContent ("Sort/By ID"), false, ItemsCallback, "SortByID");
+			menu.AddItem (new GUIContent ("Sort/By name"), false, ItemsCallback, "SortByName");
+
+			menu.ShowAsContext ();
+		}
+
+
+		private void ItemsCallback (object obj)
 		{
 			switch (obj.ToString ())
 			{
@@ -1479,9 +1314,26 @@ namespace AC
 				case "Give all to Player":
 					foreach (InvItem item in items)
 					{
-						KickStarter.runtimeInventory.Add (item.id);
+						KickStarter.runtimeInventory.PlayerInvCollection.AddToEnd (new InvInstance (item));
 					}
 					ACDebug.Log ("All items added to Player's inventory");
+					break;
+
+				case "SortByID":
+					Undo.RecordObject (this, "Sort items by ID");
+					items.Sort (delegate (InvItem i1, InvItem i2) { return i1.id.CompareTo (i2.id); });
+					EditorUtility.SetDirty (this);
+					AssetDatabase.SaveAssets ();
+					break;
+
+				case "SortByName":
+					Undo.RecordObject (this, "Sort items by name");
+					items.Sort (delegate (InvItem i1, InvItem i2) { return i1.label.CompareTo (i2.label); });
+					EditorUtility.SetDirty (this);
+					AssetDatabase.SaveAssets ();
+					break;
+
+				default:
 					break;
 			}
 		}
@@ -1499,7 +1351,7 @@ namespace AC
 			}
 			if (sideItem > 0 || sideItem < items.Count-1)
 			{
-				menu.AddSeparator ("");
+				menu.AddSeparator (string.Empty);
 			}
 			if (sideItem > 0)
 			{
@@ -1512,7 +1364,7 @@ namespace AC
 				menu.AddItem (new GUIContent ("Re-arrange/Move to bottom"), false, Callback, "Move to bottom");
 			}
 
-			menu.AddSeparator ("");
+			menu.AddSeparator (string.Empty);
 			menu.AddItem (new GUIContent ("Find references"), false, Callback, "Find references");
 
 			if (Application.isPlaying)
@@ -1531,36 +1383,6 @@ namespace AC
 		}
 
 
-		private void SideInteractionMenu (InvItem item, int index)
-		{
-			GenericMenu menu = new GenericMenu ();
-			sideInteraction = index;
-			sideItem = items.IndexOf (item);
-			
-			menu.AddItem (new GUIContent ("Insert after"), false, InteractionCallback, "Insert after");
-			if (items.Count > 0)
-			{
-				menu.AddItem (new GUIContent ("Delete"), false, InteractionCallback, "Delete");
-			}
-			if (sideInteraction > 0 || sideInteraction < item.interactions.Count-1)
-			{
-				menu.AddSeparator ("");
-			}
-			if (sideInteraction > 0)
-			{
-				menu.AddItem (new GUIContent ("Re-arrange/Move to top"), false, InteractionCallback, "Move to top");
-				menu.AddItem (new GUIContent ("Re-arrange/Move up"), false, InteractionCallback, "Move up");
-			}
-			if (sideInteraction < item.interactions.Count-1)
-			{
-				menu.AddItem (new GUIContent ("Re-arrange/Move down"), false, InteractionCallback, "Move down");
-				menu.AddItem (new GUIContent ("Re-arrange/Move to bottom"), false, InteractionCallback, "Move to bottom");
-			}
-
-			menu.ShowAsContext ();
-		}
-
-
 		private void SideMenu (InvVar invVar)
 		{
 			GenericMenu menu = new GenericMenu ();
@@ -1573,7 +1395,7 @@ namespace AC
 			}
 			if (sideItem > 0 || sideItem < invVars.Count-1)
 			{
-				menu.AddSeparator ("");
+				menu.AddSeparator (string.Empty);
 			}
 			if (sideItem > 0)
 			{
@@ -1602,7 +1424,7 @@ namespace AC
 			}
 			if (sideItem > 0 || sideItem < recipes.Count-1)
 			{
-				menu.AddSeparator ("");
+				menu.AddSeparator (string.Empty);
 			}
 			if (sideItem > 0)
 			{
@@ -1628,49 +1450,52 @@ namespace AC
 				
 				switch (obj.ToString ())
 				{
-				case "Insert after":
-					Undo.RecordObject (this, "Insert item");
-					items.Insert (sideItem+1, new InvItem (GetIDList ().ToArray ()));
-					break;
+					case "Insert after":
+						Undo.RecordObject (this, "Insert item");
+						items.Insert (sideItem+1, new InvItem (GetIDList ().ToArray ()));
+						break;
 					
-				case "Delete":
-					Undo.RecordObject (this, "Delete item");
-					DeactivateAllItems ();
-					items.RemoveAt (sideItem);
-					break;
+					case "Delete":
+						Undo.RecordObject (this, "Delete item");
+						DeactivateAllItems ();
+						items.RemoveAt (sideItem);
+						break;
 					
-				case "Move up":
-					Undo.RecordObject (this, "Move item up");
-					items.RemoveAt (sideItem);
-					items.Insert (sideItem-1, tempItem);
-					break;
+					case "Move up":
+						Undo.RecordObject (this, "Move item up");
+						items.RemoveAt (sideItem);
+						items.Insert (sideItem-1, tempItem);
+						break;
 					
-				case "Move down":
-					Undo.RecordObject (this, "Move item down");
-					items.RemoveAt (sideItem);
-					items.Insert (sideItem+1, tempItem);
-					break;
+					case "Move down":
+						Undo.RecordObject (this, "Move item down");
+						items.RemoveAt (sideItem);
+						items.Insert (sideItem+1, tempItem);
+						break;
 
-				case "Move to top":
-					Undo.RecordObject (this, "Move item to top");
-					items.RemoveAt (sideItem);
-					items.Insert (0, tempItem);
-					break;
+					case "Move to top":
+						Undo.RecordObject (this, "Move item to top");
+						items.RemoveAt (sideItem);
+						items.Insert (0, tempItem);
+						break;
 
-				case "Move to bottom":
-					Undo.RecordObject (this, "Move item to bottom");
-					items.Add (tempItem);
-					items.RemoveAt (sideItem);
-					break;
+					case "Move to bottom":
+						Undo.RecordObject (this, "Move item to bottom");
+						items.Add (tempItem);
+						items.RemoveAt (sideItem);
+						break;
 
-				case "Find references":
-					FindReferences (tempItem);
-					break;
+					case "Find references":
+						FindReferences (tempItem);
+						break;
 
-				case "Give to Player":
-					KickStarter.runtimeInventory.Add (tempItem.id);
-					ACDebug.Log ("Item " + tempItem.label + " added to Player's inventory");
-					break;
+					case "Give to Player":
+						KickStarter.runtimeInventory.PlayerInvCollection.AddToEnd (new InvInstance (tempItem.id));
+						ACDebug.Log ("Item " + tempItem.label + " added to Player's inventory");
+						break;
+
+					default:
+						break;
 				}
 			}
 			
@@ -1681,59 +1506,6 @@ namespace AC
 		}
 
 
-		private void InteractionCallback (object obj)
-		{
-			if (sideInteraction >= 0 && sideItem >= 0)
-			{
-				ResetFilter ();
-				InvInteraction tempInteraction = items[sideItem].interactions[sideInteraction];
-				
-				switch (obj.ToString ())
-				{
-				case "Insert after":
-					Undo.RecordObject (this, "Insert item");
-					InvInteraction newInteraction = new InvInteraction (cursorManager.cursorIcons[0]);
-					selectedItem.interactions.Insert (sideInteraction+1, newInteraction);
-					break;
-					
-				case "Delete":
-					Undo.RecordObject (this, "Delete interaction");
-					selectedItem.interactions.RemoveAt (sideInteraction);
-					break;
-					
-				case "Move up":
-					Undo.RecordObject (this, "Move interaction up");
-					selectedItem.interactions.RemoveAt (sideInteraction);
-					selectedItem.interactions.Insert (sideInteraction-1, tempInteraction);
-					break;
-					
-				case "Move down":
-					Undo.RecordObject (this, "Move interaction down");
-					selectedItem.interactions.RemoveAt (sideInteraction);
-					selectedItem.interactions.Insert (sideInteraction+1, tempInteraction);
-					break;
-
-				case "Move to top":
-					Undo.RecordObject (this, "Move interaction to top");
-					selectedItem.interactions.RemoveAt (sideInteraction);
-					selectedItem.interactions.Insert (0, tempInteraction);
-					break;
-
-				case "Move to bottom":
-					Undo.RecordObject (this, "Move interaction to bottom");
-					selectedItem.interactions.Add (tempInteraction);
-					selectedItem.interactions.RemoveAt (sideInteraction);
-					break;
-				}
-			}
-			
-			EditorUtility.SetDirty (this);
-			AssetDatabase.SaveAssets ();
-			
-			sideInteraction = -1;
-		}
-		
-		
 		private void PropertyCallback (object obj)
 		{
 			if (sideItem >= 0)
@@ -1743,40 +1515,43 @@ namespace AC
 				
 				switch (obj.ToString ())
 				{
-				case "Insert after":
-					Undo.RecordObject (this, "Insert property");
-					invVars.Insert (sideItem+1, new InvVar (GetIDArrayProperty ()));
-					break;
+					case "Insert after":
+						Undo.RecordObject (this, "Insert property");
+						invVars.Insert (sideItem+1, new InvVar (GetIDArrayProperty ()));
+						break;
 					
-				case "Delete":
-					Undo.RecordObject (this, "Delete property");
-					DeactivateAllInvVars ();
-					invVars.RemoveAt (sideItem);
-					break;
+					case "Delete":
+						Undo.RecordObject (this, "Delete property");
+						DeactivateAllInvVars ();
+						invVars.RemoveAt (sideItem);
+						break;
 					
-				case "Move up":
-					Undo.RecordObject (this, "Move property up");
-					invVars.RemoveAt (sideItem);
-					invVars.Insert (sideItem-1, tempVar);
-					break;
+					case "Move up":
+						Undo.RecordObject (this, "Move property up");
+						invVars.RemoveAt (sideItem);
+						invVars.Insert (sideItem-1, tempVar);
+						break;
 					
-				case "Move down":
-					Undo.RecordObject (this, "Move property down");
-					invVars.RemoveAt (sideItem);
-					invVars.Insert (sideItem+1, tempVar);
-					break;
+					case "Move down":
+						Undo.RecordObject (this, "Move property down");
+						invVars.RemoveAt (sideItem);
+						invVars.Insert (sideItem+1, tempVar);
+						break;
 
-				case "Move to top":
-					Undo.RecordObject (this, "Move property to top");
-					invVars.RemoveAt (sideItem);
-					invVars.Insert (0, tempVar);
-					break;
+					case "Move to top":
+						Undo.RecordObject (this, "Move property to top");
+						invVars.RemoveAt (sideItem);
+						invVars.Insert (0, tempVar);
+						break;
 
-				case "Move to bottom":
-					Undo.RecordObject (this, "Move property to bottom");
-					invVars.Add (tempVar);
-					invVars.RemoveAt (sideItem);
-					break;
+					case "Move to bottom":
+						Undo.RecordObject (this, "Move property to bottom");
+						invVars.Add (tempVar);
+						invVars.RemoveAt (sideItem);
+						break;
+
+					default:
+						break;
 				}
 			}
 			
@@ -1795,40 +1570,43 @@ namespace AC
 				
 				switch (obj.ToString ())
 				{
-				case "Insert after":
-					Undo.RecordObject (this, "Insert recipe");
-					recipes.Insert (sideItem+1, new Recipe (GetIDArrayRecipe ()));
-					break;
+					case "Insert after":
+						Undo.RecordObject (this, "Insert recipe");
+						recipes.Insert (sideItem+1, new Recipe (GetIDArrayRecipe ()));
+						break;
 					
-				case "Delete":
-					Undo.RecordObject (this, "Delete recipe");
-					DeactivateAllRecipes ();
-					recipes.RemoveAt (sideItem);
-					break;
+					case "Delete":
+						Undo.RecordObject (this, "Delete recipe");
+						DeactivateAllRecipes ();
+						recipes.RemoveAt (sideItem);
+						break;
 					
-				case "Move up":
-					Undo.RecordObject (this, "Move recipe up");
-					recipes.RemoveAt (sideItem);
-					recipes.Insert (sideItem-1, tempRecipe);
-					break;
+					case "Move up":
+						Undo.RecordObject (this, "Move recipe up");
+						recipes.RemoveAt (sideItem);
+						recipes.Insert (sideItem-1, tempRecipe);
+						break;
 					
-				case "Move down":
-					Undo.RecordObject (this, "Move recipe down");
-					recipes.RemoveAt (sideItem);
-					recipes.Insert (sideItem+1, tempRecipe);
-					break;
+					case "Move down":
+						Undo.RecordObject (this, "Move recipe down");
+						recipes.RemoveAt (sideItem);
+						recipes.Insert (sideItem+1, tempRecipe);
+						break;
 
-				case "Move to top":
-					Undo.RecordObject (this, "Move recipe to top");
-					recipes.RemoveAt (sideItem);
-					recipes.Insert (0, tempRecipe);
-					break;
+					case "Move to top":
+						Undo.RecordObject (this, "Move recipe to top");
+						recipes.RemoveAt (sideItem);
+						recipes.Insert (0, tempRecipe);
+						break;
 
-				case "Move to bottom":
-					Undo.RecordObject (this, "Move recipe to bottom");
-					recipes.Add (tempRecipe);
-					recipes.RemoveAt (sideItem);
-					break;
+					case "Move to bottom":
+						Undo.RecordObject (this, "Move recipe to bottom");
+						recipes.Add (tempRecipe);
+						recipes.RemoveAt (sideItem);
+						break;
+
+					default:
+						break;
 				}
 			}
 
@@ -1848,7 +1626,7 @@ namespace AC
 				if (items.Count == 0)
 				{
 					EditorGUILayout.HelpBox ("No inventory items defined!", MessageType.Info);
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 					return;
 				}
 
@@ -1858,7 +1636,7 @@ namespace AC
 					EditorGUILayout.BeginHorizontal ();
 					
 					string buttonLabel = recipe.label;
-					if (buttonLabel == "")
+					if (string.IsNullOrEmpty (buttonLabel))
 					{
 						buttonLabel = "(Untitled)";	
 					}
@@ -1872,7 +1650,7 @@ namespace AC
 						}
 					}
 
-					if (GUILayout.Button ("", CustomStyles.IconCog))
+					if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
 					{
 						SideMenu (recipe);
 					}
@@ -1882,7 +1660,7 @@ namespace AC
 				EditorGUILayout.EndScrollView ();
 
 				EditorGUILayout.Space ();
-				if (GUILayout.Button("Create new recipe"))
+				if (GUILayout.Button ("Create new recipe"))
 				{
 					Undo.RecordObject (this, "Create inventory recipe");
 					
@@ -1892,7 +1670,7 @@ namespace AC
 					ActivateRecipe (newRecipe);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (selectedRecipe != null && recipes.Contains (selectedRecipe))
 			{
@@ -1920,52 +1698,65 @@ namespace AC
 					{
 						selectedRecipe.invActionList = ActionListAssetMenu.AssetGUI ("ActionList when click:", selectedRecipe.invActionList, "Recipe_" + selectedRecipe.label + "_OnClick", apiPrefix + ".invActionList", "The ActionListAsset to run when clicking on the resulting item");
 					}
-					
-					EditorGUILayout.Space ();
-					EditorGUILayout.LabelField ("Ingredients",  CustomStyles.subHeader);
-					
-					foreach (Ingredient ingredient in selectedRecipe.ingredients)
-					{
-						int j = selectedRecipe.ingredients.IndexOf (ingredient);
-
-						EditorGUILayout.BeginHorizontal ();
-						EditorGUILayout.LabelField ("Ingredient:", GUILayout.Width (70f));
-						i = GetArraySlot (ingredient.itemID);
-						i = CustomGUILayout.Popup (i, GetLabelList (), apiPrefix + ".ingredients [" + j + "].itemID");
-						ingredient.itemID = items[i].id;
-						
-						if (items[i].canCarryMultiple)
-						{
-							EditorGUILayout.LabelField ("Amount:", GUILayout.Width (50f));
-							ingredient.amount = EditorGUILayout.IntField (ingredient.amount, GUILayout.Width (30f));
-						}
-						
-						if (selectedRecipe.useSpecificSlots)
-						{
-							EditorGUILayout.LabelField ("Slot:", GUILayout.Width (30f));
-							ingredient.slotNumber = EditorGUILayout.IntField (ingredient.slotNumber, GUILayout.Width (30f));
-						}
-						
-						if (GUILayout.Button (deleteContent, GUILayout.Width (20f), GUILayout.Height (15f)))
-						{
-							Undo.RecordObject (this, "Delete ingredient");
-							selectedRecipe.ingredients.Remove (ingredient);
-							AssetDatabase.SaveAssets();
-							break;
-						}
-						
-						EditorGUILayout.EndHorizontal ();
-					}
-					
-					if (GUILayout.Button("Add new ingredient"))
-					{
-						Undo.RecordObject (this, "Add recipe ingredient");
-						
-						Ingredient newIngredient = new Ingredient ();
-						selectedRecipe.ingredients.Add (newIngredient);
-					}
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
+
+				EditorGUILayout.Space ();
+
+				if (selectedRecipe != null)
+				{
+					EditorGUILayout.BeginVertical (CustomStyles.thinBox);
+					showCraftingIntegredients = CustomGUILayout.ToggleHeader (showCraftingIntegredients, "Recipe '" + selectedRecipe.label + "' ingredients");
+					if (showCraftingIntegredients)
+					{
+						foreach (Ingredient ingredient in selectedRecipe.ingredients)
+						{
+							EditorGUILayout.BeginHorizontal ();
+
+							if (GUILayout.Toggle (selectedIngredient == ingredient, selectedRecipe.ingredients.IndexOf (ingredient) + ": " + ingredient.EditorLabel, "Button"))
+							{
+								if (selectedIngredient != ingredient)
+								{
+									DeactivateAllIngredients ();
+									ActivateIngredient (ingredient);
+								}
+							}
+
+							if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
+							{
+								SideMenu (ingredient);
+							}
+
+							EditorGUILayout.EndHorizontal ();
+						}
+					
+						EditorGUILayout.Space ();
+						if (GUILayout.Button("Add new ingredient"))
+						{
+							Undo.RecordObject (this, "Add recipe ingredient");
+						
+							Ingredient newIngredient = new Ingredient ();
+							selectedRecipe.ingredients.Add (newIngredient);
+							selectedIngredient = newIngredient;
+						}
+
+					}
+					CustomGUILayout.EndVertical ();
+
+				}
+
+				if (selectedRecipe != null && selectedIngredient != null)
+				{
+					EditorGUILayout.Space ();
+
+					EditorGUILayout.BeginVertical (CustomStyles.thinBox);
+					showCraftingIntegredientProperties = CustomGUILayout.ToggleHeader (showCraftingIntegredientProperties, "Recipe '" + selectedRecipe.label + "' ingredient " + selectedRecipe.ingredients.IndexOf (selectedIngredient));
+					if (showCraftingIntegredientProperties)
+					{
+						selectedIngredient.ShowGUI (GetArraySlot (selectedIngredient.ItemID), GetLabelList (), apiPrefix, selectedRecipe);
+					}
+					CustomGUILayout.EndVertical ();
+				}
 			}
 		}
 		
@@ -2010,23 +1801,7 @@ namespace AC
 		}
 		
 		
-		private int GetIconSlot (int _id)
-		{
-			int i = 0;
-			foreach (CursorIcon icon in AdvGame.GetReferences ().cursorManager.cursorIcons)
-			{
-				if (icon.id == _id)
-				{
-					return i;
-				}
-				i++;
-			}
-			
-			return 0;
-		}
-		
-		
-		private int GetArraySlot (int _id)
+		public int GetArraySlot (int _id)
 		{
 			int i = 0;
 			foreach (InvItem item in items)
@@ -2042,7 +1817,7 @@ namespace AC
 		}
 		
 		
-		private string[] GetLabelList ()
+		public string[] GetLabelList ()
 		{
 			List<string> labelList = new List<string>();
 			foreach (InvItem _item in items)
@@ -2053,7 +1828,7 @@ namespace AC
 		}
 		
 		
-		private int GetBinSlot (int _id)
+		public int GetBinSlot (int _id)
 		{
 			int i = 0;
 			foreach (InvBin bin in bins)
@@ -2066,37 +1841,6 @@ namespace AC
 			}
 			
 			return 0;
-		}
-		
-		
-		private List<int> ChoosePlayerGUI (List<int> playerIDs, string api)
-		{
-			CustomGUILayout.LabelField ("Item is carried by:", api);
-
-			foreach (PlayerPrefab playerPrefab in KickStarter.settingsManager.players)
-			{
-				string playerName = "    " + playerPrefab.ID + ": " + ((playerPrefab.playerOb != null) ? playerPrefab.playerOb.GetName () : "(Unnamed)");
-				bool isActive = false;
-				foreach (int playerID in playerIDs)
-				{
-					if (playerID == playerPrefab.ID) isActive = true;
-				}
-
-				bool wasActive = isActive;
-				isActive = EditorGUILayout.Toggle (playerName, isActive);
-				if (isActive != wasActive)
-				{
-					if (isActive)
-					{
-						playerIDs.Add (playerPrefab.ID);
-					}
-					else
-					{
-						playerIDs.Remove (playerPrefab.ID);
-					}
-				}
-			}
-			return playerIDs;
 		}
 		
 		
@@ -2127,9 +1871,9 @@ namespace AC
 					{
 						if (otherItem.id != item.id)
 						{
-							foreach (int combineID in otherItem.combineID)
+							foreach (InvCombineInteraction invCombineInteraction in otherItem.combineInteractions)
 							{
-								if (combineID == item.id)
+								if (invCombineInteraction.combineID == item.id)
 								{
 									totalNumReferences ++;
 									ACDebug.Log ("Found reference to inventory item '" + item.label + "' in inventory item '" + otherItem.label + "'s list of combine interactions.");
@@ -2148,7 +1892,7 @@ namespace AC
 						}
 						foreach (Ingredient ingredient in recipe.ingredients)
 						{
-							if (ingredient.itemID == item.id)
+							if (ingredient.ItemID == item.id)
 							{
 								thisNumReferences ++;
 							}
@@ -2266,7 +2010,50 @@ namespace AC
 				}
 			}
 		}
-		
+
+
+		private void FindReferences (Objective objective)
+		{
+			if (objective == null) return;
+
+			if (EditorUtility.DisplayDialog ("Search '" + objective.Title + "' references?", "The Editor will search assets, and active scenes listed in the Build Settings, for references to the objective.  The current scene will need to be saved and listed to be included in the search process. Continue?", "OK", "Cancel"))
+			{
+				if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo ())
+				{
+					int totalNumReferences = 0;
+
+					// Search scenes
+					string originalScene = UnityVersionHandler.GetCurrentSceneFilepath ();
+					string[] sceneFiles = AdvGame.GetSceneFiles ();
+
+					foreach (string sceneFile in sceneFiles)
+					{
+						UnityVersionHandler.OpenScene (sceneFile);
+
+						ActionList[] actionLists = FindObjectsOfType<ActionList> ();
+						foreach (ActionList actionList in actionLists)
+						{
+							totalNumReferences += actionList.GetObjectiveReferences (objective, sceneFile);
+						}
+					}
+
+					UnityVersionHandler.OpenScene (originalScene);
+
+					// Search assets
+					if (AdvGame.GetReferences ().speechManager != null)
+					{
+						ActionListAsset[] allActionListAssets = AdvGame.GetReferences ().speechManager.GetAllActionListAssets ();
+						foreach (ActionListAsset actionListAsset in allActionListAssets)
+						{
+							totalNumReferences += actionListAsset.GetObjectiveReferences (objective);
+						}
+					}
+
+					EditorUtility.DisplayDialog ("Document search complete", "In total, found " + totalNumReferences + " references to objective '" + objective.Title + "' in the project.  Please see the Console window for full details.", "OK");
+				}
+			}
+		}
+
 		#endif
 
 
@@ -2336,16 +2123,14 @@ namespace AC
 		 */
 		public string GetLabel (int _id)
 		{
-			string result = string.Empty;
 			foreach (InvItem item in items)
 			{
 				if (item.id == _id)
 				{
-					result = item.label;
+					return item.label;
 				}
 			}
-			
-			return result;
+			return string.Empty;
 		}
 		
 		
@@ -2420,25 +2205,6 @@ namespace AC
 			return null;
 		}
 		
-		
-		/**
-		 * <summary>Checks if multiple instances of an inventory item can exist.</summary>
-		 * <param name = "itemID">The ID number of the InvItem to find</param>
-		 * <returns>True if multiple instances of the inventory item can exist</returns>
-		 */
-		public bool CanCarryMultiple (int itemID)
-		{
-			foreach (InvItem item in items)
-			{
-				if (item.id == itemID)
-				{
-					return item.canCarryMultiple;
-				}
-			}
-			
-			return false;
-		}
-
 
 		/**
 		 * <summary>Gets an array of all inventory items in a given category</summary>
@@ -2481,7 +2247,7 @@ namespace AC
 			}
 			return false;
 		}
-		
+
 	}
-	
+
 }

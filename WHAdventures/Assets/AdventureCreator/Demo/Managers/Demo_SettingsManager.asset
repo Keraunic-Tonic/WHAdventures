@@ -12,16 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b776810ebfa374d7ba8f0fb5ed6e3265, type: 3}
   m_Name: Demo_SettingsManager
   m_EditorClassIdentifier: 
+  separateEditorSaveFiles: 0
   saveFileName: AdventureCreator_Demo
   saveTimeDisplay: 0
   customSaveFormat: MMMM dd, yyyy
   takeSaveScreenshots: 0
+  saveScreenshots: 0
   screenshotResolutionFactor: 1
   useProfiles: 0
   maxSaves: 8
   orderSavesByUpdateTime: 0
   reloadSceneWhenLoading: 0
-  useJsonSerialization: 0
+  saveWithThreading: 0
+  saveAssetReferencesWithAddressables: 0
+  saveLabels:
+    defaultSaveLabel: Save
+    saveLabelID: -1
+    defaultImportLabel: Import
+    importLabelID: -1
+    defaultAutosaveLabel: Autosave
+    autosaveLabelID: -1
   sceneAttributes: []
   actionListOnStart: {fileID: 0}
   blackOutWhenSkipping: 0
@@ -42,6 +52,7 @@ MonoBehaviour:
   autoCycleWhenInteract: 0
   showHoverInteractionInHotspotLabel: 0
   allowDefaultinteractions: 0
+  alwaysCloseInteractionMenus: 1
   whenReselectHotspot: 0
   lockCursorOnStart: 0
   hideLockedCursor: 0
@@ -55,11 +66,13 @@ MonoBehaviour:
   dragDropThreshold: 0
   allowInventoryInteractionsDuringConversations: 0
   inventoryDropLook: 0
+  inventoryDropLookNoDrag: 0
   inventoryInteractions: 1
   inventoryDisableLeft: 0
   allowDefaultInventoryInteractions: 0
   inventoryDisableUnhandled: 1
   inventoryDisableDefined: 1
+  inventoryInteractionsHaltPlayer: 0
   activeWhenHover: 0
   inventoryActiveEffect: 2
   inventoryPulseSpeed: 1
@@ -114,8 +127,10 @@ MonoBehaviour:
   firstPersonTouchScreen: 1
   directTouchScreen: 0
   touchUpWhenPaused: 0
-  forceAspectRatio: 1
+  forceAspectRatio: 0
+  aspectRatioEnforcement: 1
   wantedAspectRatio: 1.7778
+  renderBorderCamera: 1
   landscapeModeOnly: 0
   cameraPerspective: 2
   cacheCameraMain: 0
@@ -153,19 +168,30 @@ MonoBehaviour:
   useAsyncLoading: 0
   loadingDelay: 0
   blackOutWhenInitialising: 1
+  spawnPersistentEnginePrefab: 1
   playMusicWhilePaused: 1
   playAmbienceWhilePaused: 0
   musicStorages:
   - ID: 0
     audioClip: {fileID: 8300000, guid: bdeb32adbfd1740efbc7ef1229edecb9, type: 3}
     relativeVolume: 1
+    overrideMixerGroup: {fileID: 0}
   - ID: 1
     audioClip: {fileID: 8300000, guid: 8cbb78bffe57d4cd0bdbaa52b00a3148, type: 3}
     relativeVolume: 1
+    overrideMixerGroup: {fileID: 0}
   - ID: 2
     audioClip: {fileID: 8300000, guid: c6425b4a4281b48cb8a032fe89a8ab28, type: 3}
     relativeVolume: 1
+    overrideMixerGroup: {fileID: 0}
   ambienceStorages: []
+  loadAmbienceFadeTime: 0
+  crossfadeAmbienceWhenLoading: 0
+  restartAmbienceTrackWhenLoading: 0
+  loadMusicFadeTime: 0
+  crossfadeMusicWhenLoading: 0
+  restartMusicTrackWhenLoading: 0
+  autoEndOtherMusicWhenPlayed: 1
   volumeControl: 0
   musicMixerGroup: {fileID: 0}
   sfxMixerGroup: {fileID: 0}
@@ -181,5 +207,5 @@ MonoBehaviour:
   defaultSpeechVolume: 1
   showDebugLogs: 0
   printActionCommentsInConsole: 0
+  actionCommentLogging: 0
   showActiveActionLists: 0
-  showHierarchyIcons: 1

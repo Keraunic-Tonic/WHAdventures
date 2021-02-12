@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AnimEngine_Legacy.cs"
  * 
@@ -15,6 +15,11 @@ using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
+#endif
+
+#if AddressableIsPresent
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
 #endif
 
 namespace AC
@@ -31,7 +36,7 @@ namespace AC
 		{
 			#if UNITY_EDITOR
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Standard 3D animations", EditorStyles.boldLabel);
 
 			if (SceneSettings.IsTopDown ())
@@ -90,9 +95,9 @@ namespace AC
 			{
 				player.jumpAnim = (AnimationClip) CustomGUILayout.ObjectField <AnimationClip> ("Jump:", player.jumpAnim, false, "", "The 'Jump' animation");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Bone transforms", EditorStyles.boldLabel);
 			
 			character.upperBodyBone = (Transform) CustomGUILayout.ObjectField <Transform> ("Upper body:", character.upperBodyBone, true, "", "The 'Upper body bone' Transform, used to isolate animations");
@@ -101,7 +106,7 @@ namespace AC
 			character.rightArmBone = (Transform) CustomGUILayout.ObjectField <Transform> ("Right arm:", character.rightArmBone, true, "", "The 'Right arm bone' Transform, used to isolate animations");
 			character.leftHandBone = (Transform) CustomGUILayout.ObjectField <Transform> ("Left hand:", character.leftHandBone, true, "", "The 'Left hand bone' Transform, used to isolate animations");
 			character.rightHandBone = (Transform) CustomGUILayout.ObjectField <Transform> ("Right hand:", character.rightHandBone, true, "", "The 'Right hand bone' Transform, used to isolate animations");
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (GUI.changed && character != null)
 			{
@@ -146,15 +151,6 @@ namespace AC
 		}
 
 
-		public override void LoadPlayerData (PlayerData playerData, Player player)
-		{
-			player.idleAnim = AssetLoader.RetrieveAsset <AnimationClip> (player.idleAnim, playerData.playerIdleAnim);
-			player.walkAnim = AssetLoader.RetrieveAsset <AnimationClip> (player.walkAnim, playerData.playerWalkAnim);
-			player.talkAnim = AssetLoader.RetrieveAsset <AnimationClip> (player.talkAnim, playerData.playerTalkAnim);
-			player.runAnim = AssetLoader.RetrieveAsset <AnimationClip> (player.runAnim, playerData.playerRunAnim);
-		}
-
-
 		public override NPCData SaveNPCData (NPCData npcData, NPC npc)
 		{
 			npcData.idleAnim = AssetLoader.GetAssetInstanceID (npc.idleAnim);
@@ -166,13 +162,73 @@ namespace AC
 		}
 
 
+		public override void LoadPlayerData (PlayerData playerData, Player player)
+		{
+			#if AddressableIsPresent
+			if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
+			{
+				Addressables.LoadAssetAsync<AnimationClip> (playerData.playerIdleAnim).Completed += OnCompleteLoadIdleAnim;
+				Addressables.LoadAssetAsync<AnimationClip> (playerData.playerWalkAnim).Completed += OnCompleteLoadWalkAnim;
+				Addressables.LoadAssetAsync<AnimationClip> (playerData.playerRunAnim).Completed += OnCompleteLoadRunAnim;
+				Addressables.LoadAssetAsync<AnimationClip> (playerData.playerTalkAnim).Completed += OnCompleteLoadTalkAnim;
+				return;
+			}
+			#endif
+
+			player.idleAnim = AssetLoader.RetrieveAsset (player.idleAnim, playerData.playerIdleAnim);
+			player.walkAnim = AssetLoader.RetrieveAsset (player.walkAnim, playerData.playerWalkAnim);
+			player.talkAnim = AssetLoader.RetrieveAsset (player.talkAnim, playerData.playerTalkAnim);
+			player.runAnim = AssetLoader.RetrieveAsset (player.runAnim, playerData.playerRunAnim);
+		}
+
+
+
 		public override void LoadNPCData (NPCData npcData, NPC npc)
 		{
+			#if AddressableIsPresent
+			if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
+			{
+				Addressables.LoadAssetAsync<AnimationClip> (npcData.idleAnim).Completed += OnCompleteLoadIdleAnim;
+				Addressables.LoadAssetAsync<AnimationClip> (npcData.walkAnim).Completed += OnCompleteLoadWalkAnim;
+				Addressables.LoadAssetAsync<AnimationClip> (npcData.runAnim).Completed += OnCompleteLoadRunAnim;
+				Addressables.LoadAssetAsync<AnimationClip> (npcData.talkAnim).Completed += OnCompleteLoadTalkAnim;
+				return;
+			}
+			#endif
+
 			npc.idleAnim = AssetLoader.RetrieveAsset (npc.idleAnim, npcData.idleAnim);
 			npc.walkAnim = AssetLoader.RetrieveAsset (npc.walkAnim, npcData.walkAnim);
 			npc.runAnim = AssetLoader.RetrieveAsset (npc.runAnim, npcData.talkAnim);
 			npc.talkAnim = AssetLoader.RetrieveAsset (npc.talkAnim, npcData.runAnim);
 		}
+
+
+		#if AddressableIsPresent
+
+		private void OnCompleteLoadIdleAnim (AsyncOperationHandle<AnimationClip> obj)
+		{
+			if (obj.Result != null) character.idleAnim = obj.Result;
+		}
+
+
+		private void OnCompleteLoadWalkAnim (AsyncOperationHandle<AnimationClip> obj)
+		{
+			if (obj.Result != null) character.walkAnim = obj.Result;
+		}
+
+
+		private void OnCompleteLoadRunAnim (AsyncOperationHandle<AnimationClip> obj)
+		{
+			if (obj.Result != null) character.runAnim = obj.Result;
+		}
+
+
+		private void OnCompleteLoadTalkAnim (AsyncOperationHandle<AnimationClip> obj)
+		{
+			if (obj.Result != null) character.talkAnim = obj.Result;
+		}
+
+		#endif
 
 
 		public override void ActionCharAnimGUI (ActionCharAnim action, List<ActionParameter> parameters = null)
@@ -231,11 +287,6 @@ namespace AC
 						}
 					}
 				}
-			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
 			}
 
 			#endif
@@ -578,11 +629,6 @@ namespace AC
 				action.mouthClip = (AnimationClip) EditorGUILayout.ObjectField ("Mouth animation:", action.mouthClip, typeof (AnimationClip), true);
 			}
 
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
-
 			#endif
 		}
 
@@ -683,11 +729,6 @@ namespace AC
 			}
 			
 			action.willWait = EditorGUILayout.Toggle ("Wait until finish?", action.willWait);
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
 
 			#endif
 		}
@@ -847,11 +888,6 @@ namespace AC
 				{
 					action.scale = EditorGUILayout.IntField ("New scale (%):", action.scale);
 				}
-			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
 			}
 
 			#endif

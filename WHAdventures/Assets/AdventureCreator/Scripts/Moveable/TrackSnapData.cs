@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"TrackSnapData.cs"
  * 
@@ -28,14 +28,16 @@ namespace AC
 
 		#region Variables
 
+		[SerializeField] protected bool isDisabled = false;
 		[SerializeField] protected float positionAlong;
 		[SerializeField] protected float width;
 		[SerializeField] protected int id;
-		[SerializeField] List<TrackSnapConnection> connections = new List<TrackSnapConnection>();
-		[SerializeField] private Cutscene cutsceneOnSnap = null;
-		[SerializeField] private ActionListAsset actionListAssetOnSnap = null;
+		[SerializeField] protected List<TrackSnapConnection> connections = new List<TrackSnapConnection>();
+		[SerializeField] protected Cutscene cutsceneOnSnap = null;
+		[SerializeField] protected ActionListAsset actionListAssetOnSnap = null;
 
 		#if UNITY_EDITOR
+		[SerializeField] protected string label;
 		[SerializeField] protected Color gizmoColor;
 		#endif
 
@@ -51,8 +53,10 @@ namespace AC
 		{
 			positionAlong = _positionAlong;
 			width = 0.1f;
+			isDisabled = false;
 			#if UNITY_EDITOR
 			gizmoColor = Color.blue;
+			label = string.Empty;
 			#endif
 
 			id = 0;
@@ -76,6 +80,12 @@ namespace AC
 
 		public TrackSnapData ShowGUI (DragTrack dragTrack, bool useAngles)
 		{
+			label = CustomGUILayout.TextField ("Editor label:", label, string.Empty, "The region's label when displayed in Actions.");
+
+			bool isEnabled = !isDisabled;
+			isEnabled = CustomGUILayout.Toggle ("Is enabled?", isEnabled, string.Empty, "If True, the region is enabled");
+			isDisabled = !isEnabled;
+
 			positionAlong = CustomGUILayout.Slider ("Centre " + ((useAngles) ? "angle" : "position:"), positionAlong, 0f, 1f, string.Empty, "How far along the track (as a decimal) the region lies.");
 
 			width = CustomGUILayout.Slider ("Catchment size:", width, 0f, 1f, string.Empty, "How far apart from the snapping point (as a decimal of the track's length) the object can be for this to be enforced.");
@@ -169,7 +179,7 @@ namespace AC
 
 		public void EvaluateConnectionPoints (DragTrack track, Moveable_Drag draggable, Vector3 dragForce)
 		{
-			if (connections == null) return;
+			if (connections == null || !IsEnabled) return;
 
 			float ownScore = 0f;
 			switch (draggable.track.dragMovementCalculation)
@@ -179,7 +189,7 @@ namespace AC
 					break;
 
 				case DragMovementCalculation.CursorPosition:
-					Vector2 draggableScreenPosition = KickStarter.CameraMain.WorldToScreenPoint (draggable.transform.position);
+					Vector2 draggableScreenPosition = KickStarter.CameraMain.WorldToScreenPoint (draggable.Transform.position);
 					if (Vector2.Distance (draggableScreenPosition, KickStarter.playerInput.GetMousePosition ()) < 0.05f)
 					{
 						return;
@@ -251,7 +261,7 @@ namespace AC
 		 */
 		public bool IsWithinRegion (float trackValue)
 		{
-			if (GetDistanceFrom (trackValue) <= width)
+			if (IsEnabled && GetDistanceFrom(trackValue) <= width)
 			{
 				return true;
 			}
@@ -268,14 +278,14 @@ namespace AC
 			switch (actionListSource)
 			{
 				case ActionListSource.InScene:
-					if (cutsceneOnSnap != null)
+					if (cutsceneOnSnap)
 					{
 						cutsceneOnSnap.Interact ();
 					}
 					break;
 
 				case ActionListSource.AssetFile:
-					if (actionListAssetOnSnap != null)
+					if (actionListAssetOnSnap)
 					{
 						actionListAssetOnSnap.Interact ();
 					}
@@ -318,12 +328,30 @@ namespace AC
 		}
 
 
+		/** If True, the region is enabled */
+		public bool IsEnabled
+		{
+			get
+			{
+				return !isDisabled;
+			}
+			set
+			{
+				isDisabled = !value;
+			}
+		}
+
+
 		#if UNITY_EDITOR
 
 		public string EditorLabel
 		{
 			get
 			{
+				if (!string.IsNullOrEmpty (label))
+				{
+					return (id.ToString () + ": " + label);
+				}
 				return (id.ToString () + ": " + positionAlong.ToString ());
 			}
 		}

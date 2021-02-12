@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuInventoryBox.cs"
  * 
@@ -53,8 +53,10 @@ namespace AC
 		public List<int> categoryIDs = new List<int>();
 		/** What Image component the Element's Graphics should be linked to (ImageComponent, ButtonTargetGraphic) */
 		public LinkUIGraphic linkUIGraphic = LinkUIGraphic.ImageComponent;
-		/** If True, then no interactions will work, but items can still be selected and re-arranged as normal */
+		/** If True, then no interactions will work */
 		public bool preventInteractions = false;
+		/** If True, then items cannot be selected */
+		public bool preventSelection = false;
 		/** If True, and the element is scrolled by an offset larger than the number of new items to show, then the offset amount will be reduced to only show those new items. */
 		public bool limitMaxScroll = true;
 		/** If True, then slots with no item in them will have highlighting effects applied as well */
@@ -65,8 +67,7 @@ namespace AC
 		/** If True, then the hover sound will play even when over an empty slot */
 		public bool hoverSoundOverEmptySlots = true;
 
-		/** The List of inventory items that are on display */
-		public List<InvItem> items = new List<InvItem>();
+		private List<InvInstance> invInstances = new List<InvInstance>();
 		/** If inventoryBoxType = AC_InventoryBoxType.Container, what happens to items when they are removed from the container */
 		public ContainerSelectMode containerSelectMode = ContainerSelectMode.MoveToInventoryAndSelect;
 		/** How items are displayed (IconOnly, TextOnly, IconAndText) */
@@ -84,11 +85,10 @@ namespace AC
 		public ObjectiveDisplayType objectiveDisplayType = ObjectiveDisplayType.All;
 
 		private Container overrideContainer;
+		private Container pendingCloseContainer;
 		private string[] labels = null;
 		private int numDocuments = 0;
 		private Texture[] textures;
-
-		public enum ContainerSelectMode { MoveToInventory, MoveToInventoryAndSelect, SelectItemOnly };
 
 		#if UNITY_EDITOR
 		private Texture2D testIcon;
@@ -121,13 +121,14 @@ namespace AC
 			uiHideStyle = UIHideStyle.DisableObject;
 			emptySlotTexture = null;
 			objectiveDisplayType = ObjectiveDisplayType.All;
-			items = new List<InvItem>();
+			invInstances = new List<InvInstance>();
 			categoryIDs = new List<int>();
 			linkUIGraphic = LinkUIGraphic.ImageComponent;
 			autoOpenDocument = true;
 			updateHotspotLabelWhenHover = false;
 			hoverSoundOverEmptySlots = true;
 			preventInteractions = false;
+			preventSelection = false;
 			limitMaxScroll = true;
 			inventoryItemCountDisplay = InventoryItemCountDisplay.OnlyIfMultiple;
 			highlightEmptySlots = false;
@@ -182,13 +183,14 @@ namespace AC
 			updateHotspotLabelWhenHover = _element.updateHotspotLabelWhenHover;
 			hoverSoundOverEmptySlots = _element.hoverSoundOverEmptySlots;
 			preventInteractions = _element.preventInteractions;
+			preventSelection = _element.preventSelection;
 			limitMaxScroll = _element.limitMaxScroll;
 			inventoryItemCountDisplay = _element.inventoryItemCountDisplay;
 			highlightEmptySlots = _element.highlightEmptySlots;
 
 			UpdateLimitCategory ();
 
-			items = GetItemList ();
+			invInstances = GetItemList ();
 
 			base.Copy (_element);
 
@@ -196,7 +198,7 @@ namespace AC
 			{
 				if (!(inventoryBoxType == AC_InventoryBoxType.HotspotBased && maxSlots == 1))
 				{
-					alternativeInputButton = "";
+					alternativeInputButton = string.Empty;
 				}
 			}
 
@@ -221,7 +223,7 @@ namespace AC
 
 		private void UpdateLimitCategory ()
 		{
-			if (Application.isPlaying && AdvGame.GetReferences ().inventoryManager != null && AdvGame.GetReferences ().inventoryManager.bins != null)
+			if (Application.isPlaying && AdvGame.GetReferences ().inventoryManager && AdvGame.GetReferences ().inventoryManager.bins != null)
 			{
 				foreach (InvBin invBin in KickStarter.inventoryManager.bins)
 				{
@@ -238,25 +240,19 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObjects.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			int i=0;
 			foreach (UISlot uiSlot in uiSlots)
 			{
 				uiSlot.LinkUIElements (canvas, linkUIGraphic, (inventoryBoxType != AC_InventoryBoxType.CollectedDocuments) ? emptySlotTexture : null);
-				if (uiSlot != null && uiSlot.uiButton != null)
+				if (uiSlot != null && uiSlot.uiButton)
 				{
 					int j=i;
 
 					if (inventoryBoxType == AC_InventoryBoxType.Default || inventoryBoxType == AC_InventoryBoxType.CustomScript)
 					{
-						if (KickStarter.settingsManager != null &&
-							KickStarter.settingsManager.interactionMethod != AC_InteractionMethod.ContextSensitive &&
-							KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple)
+						if (KickStarter.settingsManager && KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple)
 						{}
 						else
 						{
@@ -264,7 +260,10 @@ namespace AC
 						}
 					}
 
-					CreateUIEvent (uiSlot.uiButton, _menu, uiPointerState, j, false);
+					if (addEventListeners)
+					{
+						CreateUIEvent (uiSlot.uiButton, _menu, uiPointerState, j, false);
+					}
 
 					uiSlot.AddClickHandler (_menu, this, j);
 				}
@@ -280,9 +279,9 @@ namespace AC
 		 */
 		public UnityEngine.UI.Button GetUIButtonWithItem (int itemID)
 		{
-			for (int i=0; i<items.Count; i++)
+			for (int i=0; i< invInstances.Count; i++)
 			{
-				if (items[i] != null && items[i].id == itemID)
+				if (InvInstance.IsValid (invInstances[i]) && invInstances[i].ItemID == itemID)
 				{
 					if (uiSlots != null && uiSlots.Length > i && uiSlots[i] != null)
 					{
@@ -301,7 +300,7 @@ namespace AC
 		 */
 		public override GameObject GetObjectToSelect (int slotIndex = 0)
 		{
-			if (uiSlots != null && uiSlots.Length > slotIndex && uiSlots[slotIndex].uiButton != null)
+			if (uiSlots != null && uiSlots.Length > slotIndex && uiSlots[slotIndex].uiButton)
 			{
 				return uiSlots[slotIndex].uiButton.gameObject;
 			}
@@ -316,11 +315,23 @@ namespace AC
 		 */
 		public override RectTransform GetRectTransform (int _slot)
 		{
-			if (uiSlots != null && uiSlots.Length > _slot)
+			if (uiSlots != null && _slot >= 0 && _slot < uiSlots.Length)
 			{
 				return uiSlots[_slot].GetRectTransform ();
 			}
 			return null;
+		}
+		
+
+		protected override void ProcessClickUI (AC.Menu _menu, int _slot, MouseState _mouseState)
+		{
+			if (KickStarter.playerInput.GetDragState () == DragState.PreInventory && uiPointerState == UIPointerState.PointerClick)
+			{
+				// In this case, click handling is handled by PlayerMenus, so ignore here
+				return;
+			}
+			
+			base.ProcessClickUI (_menu, _slot, _mouseState);
 		}
 		
 		
@@ -331,7 +342,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuInventoryBox)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			inventoryBoxType = (AC_InventoryBoxType) CustomGUILayout.EnumPopup ("Inventory box type:", inventoryBoxType, apiPrefix + ".inventoryBoxType", "How the items to display are chosen");
 			if (inventoryBoxType == AC_InventoryBoxType.Default || inventoryBoxType == AC_InventoryBoxType.CustomScript)
@@ -353,7 +364,7 @@ namespace AC
 			{
 				isClickable = true;
 				maxSlots = CustomGUILayout.IntSlider ("Max number of slots:", maxSlots, 1, 30, apiPrefix + ".maxSlots", "The maximum number of inventory items that can be shown at once");
-				containerSelectMode = (ContainerSelectMode) CustomGUILayout.EnumPopup ("Behaviour after taking?", containerSelectMode, apiPrefix + ".containerSelectMode", "What happens to items when they are removed from the Container");
+				containerSelectMode = (ContainerSelectMode) CustomGUILayout.EnumPopup ("Click behaviour:", containerSelectMode, apiPrefix + ".containerSelectMode", "What happens to items when they are removed from the Container");
 			}
 			else
 			{
@@ -371,33 +382,39 @@ namespace AC
 				limitMaxScroll = CustomGUILayout.Toggle ("Limit maximum scroll?", limitMaxScroll, apiPrefix + ".limitMaxScroll", "If True, and the element is scrolled by an offset larger than the number of new items to show, then the offset amount will be reduced to only show those new items.");
 			}
 
-			if (inventoryBoxType == AC_InventoryBoxType.Default || inventoryBoxType == AC_InventoryBoxType.Container)
+			switch (inventoryBoxType)
 			{
-				preventInteractions = CustomGUILayout.Toggle ("Prevent interactions?", preventInteractions, apiPrefix + ".preventInteractions", "If True, then no interactions will work, but items can still be selected and re-arranged as normal");
-			}
+				case AC_InventoryBoxType.Default:
+					preventInteractions = CustomGUILayout.Toggle ("Prevent interactions?", preventInteractions, apiPrefix + ".preventInteractions", "If True, inventory interactions cannot be run");
+					preventSelection = CustomGUILayout.Toggle ("Prevent selection?", preventSelection, apiPrefix + ".preventSelection", "If True, then items cannot be selected");
+					break;
 
-			if (inventoryBoxType == AC_InventoryBoxType.HotspotBased)
-			{
-				if (!ForceLimitByReference ())
-				{
-					limitToDefinedInteractions = CustomGUILayout.ToggleLeft ("Only show items referenced in Interactions?", limitToDefinedInteractions, apiPrefix + ".limitToDefinedInteractions", "If True, then only inventory items that are listed in a Hotspot's / InvItem's interactions will be listed");
-				}
+				case AC_InventoryBoxType.Container:
+					preventInteractions = CustomGUILayout.Toggle ("Prevent interactions?", preventInteractions, apiPrefix + ".preventInteractions", "If True, inventory interactions cannot be run");
+					preventSelection = CustomGUILayout.Toggle ("Prevent selection?", preventSelection, apiPrefix + ".preventSelection", "If True, then items cannot be selected");
+					break;
 
-				if (maxSlots == 1)
-				{
-					alternativeInputButton = CustomGUILayout.TextField ("Alternative input button:", alternativeInputButton, apiPrefix + ".alternativeInputButton", "The name of the input button that triggers the element when pressed");
-				}
-			}
-			else if (inventoryBoxType == AC_InventoryBoxType.CollectedDocuments)
-			{
-				autoOpenDocument = CustomGUILayout.ToggleLeft ("Auto-open Document when clicked?", autoOpenDocument, apiPrefix + ".autoOpenDocument", "If True, then clicking a slot will open the chosen Document");
-				actionListOnClick = ActionListAssetMenu.AssetGUI ("ActionList when click:", actionListOnClick, title + "_Click", apiPrefix + ".actionListOnClick", "The ActionList asset to run whenever a slot is clicked");
-			}
-			else if (inventoryBoxType == AC_InventoryBoxType.Objectives)
-			{
-				objectiveDisplayType = (ObjectiveDisplayType) CustomGUILayout.EnumPopup ("Objectives to display:", objectiveDisplayType, apiPrefix + ".objectiveDisplayType", "What Objectives to display");
-				autoOpenDocument = CustomGUILayout.ToggleLeft ("Auto-select Objective when clicked?", autoOpenDocument, apiPrefix + ".autoOpenDocument", "If True, then clicking a slot will select the chosen Objective");
-				actionListOnClick = ActionListAssetMenu.AssetGUI ("ActionList when click:", actionListOnClick, title + "_Click", apiPrefix + ".actionListOnClick", "The ActionList asset to run whenever a slot is clicked");
+				case AC_InventoryBoxType.HotspotBased:
+					if (!ForceLimitByReference ())
+					{
+						limitToDefinedInteractions = CustomGUILayout.ToggleLeft ("Only show items referenced in Interactions?", limitToDefinedInteractions, apiPrefix + ".limitToDefinedInteractions", "If True, then only inventory items that are listed in a Hotspot's / InvItem's interactions will be listed");
+					}
+					if (maxSlots == 1)
+					{
+						alternativeInputButton = CustomGUILayout.TextField ("Alternative input button:", alternativeInputButton, apiPrefix + ".alternativeInputButton", "The name of the input button that triggers the element when pressed");
+					}
+					break;
+
+				case AC_InventoryBoxType.CollectedDocuments:
+					autoOpenDocument = CustomGUILayout.ToggleLeft ("Auto-open Document when clicked?", autoOpenDocument, apiPrefix + ".autoOpenDocument", "If True, then clicking a slot will open the chosen Document");
+					actionListOnClick = ActionListAssetMenu.AssetGUI ("ActionList when click:", actionListOnClick, title + "_Click", apiPrefix + ".actionListOnClick", "The ActionList asset to run whenever a slot is clicked");
+					break;
+
+				case AC_InventoryBoxType.Objectives:
+					objectiveDisplayType = (ObjectiveDisplayType) CustomGUILayout.EnumPopup ("Objectives to display:", objectiveDisplayType, apiPrefix + ".objectiveDisplayType", "What Objectives to display");
+					autoOpenDocument = CustomGUILayout.ToggleLeft ("Auto-select Objective when clicked?", autoOpenDocument, apiPrefix + ".autoOpenDocument", "If True, then clicking a slot will select the chosen Objective");
+					actionListOnClick = ActionListAssetMenu.AssetGUI ("ActionList when click:", actionListOnClick, title + "_Click", apiPrefix + ".actionListOnClick", "The ActionList asset to run whenever a slot is clicked");
+					break;
 			}
 
 			displayType = (ConversationDisplayType) CustomGUILayout.EnumPopup ("Display type:", displayType, apiPrefix + ".displayType", "How items are displayed");
@@ -449,7 +466,7 @@ namespace AC
 
 			}
 
-			if (source == MenuSource.AdventureCreator && KickStarter.settingsManager != null && KickStarter.settingsManager.canReorderItems && highlightTexture != null)
+			if (source == MenuSource.AdventureCreator && KickStarter.settingsManager && KickStarter.settingsManager.canReorderItems && highlightTexture)
 			{
 				highlightEmptySlots = CustomGUILayout.Toggle ("Highlight empty slots?", highlightEmptySlots, apiPrefix + ".highlightEmptySlots", "If True, then the highlight texture will display for empty slots as well as those with items.");
 			}
@@ -458,8 +475,8 @@ namespace AC
 
 			if (source != MenuSource.AdventureCreator)
 			{
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 				EditorGUILayout.LabelField ("Linked button objects", EditorStyles.boldLabel);
 
 				uiSlots = ResizeUISlots (uiSlots, maxSlots);
@@ -475,8 +492,7 @@ namespace AC
 				if (inventoryBoxType == AC_InventoryBoxType.Default || inventoryBoxType == AC_InventoryBoxType.CustomScript)
 				{
 					if (KickStarter.settingsManager != null &&
-						KickStarter.settingsManager.interactionMethod != AC_InteractionMethod.ContextSensitive &&
-						KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple)
+						KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple)
 					{
 						uiPointerState = (UIPointerState) CustomGUILayout.EnumPopup ("Responds to:", uiPointerState, apiPrefix + ".uiPointerState", "What pointer state registers as a 'click' for Unity UI Menus");
 					}
@@ -488,7 +504,7 @@ namespace AC
 			}
 
 			ChangeCursorGUI (menu);
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (CanBeLimitedByCategory ())
 			{
@@ -527,7 +543,7 @@ namespace AC
 
 		private void ShowCategoriesUI (string apiPrefix)
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 		
 			limitToCategory = CustomGUILayout.Toggle ("Limit by category?", limitToCategory, apiPrefix + ".limitToCategory", "If True, only items with a specific category will be displayed");
 			if (limitToCategory)
@@ -578,18 +594,7 @@ namespace AC
 					categoryIDs.Clear ();
 				}
 			}
-			EditorGUILayout.EndVertical ();
-		}
-
-
-		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
-		{
-			foreach (UISlot uiSlot in uiSlots)
-			{
-				if (uiSlot.uiButton != null && uiSlot.uiButton == gameObject) return true;
-				if (uiSlot.uiButtonID == id) return true;
-			}
-			return false;
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -601,6 +606,16 @@ namespace AC
 		}
 
 		#endif
+
+		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
+		{
+			foreach (UISlot uiSlot in uiSlots)
+			{
+				if (uiSlot.uiButton && uiSlot.uiButton.gameObject == gameObject) return true;
+				if (uiSlot.uiButtonID == id && id != 0) return true;
+			}
+			return false;
+		}
 
 
 		public override void HideAllUISlots ()
@@ -628,13 +643,13 @@ namespace AC
 				return string.Empty;
 			}
 
-			InvItem slotItem = GetItem (_slot);
-			if (slotItem == null)
+			InvInstance slotInvInstance = GetInstance (_slot);
+			if (!InvInstance.IsValid (slotInvInstance))
 			{
 				return string.Empty;
 			}
 
-			string slotItemLabel = slotItem.GetLabel (_language);
+			string slotItemLabel = slotInvInstance.InvItem.GetLabel (_language);
 
 			if (inventoryBoxType == AC_InventoryBoxType.HotspotBased)
 			{
@@ -647,91 +662,139 @@ namespace AC
 
 				if (KickStarter.cursorManager.addHotspotPrefix)
 				{
-					string prefix = KickStarter.runtimeInventory.GetHotspotPrefixLabel (slotItem, slotItemLabel, _language);
-					if (parentMenu.TargetInvItem != null)
+					string prefix = slotInvInstance.GetHotspotPrefixLabel (_language, true);
+					if (InvInstance.IsValid (parentMenu.TargetInvInstance))
 					{
 						// Combine two items, i.e. "Use worm on apple"
-						return AdvGame.CombineLanguageString (prefix, parentMenu.TargetInvItem.GetLabel (_language), _language);
+						string itemName = parentMenu.TargetInvInstance.InvItem.GetLabel (_language);
+						if (parentMenu.TargetInvInstance.InvItem.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+						{
+							itemName = itemName.ToLower ();
+						}
+
+						return AdvGame.CombineLanguageString (prefix, itemName, _language);
 					}
 
-					if (parentMenu.TargetHotspot != null)
+					if (parentMenu.TargetHotspot)
 					{
 						// Use item on hotspot, i.e. "Use worm on bench"
-						return AdvGame.CombineLanguageString (prefix, parentMenu.TargetHotspot.GetName (_language), _language);
+						string hotspotName = parentMenu.TargetHotspot.GetName (_language);
+						if (parentMenu.TargetHotspot.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+						{
+							hotspotName = hotspotName.ToLower ();
+						}
+
+						return AdvGame.CombineLanguageString (prefix, hotspotName, _language);
 					}
 				}
 				else
 				{
-					if (parentMenu.TargetInvItem != null)
+					if (InvInstance.IsValid (parentMenu.TargetInvInstance))
 					{
 						// Parent menu's item label only
-						return parentMenu.TargetInvItem.GetLabel (_language);
+						return parentMenu.TargetInvInstance.InvItem.GetLabel (_language);
 					}
 				}
 
 				return string.Empty;
 			}
 
-			InvItem selectedItem = KickStarter.runtimeInventory.SelectedItem;
-			if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive)
+			InvInstance selectedInstance = KickStarter.runtimeInventory.SelectedInstance;
+
+			switch (KickStarter.settingsManager.interactionMethod)
 			{
-				if (selectedItem != null && KickStarter.cursorManager.inventoryHandling != InventoryHandling.ChangeCursor)
-				{
-					if (selectedItem.id == slotItem.id)
+				case AC_InteractionMethod.ContextSensitive:
 					{
+						if (InvInstance.IsValid (selectedInstance) &&
+							(KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeHotspotLabel || KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel))
+						{
+							if (selectedInstance == slotInvInstance)
+							{
+								return slotItemLabel;
+							}
+
+							// Combine two items, i.e. "Use worm on apple"
+							string prefix = selectedInstance.GetHotspotPrefixLabel (_language);
+							if (slotInvInstance.InvItem.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+							{
+								slotItemLabel = slotItemLabel.ToLower ();
+							}
+
+							return AdvGame.CombineLanguageString (prefix, slotItemLabel, _language);
+						}
+
+						if (InvInstance.IsValid (selectedInstance) && selectedInstance == slotInvInstance && KickStarter.settingsManager.selectInventoryDisplay == SelectInventoryDisplay.HideFromMenu)
+						{
+							// Over hidden item
+							return string.Empty;
+						}
+
+						// Just the item, i.e. "Worm"
 						return slotItemLabel;
 					}
 
-					// Combine two items, i.e. "Use worm on apple"
-					string prefix = KickStarter.runtimeInventory.GetHotspotPrefixLabel (selectedItem, selectedItem.GetLabel (_language), _language);
-					return AdvGame.CombineLanguageString (prefix, slotItemLabel, _language);
-				}
-
-				// Just the item, i.e. "Worm"
-				return slotItemLabel;
-			}
-			else if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot ||
-					KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction)
-			{
-				if (selectedItem != null)
-				{
-					if (KickStarter.cursorManager.inventoryHandling != InventoryHandling.ChangeCursor)
+				case AC_InteractionMethod.ChooseHotspotThenInteraction:
+				case AC_InteractionMethod.ChooseInteractionThenHotspot:
 					{
-						if (selectedItem.id == slotItem.id)
+						if (InvInstance.IsValid (selectedInstance))
 						{
-							return slotItemLabel;
+							if (KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeHotspotLabel || KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel)
+							{
+								if (selectedInstance == slotInvInstance)
+								{
+									return slotItemLabel;
+								}
+
+								// Combine two items, i.e. "Use worm on apple"
+								string prefix = selectedInstance.GetHotspotPrefixLabel (_language);
+								if (slotInvInstance.InvItem.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+								{
+									slotItemLabel = slotItemLabel.ToLower ();
+								}
+
+								return AdvGame.CombineLanguageString (prefix, slotItemLabel, _language);
+							}
+
+							if (selectedInstance == slotInvInstance && KickStarter.settingsManager.selectInventoryDisplay == SelectInventoryDisplay.HideFromMenu)
+							{
+								// Over hidden item
+								return string.Empty;
+							}
+						}
+						else
+						{
+							// None selected
+
+							if (KickStarter.cursorManager.addHotspotPrefix)
+							{
+								if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction &&
+									KickStarter.settingsManager.SelectInteractionMethod () != SelectInteractions.ClickingMenu &&
+									KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple)
+								{
+									string prefix = slotInvInstance.GetLabelPrefix (_language);
+									return AdvGame.CombineLanguageString (prefix, slotItemLabel, _language);
+								}
+
+								if (KickStarter.playerCursor.GetSelectedCursor () >= 0)
+								{
+									// Use an item, i.e. "Look at worm"
+									string prefix = KickStarter.cursorManager.GetLabelFromID (KickStarter.playerCursor.GetSelectedCursorID (), _language);
+									if (slotInvInstance.InvItem.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+									{
+										slotItemLabel = slotItemLabel.ToLower ();
+									}
+
+									return AdvGame.CombineLanguageString (prefix, slotItemLabel, _language);
+								}
+							}
 						}
 
-						// Combine two items, i.e. "Use worm on apple"
-						string prefix = KickStarter.runtimeInventory.GetHotspotPrefixLabel (selectedItem, selectedItem.GetLabel (_language), _language);
-						return AdvGame.CombineLanguageString (prefix, slotItemLabel, _language);
+						// Just the item, i.e. "Worm"
+						return slotItemLabel;
 					}
-				}
-				else
-				{
-					// None selected
 
-					if (KickStarter.cursorManager.addHotspotPrefix)
-					{
-						if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction &&
-							KickStarter.settingsManager.SelectInteractionMethod () != SelectInteractions.ClickingMenu &&
-							KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple)
-						{
-							string prefix = KickStarter.playerInteraction.GetLabelPrefix (null, slotItem, _language);
-							return AdvGame.CombineLanguageString (prefix, slotItemLabel, _language);
-						}
-
-						if (KickStarter.playerCursor.GetSelectedCursor () >= 0)
-						{
-							// Use an item, i.e. "Look at worm"
-							string prefix = KickStarter.cursorManager.GetLabelFromID (KickStarter.playerCursor.GetSelectedCursorID (), _language);
-							return AdvGame.CombineLanguageString (prefix, slotItemLabel, _language);
-						}
-					}
-				}
-
-				// Just the item, i.e. "Worm"
-				return slotItemLabel;
+				default:
+					break;
 			}
 
 			return string.Empty;
@@ -779,16 +842,17 @@ namespace AC
 				return;
 			}
 
-			if (items.Count > 0 && items.Count > (_slot+offset) && items [_slot+offset] != null)
+			if (invInstances.Count > 0 && invInstances.Count > (_slot+offset) && InvInstance.IsValid (invInstances[_slot+offset]))
 			{
 				string fullText = string.Empty;
 
 				if (displayType == ConversationDisplayType.TextOnly || displayType == ConversationDisplayType.IconAndText)
 				{
-					fullText = items [_slot+offset].label;
-					if (Application.isPlaying && KickStarter.runtimeInventory != null)
+					if (InvInstance.IsValid (invInstances[_slot+offset]))
 					{
-						fullText = KickStarter.runtimeInventory.GetLabel (items [_slot+offset], languageNumber);
+						fullText = (Application.isPlaying)
+							? invInstances[_slot+offset].InvItem.GetLabel (languageNumber)
+							: invInstances[_slot+offset].InvItem.label;
 					}
 					string countText = GetCount (_slot);
 					if (!string.IsNullOrEmpty (countText))
@@ -822,15 +886,15 @@ namespace AC
 					if (displayType == ConversationDisplayType.IconOnly || displayType == ConversationDisplayType.IconAndText)
 					{
 						Texture tex = null;
-						if (items.Count > (_slot+offset) && items [_slot+offset] != null)
+						if ((_slot + offset) < invInstances.Count && InvInstance.IsValid (invInstances[_slot+offset]))
 						{
 							if (inventoryBoxType != AC_InventoryBoxType.DisplaySelected && inventoryBoxType != AC_InventoryBoxType.DisplayLastSelected)
 							{
 								if (KickStarter.settingsManager.selectInventoryDisplay == SelectInventoryDisplay.HideFromMenu && ItemIsSelected (_slot+offset))
 								{
-									if (!items[_slot+offset].CanSelectSingle ())
+									if (!invInstances[_slot+offset].IsPartialTransform ())
 									{
-										// Display as normal if we only have one selected from many
+										// Display as normal if we are only doing a partial transfer
 										uiSlots[_slot].SetImage (null);
 										labels [_slot] = string.Empty;
 										uiSlots[_slot].SetText (labels [_slot]);
@@ -842,7 +906,7 @@ namespace AC
 
 							if (tex == null)
 							{
-								tex = items [_slot+offset].tex;
+								tex = invInstances [_slot+offset].InvItem.tex;
 							}
 						}
 
@@ -854,10 +918,12 @@ namespace AC
 
 					if (KickStarter.settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingMenuAndClickingHotspot &&
 						inventoryBoxType == AC_InventoryBoxType.HotspotBased &&
-						items[_slot + offset].id == KickStarter.playerInteraction.GetActiveInvButtonID ())
+						parentMenu != null &&
+						((parentMenu.TargetHotspot && parentMenu.TargetHotspot.GetActiveInvButtonID () == invInstances[_slot+offset].ItemID) ||
+						(KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple && InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance) && KickStarter.runtimeInventory.HoverInstance.GetActiveInvButtonID () == invInstances[_slot+offset].ItemID)))
 					{
 						// Select through script, not by mouse-over
-						if (uiSlots[_slot].uiButton != null)
+						if (uiSlots[_slot].uiButton)
 						{
 							uiSlots[_slot].uiButton.Select ();
 						}
@@ -871,20 +937,11 @@ namespace AC
 
 		private bool ItemIsSelected (int index)
 		{
-			if (items[index] != null && (!KickStarter.settingsManager.InventoryDragDrop || KickStarter.playerInput.GetDragState () == DragState.Inventory))
+			if (!InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance)) return false;
+
+			if (InvInstance.IsValid (invInstances[index]) && (!KickStarter.settingsManager.InventoryDragDrop || KickStarter.playerInput.GetDragState () == DragState.Inventory))
 			{
-				if (items[index] == KickStarter.runtimeInventory.SelectedItem)
-				{
-					return true;
-				}
-				if (inventoryBoxType == AC_InventoryBoxType.Container && containerSelectMode == ContainerSelectMode.SelectItemOnly && KickStarter.runtimeInventory.selectedContainerItem != null)
-				{
-					Container container = (overrideContainer != null) ? overrideContainer : KickStarter.playerInput.activeContainer;
-					if (container != null && container.items[index] == KickStarter.runtimeInventory.selectedContainerItem)
-					{
-						return true;
-					}
-				}
+				return (invInstances[index] == KickStarter.runtimeInventory.SelectedInstance);
 			}
 			return false;
 		}
@@ -928,7 +985,7 @@ namespace AC
 				}
 				else
 				{
-					if (Application.isPlaying && textures[_slot] != null)
+					if (Application.isPlaying && textures[_slot])
 					{
 						GUI.DrawTexture (ZoomRect (GetSlotRectRelative (_slot), zoom), textures[_slot], ScaleMode.StretchToFill, true, 0f);
 					}
@@ -944,11 +1001,11 @@ namespace AC
 				return;
 			}
 
-			if (items.Count > 0 && items.Count > (_slot+offset) && items [_slot+offset] != null)
+			if (invInstances.Count > 0 && invInstances.Count > (_slot+offset) && InvInstance.IsValid (invInstances[_slot+offset]))
 			{
 				if (Application.isPlaying && KickStarter.settingsManager.selectInventoryDisplay == SelectInventoryDisplay.HideFromMenu && ItemIsSelected (_slot+offset))
 				{
-					if (!items[_slot+offset].CanSelectSingle ())
+					if (!invInstances[_slot + offset].IsPartialTransform ())
 					{
 						// Display as normal if we only have one selected from many
 						return;
@@ -957,31 +1014,36 @@ namespace AC
 
 				Rect slotRect = GetSlotRectRelative (_slot);
 
-				if (displayType == ConversationDisplayType.IconOnly)
+				switch (displayType)
 				{
-					GUI.Label (slotRect, string.Empty, _style);
-					DrawTexture (ZoomRect (slotRect, zoom), _slot+offset, isActive);
-					_style.normal.background = null;
-					
-					if (textEffects != TextEffects.None)
-					{
-						AdvGame.DrawTextEffect (ZoomRect (slotRect, zoom), GetCount (_slot), _style, Color.black, _style.normal.textColor, outlineSize, textEffects);
-					}
-					else
-					{
-						GUI.Label (ZoomRect (slotRect, zoom), GetCount (_slot), _style);
-					}
-				}
-				else if (displayType == ConversationDisplayType.TextOnly)
-				{
-					if (textEffects != TextEffects.None)
-					{
-						AdvGame.DrawTextEffect (ZoomRect (slotRect, zoom), labels[_slot], _style, Color.black, _style.normal.textColor, outlineSize, textEffects);
-					}
-					else
-					{
-						GUI.Label (ZoomRect (slotRect, zoom), labels[_slot], _style);
-					}
+					case ConversationDisplayType.IconOnly:
+						GUI.Label (slotRect, string.Empty, _style);
+						DrawTexture (ZoomRect (slotRect, zoom), _slot + offset, isActive);
+						_style.normal.background = null;
+
+						if (textEffects != TextEffects.None)
+						{
+							AdvGame.DrawTextEffect (ZoomRect (slotRect, zoom), GetCount (_slot), _style, Color.black, _style.normal.textColor, outlineSize, textEffects);
+						}
+						else
+						{
+							GUI.Label (ZoomRect (slotRect, zoom), GetCount (_slot), _style);
+						}
+						break;
+
+					case ConversationDisplayType.TextOnly:
+						if (textEffects != TextEffects.None)
+						{
+							AdvGame.DrawTextEffect (ZoomRect (slotRect, zoom), labels[_slot], _style, Color.black, _style.normal.textColor, outlineSize, textEffects);
+						}
+						else
+						{
+							GUI.Label (ZoomRect (slotRect, zoom), labels[_slot], _style);
+						}
+						break;
+
+					default:
+						break;
 				}
 				return;
 			}
@@ -991,7 +1053,7 @@ namespace AC
 				Rect slotRect = GetSlotRectRelative (_slot);
 				Texture2D _tex = emptySlotTexture;
 
-				if (KickStarter.settingsManager != null && KickStarter.settingsManager.canReorderItems && highlightEmptySlots)
+				if (KickStarter.settingsManager && KickStarter.settingsManager.canReorderItems && highlightEmptySlots)
 				{
 					if (emptySlotTexture == null)
 					{
@@ -1003,7 +1065,7 @@ namespace AC
 					_style.normal.background = null;
 				}
 
-				if (_tex != null)
+				if (_tex)
 				{
 					GUI.Label (slotRect, string.Empty, _style);
 					GUI.DrawTexture (ZoomRect (slotRect, zoom), _tex, ScaleMode.StretchToFill, true, 0f);
@@ -1014,215 +1076,361 @@ namespace AC
 
 		private bool AllowInteractions ()
 		{
+			switch (inventoryBoxType)
+			{
+				case AC_InventoryBoxType.Default:
+				case AC_InventoryBoxType.Container:
+					return !preventInteractions;
+
+				default:
+					return true;
+			}
+		}
+
+
+		private bool AllowSelection ()
+		{
 			if (inventoryBoxType == AC_InventoryBoxType.Default || inventoryBoxType == AC_InventoryBoxType.Container)
 			{
-				return !preventInteractions;
+				return !preventSelection;
 			}
 			return true;
 		}
-		
+
+
+		protected void ClickInvItemToInteract (InvInstance invInstance)
+		{
+			if (!InvInstance.IsValid (invInstance)) return;
+
+			int invID = invInstance.GetActiveInvButtonID ();
+			if (invID == -1)
+			{
+				invInstance.Use (KickStarter.playerInteraction.GetActiveUseButtonIconID ());
+			}
+			else
+			{
+				invInstance.Combine (new InvInstance (invID));
+			}
+		}
+
 
 		/**
 		 * <summary>Performs what should happen when the element is clicked on, if inventoryBoxType = AC_InventoryBoxType.Default.</summary>
 		 * <param name = "_mouseState">The state of the mouse button</param>
 		 * <param name = "_slot">The index number of the slot that was clicked on</param>
-		 * <param name = "interactionMethod">The game's interaction method (ContextSensitive, ChooseHotspotThenInteraction, ChooseInteractionThenHotspot)</param>
+		 * <returns>True if the click had an effect and should be consumed</returns>
 		 */
-		public void HandleDefaultClick (MouseState _mouseState, int _slot, AC_InteractionMethod interactionMethod)
+		public bool HandleDefaultClick (MouseState _mouseState, int _slot)
 		{
-			if (inventoryBoxType == AC_InventoryBoxType.CollectedDocuments || inventoryBoxType == AC_InventoryBoxType.Objectives)
+			InvInstance selectedInstance = KickStarter.runtimeInventory.SelectedInstance;
+
+			if (KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple && KickStarter.playerMenus.IsInteractionMenuOn ())
 			{
-				return;
+				KickStarter.playerMenus.CloseInteractionMenus ();
+				ClickInvItemToInteract (GetInstance (_slot));
+				return true;
 			}
+			else if (KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple && KickStarter.settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingCursorAndClickingHotspot)
+			{
+				if (KickStarter.settingsManager.autoCycleWhenInteract && _mouseState == MouseState.SingleClick && (!InvInstance.IsValid (selectedInstance) || KickStarter.settingsManager.cycleInventoryCursors))
+				{
+					KickStarter.playerInteraction.PreAutoCycle ();
+				}
+
+				if (!KickStarter.settingsManager.cycleInventoryCursors && InvInstance.IsValid (selectedInstance))
+				{}
+				else if (_mouseState != MouseState.RightClick)
+				{
+					KickStarter.playerMenus.CloseInteractionMenus ();
+					ClickInvItemToInteract (GetInstance (_slot));
+					return true;
+				}
+
+				if (KickStarter.settingsManager.autoCycleWhenInteract && _mouseState == MouseState.SingleClick)
+				{
+					if (InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance))
+					{
+						KickStarter.runtimeInventory.HoverInstance.RestoreInteraction ();
+						return true;
+					}
+					return false;
+				}
+
+				if (KickStarter.settingsManager.cycleInventoryCursors || _mouseState == MouseState.RightClick)
+				{
+					return false;
+				}
+			}
+
+			AC_InteractionMethod interactionMethod = (KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Single)
+													? AC_InteractionMethod.ContextSensitive
+													: KickStarter.settingsManager.interactionMethod;
 
 			if (KickStarter.stateHandler.gameState == GameState.DialogOptions && !KickStarter.settingsManager.allowInventoryInteractionsDuringConversations && !KickStarter.settingsManager.allowGameplayDuringConversations)
 			{
-				return;
+				return false;
 			}
-			if (KickStarter.runtimeInventory != null)
+
+			KickStarter.playerMenus.CloseInteractionMenus ();
+			KickStarter.runtimeInventory.HighlightItemOffInstant ();
+				
+			int trueIndex = _slot + offset;
+
+			bool notFromPlayerInventory = (selectedInstance != null) ? KickStarter.runtimeInventory.PlayerInvCollection != selectedInstance.GetSource () : false;
+
+			if (inventoryBoxType == AC_InventoryBoxType.Default)
 			{
-				KickStarter.playerMenus.CloseInteractionMenus ();
-
-				KickStarter.runtimeInventory.HighlightItemOffInstant ();
-				KickStarter.runtimeInventory.SetFont (font, GetFontSize (), fontColor, textEffects);
-
-				int trueIndex = _slot + offset;
-
-				if (inventoryBoxType == AC_InventoryBoxType.Default)
+				Container selectedInstanceContainer = (selectedInstance != null) ? selectedInstance.GetSourceContainer () : null;
+				if (selectedInstanceContainer && !KickStarter.runtimeInventory.CanTransferContainerItemsToInventory (selectedInstanceContainer, selectedInstance))
 				{
-					if (items.Count <= trueIndex || items[trueIndex] == null)
+					return false;
+				}
+
+				if (trueIndex >= invInstances.Count || !InvInstance.IsValid (invInstances[trueIndex]) || notFromPlayerInventory)
+				{
+					if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) && (KickStarter.settingsManager.canReorderItems || notFromPlayerInventory))
 					{
-						ContainerItem selectedContainerItem = (KickStarter.runtimeInventory.selectedContainerItem != null) ? new ContainerItem (KickStarter.runtimeInventory.selectedContainerItem) : null;
-						Container selectedContainerItemContainer = KickStarter.runtimeInventory.selectedContainerItemContainer;
-
-						if (selectedContainerItem != null && !KickStarter.runtimeInventory.CanTransferContainerItemsToInventory (selectedContainerItem))
+						if (limitToCategory && categoryIDs != null && categoryIDs.Count > 0)
 						{
-							return;
+							// Need to change index because we want to affect the actual inventory, not the percieved one shown in the restricted menu
+							List<InvInstance> trueItemList = GetItemList (false);
+							LimitedItemList limitedItemList = LimitByCategory (trueItemList, trueIndex);
+							trueIndex += limitedItemList.Offset;
 						}
 
-						// Blank space
-						if (KickStarter.runtimeInventory.SelectedItem != null && KickStarter.settingsManager.canReorderItems)
-						{
-							if (limitToCategory && categoryIDs != null && categoryIDs.Count > 0)
-							{
-								// Need to change index because we want to affect the actual inventory, not the percieved one shown in the restricted menu
-								List<InvItem> trueItemList = GetItemList (false);
-								LimitedItemList limitedItemList = LimitByCategory (trueItemList, trueIndex);
-								trueIndex += limitedItemList.Offset;
-							}
-
-							if (KickStarter.runtimeInventory.SelectedItem.CanSelectSingle () && KickStarter.runtimeInventory.SelectedItem.count > 1 && KickStarter.settingsManager.canReorderItems)
-							{
-								// Only move one
-								InvItem newItem = new InvItem (KickStarter.runtimeInventory.SelectedItem);
-								newItem.count = 1;
-								KickStarter.runtimeInventory.localItems[trueIndex] = newItem;
-
-								KickStarter.runtimeInventory.SelectedItem.count --;
-								KickStarter.runtimeInventory.RemoveEmptySlots (KickStarter.runtimeInventory.localItems);
-							}
-							else
-							{
-								KickStarter.runtimeInventory.MoveItemToIndex (KickStarter.runtimeInventory.SelectedItem, trueIndex);
-							}
-						}
-						else if (selectedContainerItem != null)
-						{
-							trueIndex = KickStarter.runtimeInventory.localItems.Count;
-							KickStarter.runtimeInventory.MoveItemToIndex (KickStarter.runtimeInventory.SelectedItem, trueIndex);
-						}
-
-						if (selectedContainerItem != null && selectedContainerItemContainer != null)
-						{
-							KickStarter.eventManager.Call_OnUseContainer (false, selectedContainerItemContainer, selectedContainerItem);
-						}
+						KickStarter.runtimeInventory.PlayerInvCollection.Insert (KickStarter.runtimeInventory.SelectedInstance, trueIndex);
 						KickStarter.runtimeInventory.SetNull ();
-						return;
+						return true;
 					}
-				}
-
-				if (KickStarter.runtimeInventory.selectedContainerItem != null)
-				{
-					return;
-				}
-
-				if (interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction)
-				{
-					if (KickStarter.runtimeInventory.SelectedItem != null)
+					else if (InvInstance.IsValid (selectedInstance) && notFromPlayerInventory)
 					{
-						if (_mouseState == MouseState.SingleClick)
-						{
-							if (items.Count <= trueIndex)
-							{
-								return;
-							}
-							if (!AllowInteractions ())
-							{
-								if (items [trueIndex] == KickStarter.runtimeInventory.SelectedItem)
-								{
-									KickStarter.runtimeInventory.SetNull ();
-								}
-								return;
-							}
-							KickStarter.runtimeInventory.Combine (KickStarter.runtimeInventory.SelectedItem, items [trueIndex]);
-						}
-						else if (_mouseState == MouseState.RightClick)
-						{
-							KickStarter.runtimeInventory.SetNull ();
-						}
+						trueIndex = KickStarter.runtimeInventory.localItems.Count;
+						KickStarter.runtimeInventory.PlayerInvCollection.Insert (KickStarter.runtimeInventory.SelectedInstance, trueIndex);
+						KickStarter.runtimeInventory.SetNull ();
+						return true;
+					}
+
+					if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
+					{
+						KickStarter.runtimeInventory.SetNull ();
+						return true;
+					}
+					return false;
+				}
+			}
+
+			if (InvInstance.IsValid (selectedInstance))
+			{
+				if (inventoryBoxType == AC_InventoryBoxType.Container)
+				{
+					if (selectedInstance.GetSourceContainer () && (selectedInstance.GetSourceContainer () == OverrideContainer) || (OverrideContainer == null && selectedInstance.GetSourceContainer () == KickStarter.playerInput.activeContainer))
+					{
+						// Combines OK
 					}
 					else
 					{
-						if (items.Count <= trueIndex)
+						return false;
+					}
+				}
+				else
+				{
+					if (notFromPlayerInventory)
+					{
+						return false;
+					}
+				}
+			}
+				
+			switch (interactionMethod)
+			{
+				case AC_InteractionMethod.ContextSensitive:
+					if (_mouseState == MouseState.SingleClick)
+					{
+						if (invInstances.Count <= trueIndex)
 						{
-							return;
+							return false;
 						}
 
-						if (!AllowInteractions ())
+						if (InvInstance.IsValid (selectedInstance))
 						{
-							KickStarter.runtimeInventory.SelectItem (items [trueIndex], SelectItemMode.Use);
+							if (AllowInteractions ())
+							{
+								selectedInstance.Combine (invInstances[trueIndex]);
+								return true;
+							}
+							else if (AllowSelection ())
+							{ 
+								if (invInstances[trueIndex] == selectedInstance)
+								{
+									KickStarter.runtimeInventory.SelectItem (selectedInstance);
+									return true;
+								}
+								else if (KickStarter.settingsManager.canReorderItems && InvInstance.IsValid (invInstances[trueIndex]) && invInstances[trueIndex].InvItem == selectedInstance.InvItem)
+								{ 
+									KickStarter.runtimeInventory.PlayerInvCollection.Insert (selectedInstance, trueIndex, OccupiedSlotBehaviour.FailTransfer);
+									KickStarter.runtimeInventory.SetNull ();
+									return true;
+								}
+							}
 						}
 						else
 						{
-							KickStarter.runtimeInventory.ShowInteractions (items [trueIndex]);
+							if (AllowInteractions ())
+							{
+								if (KickStarter.cursorManager.lookUseCursorAction == LookUseCursorAction.RightClickCyclesModes && KickStarter.playerCursor.ContextCycleExamine)
+								{
+									invInstances[trueIndex].Examine ();
+								}
+								else
+								{
+									invInstances[trueIndex].Use ();
+								}
+								return true;
+							}
+							else if (AllowSelection ())
+							{
+								KickStarter.runtimeInventory.SelectItem (invInstances[trueIndex], SelectItemMode.Use);
+								return true;
+							}
 						}
 					}
-				}
-				else if (interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot)
-				{
-					if (items.Count <= trueIndex) return;
+					else if (_mouseState == MouseState.RightClick)
+					{
+						if (!InvInstance.IsValid (selectedInstance))
+						{
+							if (trueIndex < invInstances.Count && KickStarter.cursorManager.lookUseCursorAction != LookUseCursorAction.RightClickCyclesModes && AllowInteractions ())
+							{
+								invInstances[trueIndex].Examine ();
+								return true;
+							}
+						}
+						else if (AllowSelection ())
+						{
+							if (selectedInstance == invInstances[trueIndex] && selectedInstance.ItemStackingMode == ItemStackingMode.Stack)
+							{
+								selectedInstance.RemoveStack ();
+							}
+							else
+							{
+								KickStarter.runtimeInventory.SetNull ();
+							}
+							return true;
+						}
+					}
+					return false;
+
+				case AC_InteractionMethod.ChooseInteractionThenHotspot:
+					if (trueIndex >= invInstances.Count) return false;
 
 					if (_mouseState == MouseState.SingleClick)
 					{
 						int cursorID = KickStarter.playerCursor.GetSelectedCursorID ();
 						int cursor = KickStarter.playerCursor.GetSelectedCursor ();
 
-						if (cursor == -2 && KickStarter.runtimeInventory.SelectedItem != null)
+						if (cursor == -2 && InvInstance.IsValid (selectedInstance))
 						{
-							if (items [trueIndex] == KickStarter.runtimeInventory.SelectedItem)
+							if (invInstances[trueIndex] == selectedInstance)
 							{
-								KickStarter.runtimeInventory.SelectItem (items [trueIndex], SelectItemMode.Use);
+								if (AllowSelection ())
+								{
+									KickStarter.runtimeInventory.SelectItem (invInstances[trueIndex], SelectItemMode.Use);
+									return true;
+								}
 							}
 							else if (AllowInteractions ())
 							{
-								KickStarter.runtimeInventory.Combine (KickStarter.runtimeInventory.SelectedItem, items [trueIndex]);
+								if (InvInstance.IsValid (selectedInstance))
+								{
+									selectedInstance.Combine (invInstances[trueIndex]);
+									return true;
+								}
 							}
 						}
 						else if ((cursor == -1 && !KickStarter.settingsManager.selectInvWithUnhandled) || !AllowInteractions ())
 						{
-							KickStarter.runtimeInventory.SelectItem (items [trueIndex], SelectItemMode.Use);
+							if (AllowSelection ())
+							{
+								KickStarter.runtimeInventory.SelectItem (invInstances[trueIndex], SelectItemMode.Use);
+								return true;
+							}
 						}
 						else if (cursorID > -1)
 						{
-							KickStarter.runtimeInventory.RunInteraction (items [trueIndex], cursorID);
+							invInstances[trueIndex].Use (cursorID);
+							return true;
 						}
 					}
-				}
-				else if (interactionMethod == AC_InteractionMethod.ContextSensitive)
-				{
-					if (_mouseState == MouseState.SingleClick)
-					{
-						if (items.Count <= trueIndex)
-						{
-							return;
-						}
+					return false;
 
-						if (KickStarter.runtimeInventory.SelectedItem == null)
+				case AC_InteractionMethod.ChooseHotspotThenInteraction:
+					if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
+					{
+						if (_mouseState == MouseState.SingleClick)
 						{
-							if (!AllowInteractions ())
+							if (trueIndex >= invInstances.Count)
 							{
-								KickStarter.runtimeInventory.SelectItem (items [trueIndex], SelectItemMode.Use);
+								return false;
 							}
-							else if (KickStarter.cursorManager.lookUseCursorAction == LookUseCursorAction.RightClickCyclesModes && KickStarter.playerCursor.ContextCycleExamine)
+							if (AllowInteractions ())
 							{
-								KickStarter.runtimeInventory.Look (items [trueIndex]);
+								if (InvInstance.IsValid (selectedInstance))
+								{
+									selectedInstance.Combine (invInstances[trueIndex]);
+									return true;
+								}
 							}
 							else
 							{
-								KickStarter.runtimeInventory.Use (items [trueIndex]);
+								if (invInstances[trueIndex] == selectedInstance && AllowSelection ())
+								{
+									KickStarter.runtimeInventory.SetNull ();
+									return true;
+								}
 							}
 						}
-						else if (AllowInteractions ())
+						else if (_mouseState == MouseState.RightClick)
 						{
-							KickStarter.runtimeInventory.Combine (KickStarter.runtimeInventory.SelectedItem, items [trueIndex]);
+							if (AllowSelection ())
+							{
+								KickStarter.runtimeInventory.SetNull ();
+								return true;
+							}
 						}
 					}
-					else if (_mouseState == MouseState.RightClick)
+					else
 					{
-						if (KickStarter.runtimeInventory.SelectedItem == null)
+						if (trueIndex >= invInstances.Count)
 						{
-							if (items.Count > trueIndex && KickStarter.cursorManager.lookUseCursorAction != LookUseCursorAction.RightClickCyclesModes && AllowInteractions ())
+							return false;
+						}
+
+						if (!AllowInteractions ())
+						{
+							if (AllowSelection ())
 							{
-								KickStarter.runtimeInventory.Look (items [trueIndex]);
+								KickStarter.runtimeInventory.SelectItem (invInstances[trueIndex], SelectItemMode.Use);
+								return true;
 							}
 						}
 						else
 						{
-							KickStarter.runtimeInventory.SetNull ();
+							if (KickStarter.settingsManager.dragDropThreshold > 0f && KickStarter.settingsManager.InventoryDragDrop && KickStarter.settingsManager.inventoryDropLookNoDrag && AllowSelection ())
+							{
+								KickStarter.runtimeInventory.SelectItem (invInstances[trueIndex], SelectItemMode.Use);
+								return true;
+							}
+
+							KickStarter.runtimeInventory.ShowInteractions (invInstances[trueIndex]);
+							return true;
 						}
 					}
-				}
+					return false;
+
+				default:
+					break;
 			}
+
+			return true;
 		}
 
 
@@ -1241,8 +1449,8 @@ namespace AC
 						return objectiveInstances.Length;
 
 					default:
-						items = GetItemList();
-						return items.Count;
+						invInstances = GetItemList ();
+						return invInstances.Count;
 				}
 			}
 		}
@@ -1340,17 +1548,17 @@ namespace AC
 
 				default:
 				{
-					items = GetItemList();
+					invInstances = GetItemList ();
 
 					if (inventoryBoxType == AC_InventoryBoxType.HotspotBased)
 					{
 						if (Application.isPlaying)
 						{
-							numSlots = Mathf.Clamp(items.Count, 0, maxSlots);
+							numSlots = Mathf.Clamp (invInstances.Count, 0, maxSlots);
 						}
 						else
 						{
-							numSlots = Mathf.Clamp(numSlots, 0, maxSlots);
+							numSlots = Mathf.Clamp (numSlots, 0, maxSlots);
 						}
 					}
 					else
@@ -1360,10 +1568,10 @@ namespace AC
 
 					if (uiHideStyle == UIHideStyle.DisableObject)
 					{
-						if (numSlots > items.Count)
+						if (numSlots > invInstances.Count)
 						{
 							offset = 0;
-							numSlots = items.Count;
+							numSlots = invInstances.Count;
 						}
 					}
 
@@ -1390,145 +1598,175 @@ namespace AC
 		}
 		
 		
-		private List<InvItem> GetItemList (bool doLimit = true)
+		private List<InvInstance> GetItemList (bool doLimit = true)
 		{
-			List<InvItem> newItemList = new List<InvItem>();
+			List<InvInstance> newItemList = new List<InvInstance>();
 
 			if (Application.isPlaying)
 			{
-				if (inventoryBoxType == AC_InventoryBoxType.HotspotBased)
+				switch (inventoryBoxType)
 				{
-					if (limitToDefinedInteractions || ForceLimitByReference ())
-					{
-						newItemList = KickStarter.runtimeInventory.MatchInteractions ();
-					}
-					else
-					{
-						newItemList = KickStarter.runtimeInventory.localItems;
-					}
-				}
-				else if (inventoryBoxType == AC_InventoryBoxType.DisplaySelected)
-				{
-					if (KickStarter.runtimeInventory.SelectedItem != null)
-					{
-						newItemList.Add (KickStarter.runtimeInventory.SelectedItem);
-					}
-				}
-				else if (inventoryBoxType == AC_InventoryBoxType.DisplayLastSelected)
-				{
-					if (KickStarter.runtimeInventory.LastSelectedItem != null && KickStarter.runtimeInventory.IsItemCarried (KickStarter.runtimeInventory.LastSelectedItem))
-					{
-						newItemList.Add (KickStarter.runtimeInventory.LastSelectedItem);
-					}
-				}
-				else if (inventoryBoxType == AC_InventoryBoxType.Container)
-				{
-					if (overrideContainer != null)
-					{
-						newItemList = GetItemsFromContainer (overrideContainer);
-					}
-					else if (KickStarter.playerInput.activeContainer != null)
-					{
-						newItemList = GetItemsFromContainer (KickStarter.playerInput.activeContainer);
-					}
-				}
-				else
-				{
-					newItemList = new List<InvItem>();
-					foreach (InvItem _item in KickStarter.runtimeInventory.localItems)
-					{
-						newItemList.Add (_item);
-					}
+					case AC_InventoryBoxType.HotspotBased:
+						if (limitToDefinedInteractions || ForceLimitByReference ())
+						{
+							if (parentMenu)
+							{
+								if (InvInstance.IsValid (parentMenu.TargetInvInstance) && KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple)
+								{
+									newItemList = parentMenu.TargetInvInstance.GetMatchingInvInteractionData (true).InvInstances;
+								}
+								else if (parentMenu.TargetHotspot)
+								{
+									newItemList = parentMenu.TargetHotspot.GetMatchingInvInteractionData (true).InvInstances;
+								}
+							}
+						}
+						else
+						{
+							foreach (InvInstance invInstance in KickStarter.runtimeInventory.PlayerInvCollection.InvInstances)
+							{
+								if (InvInstance.IsValid (invInstance))
+								{
+									if (parentMenu &&
+										InvInstance.IsValid (parentMenu.TargetInvInstance) &&
+										KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple &&
+										parentMenu.TargetInvInstance == invInstance &&
+										!invInstance.InvItem.DoesHaveInventoryInteraction (invInstance.InvItem))
+									{
+										continue;
+									}
+									newItemList.Add (invInstance);
+								}
+							}
+						}
+						break;
+
+					case AC_InventoryBoxType.DisplaySelected:
+						if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
+						{
+							newItemList.Add (KickStarter.runtimeInventory.SelectedInstance);
+						}
+						break;
+
+					case AC_InventoryBoxType.DisplayLastSelected:
+						if (InvInstance.IsValid (KickStarter.runtimeInventory.LastSelectedInstance) && KickStarter.runtimeInventory.PlayerInvCollection.Contains (KickStarter.runtimeInventory.LastSelectedInstance))
+						{
+							newItemList.Add (KickStarter.runtimeInventory.LastSelectedInstance);
+						}
+						break;
+
+					case AC_InventoryBoxType.Container:
+						if (overrideContainer)
+						{
+							newItemList = overrideContainer.InvCollection.InvInstances;
+						}
+						else if (KickStarter.playerInput.activeContainer)
+						{
+							newItemList = KickStarter.playerInput.activeContainer.InvCollection.InvInstances;
+						}
+						else if (pendingCloseContainer)
+						{
+							newItemList = pendingCloseContainer.InvCollection.InvInstances;
+						}
+						break;
+
+					case AC_InventoryBoxType.CustomScript:
+						if (overrideContainer)
+						{
+							newItemList = overrideContainer.InvCollection.InvInstances;
+						}
+						else
+						{
+							newItemList = KickStarter.runtimeInventory.PlayerInvCollection.InvInstances;
+						}
+						break;
+
+					default:
+						newItemList = KickStarter.runtimeInventory.PlayerInvCollection.InvInstances;
+						break;
 				}
 
 				newItemList = AddExtraNulls (newItemList);
 			}
 			else
 			{
-				newItemList = new List<InvItem>();
+				newItemList = new List<InvInstance>();
 				if (AdvGame.GetReferences ().inventoryManager)
 				{
 					foreach (InvItem _item in AdvGame.GetReferences ().inventoryManager.items)
 					{
-						newItemList.Add (_item);
-						if (_item != null)
-						{
-							_item.recipeSlot = -1;
-						}
-					}
-				}
-			}
-
-			if (Application.isPlaying && 
-				(inventoryBoxType == AC_InventoryBoxType.Default || inventoryBoxType == AC_InventoryBoxType.CustomScript))
-			{
-				while (AreAnyItemsInRecipe (newItemList))
-				{
-					foreach (InvItem _item in newItemList)
-					{
-						if (_item != null && _item.recipeSlot > -1)
-						{
-							if (AdvGame.GetReferences ().settingsManager.canReorderItems)
-								newItemList [newItemList.IndexOf (_item)] = null;
-							else
-								newItemList.Remove (_item);
-							break;
-						}
+						newItemList.Add (new InvInstance (_item));
 					}
 				}
 			}
 
 			if (doLimit && CanBeLimitedByCategory ())
 			{
-				newItemList = LimitByCategory (newItemList, 0).LimitedItems;
+				newItemList = LimitByCategory (newItemList, 0).LimitedInvInstances;
 			}
 
 			return newItemList;
 		}
 
 
-		private List<InvItem> AddExtraNulls (List<InvItem> _items)
+		public override void OnMenuTurnOn (Menu menu)
+		{
+			if (inventoryBoxType == AC_InventoryBoxType.Container &&
+				menu.appearType == AppearType.OnContainer)
+			{
+				ClearEvents ();
+
+				EventManager.OnMenuTurnOff += OnMenuTurnOff;
+				EventManager.OnAfterChangeScene += OnAfterChangeScene;
+				EventManager.OnFinishLoading += OnFinishLoading;
+			}
+		}
+
+
+		private void OnAfterChangeScene (LoadingGame loadingGame)
+		{
+			pendingCloseContainer = null;
+		}
+
+
+		private void OnFinishLoading ()
+		{
+			pendingCloseContainer = null;
+		}
+
+		
+		private void OnMenuTurnOff (Menu menu, bool isInstant)
+		{
+			if (menu.elements.Contains (this))
+			{
+				pendingCloseContainer = KickStarter.playerInput.activeContainer;
+				ClearEvents ();
+			}
+		}
+
+
+		private void ClearEvents ()
+		{
+			EventManager.OnMenuTurnOff -= OnMenuTurnOff;
+			EventManager.OnAfterChangeScene -= OnAfterChangeScene;
+			EventManager.OnFinishLoading -= OnFinishLoading;
+		}
+
+
+		private List<InvInstance> AddExtraNulls (List<InvInstance> _invInstances)
 		{
 			if (inventoryBoxType != AC_InventoryBoxType.DisplayLastSelected &&
 				inventoryBoxType != AC_InventoryBoxType.DisplaySelected &&
 				!limitMaxScroll &&
-				_items.Count > 0 &&
-				_items.Count % maxSlots != 0)
+				_invInstances.Count > 0 &&
+				_invInstances.Count % maxSlots != 0)
 			{
-				while (_items.Count % maxSlots != 0)
+				while (_invInstances.Count % maxSlots != 0)
 				{
-					_items.Add (null);
+					_invInstances.Add (null);
 				}
 			}
-			return _items;
-		}
-
-
-		private List<InvItem> GetItemsFromContainer (Container container)
-		{
-			List<InvItem> newItemList = new List<InvItem>();
-			newItemList.Clear ();
-			foreach (ContainerItem containerItem in container.items)
-			{
-				if (!containerItem.IsEmpty)
-				{
-					InvItem referencedItem = new InvItem (KickStarter.inventoryManager.GetItem (containerItem.linkedID));
-					referencedItem.count = containerItem.count;
-					newItemList.Add (referencedItem);
-				}
-				else if (KickStarter.settingsManager.canReorderItems)
-				{
-					newItemList.Add (null);
-				}
-			}
-			if (KickStarter.settingsManager.canReorderItems && newItemList.Count < maxSlots-1)
-			{
-				while (newItemList.Count < maxSlots-1)
-				{
-					newItemList.Add (null);
-				}
-			}
-			return newItemList;
+			return _invInstances;
 		}
 
 
@@ -1543,7 +1781,7 @@ namespace AC
 				return true;
 			}
 
-			if (inventoryBoxType == AC_InventoryBoxType.HotspotBased && !limitToDefinedInteractions && !ForceLimitByReference ())
+			if (inventoryBoxType == AC_InventoryBoxType.HotspotBased && !ForceLimitByReference ())
 			{
 				return true;
 			}
@@ -1583,7 +1821,7 @@ namespace AC
 				return true;
 			}
 
-			if (items.Count == 0)
+			if (invInstances.Count == 0)
 			{
 				return false;
 			}
@@ -1597,7 +1835,7 @@ namespace AC
 			}
 			else
 			{
-				if ((maxSlots + offset) >= items.Count)
+				if ((maxSlots + offset) >= invInstances.Count)
 				{
 					return false;
 				}
@@ -1606,55 +1844,42 @@ namespace AC
 		}
 
 
-		private bool AreAnyItemsInRecipe (List<InvItem> _itemList)
-		{
-			foreach (InvItem item in _itemList)
-			{
-				if (item != null && item.recipeSlot >= 0)
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-
-
-		private LimitedItemList LimitByCategory (List<InvItem> itemsToLimit, int reverseItemIndex)
+		private LimitedItemList LimitByCategory (List<InvInstance> invInstancesToLimit, int reverseItemIndex)
 		{
 			int offset = 0;
 
-			List<InvItem> nonLinkedItemsToLimit = new List<InvItem>();
-			foreach (InvItem itemToLimit in itemsToLimit)
+			List<InvInstance> nonLinkedInvInstancesToLimit = new List<InvInstance> ();
+			foreach (InvInstance invInstanceToLimit in invInstancesToLimit)
 			{
-				nonLinkedItemsToLimit.Add (itemToLimit);
+				nonLinkedInvInstancesToLimit.Add (invInstanceToLimit);
 			}
 
 			if (limitToCategory && categoryIDs.Count > 0)
 			{
-				for (int i=0; i<nonLinkedItemsToLimit.Count; i++)
+				for (int i=0; i<nonLinkedInvInstancesToLimit.Count; i++)
 				{
-					if (nonLinkedItemsToLimit[i] != null && !categoryIDs.Contains (nonLinkedItemsToLimit[i].binID))
+					if (InvInstance.IsValid (nonLinkedInvInstancesToLimit[i]) && !categoryIDs.Contains (nonLinkedInvInstancesToLimit[i].InvItem.binID))
 					{
 						if (i <= reverseItemIndex)
 						{
 							offset ++;
 						}
 
-						nonLinkedItemsToLimit.RemoveAt (i);
+						nonLinkedInvInstancesToLimit.RemoveAt (i);
 						i = -1;
 					}
 				}
 
 				// Bugfix: Remove extra nulls at end in case some where added as a result of re-ordering another menu
-				if (nonLinkedItemsToLimit != null && Application.isPlaying)
+				if (nonLinkedInvInstancesToLimit != null && Application.isPlaying)
 				{
-					nonLinkedItemsToLimit = KickStarter.runtimeInventory.RemoveEmptySlots (nonLinkedItemsToLimit);
+					nonLinkedInvInstancesToLimit = KickStarter.runtimeInventory.RemoveEmptySlots (nonLinkedInvInstancesToLimit);
 				}
 
-				nonLinkedItemsToLimit = AddExtraNulls (nonLinkedItemsToLimit);
+				nonLinkedInvInstancesToLimit = AddExtraNulls (nonLinkedInvInstancesToLimit);
 			}
 
-			return new LimitedItemList (nonLinkedItemsToLimit, offset);
+			return new LimitedItemList (nonLinkedInvInstancesToLimit, offset);
 		}
 		
 
@@ -1673,7 +1898,7 @@ namespace AC
 				}
 				else
 				{
-					Shift (shiftType, maxSlots, items.Count, amount);
+					Shift (shiftType, maxSlots, invInstances.Count, amount);
 				}
 			}
 		}
@@ -1686,10 +1911,10 @@ namespace AC
 				switch (KickStarter.settingsManager.selectInventoryDisplay)
 				{
 					case SelectInventoryDisplay.ShowSelectedGraphic:
-						return items[itemIndex].selectedTex;
+						return invInstances[itemIndex].InvItem.selectedTex;
 
 					case SelectInventoryDisplay.ShowHoverGraphic:
-						return items[itemIndex].activeTex;
+						return invInstances[itemIndex].InvItem.activeTex;
 
 					default:
 						break;
@@ -1697,21 +1922,21 @@ namespace AC
 			}
 			else if (isActive && KickStarter.settingsManager.activeWhenHover)
 			{
-				return items[itemIndex].activeTex;
+				return invInstances[itemIndex].InvItem.activeTex;
 			}
-			return items[itemIndex].tex;
+			return invInstances[itemIndex].InvItem.tex;
 		}
 		
 		
 		private void DrawTexture (Rect rect, int itemIndex, bool isActive)
 		{
-			InvItem _item = items[itemIndex];
-			if (_item == null) return;
+			InvInstance invInstance = invInstances[itemIndex];
+			if (!InvInstance.IsValid (invInstance)) return;
 
 			Texture tex = null;
-			if (Application.isPlaying && KickStarter.runtimeInventory != null && inventoryBoxType != AC_InventoryBoxType.DisplaySelected)
+			if (Application.isPlaying && KickStarter.runtimeInventory && inventoryBoxType != AC_InventoryBoxType.DisplaySelected)
 			{
-				if (_item == KickStarter.runtimeInventory.highlightItem && _item.activeTex != null)
+				if (invInstance == KickStarter.runtimeInventory.HighlightInstance && invInstance.InvItem.activeTex)
 				{
 					KickStarter.runtimeInventory.DrawHighlighted (rect);
 					return;
@@ -1724,15 +1949,15 @@ namespace AC
 
 				if (tex == null)
 				{
-					tex = _item.tex;
+					tex = invInstance.InvItem.tex;
 				}
 			}
-			else if (_item.tex != null)
+			else
 			{
-				tex = _item.tex;
+				tex = invInstance.InvItem.tex;
 			}
 
-			if (tex != null)
+			if (tex)
 			{
 				GUI.DrawTexture (rect, tex, ScaleMode.StretchToFill, true, 0f);
 			}
@@ -1747,28 +1972,29 @@ namespace AC
 		 */
 		public override string GetLabel (int i, int languageNumber)
 		{
-			if (inventoryBoxType == AC_InventoryBoxType.CollectedDocuments || inventoryBoxType == AC_InventoryBoxType.Objectives)
+			switch (inventoryBoxType)
 			{
-				if (labels.Length > i)
-				{
-					return labels[i];
-				}
-				return "";
-			}
-			else
-			{
-				if (items.Count <= (i+offset) || items [i+offset] == null)
-				{
+				case AC_InventoryBoxType.CollectedDocuments:
+				case AC_InventoryBoxType.Objectives:
+					if (labels.Length > i)
+					{
+						return labels[i];
+					}
 					return string.Empty;
-				}
-				return items [i+offset].GetLabel (languageNumber);
+
+				default:
+					if ((i + offset) >= invInstances.Count || !InvInstance.IsValid (invInstances[i+offset]))
+					{
+						return string.Empty;
+					}
+					return invInstances[i+offset].InvItem.GetLabel (languageNumber);
 			}
 		}
 
 
 		public override bool IsSelectedByEventSystem (int slotIndex)
 		{
-			if (uiSlots != null && slotIndex >= 0 && uiSlots.Length > slotIndex && uiSlots[slotIndex] != null && uiSlots[slotIndex].uiButton != null)
+			if (uiSlots != null && slotIndex >= 0 && uiSlots.Length > slotIndex && uiSlots[slotIndex] != null && uiSlots[slotIndex].uiButton)
 			{
 				return KickStarter.playerMenus.IsEventSystemSelectingObject (uiSlots[slotIndex].uiButton.gameObject);
 			}
@@ -1778,7 +2004,7 @@ namespace AC
 
 		public override AudioClip GetHoverSound (int slot)
 		{
-			if (!hoverSoundOverEmptySlots && GetItem (slot) == null) return null;
+			if (!hoverSoundOverEmptySlots && !InvInstance.IsValid (GetInstance (slot))) return null;
 
 			return base.GetHoverSound (slot);
 		}
@@ -1791,12 +2017,28 @@ namespace AC
 		 */
 		public InvItem GetItem (int i)
 		{
-			if (items.Count <= (i+offset) || items [i+offset] == null)
+			if ((i + offset) >= invInstances.Count || !InvInstance.IsValid (invInstances[i+offset]))
 			{
 				return null;
 			}
 
-			return items [i+offset];
+			return invInstances[i+offset].InvItem;
+		}
+
+
+		/**
+		 * <summary>Gets the inventory item instance shown in a specific slot</summary>
+		 * <param name = "i">The index number of the slot</param>
+		 * <returns>The inventory item instance shown in the slot</returns>
+		 */
+		public InvInstance GetInstance (int i)
+		{
+			if ((i + offset) >= invInstances.Count || !InvInstance.IsValid (invInstances[i + offset]))
+			{
+				return null;
+			}
+
+			return invInstances[i + offset];
 		}
 
 
@@ -1806,29 +2048,32 @@ namespace AC
 
 			if (Application.isPlaying)
 			{
-				if (items.Count <= (i+offset) || items [i+offset] == null)
+				if ((i + offset) >= invInstances.Count || !InvInstance.IsValid (invInstances[i+offset]))
 				{
 					return string.Empty;
 				}
 
-				if (items [i+offset].count < 2 && inventoryItemCountDisplay == InventoryItemCountDisplay.OnlyIfMultiple)
+				if (invInstances[i+offset].Count < 2 && inventoryItemCountDisplay == InventoryItemCountDisplay.OnlyIfMultiple)
 				{
 					return string.Empty;
 				}
 
-				if (ItemIsSelected (i+offset) && items [i+offset].CanSelectSingle ())
+				if (ItemIsSelected (i+offset))
 				{
-					return (items [i+offset].count-1).ToString ();
+					return invInstances[i+offset].GetInventoryDisplayCount ().ToString ();
 				}
-
-				return items [i + offset].count.ToString ();
+				return invInstances[i + offset].Count.ToString ();
 			}
 
-			if (items[i+offset].canCarryMultiple && !items[i+offset].useSeparateSlots)
+			if (invInstances[i+offset].InvItem.canCarryMultiple && invInstances[i+offset].InvItem.maxCount > 1)
 			{
-				if (items[i+offset].count > 1 || inventoryItemCountDisplay == InventoryItemCountDisplay.Always)
+				if (invInstances[i+offset].Count > 1 || inventoryItemCountDisplay == InventoryItemCountDisplay.Always)
 				{
-					return items[i+offset].count.ToString ();
+					return invInstances[i+offset].Count.ToString ();
+				}
+				if (invInstances[i + offset].InvItem.count > 1)
+				{
+					return invInstances[i + offset].InvItem.count.ToString ();
 				}
 			}
 			return string.Empty;
@@ -1883,19 +2128,19 @@ namespace AC
 					return;
 				}
 			}
-			else if (items.Count > 0)
+			else if (invInstances.Count > 0)
 			{
-				foreach (InvItem _item in items)
+				foreach (InvInstance invInstance in invInstances)
 				{
-					if (_item != null)
+					if (InvInstance.IsValid (invInstance))
 					{
 						if (displayType == ConversationDisplayType.IconOnly)
 						{
-							AutoSize (new GUIContent (_item.tex));
+							AutoSize (new GUIContent (invInstance.InvItem.tex));
 						}
 						else if (displayType == ConversationDisplayType.TextOnly)
 						{
-							AutoSize (new GUIContent (_item.label));
+							AutoSize (new GUIContent (invInstance.InvItem.label));
 						}
 						return;
 					}
@@ -1909,137 +2154,136 @@ namespace AC
 		 * <summary>Performs what should happen when the element is clicked on, if inventoryBoxType = AC_InventoryBoxType.Container.</summary>
 		 * <param name = "_mouseState">The state of the mouse button</param>
 		 * <param name = "_slot">The index number of the slot that was clicked on</param>
+		 * <returns>True if the click had an effect and should be consumed</returns>
 		 */
-		public void ClickContainer (MouseState _mouseState, int _slot)
+		public bool ClickContainer (MouseState _mouseState, int _slot)
 		{
 			Container container = (overrideContainer != null) ? overrideContainer : KickStarter.playerInput.activeContainer;
 
-			if (container == null || KickStarter.runtimeInventory == null) return;
+			if (container == null || KickStarter.runtimeInventory == null) return false;
 
-			KickStarter.runtimeInventory.SetFont (font, GetFontSize (), fontColor, textEffects);
-
+			InvInstance selectedInstance = KickStarter.runtimeInventory.SelectedInstance;
+			InvInstance containerInstance = container.InvCollection.GetInstanceAtIndex (_slot+offset);
+			
 			if (_mouseState == MouseState.SingleClick)
 			{
-				if (KickStarter.runtimeInventory.SelectedItem == null)
+				if (!InvInstance.IsValid (selectedInstance))
 				{
-					// Take an item from the Container
-					if (container.items.Count > (_slot+offset) && !container.items [_slot+offset].IsEmpty)
+					// No item selected, so take an item from the Container
+					if (InvInstance.IsValid (containerInstance))
 					{
-						ContainerItem containerItem = container.items [_slot + offset];
-						ContainerItem preservedContainerItem = new ContainerItem (containerItem);
-
-						// Prevent if player is already carrying one, and multiple can't be carried
-						InvItem invItem = KickStarter.inventoryManager.GetItem (containerItem.linkedID);
-						if (KickStarter.runtimeInventory.IsCarryingItem (invItem.id) && !invItem.canCarryMultiple)
+						switch (containerSelectMode)
 						{
-							KickStarter.eventManager.Call_OnUseContainerFail (container, containerItem);
-							return;
-						}
-
-						if (containerSelectMode == ContainerSelectMode.MoveToInventory ||
-							containerSelectMode == ContainerSelectMode.MoveToInventoryAndSelect)
-						{
-							if (KickStarter.runtimeInventory.CanTransferContainerItemsToInventory (containerItem))
-							{
+							case ContainerSelectMode.MoveToInventory:
+							case ContainerSelectMode.MoveToInventoryAndSelect:
 								bool selectItem = (containerSelectMode == ContainerSelectMode.MoveToInventoryAndSelect);
 
-								if (KickStarter.inventoryManager.GetItem (containerItem.linkedID).CanSelectSingle (containerItem.count))
+								ItemStackingMode itemStackingMode = containerInstance.ItemStackingMode;
+								if (itemStackingMode != ItemStackingMode.All)
 								{
-									// Only take one
-									KickStarter.runtimeInventory.Add (containerItem.linkedID, 1, selectItem, -1);
-									container.items [_slot+offset].count -= 1;
+									containerInstance.TransferCount = 1;
+								}
+								
+								InvInstance newInstance = KickStarter.runtimeInventory.PlayerInvCollection.AddToEnd (containerInstance);
+								if (selectItem && InvInstance.IsValid (newInstance))
+								{
+									KickStarter.runtimeInventory.SelectItem (newInstance);
+								}
+								break;
+
+							case ContainerSelectMode.SelectItemOnly:
+								if (AllowInteractions ())
+								{
+									return HandleDefaultClick (_mouseState, _slot);
 								}
 								else
 								{
-									KickStarter.runtimeInventory.Add (containerItem.linkedID, containerItem.count, selectItem, -1);
-									container.Remove (containerItem);
+									KickStarter.runtimeInventory.SelectItem (containerInstance);
 								}
-								KickStarter.eventManager.Call_OnUseContainer (false, container, preservedContainerItem);
-							}
-							else
-							{
-								return;
-							}
+								break;
+
+							default:
+								break;
 						}
-						else if (containerSelectMode == ContainerSelectMode.SelectItemOnly)
-						{
-							KickStarter.runtimeInventory.SelectItem (container, containerItem);
-						}
+
+						return true;
 					}
+					return false;
 				}
 				else
 				{
 					// Placing an item inside the container
 
-					if (container.maxSlots > 0 && container.FilledSlots >= container.maxSlots)
+					if (selectedInstance == containerInstance && selectedInstance.CanStack ())
 					{
-						// Can't hold any more
-						KickStarter.runtimeInventory.SetNull ();
-						return;
+						selectedInstance.AddStack ();
+						return true;
 					}
 
-					if (KickStarter.runtimeInventory.selectedContainerItem != null)
+					if (AllowInteractions () && InvInstance.IsValid (containerInstance))
 					{
-						// Transfer from container
-						int index = KickStarter.runtimeInventory.selectedContainerItemContainer.items.IndexOf (KickStarter.runtimeInventory.selectedContainerItem);
-						if (KickStarter.settingsManager.canReorderItems)
-						{
-							KickStarter.runtimeInventory.selectedContainerItemContainer.items[index].IsEmpty = true;
-						}
-						else
-						{
-							KickStarter.runtimeInventory.selectedContainerItemContainer.Remove (KickStarter.runtimeInventory.selectedContainerItem);
-						}
+						bool clickConsumed = HandleDefaultClick (_mouseState, _slot);
+						if (clickConsumed) return true;
+					}
 
-						container.InsertAt (KickStarter.runtimeInventory.SelectedItem, _slot+offset, KickStarter.runtimeInventory.selectedContainerItem.count);
+					KickStarter.runtimeInventory.SetNull ();
 
-						if (KickStarter.runtimeInventory.selectedContainerItemContainer != container)
-						{
-							KickStarter.eventManager.Call_OnUseContainer (true, container, KickStarter.runtimeInventory.selectedContainerItem);
-						}
-						KickStarter.runtimeInventory.SetNull ();
+					int index = _slot + offset;
+					if (container.maxSlots > 0 && index >= container.maxSlots)
+					{
+						index = -1;
+					}
+					if (container.maxSlots > 0 && container.swapIfFull)
+					{
+						container.InvCollection.Insert (selectedInstance, index, OccupiedSlotBehaviour.SwapItems);
 					}
 					else
 					{
-						// Transfer from inventory
-
-						int numToChange = (KickStarter.runtimeInventory.SelectedItem.CanSelectSingle ()) ? 1 : 0;
-						ContainerItem containerItem = container.InsertAt (KickStarter.runtimeInventory.SelectedItem, _slot+offset, numToChange);
-						if (containerItem != null && !containerItem.IsEmpty)
-						{
-							KickStarter.runtimeInventory.Remove (KickStarter.runtimeInventory.SelectedItem, numToChange);
-							KickStarter.eventManager.Call_OnUseContainer (true, container, containerItem);
-						}
+						container.InvCollection.Insert (selectedInstance, index);
 					}
+
+					return true;
 				}
 			}
 
 			else if (_mouseState == MouseState.RightClick)
 			{
-				if (KickStarter.runtimeInventory.SelectedItem != null)
+				if (AllowInteractions () && InvInstance.IsValid (containerInstance))
 				{
-					KickStarter.runtimeInventory.SetNull ();
+					return HandleDefaultClick (_mouseState, _slot);
+				}
+
+				if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
+				{
+					if (selectedInstance == containerInstance && selectedInstance.ItemStackingMode == ItemStackingMode.Stack)
+					{
+						selectedInstance.RemoveStack ();
+					}
+					else
+					{
+						KickStarter.runtimeInventory.SetNull ();
+					}
+
+					return true;
 				}
 			}
+
+			return false;
 		}
 
 
-		/**
-		 * <summary>Performs what should happen when the element is clicked on.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 * <param name = "_slot">The index number of ths slot that was clicked</param>
-		 * <param name = "_mouseState The state of the mouse button</param>
-		 */
-		public override void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public override bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			if (KickStarter.stateHandler.gameState == GameState.Cutscene)
 			{
-				return;
+				return false;
 			}
+
+			bool clickConsumed = true;
 
 			if (_mouseState == MouseState.SingleClick)
 			{
-				KickStarter.runtimeInventory.lastClickedItem = GetItem (_slot);
+				KickStarter.runtimeInventory.LastClickedInstance = GetInstance (_slot);
 			}
 
 			switch (inventoryBoxType)
@@ -2050,7 +2294,7 @@ namespace AC
 						Document document = GetDocument (_slot);
 						KickStarter.runtimeDocuments.OpenDocument (document);
 					}
-					if (actionListOnClick != null)
+					if (actionListOnClick)
 					{
 						actionListOnClick.Interact ();
 					}
@@ -2066,20 +2310,20 @@ namespace AC
 						ObjectiveInstance objectiveInstance = KickStarter.runtimeObjectives.GetObjectives (objectiveDisplayType)[_slot + offset];
 						KickStarter.runtimeObjectives.SelectedObjective = objectiveInstance;
 					}
-					if (actionListOnClick != null)
+					if (actionListOnClick)
 					{
 						actionListOnClick.Interact ();
 					}
 					break;
 
 				default:
-					KickStarter.runtimeInventory.ProcessInventoryBoxClick (_menu, this, _slot, _mouseState);
+					clickConsumed = KickStarter.runtimeInventory.ProcessInventoryBoxClick (_menu, this, _slot, _mouseState);
 					break;
 			}
 
-			if (clickSound != null)
+			if (clickConsumed && clickSound)
 			{
-				if (KickStarter.playerInput.GetDragState () == DragState.PreInventory && KickStarter.runtimeInventory.SelectedItem != null)
+				if (KickStarter.playerInput.GetDragState () == DragState.PreInventory && InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 				{
 					// Bypass click sound in this case
 				}
@@ -2090,6 +2334,7 @@ namespace AC
 			}
 
 			KickStarter.eventManager.Call_OnMenuElementClick (_menu, this, _slot, (int)_mouseState);
+			return clickConsumed;
 		}
 
 
@@ -2132,11 +2377,29 @@ namespace AC
 		 */
 		public int GetItemSlot (int itemID)
 		{
-			foreach (InvItem invItem in items)
+			for (int i=0; i< invInstances.Count; i++)
 			{
-				if (invItem != null && invItem.id == itemID)
+				if (InvInstance.IsValid (invInstances[i]) && invInstances[i].ItemID == itemID)
 				{
-					return items.IndexOf (invItem) - offset;
+					return i - offset;
+				}
+			}
+			return 0;
+		}
+
+
+		/**
+		 * <summary>Gets the slot index number that a given InvItem (inventory item) appears in.</summary>
+		 * <param name = "invInstance">The instance of the InvItem to search for</param>
+		 * <returns>The slot index number that the inventory item appears in</returns>
+		 */
+		public int GetItemSlot (InvInstance invInstance)
+		{
+			for (int i = 0; i < invInstances.Count; i++)
+			{
+				if (InvInstance.IsValid (invInstances[i]) && invInstances[i] == invInstance)
+				{
+					return i - offset;
 				}
 			}
 			return 0;
@@ -2145,7 +2408,7 @@ namespace AC
 
 		private bool ForceLimitByReference ()
 		{
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction &&
+			if (KickStarter.settingsManager && KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction &&
 				KickStarter.settingsManager.cycleInventoryCursors &&
 				(KickStarter.settingsManager.selectInteractions == SelectInteractions.CyclingCursorAndClickingHotspot || KickStarter.settingsManager.selectInteractions == SelectInteractions.CyclingMenuAndClickingHotspot))
 			{
@@ -2160,6 +2423,10 @@ namespace AC
 		 */
 		public Container OverrideContainer
 		{
+			get
+			{
+				return overrideContainer;
+			}
 			set
 			{
 				overrideContainer = value;
@@ -2167,25 +2434,35 @@ namespace AC
 		}
 
 
+		/** The items listed in the element */
+		public List<InvInstance> InvInstances
+		{
+			get
+			{
+				return invInstances;
+			}
+		}
+
+
 		private struct LimitedItemList
 		{
 
-			List<InvItem> limitedItems;
-			int offset;
+			private List<InvInstance> limitedInvInstances;
+			private int offset;
 
 	
-			public LimitedItemList (List<InvItem> _limitedItems, int _offset)
+			public LimitedItemList (List<InvInstance> _limitedInvInstances, int _offset)
 			{
-				limitedItems = _limitedItems;
+				limitedInvInstances = _limitedInvInstances;
 				offset = _offset;
 			}
 
 
-			public List<InvItem> LimitedItems
+			public List<InvInstance> LimitedInvInstances
 			{
 				get
 				{
-					return limitedItems;
+					return limitedInvInstances;
 				}
 			}
 

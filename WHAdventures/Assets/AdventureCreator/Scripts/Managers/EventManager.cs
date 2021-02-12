@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"EventManager.cs"
  * 
@@ -563,6 +563,28 @@ namespace AC
 		}
 
 
+		// Misc
+
+		/** A delegate for the OnTeleport event */
+		public delegate void Delegate_OnTeleport (GameObject gameObject);
+		/** An event triggered when an object is teleported using the 'Object: Teleport' Action */
+		public static Delegate_OnTeleport OnTeleport;
+
+		/**
+		 * <summary>Triggers the OnTeleport event</summary>
+		 * <param name="_object">The object that was teleported</param>
+		 */
+		public void Call_OnTeleport (GameObject _object)
+		{
+			if (_object == null) return;
+
+			if (OnTeleport != null)
+			{
+				OnTeleport (_object);
+			}
+		}
+
+
 		// Variables
 
 		/** A delegate for the OnVariableChange event */
@@ -791,13 +813,13 @@ namespace AC
 		/**
 		 * <summary>Triggers the OnEnableInteractionMenus event</summary>
 		 * <param name = "hotspot">The Hotspot for which Interaction menus were turned on for. Null if invItem is not.</param>
-		 * <param name = "invItem">The Inventory item for which Interaction menus were turned on for.  Null if hotspot is not.</param>
+		 * <param name = "invInstance">The Inventory item instance for which Interaction menus were turned on for.  Null if hotspot is not.</param>
 		 */
-		public void Call_OnEnableInteractionMenus (Hotspot hotspot, InvItem invItem)
+		public void Call_OnEnableInteractionMenus (Hotspot hotspot, InvInstance invInstance)
 		{
 			if (OnEnableInteractionMenus != null)
 			{
-				OnEnableInteractionMenus (hotspot, invItem);
+				OnEnableInteractionMenus (hotspot, (InvInstance.IsValid (invInstance)) ? invInstance.InvItem : null);
 			}
 		}
 
@@ -1009,10 +1031,14 @@ namespace AC
 
 		// Characters
 
-		/** A delegate for the OnSetPlayer event */
-		public delegate void Delegate_SetPlayer (Player player);
+		/** A delegate for the OnSetPlayer, OnPlayerSpawn, and OnPlayerRemove events */
+		public delegate void Delegate_Player (Player player);
 		/** An event triggered whenever a new Player is loaded into the scene */
-		public static Delegate_SetPlayer OnSetPlayer;
+		public static Delegate_Player OnSetPlayer;
+		/** An event triggered after a Player is spawned in the scene */
+		public static Delegate_Player OnPlayerSpawn;
+		/** An event triggered before a Player is removed the scene */
+		public static Delegate_Player OnPlayerRemove;
 
 		/** A delegate for the OnCharacterEnterTimeline and OnCharacterExitTimeline events */
 		public delegate void Delegate_OnCharacterTimeline (AC.Char character, PlayableDirector director, int trackIndex);
@@ -1053,6 +1079,11 @@ namespace AC
 		/** An event triggered whenever the player is commanded to move via point-and-click */
 		public static Delegate_OnPointAndClick OnPointAndClick;
 
+		/** A delegate for the OnSetLookDirection event */
+		public delegate void Delegate_OnSetLookDirection (AC.Char character, Vector3 direction, bool isInstant);
+		/** An event triggered whenever a character updates their facing direction */
+		public static Delegate_OnSetLookDirection OnSetLookDirection;
+
 
 		/** 
 		 * <summary>Triggers the OnSetPlayer event.</summary>
@@ -1060,9 +1091,41 @@ namespace AC
 		 */
 		public void Call_OnSetPlayer (Player player)
 		{
+			if (player == null) return;
+
 			if (OnSetPlayer != null)
 			{
 				OnSetPlayer (player);
+			}
+		}
+
+
+		/**
+		 * <summary>Triggers the OnPlayerSpawn event.</summary>
+		 * <param name="player">The Player being spawned</param>
+		 */
+		public void Call_OnPlayerSpawn (Player player)
+		{
+			if (player == null) return;
+
+			if (OnPlayerSpawn != null)
+			{
+				OnPlayerSpawn (player);
+			}
+		}
+
+
+		/**
+		 * <summary>Triggers the OnPlayerRemove event.</summary>
+		 * <param name="player">The Player being removed</param>
+		 */
+		public void Call_OnPlayerRemove (Player player)
+		{
+			if (player == null) return;
+
+			if (OnPlayerRemove != null)
+			{
+				OnPlayerRemove (player);
 			}
 		}
 
@@ -1197,32 +1260,69 @@ namespace AC
 		}
 
 
+		/**
+		 * <summary>Triggers the OnSetLookDirection event</summary>
+		 * <param name="character">The character that is turning</param>
+		 * <param name="direction">The character's intended facing direction</param>
+		 * <param name="isInstant">If True, the character will turn instantly to face this new direction</param>
+		 */
+		public void Call_OnSetLookDirection (AC.Char character, Vector3 direction, bool isInstant)
+		{
+			if (OnSetLookDirection != null)
+			{
+				OnSetLookDirection (character, direction, isInstant);
+			}
+		}
+
+
 		// Inventory
 
 		/** A delegate for the OnInventoryAdd, OnInventoryRemove and OnInventoryInteract events */
-		public delegate void Delegate_ChangeInventory (InvItem invItem, int value);
+		public delegate void Delegate_ChangeInventory (InvItem invItem, int amount);
+		/** A delegate for the OnInventoryAdd_Alt and OnInventoryRemove_Alt events */
+		public delegate void Delegate_ChangeInventory_Alt (InvCollection invCollection, InvInstance invInstance, int amount);
 		/** A delegate for the OnInventoryCombine events */
 		public delegate void Delegate_CombineInventory (InvItem invItem, InvItem invItem2);
+		/** A delegate for the OnInventoryCombine_Alt events */
+		public delegate void Delegate_CombineInventory_Alt (InvInstance invInstanceA, InvInstance invInstanceB);
+		/** A delegate for the OnInventoryInteract_Alt events */
+		public delegate void Delegate_InteractInventory_Alt (InvInstance invInstance, int iconID);
 		/** A delegate for the OnInventorySelect and OnInventoryDeselect events */
-		public delegate void Delegate_Inventory (InvItem _int);
+		public delegate void Delegate_Inventory (InvItem invItem);
+		/** A delegate for the OnInventorySelect_Alt and OnInventoryDeselect_Alt events */
+		public delegate void Delegate_Inventory_Alt (InvCollection invCollection, InvInstance invInstance);
 		/** A delegate for the OnContainerAdd and OnContainerRemove events */
-		public delegate void Delegate_Container (Container container, ContainerItem containerItem);
+		public delegate void Delegate_Container (Container container, InvInstance containerItem);
 		/** A delegate for the OnInventoryHighlight event */
 		public delegate void Delegate_InventoryHighlight (InvItem invItem, HighlightType highlightType);
+		/** A delegate for the OnInventoryHighlight_Alt event */
+		public delegate void Delegate_InventoryHighlight_Alt (InvInstance invInstance, HighlightType highlightType);
 		/** A delegate for the OnCraftingSucceed event */
 		public delegate void Delegate_Crafting (Recipe recipe);
 		/** An event triggered whenever an item is added to the player's inventory */
 		public static Delegate_ChangeInventory OnInventoryAdd;
+		/** An event triggered whenever an item is added to the player's inventory */
+		public static Delegate_ChangeInventory_Alt OnInventoryAdd_Alt;
 		/** An event triggered whenever an item is removed from the player's inventory */
 		public static Delegate_ChangeInventory OnInventoryRemove;
+		/** An event triggered whenever an item is removed from the player's inventory */
+		public static Delegate_ChangeInventory_Alt OnInventoryRemove_Alt;
 		/** An event triggered whenever an inventory item is selected by the player */
 		public static Delegate_Inventory OnInventorySelect;
+		/** An event triggered whenever an inventory item is selected by the player */
+		public static Delegate_Inventory_Alt OnInventorySelect_Alt;
 		/** An event triggered whenever an inventory item is de-selected by the player */
 		public static Delegate_Inventory OnInventoryDeselect;
+		/** An event triggered whenever an inventory item is de-selected by the player */
+		public static Delegate_Inventory_Alt OnInventoryDeselect_Alt;
 		/** An event triggered whenever an inventory item is interacted with */
 		public static Delegate_ChangeInventory OnInventoryInteract;
+		/** An event triggered whenever an inventory item is interacted with */
+		public static Delegate_InteractInventory_Alt OnInventoryInteract_Alt;
 		/** An event triggered whenever two inventory items are combined together. This is triggered even if the item is "used" with itself */
 		public static Delegate_CombineInventory OnInventoryCombine;
+		/** An event triggered whenever two inventory items are combined together. This is triggered even if the item is "used" with itself */
+		public static Delegate_CombineInventory_Alt OnInventoryCombine_Alt;
 		/** An event triggered whenever an item is added to a Container */
 		public static Delegate_Container OnContainerAdd;
 		/** An event triggered whenever an item is removed from a Container */
@@ -1233,80 +1333,135 @@ namespace AC
 		public static Delegate_Crafting OnCraftingSucceed;
 		/** An event triggered whenever an item is highlighted using the "Object: Highlight" Action */
 		public static Delegate_InventoryHighlight OnInventoryHighlight;
+		/** An event triggered whenever an item is highlighted using the "Object: Highlight" Action */
+		public static Delegate_InventoryHighlight_Alt OnInventoryHighlight_Alt;
 
 
 		/**
 		 * <summary>Triggers either the OnInventoryAdd, OnInventoryRemove, OnInventorySelect or OnInventoryDeselect events.<summary>
-		 * <param name = "invItem">The inventory item that was manipulated</param>
+		 * <param name = "invCollection">The collection of items that was affected</param>
+		 * <param name = "invInstance">The instance of the inventory item that was manipulated</param>
 		 * <param name = "inventoryEventType">How the inventory item was manipulated (Add, Remove, Select, Deselect)</param>
-		 * <param name = "amount">How many instances of the inventory item were affected, if appropriate</param>
+		 * <param name = "amountOverride">If non-negative, how many instances of the inventory item were affected, if not that used in InvInstance</param>
 		 */
-		public void Call_OnChangeInventory (InvItem invItem, InventoryEventType inventoryEventType, int amount = 1)
+		public void Call_OnChangeInventory (InvCollection invCollection, InvInstance invInstance, InventoryEventType inventoryEventType, int amountOverride = -1)
 		{
-			if (invItem == null) return;
+			if (invInstance == null) return;
 
-			if (inventoryEventType == InventoryEventType.Add && OnInventoryAdd != null)
+			if (invCollection == null) invCollection = invInstance.GetSource ();
+			
+			bool isPlayerInventory = (invCollection != null) ? invCollection.IsPlayerInventory () : false;
+			Container container = (isPlayerInventory || invCollection == null) ? null : invCollection.GetSourceContainer ();
+			
+			switch (inventoryEventType)
 			{
-				OnInventoryAdd (invItem, amount);
-			}
-			else if (inventoryEventType == InventoryEventType.Remove && OnInventoryRemove != null)
-			{
-				OnInventoryRemove (invItem, amount);
-			}
-			else if (inventoryEventType == InventoryEventType.Select && OnInventorySelect != null)
-			{
-				OnInventorySelect (invItem);
-			}
-			else if (inventoryEventType == InventoryEventType.Deselect && OnInventoryDeselect != null)
-			{
-				OnInventoryDeselect (invItem);
+				case InventoryEventType.Add:
+					if (isPlayerInventory)
+					{
+						if (OnInventoryAdd != null)
+						{
+							OnInventoryAdd (invInstance.InvItem, (amountOverride < 0) ? invInstance.Count : amountOverride);
+						}
+					}
+					else if (container)
+					{
+						if (OnContainerAdd != null)
+						{
+							OnContainerAdd (container, invInstance);
+						}
+					}
+					if (OnInventoryAdd_Alt != null && invCollection != null)
+					{
+						OnInventoryAdd_Alt (invCollection, invInstance, (amountOverride < 0) ? invInstance.Count : amountOverride);
+					}
+					
+					break;
+
+				case InventoryEventType.Remove:
+					if (isPlayerInventory)
+					{
+						if (OnInventoryRemove != null)
+						{
+							OnInventoryRemove (invInstance.InvItem, (amountOverride < 0) ? invInstance.Count : amountOverride);
+						}
+					}
+					else if (container)
+					{
+						if (OnContainerRemove != null)
+						{
+							OnContainerRemove (container, invInstance);
+						}
+					}
+					if (OnInventoryRemove_Alt != null && invCollection != null)
+					{
+						OnInventoryRemove_Alt (invCollection, invInstance, (amountOverride < 0) ? invInstance.Count : amountOverride);
+					}
+					break;
+
+				case InventoryEventType.Select:
+					if (OnInventorySelect != null)
+					{
+						OnInventorySelect (invInstance.InvItem);
+					}
+					if (OnInventorySelect_Alt != null && invCollection != null)
+					{
+						OnInventorySelect_Alt (invCollection, invInstance);
+					}
+					break;
+
+				case InventoryEventType.Deselect:
+					if (OnInventoryDeselect != null)
+					{
+						OnInventoryDeselect (invInstance.InvItem);
+					}
+					if (OnInventoryDeselect_Alt != null)
+					{
+						OnInventoryDeselect_Alt (invCollection, invInstance);
+					}
+					break;
+
+				default:
+					break;
 			}
 		}
 
 
 		/**
-		 * <summary>Triggers either the OnInventoryCombine or InventoryInteract events.</summary>
+		 * <summary>Triggers the InventoryInteract and OnInventoryInteract_Alt events.</summary>
+		 * <param name = "invInstance">The instance of the inventory item that was manipulated</param>
 		 * <param name = "iconID">The ID number of the 'use' icon, as defined in CursorManager, if the item was used</param>
-		 * <param name = "combineItem">The other inventory item, if the item was combined with another</param>
 		 */
-		public void Call_OnUseInventory (InvItem invItem, int iconID, InvItem combineItem = null)
+		public void Call_OnUseInventory (InvInstance invInstance, int iconID)
 		{
-			if (invItem == null) return;
+			if (!InvInstance.IsValid (invInstance)) return;
 
-			if (OnInventoryCombine != null && combineItem != null)
+			if (OnInventoryInteract != null)
 			{
-				OnInventoryCombine (invItem, combineItem);
+				OnInventoryInteract (invInstance.InvItem, iconID);
 			}
-			else if (OnInventoryInteract != null && combineItem == null)
+			if (OnInventoryInteract_Alt != null)
 			{
-				OnInventoryInteract (invItem, iconID);
+				OnInventoryInteract_Alt (invInstance, iconID);
 			}
 		}
 
 
 		/**
-		 * <summary>Triggers either the OnContainerAdd or OnContainerRemove events.<summary>
-		 * <param name = "transferringToContainer">If True, an item is being added to a Container; otherwise, it is being removed</param>
-		 * <param name = "container">The Container being manipulated</param>
-		 * <param name = "containerItem">The ContainerItem being moved to/from the Container</param>
+		 * <summary>Triggers the OnInventoryCombine and OnInventoryCombine_Alt events.</summary>
+		 * <param name = "invInstanceA">The first inventory item instance</param>
+		 * <param name = "invInstanceB">The second inventory item instance</param>
 		 */
-		public void Call_OnUseContainer (bool transferringToContainer, Container container, ContainerItem containerItem)
+		public void Call_OnCombineInventory (InvInstance invInstanceA, InvInstance invInstanceB)
 		{
-			if (containerItem == null || container == null) return;
+			if (!InvInstance.IsValid (invInstanceA) || !InvInstance.IsValid (invInstanceB)) return;
 
-			if (transferringToContainer)
+			if (OnInventoryCombine != null)
 			{
-				if (OnContainerAdd != null)
-				{
-					OnContainerAdd (container, containerItem);
-				}
+				OnInventoryCombine (invInstanceA.InvItem, invInstanceB.InvItem);
 			}
-			else
+			if (OnInventoryCombine_Alt != null)
 			{
-				if (OnContainerRemove != null)
-				{
-					OnContainerRemove (container, containerItem);
-				}
+				OnInventoryCombine_Alt (invInstanceA, invInstanceB);
 			}
 		}
 
@@ -1314,15 +1469,15 @@ namespace AC
 		/**
 		 * <summary>Triggers the OnContainerRemoveFail event.<summary>
 		 * <param name = "container">The Container being manipulated</param>
-		 * <param name = "containerItem">The ContainerItem that could not be removed from the Container</param>
+		 * <param name = "invInstance">The inventory item instance that could not be removed from the Container</param>
 		 */
-		public void Call_OnUseContainerFail (Container container, ContainerItem containerItem)
+		public void Call_OnUseContainerFail (Container container, InvInstance invInstance)
 		{
-			if (containerItem == null || container == null) return;
+			if (!InvInstance.IsValid (invInstance) || container == null) return;
 
 			if (OnContainerRemoveFail != null)
 			{
-				OnContainerRemoveFail (container, containerItem);
+				OnContainerRemoveFail (container, invInstance);
 			}
 		}
 
@@ -1341,15 +1496,21 @@ namespace AC
 
 
 		/**
-		 * <summary>Triggers the OnInventoryHiglight event</summary>
-		 * <param name = "invItem">The item being highlight</param>
+		 * <summary>Triggers the OnInventoryHiglight and OnInventoryHighlight_Alt event</summary>
+		 * <param name = "invInstance">The instance of the item being highlight</param>
 		 * <param name = "highlightType">The highlighting effect being applied</param>
 		 */
-		public void Call_OnInventoryHighlight (InvItem invItem, HighlightType highlightType)
+		public void Call_OnInventoryHighlight (InvInstance invInstance, HighlightType highlightType)
 		{
-			if (OnInventoryHighlight != null && invItem != null)
+			if (!InvInstance.IsValid (invInstance)) return;
+
+			if (OnInventoryHighlight != null)
 			{
-				OnInventoryHighlight (invItem, highlightType);
+				OnInventoryHighlight (invInstance.InvItem, highlightType);
+			}
+			if (OnInventoryHighlight_Alt != null)
+			{
+				OnInventoryHighlight_Alt (invInstance, highlightType);
 			}
 		}
 
@@ -1366,8 +1527,9 @@ namespace AC
 		public delegate void Delegate_OnDraggableSnap (DragBase dragBase, DragTrack track, TrackSnapData trackSnapData);
 		/** An event triggered whenever a draggable object snaps into a pre-set position */
 		public static event Delegate_OnDraggableSnap OnDraggableSnap;
-		
-		/** <summary>Triggers the OnGrabMoveable event.</summary>
+
+		/**
+		 * <summary>Triggers the OnGrabMoveable event.</summary>
 		 * <param name = "dragBase">The object being picked up</param>
 		 */
 		public void Call_OnGrabMoveable (DragBase dragBase)

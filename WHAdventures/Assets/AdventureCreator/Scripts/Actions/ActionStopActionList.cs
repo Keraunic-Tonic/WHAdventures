@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionStopActionList.cs"
  * 
@@ -36,14 +36,10 @@ namespace AC
 		public bool killAllInstances = false;
 
 
-		public ActionStopActionList ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ActionList;
-			title = "Kill";
-			description = "Instantly stops a scene or asset-based ActionList from running.";
-		}
-
+		public override ActionCategory Category { get { return ActionCategory.ActionList; }}
+		public override string Title { get { return "Kill"; }}
+		public override string Description { get { return "Instantly stops a scene or asset-based ActionList from running."; }}
+		
 		
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
@@ -98,8 +94,6 @@ namespace AC
 					killAllInstances = EditorGUILayout.Toggle ("Kill all instances?", killAllInstances);
 				}
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -128,9 +122,9 @@ namespace AC
 			if (parameterID < 0 && listSource == ListSource.InScene)
 			{
 				if (actionList != null && actionList.gameObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -138,7 +132,7 @@ namespace AC
 		{
 			if (listSource == ListSource.AssetFile && invActionList == actionListAsset)
 				return true;
-			return false;
+			return base.ReferencesAsset (actionListAsset);
 		}
 
 		#endif
@@ -151,7 +145,7 @@ namespace AC
 		 */
 		public static ActionStopActionList CreateNew (ActionList actionList)
 		{
-			ActionStopActionList newAction = (ActionStopActionList) CreateInstance <ActionStopActionList>();
+			ActionStopActionList newAction = CreateNew<ActionStopActionList> ();
 			newAction.listSource = ListSource.InScene;
 			newAction.actionList = actionList;
 			return newAction;
@@ -165,7 +159,7 @@ namespace AC
 		 */
 		public static ActionStopActionList CreateNew (ActionListAsset actionListAsset)
 		{
-			ActionStopActionList newAction = (ActionStopActionList) CreateInstance <ActionStopActionList>();
+			ActionStopActionList newAction = CreateNew<ActionStopActionList> ();
 			newAction.listSource = ListSource.AssetFile;
 			newAction.invActionList = actionListAsset;
 			return newAction;

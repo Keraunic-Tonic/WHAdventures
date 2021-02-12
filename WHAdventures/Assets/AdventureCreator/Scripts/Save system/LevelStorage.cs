@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"LevelStorage.cs"
  * 
@@ -15,6 +15,11 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 #if UNITY_EDITOR
 using UnityEditor;
+#endif
+#if AddressableIsPresent
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
+using System.Collections;
 #endif
 
 namespace AC
@@ -44,9 +49,7 @@ namespace AC
 		}
 
 
-		/**
-		 * Wipes all stored scene save data from memory.
-		 */
+		/** Wipes all stored scene save data from memory. */
 		public void ClearAllLevelData ()
 		{
 			allLevelData.Clear ();
@@ -55,8 +58,24 @@ namespace AC
 
 
 		/**
-		 * Wipes the currently-loaded scene's save data from memory
+		 * <summary></summary>Wipes stored data for a specific scene from memory.</summary>
+		 * <param name="sceneIndex">The build index number of the scene to clear save data for</param>
 		 */
+		public void ClearLevelData (int sceneIndex)
+		{
+			if (allLevelData == null) return;
+			foreach (SingleLevelData levelData in allLevelData)
+			{
+				if (levelData.sceneNumber == sceneIndex)
+				{
+					allLevelData.Remove (levelData);
+					return;
+				}
+			}
+		}
+
+
+		/** Wipes the currently-loaded scene's save data from memory */
 		public void ClearCurrentLevelData ()
 		{
 			if (allLevelData == null) allLevelData = new List<SingleLevelData>();
@@ -293,29 +312,35 @@ namespace AC
 
 		private void LoadSceneData (SingleLevelData levelData, SubScene subScene = null)
 		{
-			Scene scene = (subScene != null) ? subScene.gameObject.scene : SceneChanger.CurrentScene;
+			Scene scene = (subScene) ? subScene.gameObject.scene : SceneChanger.CurrentScene;
 
 			SceneSettings sceneSettings = (subScene == null) ? KickStarter.sceneSettings : subScene.SceneSettings;
 			LocalVariables localVariables = (subScene == null) ? KickStarter.localVariables : subScene.LocalVariables;
 			KickStarter.actionListManager.LoadData (levelData.activeLists, subScene);
 
-			UnloadCutsceneOnLoad (levelData.onLoadCutscene, sceneSettings);
-			UnloadCutsceneOnStart (levelData.onStartCutscene, sceneSettings);
-			UnloadNavMesh (levelData.navMesh, sceneSettings);
-			UnloadPlayerStart (levelData.playerStart, sceneSettings);
-			UnloadSortingMap (levelData.sortingMap, sceneSettings);
-			UnloadTintMap (levelData.tintMap, sceneSettings);
+			if (sceneSettings)
+			{
+				UnloadCutsceneOnLoad (levelData.onLoadCutscene, sceneSettings);
+				UnloadCutsceneOnStart (levelData.onStartCutscene, sceneSettings);
+				UnloadNavMesh (levelData.navMesh, sceneSettings);
+				UnloadPlayerStart (levelData.playerStart, sceneSettings);
+				UnloadSortingMap (levelData.sortingMap, sceneSettings);
+				UnloadTintMap (levelData.tintMap, sceneSettings);
+			}
 
 			UnloadTransformData (levelData.allTransformData, scene);
 			UnloadScriptData (levelData.allScriptData, scene);
 			
-			localVariables.localVars = SaveSystem.UnloadVariablesData (levelData.localVariablesData, localVariables.localVars);
+			if (localVariables)
+			{
+				localVariables.localVars = SaveSystem.UnloadVariablesData (levelData.localVariablesData, true, localVariables.localVars);
+			}
 		}
 
 
 		private void SaveSceneData (SubScene subScene = null)
 		{
-			Scene scene = (subScene != null) ? subScene.gameObject.scene : SceneChanger.CurrentScene;
+			Scene scene = (subScene) ? subScene.gameObject.scene : SceneChanger.CurrentScene;
 
 			SceneSettings sceneSettings = (subScene == null) ? KickStarter.sceneSettings : subScene.SceneSettings;
 			LocalVariables localVariables = (subScene == null) ? KickStarter.localVariables : subScene.LocalVariables;
@@ -328,35 +353,38 @@ namespace AC
 
 			thisLevelData.activeLists = KickStarter.actionListManager.GetSaveData (subScene);
 			
-			if (sceneSettings != null)
+			if (sceneSettings)
 			{
-				if (sceneSettings.navMesh != null)
+				if (sceneSettings.navMesh)
 				{
 					thisLevelData.navMesh = Serializer.GetConstantID (sceneSettings.navMesh.gameObject, false);
 				}
-				if (sceneSettings.defaultPlayerStart != null)
+				if (sceneSettings.defaultPlayerStart)
 				{
 					thisLevelData.playerStart = Serializer.GetConstantID (sceneSettings.defaultPlayerStart.gameObject, false);
 				}
-				if (sceneSettings.sortingMap != null)
+				if (sceneSettings.sortingMap)
 				{
 					thisLevelData.sortingMap = Serializer.GetConstantID (sceneSettings.sortingMap.gameObject, false);
 				}
-				if (sceneSettings.cutsceneOnLoad != null)
+				if (sceneSettings.cutsceneOnLoad)
 				{
 					thisLevelData.onLoadCutscene = Serializer.GetConstantID (sceneSettings.cutsceneOnLoad.gameObject, false);
 				}
-				if (sceneSettings.cutsceneOnStart != null)
+				if (sceneSettings.cutsceneOnStart)
 				{
 					thisLevelData.onStartCutscene = Serializer.GetConstantID (sceneSettings.cutsceneOnStart.gameObject, false);
 				}
-				if (sceneSettings.tintMap != null)
+				if (sceneSettings.tintMap)
 				{
 					thisLevelData.tintMap = Serializer.GetConstantID (sceneSettings.tintMap.gameObject, false);
 				}
 			}
 
-			thisLevelData.localVariablesData = SaveSystem.CreateVariablesData (localVariables.localVars, false, VariableLocation.Local);
+			if (localVariables)
+			{ 
+				thisLevelData.localVariablesData = SaveSystem.CreateVariablesData (localVariables.localVars, false, VariableLocation.Local);
+			}
 			thisLevelData.allTransformData = thisLevelTransforms;
 			thisLevelData.allScriptData = thisLevelScripts;
 
@@ -399,7 +427,7 @@ namespace AC
 		private void UnloadPlayerStart (int playerStartInt, SceneSettings sceneSettings)
 		{
 			PlayerStart playerStart = ConstantID.GetComponent <PlayerStart> (playerStartInt, sceneSettings.gameObject.scene);
-			if (playerStart != null)
+			if (playerStart)
 			{
 				sceneSettings.defaultPlayerStart = playerStart;
 			}
@@ -409,7 +437,7 @@ namespace AC
 		private void UnloadSortingMap (int sortingMapInt, SceneSettings sceneSettings)
 		{
 			SortingMap sortingMap = ConstantID.GetComponent <SortingMap> (sortingMapInt, sceneSettings.gameObject.scene);
-			if (sortingMap != null)
+			if (sortingMap)
 			{
 				sceneSettings.sortingMap = sortingMap;
 				KickStarter.sceneSettings.UpdateAllSortingMaps ();
@@ -420,7 +448,7 @@ namespace AC
 		private void UnloadTintMap (int tintMapInt, SceneSettings sceneSettings)
 		{
 			TintMap tintMap = ConstantID.GetComponent <TintMap> (tintMapInt, sceneSettings.gameObject.scene);
-			if (tintMap != null)
+			if (tintMap)
 			{
 				sceneSettings.tintMap = tintMap;
 				
@@ -437,7 +465,7 @@ namespace AC
 		private void UnloadCutsceneOnLoad (int cutsceneInt, SceneSettings sceneSettings)
 		{
 			Cutscene cutscene = ConstantID.GetComponent <Cutscene> (cutsceneInt, sceneSettings.gameObject.scene);
-			if (cutscene != null)
+			if (cutscene)
 			{
 				sceneSettings.cutsceneOnLoad = cutscene;
 			}
@@ -448,7 +476,7 @@ namespace AC
 		{
 			Cutscene cutscene = ConstantID.GetComponent <Cutscene> (cutsceneInt, sceneSettings.gameObject.scene);
 
-			if (cutscene != null)
+			if (cutscene)
 			{
 				sceneSettings.cutsceneOnStart = cutscene;
 			}
@@ -502,12 +530,18 @@ namespace AC
 				}
 			}
 
-			Object[] prefabAssets = Resources.LoadAll ("SaveableData/Prefabs", typeof (GameObject));
-			if (prefabAssets == null || prefabAssets.Length == 0)
+			#if AddressableIsPresent
+			if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
 			{
-				prefabAssets = Resources.LoadAll (string.Empty, typeof (GameObject));
+				StopAllCoroutines ();
+				StartCoroutine (UnloadTransformDataFromAddressables (allTransformData, scene));
+				return;
 			}
+			#endif
 
+			Object[] prefabAssets = null;
+			bool searchedResources = false;
+			
 			foreach (TransformData transformData in allTransformData)
 			{
 				RememberTransform saveObject = ConstantID.GetComponent <RememberTransform> (transformData.objectID, scene);
@@ -518,18 +552,30 @@ namespace AC
 					if (transformData.bringBack && !transformData.savePrevented)
 					{
 						bool foundObject = false;
+
+						if (!searchedResources)
+						{
+							prefabAssets = Resources.LoadAll ("SaveableData/Prefabs", typeof (GameObject));
+							if (prefabAssets == null || prefabAssets.Length == 0)
+							{
+								prefabAssets = Resources.LoadAll (string.Empty, typeof (GameObject));
+							}
+							searchedResources = true;
+						}
+
 						foreach (Object prefabAsset in prefabAssets)
 						{
 							if (prefabAsset is GameObject)
 							{
 								GameObject prefabGameObject = (GameObject) prefabAsset;
-								if (prefabGameObject.GetComponent <RememberTransform>())
+								RememberTransform prefabRememberTransform = prefabGameObject.GetComponent<RememberTransform>();
+								if (prefabRememberTransform)
 								{
-									int prefabID = prefabGameObject.GetComponent <ConstantID>().constantID;
+									int prefabID = prefabRememberTransform.constantID;
 									if ((transformData.linkedPrefabID != 0 && prefabID == transformData.linkedPrefabID) ||
 										(transformData.linkedPrefabID == 0 && prefabID == transformData.objectID))
 									{
-										GameObject newObject = (GameObject) Instantiate (prefabGameObject);
+										GameObject newObject = Instantiate (prefabGameObject);
 										newObject.name = prefabGameObject.name;
 										saveObject = newObject.GetComponent <RememberTransform>();
 										foundObject = true;
@@ -557,15 +603,55 @@ namespace AC
 					}
 				}
 
-				if (saveObject != null)
+				if (saveObject)
 				{
 					saveObject.LoadTransformData (transformData);
 				}
 			}
 
-			Resources.UnloadUnusedAssets ();
+			if (searchedResources)
+			{
+				Resources.UnloadUnusedAssets ();
+			}
 			KickStarter.stateHandler.IgnoreNavMeshCollisions ();
 		}
+
+
+		#if AddressableIsPresent
+
+		private IEnumerator UnloadTransformDataFromAddressables (List<TransformData> allTransformData, Scene scene)
+		{
+			foreach (TransformData transformData in allTransformData)
+			{
+				RememberTransform saveObject = ConstantID.GetComponent<RememberTransform> (transformData.objectID, scene);
+
+				if (saveObject == null)
+				{
+					// Restore any deleted objects (if told to)
+					if (transformData.bringBack && !transformData.savePrevented)
+					{
+						AsyncOperationHandle<GameObject> goHandle = Addressables.LoadAssetAsync<GameObject> (transformData.addressableName);
+						yield return goHandle;
+						if (goHandle.Status == AsyncOperationStatus.Succeeded)
+						{
+							GameObject prefabGameObject = goHandle.Result;
+							if (prefabGameObject)
+							{
+								GameObject newObject = Instantiate (prefabGameObject);
+								newObject.name = prefabGameObject.name;
+								saveObject = newObject.GetComponent<RememberTransform> ();
+								saveObject.LoadTransformData (transformData);
+							}
+						}
+						Addressables.Release (goHandle);
+					}
+				}
+			}
+
+			KickStarter.stateHandler.IgnoreNavMeshCollisions ();
+		}
+
+		#endif
 
 
 		private void UnloadScriptData (List<ScriptData> allScriptData, Scene scene)
@@ -577,6 +663,8 @@ namespace AC
 				{
 					foreach (Remember saveObject in saveObjects)
 					{
+						if (!saveObject.isActiveAndEnabled) continue;
+
 						if (saveObject.constantID == _scriptData.objectID)
 						{
 							saveObject.LoadData (_scriptData.data);
@@ -594,6 +682,8 @@ namespace AC
 
 			foreach (Remember _script in scripts)
 			{
+				if (!_script.isActiveAndEnabled) continue;
+
 				if (_script.constantID != 0)
 				{
 					allScriptData.Add (new ScriptData (_script.constantID, _script.SaveData ()));
@@ -612,9 +702,7 @@ namespace AC
 	}
 
 
-	/**
-	 * A data container for a single scene's save data. Used by the LevelStorage component.
-	 */
+	/** A data container for a single scene's save data. Used by the LevelStorage component. */
 	[System.Serializable]
 	public class SingleLevelData
 	{

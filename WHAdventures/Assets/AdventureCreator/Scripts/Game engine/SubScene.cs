@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SubScene.cs"
  * 
@@ -34,23 +34,47 @@ namespace AC
 		protected KickStarter kickStarter;
 		protected MainCamera mainCamera;
 
+		[SerializeField] bool selfInitialise = false;
+
+		#endregion
+
+
+		#region UnityStandards
+
+		private void Awake ()
+		{
+			if (selfInitialise && KickStarter.sceneChanger)
+			{
+				sceneIndex = gameObject.scene.buildIndex;
+				KickStarter.sceneChanger.RegisterSubScene (this);
+			}
+		}
+
+		private void OnDestroy ()
+		{
+			if (KickStarter.sceneChanger)
+			{
+				KickStarter.sceneChanger.UnregisterSubScene (this);
+			}
+		}
+
 		#endregion
 
 
 		#region PublicFunctions
 
 		/**
-		 * <summary>Syncs the component with the correct scene.</summary>
-		 * <param name = "_multiSceneChecker">The MultiSceneChecker component in the scene for which this component is to sync with.</param>
-		 */
+		* <summary>Syncs the component with the correct scene.</summary>
+		* <param name = "_multiSceneChecker">The MultiSceneChecker component in the scene for which this component is to sync with.</param>
+		*/
 		public void Initialise (MultiSceneChecker _multiSceneChecker)
 		{
 			Scene scene = _multiSceneChecker.gameObject.scene;
-			gameObject.name = "SubScene " + scene.buildIndex;
 
 			kickStarter = _multiSceneChecker.GetComponent <KickStarter>();
 
 			sceneIndex = scene.buildIndex;
+			gameObject.name = "SubScene " + sceneIndex;
 
 			localVariables = _multiSceneChecker.GetComponent <LocalVariables>();
 			sceneSettings = _multiSceneChecker.GetComponent <SceneSettings>();
@@ -61,13 +85,13 @@ namespace AC
 			_multiSceneChecker.gameObject.SetActive (false);
 
 			mainCamera = UnityVersionHandler.GetOwnSceneInstance <MainCamera> (gameObject);
-			if (mainCamera != null)
+			if (mainCamera)
 			{
 				mainCamera.gameObject.SetActive (false);
 			}
 
 			Player ownPlayer = UnityVersionHandler.GetOwnSceneInstance <Player> (gameObject);
-			if (ownPlayer != null)
+			if (ownPlayer)
 			{
 				ownPlayer.gameObject.SetActive (false);
 			}
@@ -79,9 +103,7 @@ namespace AC
 		}
 
 
-		/**
-		 * Prepares the sub-scene to become the new active scene, due to the active scene being removed.  The gameobject will be destroyed afterwards.
-		 */
+		/** Prepares the sub-scene to become the new active scene, due to the active scene being removed.  The gameobject will be destroyed afterwards. */
 		public void MakeMain ()
 		{
 			if (mainCamera)
@@ -96,6 +118,10 @@ namespace AC
 			{
 				kickStarter.gameObject.SetActive (true);
 				KickStarter.SetGameEngine (kickStarter.gameObject);
+				if (mainCamera)
+				{
+					KickStarter.mainCamera = mainCamera;
+				}
 			}
 
 			KickStarter.sceneChanger.SubScenes.Remove (this);

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionParameter.cs"
  * 
@@ -10,9 +10,12 @@
  */
 
 using UnityEngine;
-using System.Collections.Generic;
 #if UNITY_EDITOR
 using UnityEditor;
+#endif
+#if AddressableIsPresent
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
 #endif
 
 namespace AC
@@ -27,12 +30,16 @@ namespace AC
 
 		/** The display name in the Editor */
 		public string label = "";
+		/** A description to display as a tooltip when setting its value externally */
+		public string description = "";
 		/** A unique identifier */
 		public int ID = 0;
 		/** The type of variable it overrides (GameObject, InventoryItem, GlobalVariable, LocalVariable, String, Float, Integer, Boolean, Vector3, Document, ComponentVariable, Parameter) */
 		public ParameterType parameterType = ParameterType.GameObject;
 		/** The new value or ID number, if parameterType = ParameterType.Integer / Boolean / LocalVariable / GlobalVariable / InventoryItem / Document / ComponentVariable.  If parameterType = ParameterType.GameObject, it is the ConstantID number of the GameObject if it is not currently accessible */
 		public int intValue = -1;
+		/** The constant ID number of the Variables component, if parameterType = ParameterType.ComponentVariabel */
+		public int constantID = 0;
 		/** The new value, if parameterType = ParameterType.Float */
 		public float floatValue = 0f;
 		/** The new value, if parameterType = ParameterType.String */
@@ -48,6 +55,10 @@ namespace AC
 
 		public Variables variables = null;
 
+		#if UNITY_EDITOR
+		[System.NonSerialized] public bool isDisplayed = true;
+		#endif
+
 
 		/**
 		 * <summary>A Constructor that generates a unique ID number.</summary>
@@ -56,6 +67,7 @@ namespace AC
 		public ActionParameter (int[] idArray)
 		{
 			label = string.Empty;
+			description = string.Empty;
 			ID = 0;
 			intValue = -1;
 			floatValue = 0f;
@@ -66,6 +78,7 @@ namespace AC
 			vector3Value = Vector3.zero;
 			gameObjectParameterReferences = GameObjectParameterReferences.ReferencePrefab;
 			variables = null;
+			constantID = 0;
 
 			// Update id based on array
 			foreach (int _id in idArray)
@@ -85,6 +98,7 @@ namespace AC
 		public ActionParameter (int id)
 		{
 			label = string.Empty;
+			description = string.Empty;
 			ID = id;
 			intValue = -1;
 			floatValue = 0f;
@@ -95,6 +109,7 @@ namespace AC
 			vector3Value = Vector3.zero;
 			gameObjectParameterReferences = GameObjectParameterReferences.ReferencePrefab;
 			variables = null;
+			constantID = 0;
 
 			label = "Parameter " + (ID + 1).ToString ();
 		}
@@ -106,6 +121,7 @@ namespace AC
 		public ActionParameter (ActionParameter _actionParameter, bool alsoCopyValues = false)
 		{
 			label = _actionParameter.label;
+			description = _actionParameter.description;
 			ID = _actionParameter.ID;
 			parameterType = _actionParameter.parameterType;
 
@@ -119,6 +135,7 @@ namespace AC
 				vector3Value = _actionParameter.vector3Value;
 				gameObjectParameterReferences = _actionParameter.gameObjectParameterReferences;
 				variables = _actionParameter.variables;
+				constantID = _actionParameter.constantID;
 			}
 			else
 			{
@@ -130,6 +147,7 @@ namespace AC
 				vector3Value = Vector3.zero;
 				gameObjectParameterReferences = GameObjectParameterReferences.ReferencePrefab;
 				variables = null;
+				constantID = 0;
 			}
 		}
 
@@ -148,6 +166,7 @@ namespace AC
 			vector3Value = otherParameter.vector3Value;
 			gameObjectParameterReferences = otherParameter.gameObjectParameterReferences;
 			variables = otherParameter.variables;
+			constantID = otherParameter.constantID;
 		}
 
 
@@ -164,6 +183,7 @@ namespace AC
 			vector3Value = Vector3.zero;
 			gameObjectParameterReferences = GameObjectParameterReferences.ReferencePrefab;
 			variables = null;
+			constantID = 0;
 		}
 
 
@@ -173,18 +193,21 @@ namespace AC
 		 */
 		public bool IsIntegerBased ()
 		{
-			if (parameterType == ParameterType.GameObject ||
-				parameterType == ParameterType.GlobalVariable ||
-				parameterType == ParameterType.Integer ||
-				parameterType == ParameterType.Boolean ||
-				parameterType == ParameterType.InventoryItem ||
-				parameterType == ParameterType.Document ||
-				parameterType == ParameterType.LocalVariable ||
-				parameterType == ParameterType.ComponentVariable)
+			switch (parameterType)
 			{
-				return true;
+				case ParameterType.GameObject:
+				case ParameterType.GlobalVariable:
+				case ParameterType.Integer:
+				case ParameterType.Boolean:
+				case ParameterType.InventoryItem:
+				case ParameterType.Document:
+				case ParameterType.LocalVariable:
+				case ParameterType.ComponentVariable:
+					return true;
+
+				default:
+					return false;
 			}
-			return false;
 		}
 
 
@@ -201,6 +224,12 @@ namespace AC
 			objectValue = null;
 			vector3Value = Vector3.zero;
 			variables = null;
+
+			if (gameObject == null && parameterType == ParameterType.GameObject && gameObjectParameterReferences != GameObjectParameterReferences.ReferencePrefab)
+			{
+				ConstantID constantID = ConstantID.GetComponent (intValue);
+				if (constantID) gameObject = constantID.gameObject;
+			}
 		}
 
 
@@ -423,9 +452,10 @@ namespace AC
 				case ParameterType.GameObject:
 					if (gameObject != null)
 					{
-						if (gameObject.GetComponent<ConstantID> ())
+						ConstantID _constantID = gameObject.GetComponent <ConstantID>();
+						if (_constantID)
 						{
-							return gameObject.GetComponent<ConstantID> ().constantID.ToString ();
+							return _constantID.constantID.ToString ();
 						}
 						ACDebug.LogWarning ("Could not save parameter data for '" + gameObject.name + "' as it has no Constant ID number.", gameObject);
 					}
@@ -465,9 +495,10 @@ namespace AC
 				case ParameterType.GameObject:
 					if (gameObject != null)
 					{
-						if (gameObject.GetComponent<ConstantID> ())
+						ConstantID _constantID = gameObject.GetComponent <ConstantID>();
+						if (_constantID)
 						{
-							return gameObject.GetComponent<ConstantID> ().constantID.ToString ();
+							return _constantID.constantID.ToString ();
 						}
 						ACDebug.LogWarning ("Could not save parameter data for '" + gameObject.name + "' as it has no Constant ID number.", gameObject);
 					}
@@ -514,7 +545,7 @@ namespace AC
 					if (int.TryParse (dataString, out constantID))
 					{
 						ConstantID _constantID = ConstantID.GetComponent <ConstantID> (constantID);
-						if (_constantID != null)
+						if (_constantID)
 						{
 							gameObject = _constantID.gameObject;
 						}
@@ -528,7 +559,15 @@ namespace AC
 					}
 					else
 					{
-						Object[] objects = (Object[])Resources.LoadAll ("");
+						#if AddressableIsPresent
+						if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
+						{
+							Addressables.LoadAssetAsync<Object> (dataString).Completed += OnCompleteLoad;
+							return;
+						}
+						#endif
+
+						Object[] objects = Resources.LoadAll (string.Empty);
 						foreach (Object _object in objects)
 						{
 							if (_object.name == dataString)
@@ -573,10 +612,30 @@ namespace AC
 		}
 
 
+		#if AddressableIsPresent
+
+		private void OnCompleteLoad (AsyncOperationHandle<Object> obj)
+		{
+			if (obj.Result == null) return;
+			objectValue = obj.Result;
+		}
+
+		#endif
+
+
 		#if UNITY_EDITOR
 
 		public void ShowGUI (bool isAssetFile, bool onlyEditValues = false, bool readOnly = false)
 		{
+			if (Application.isPlaying || readOnly)
+			{
+				EditorGUILayout.LabelField ("Label:", label);
+			}
+			else
+			{
+				label = CustomGUILayout.TextField ("Label:", label, string.Empty, "The parameter's name");
+			}
+			
 			if (Application.isPlaying || readOnly)
 			{
 				EditorGUILayout.LabelField ("Type:", parameterType.ToString ());
@@ -591,39 +650,36 @@ namespace AC
 				}
 				else
 				{
-					parameterType = (ParameterType) EditorGUILayout.EnumPopup ("Type:", parameterType);
+					parameterType = (ParameterType) CustomGUILayout.EnumPopup ("Type:", parameterType, string.Empty, "The parameter's type");
+					description = CustomGUILayout.TextArea ("Description:", description, string.Empty, "Descriptive text to display as a tooltip when assigning this parameter's value");
 				}
 
 				switch (parameterType)
 				{
 					case ParameterType.Boolean:
 						BoolValue boolValue = (intValue == 1) ? BoolValue.True : BoolValue.False;
-						boolValue = (BoolValue) EditorGUILayout.EnumPopup ("Default value:", boolValue);
+						boolValue = (BoolValue) CustomGUILayout.EnumPopup ("Default value:", boolValue);
 						intValue = (boolValue == BoolValue.True) ? 1 : 0;
 						break;
 
 					case ParameterType.Integer:
-						intValue = EditorGUILayout.IntField ("Default value:", intValue);
+						intValue = CustomGUILayout.IntField ("Default value:", intValue);
 						break;
 
 					case ParameterType.Float:
-						floatValue = EditorGUILayout.FloatField ("Default value:", floatValue);
+						floatValue = CustomGUILayout.FloatField ("Default value:", floatValue);
 						break;
 
 					case ParameterType.String:
-						EditorGUILayout.BeginHorizontal ();
-						EditorGUILayout.LabelField ("Default value:", GUILayout.Width (145f));
-						EditorStyles.textField.wordWrap = true;
-						stringValue = EditorGUILayout.TextArea (stringValue, GUILayout.MaxWidth (400f));
-						EditorGUILayout.EndHorizontal ();
+						stringValue = CustomGUILayout.TextArea ("Default value:", stringValue);
 						break;
 
 					case ParameterType.Vector3:
-						vector3Value = EditorGUILayout.Vector3Field ("Default value:", vector3Value);
+						vector3Value = CustomGUILayout.Vector3Field ("Default value:", vector3Value);
 						break;
 
 					case ParameterType.UnityObject:
-						objectValue = (Object)EditorGUILayout.ObjectField ("Default value:", objectValue, typeof (Object), true);
+						objectValue = CustomGUILayout.ObjectField <Object> ("Default value:", objectValue, true);
 						break;
 
 					case ParameterType.Document:
@@ -690,7 +746,7 @@ namespace AC
 						}
 						else
 						{
-							variables = (Variables) EditorGUILayout.ObjectField ("Variables component:", variables, typeof (Variables), true);
+							variables = (Variables) CustomGUILayout.ObjectField <Variables> ("Variables component:", variables, true);
 							if (variables != null)
 							{
 								intValue = ActionRunActionList.ShowVarSelectorGUI ("Default value:", variables.vars, intValue);
@@ -723,9 +779,9 @@ namespace AC
 						else
 						{
 							// Gameobject
-							gameObject = (GameObject) EditorGUILayout.ObjectField ("Default value:", gameObject, typeof (GameObject), true);
+							gameObject = (GameObject) CustomGUILayout.ObjectField <GameObject> ("Default value:", gameObject, true);
 							intValue = 0;
-							if (gameObject != null && gameObject.GetComponent<ConstantID> () == null)
+							if (gameObject && gameObject.GetComponent<ConstantID> () == null)
 							{
 								UnityVersionHandler.AddConstantIDToGameObject<ConstantID> (gameObject);
 							}
@@ -745,4 +801,3 @@ namespace AC
 	}
 
 }
- 

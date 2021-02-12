@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Marker.cs"
  * 
@@ -24,12 +24,19 @@ namespace AC
 	public class Marker : MonoBehaviour
 	{
 
+		#region Variables
+
+		private Transform _transform;
+
+		#endregion
+
+
 		#region UnityStandards
 
 		protected void Awake ()
 		{
 			Renderer _renderer = GetComponent<Renderer> ();
-			if (_renderer != null)
+			if (_renderer)
 			{
 				_renderer.enabled = false;
 			}
@@ -45,7 +52,7 @@ namespace AC
 		{
 			get
 			{
-				return transform.position;
+				return Transform.position;
 			}
 		}
 
@@ -57,9 +64,9 @@ namespace AC
 			{
 				if (SceneSettings.IsUnity2D ())
 				{
-					return -transform.eulerAngles.z;
+					return -Transform.eulerAngles.z;
 				}
-				return transform.eulerAngles.y;
+				return Transform.eulerAngles.y;
 			}
 		}
 
@@ -73,7 +80,7 @@ namespace AC
 				{
 					return Rotation * Vector3.forward;
 				}
-				return transform.forward;
+				return Transform.forward;
 			}
 		}
 
@@ -87,7 +94,18 @@ namespace AC
 				{
 					return Quaternion.AngleAxis (ForwardAngle, Vector3.up);
 				}
-				return transform.rotation;
+				return Transform.rotation;
+			}
+		}
+
+
+		/** A cache of the Markers's transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
 			}
 		}
 
@@ -98,7 +116,7 @@ namespace AC
 
 		protected void OnDrawGizmos ()
 		{
-			if (KickStarter.sceneSettings != null && UnityEditor.Selection.activeGameObject != gameObject)
+			if (KickStarter.sceneSettings && UnityEditor.Selection.activeGameObject != gameObject)
 			{
 				DrawGizmos ();
 			}
@@ -115,7 +133,7 @@ namespace AC
 		{
 			if (Application.isPlaying) return;
 			Renderer _renderer = GetComponent<Renderer> ();
-			if (_renderer != null)
+			if (_renderer)
 			{
 				_renderer.enabled = KickStarter.sceneSettings.visibilityMarkers;
 			}

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionChangeMaterial.cs"
  * 
@@ -37,13 +37,9 @@ namespace AC
 		public int newMaterialParameterID = -1;
 
 
-		public ActionChangeMaterial ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Change material";
-			description = "Changes the material on any scene-based mesh object.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Change material"; }}
+		public override string Description { get { return "Changes the material on any scene-based mesh object."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -85,7 +81,7 @@ namespace AC
 			isPlayer = EditorGUILayout.Toggle ("Affect player?", isPlayer);
 			if (isPlayer)
 			{
-				if (KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
+				if (KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
 				{
 					parameterID = ChooseParameterGUI ("Player ID:", parameters, parameterID, ParameterType.Integer);
 					if (parameterID < 0)
@@ -116,8 +112,6 @@ namespace AC
 			{
 				newMaterial = (Material) EditorGUILayout.ObjectField ("New material:", newMaterial, typeof (Material), false);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -166,11 +160,11 @@ namespace AC
 		{
 			if (!isPlayer && parameterID < 0)
 			{
-				if (obToAffect != null && obToAffect == _gameObject) return true;
+				if (obToAffect && obToAffect == _gameObject) return true;
 				if (constantID == id) return true;
 			}
 			if (isPlayer && _gameObject.GetComponent <Player>() != null) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -192,7 +186,7 @@ namespace AC
 				return null;
 			}
 
-			if (player.spriteChild != null && player.spriteChild.GetComponent <Renderer>())
+			if (player.spriteChild && player.spriteChild.GetComponent <Renderer>())
 			{
 			    return player.spriteChild.gameObject;
 			}
@@ -217,7 +211,7 @@ namespace AC
 		 */
 		public static ActionChangeMaterial CreateNew (Renderer renderer, Material newMaterial, int materialIndex = 0)
 		{
-			ActionChangeMaterial newAction = (ActionChangeMaterial) CreateInstance <ActionChangeMaterial>();
+			ActionChangeMaterial newAction = CreateNew<ActionChangeMaterial> ();
 			newAction.obToAffect = (renderer != null) ? renderer.gameObject : null;
 			newAction.newMaterial = newMaterial;
 			newAction.materialIndex = materialIndex;

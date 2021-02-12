@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCameraTP.cs"
  * 
@@ -42,15 +42,11 @@ namespace AC
 		public MoveMethod moveMethod;
 
 
-		public ActionCameraTP ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Camera;
-			title = "Rotate third-person";
-			description = "Rotates a Game Camera Third-person to face a certain direction, either fixed or relative to its target.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Camera; }}
+		public override string Title { get { return "Rotate third-person"; }}
+		public override string Description { get { return "Rotates a Game Camera Third-person to face a certain direction, either fixed or relative to its target."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			runtimeLinkedCamera = AssignFile <GameCameraThirdPerson> (parameters, parameterID, constantID, linkedCamera);
@@ -87,7 +83,7 @@ namespace AC
 
 		protected bool DoRotation (float _transitionTime)
 		{
-			if (runtimeLinkedCamera != null && (controlPitch || controlSpin))
+			if (runtimeLinkedCamera && (controlPitch || controlSpin))
 			{
 				float _newPitchAngle = newPitchAngle;
 				float _newSpinAngle = newSpinAngle;
@@ -175,8 +171,6 @@ namespace AC
 					willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 				}
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -204,10 +198,10 @@ namespace AC
 		{
 			if (parameterID < 0)
 			{
-				if (linkedCamera != null && linkedCamera.gameObject == _gameObject) return true;
+				if (linkedCamera && linkedCamera.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -224,7 +218,7 @@ namespace AC
 		 */
 		public static ActionCameraTP CreateNew (float newPitchAngle, float newSpinAngle, bool spinAngleIsRelativeToTarget = false, float transitionTime = 1f, bool waitUntilFinish = false)
 		{
-			ActionCameraTP newAction = (ActionCameraTP) CreateInstance <ActionCameraTP>();
+			ActionCameraTP newAction = CreateNew<ActionCameraTP> ();
 			newAction.controlPitch = true;
 			newAction.newPitchAngle = newPitchAngle;
 			newAction.controlSpin = true;

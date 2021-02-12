@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Sound.cs"
  * 
@@ -51,13 +51,14 @@ namespace AC
 		protected float targetRelativeVolume;
 		protected float relativeChangeTime;
 		protected float originalRelativeChangeTime;
+		private bool applicationIsPaused;
 
 		#endregion
 
 
 		#region UnityStandards
-		
-		protected void OnEnable ()
+
+		protected virtual void OnEnable ()
 		{
 			if (KickStarter.stateHandler) KickStarter.stateHandler.Register (this);
 			EventManager.OnInitialiseScene += OnInitialiseScene;
@@ -71,11 +72,17 @@ namespace AC
 		}
 
 
-		protected void OnDisable ()
+		protected virtual void OnDisable ()
 		{
 			if (KickStarter.stateHandler) KickStarter.stateHandler.Unregister (this);
 			EventManager.OnInitialiseScene -= OnInitialiseScene;
 			EventManager.OnChangeVolume -= OnChangeVolume;
+		}
+
+
+		private void OnApplicationPause (bool pauseStatus)
+		{
+			applicationIsPaused = pauseStatus;
 		}
 
 
@@ -150,7 +157,7 @@ namespace AC
 			else
 			{
 				SetSmoothVolume ();
-				if (audioSource != null)
+				if (audioSource)
 				{
 					audioSource.volume = smoothVolume;
 				}
@@ -405,24 +412,25 @@ namespace AC
 			return (fadeTime > 0f) ? true : false;
 		}
 
-
+		
 		/**
 		 * <summary>Checks if sound is playing.</summary>
 		 * <returns>True if sound is playing</summary>
 		 */
 		public bool IsPlaying ()
 		{
-			if (audioSource == null)
-			{
-				//Initialise ();
-			}
-
-			if (audioSource != null)
+			if (audioSource)
 			{
 				if (KickStarter.stateHandler.IsPaused () && !playWhilePaused)
 				{
 					// Special case, since in Unity 2018 isPlaying returns false if paused
 					return (audioSource.time > 0f);
+				}
+				
+				if (applicationIsPaused && audioSource.time > 0f)
+				{
+					// Special case, since isPlaying returns false if the application itself is paused
+					return true;
 				}
 
 				return audioSource.isPlaying;
@@ -438,7 +446,7 @@ namespace AC
 		 */
 		public bool IsPlaying (AudioClip clip)
 		{
-			if (audioSource != null && clip != null && audioSource.clip != null && audioSource.clip == clip && audioSource.isPlaying)
+			if (audioSource && clip && audioSource.clip == clip && audioSource.isPlaying)
 			{
 				return true;
 			}
@@ -509,7 +517,7 @@ namespace AC
 			soundData.relativeChangeTime = relativeChangeTime;
 			soundData.originalRelativeChangeTime = originalRelativeChangeTime;
 
-			if (audioSource.clip != null)
+			if (audioSource.clip)
 			{
 				soundData.clipID = AssetLoader.GetAssetInstanceID (audioSource.clip);
 			}
@@ -525,7 +533,6 @@ namespace AC
 		{
 			if (soundData.isPlaying)
 			{
-				audioSource.clip = AssetLoader.RetrieveAsset (audioSource.clip, soundData.clipID);
 				PlayAtPoint (soundData.isLooping, soundData.samplePoint);
 			}
 			else
@@ -558,14 +565,14 @@ namespace AC
 		{
 			if (surviveSceneChange)
 			{
-				if (transform.root != null && transform.root != gameObject.transform)
+				if (transform.root && transform.root != gameObject.transform)
 				{
 					transform.SetParent (null);
 				}
 				DontDestroyOnLoad (this);
 			}
 
-			if (audioSource != null)
+			if (audioSource)
 			{
 				audioSource.playOnAwake = false;
 				audioSource.ignoreListenerPause = playWhilePaused;
@@ -573,14 +580,14 @@ namespace AC
 
 			// Search for duplicates carried over from scene change
 			ConstantID ownConstantID = GetComponent<ConstantID> ();
-			if (ownConstantID != null && GetComponentInParent <Player>() == null)
+			if (ownConstantID && GetComponentInParent <Player>() == null)
 			{
 				foreach (Sound otherSound in KickStarter.stateHandler.Sounds)
 				{
 					if (otherSound != this && otherSound.GetComponentInParent <Player>() == null)
 					{
 						ConstantID otherConstantID = otherSound.GetComponent<ConstantID> ();
-						if (otherConstantID != null && otherConstantID.constantID == ownConstantID.constantID)
+						if (otherConstantID && otherConstantID.constantID == ownConstantID.constantID)
 						{
 							if (otherSound.IsPlaying ())
 							{
@@ -604,11 +611,11 @@ namespace AC
 		{ 
 			if (soundType == _soundType)
 			{
-				if (audioSource != null)
+				if (audioSource)
 				{
 					audioSource.ignoreListenerPause = playWhilePaused;
 
-					if (audioSource.playOnAwake && audioSource.clip != null)
+					if (audioSource.playOnAwake && audioSource.clip)
 					{
 						FadeIn (0.5f, audioSource.loop);
 					}
@@ -697,7 +704,7 @@ namespace AC
 				{
 					_audioSource = GetComponent<AudioSource> ();
 
-					if (_audioSource != null)
+					if (_audioSource)
 					{
 						_audioSource.playOnAwake = false;
 						_audioSource.ignoreListenerPause = playWhilePaused;

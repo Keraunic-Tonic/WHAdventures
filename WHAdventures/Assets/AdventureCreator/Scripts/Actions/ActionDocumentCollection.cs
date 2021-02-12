@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionDocumentCollection.cs"
  * 
@@ -30,13 +30,9 @@ namespace AC
 		public enum DocumentCollectionMethod { Add, Remove, Clear };
 
 		
-		public ActionDocumentCollection ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Document;
-			title = "Add or remove";
-			description = "Adds or removes a document from the player's collection, or removes all of them.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Document; }}
+		public override string Title { get { return "Add or remove"; }}
+		public override string Description { get { return "Adds or removes a document from the player's collection, or removes all of them."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -80,8 +76,6 @@ namespace AC
 			{
 				documentID = InventoryManager.DocumentSelectorList (documentID);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -111,7 +105,7 @@ namespace AC
 		 */
 		public static ActionDocumentCollection CreateNew (int documentID, DocumentCollectionMethod method)
 		{
-			ActionDocumentCollection newAction = (ActionDocumentCollection) CreateInstance <ActionDocumentCollection>();
+			ActionDocumentCollection newAction = CreateNew<ActionDocumentCollection> ();
 			newAction.documentCollectionMethod = method;
 			newAction.documentID = documentID;
 			return newAction;

@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCharPathFind.cs"
  * 
@@ -52,13 +52,9 @@ namespace AC
 		protected bool isFacingAfter;
 
 
-		public ActionCharPathFind ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Character;
-			title = "Move to point";
-			description = "Moves a character to a given Marker object. By default, the character will attempt to pathfind their way to the marker, but can optionally just move in a straight line.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Character; }}
+		public override string Title { get { return "Move to point"; }}
+		public override string Description { get { return "Moves a character to a given Marker object. By default, the character will attempt to pathfind their way to the marker, but can optionally just move in a straight line."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -120,7 +116,7 @@ namespace AC
 							targetPosition = AdvGame.GetScreenNavMesh (targetPosition);
 						}
 
-						float distance = Vector3.Distance (targetPosition, runtimeChar.transform.position);
+						float distance = Vector3.Distance (targetPosition, runtimeChar.Transform.position);
 						if (distance <= KickStarter.settingsManager.GetDestinationThreshold ())
 						{
 							isRunning = false;
@@ -129,7 +125,7 @@ namespace AC
 
 						if (pathFind && KickStarter.navigationManager)
 						{
-							pointArray = KickStarter.navigationManager.navigationEngine.GetPointsArray (runtimeChar.transform.position, targetPosition, runtimeChar);
+							pointArray = KickStarter.navigationManager.navigationEngine.GetPointsArray (runtimeChar.Transform.position, targetPosition, runtimeChar);
 						}
 						else
 						{
@@ -244,7 +240,7 @@ namespace AC
 				
 				if (pathFind && KickStarter.navigationManager)
 				{
-					pointArray = KickStarter.navigationManager.navigationEngine.GetPointsArray (runtimeChar.transform.position, targetPosition);
+					pointArray = KickStarter.navigationManager.navigationEngine.GetPointsArray (runtimeChar.Transform.position, targetPosition);
 					KickStarter.navigationManager.navigationEngine.ResetHoles (KickStarter.sceneSettings.navMesh);
 				}
 				else
@@ -262,7 +258,7 @@ namespace AC
 				}
 				else
 				{
-					runtimeChar.SetLookDirection (pointArray[i] - runtimeChar.transform.position, true);
+					runtimeChar.SetLookDirection (pointArray[i] - runtimeChar.Transform.position, true);
 				}
 
 				runtimeChar.Teleport (pointArray [i]);
@@ -346,8 +342,6 @@ namespace AC
 					onReachTimeLimit = (OnReachTimeLimit) EditorGUILayout.EnumPopup ("On reach time limit:", onReachTimeLimit);
 				}
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -399,7 +393,7 @@ namespace AC
 				if (marker != null && marker.gameObject == _gameObject) return true;
 				if (markerID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -426,7 +420,7 @@ namespace AC
 		 */
 		public static ActionCharPathFind CreateNew (Char charToMove, Marker marker, PathSpeed pathSpeed = PathSpeed.Walk, bool usePathfinding = true, bool waitUntilFinish = true, bool turnToFaceAfter = false)
 		{
-			ActionCharPathFind newAction = (ActionCharPathFind) CreateInstance <ActionCharPathFind>();
+			ActionCharPathFind newAction = CreateNew<ActionCharPathFind> ();
 			newAction.charToMove = charToMove;
 			newAction.marker = marker;
 			newAction.speed = pathSpeed;

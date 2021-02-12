@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberContainer.cs"
  * 
@@ -33,23 +33,13 @@ namespace AC
 			containerData.objectID = constantID;
 			containerData.savePrevented = savePrevented;
 			
-			if (_Container != null)
+			if (_Container)
 			{
-				List<int> linkedIDs = new List<int>();
-				List<int> counts = new List<int>();
-				List<int> IDs = new List<int>();
+				containerData.collectionData = _Container.InvCollection.GetSaveData ();
 
-				for (int i=0; i<_Container.items.Count; i++)
-				{
-					ContainerItem item = _Container.items[i];
-					linkedIDs.Add (item.linkedID);
-					counts.Add (item.count);
-					IDs.Add (item.id);
-				}
-
-				containerData._linkedIDs = ArrayToString <int> (linkedIDs.ToArray ());
-				containerData._counts = ArrayToString <int> (counts.ToArray ());
-				containerData._IDs = ArrayToString <int> (IDs.ToArray ());
+				containerData._linkedIDs = string.Empty; // Now deprecated
+				containerData._counts = string.Empty; // Now deprecated
+				containerData._IDs = string.Empty; // Now deprecated
 			}
 			
 			return Serializer.SaveScriptData <ContainerData> (containerData);
@@ -67,21 +57,28 @@ namespace AC
 			if (data == null) return;
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			if (_Container != null)
+			if (_Container)
 			{
-				_Container.items.Clear ();
+				List<InvInstance> invInstances = new List<InvInstance> ();
 
-				int[] linkedIDs = StringToIntArray (data._linkedIDs);
-				int[] counts = StringToIntArray (data._counts);
-				int[] IDs = StringToIntArray (data._IDs);
-
-				if (IDs != null)
+				if (!string.IsNullOrEmpty (data._linkedIDs))
 				{
-					for (int i=0; i<IDs.Length; i++)
+					int[] linkedIDs = StringToIntArray (data._linkedIDs);
+					int[] counts = StringToIntArray (data._counts);
+				
+					if (linkedIDs != null)
 					{
-						ContainerItem newItem = new ContainerItem (linkedIDs[i], counts[i], IDs[i]);
-						_Container.items.Add (newItem);
+						for (int i=0; i<linkedIDs.Length; i++)
+						{
+							invInstances.Add (new InvInstance (linkedIDs[i], counts[i]));
+						}
 					}
+
+					_Container.InvCollection = new InvCollection (invInstances);
+				}
+				else if (!string.IsNullOrEmpty (data.collectionData))
+				{
+					_Container.InvCollection = InvCollection.LoadData (data.collectionData);
 				}
 			}
 		}
@@ -110,12 +107,14 @@ namespace AC
 	public class ContainerData : RememberData
 	{
 
-		/** The ID numbers of the Inventory Items stored in the Container */
+		/** (Deprecated) */
 		public string _linkedIDs;
-		/** The numbers of each Inventory Item stored in the Container */
+		/** (Deprecated) */
 		public string _counts;
-		/** The unique ID of each ContainerItem stored within the Container */
+		/** (Deprecated) */
 		public string _IDs;
+		/** The contents of the container's InvCollection. */
+		public string collectionData;
 
 		/**
 		 * The default Constructor.

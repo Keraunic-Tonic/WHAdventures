@@ -9,6 +9,7 @@ using System.Collections.Generic;
 namespace AC
 {
 
+	/** A format handler that serializes data into Json format */
 	public class FileFormatHandler_Json : iFileFormatHandler
 	{
 
@@ -51,6 +52,11 @@ namespace AC
 			#endif
 
 			// Dirty hack, but with Unity's Json utility we can't check if the data type is correct
+
+			if (jsonData is ActionListParamData && !jsonString.Contains ("paramData"))
+			{
+				return null;
+			}
 			if (jsonData is AnimatorData && !jsonString.Contains ("layerWeightData"))
 			{
 				return null;
@@ -95,6 +101,10 @@ namespace AC
 			{
 				return null;
 			}
+			if (jsonData is ParticleSystemData && !jsonString.Contains ("isPaused"))
+			{
+				return null;
+			}
 			if (jsonData is ShapeableData && !jsonString.Contains ("_activeKeyIDs"))
 			{
 				return null;
@@ -107,6 +117,10 @@ namespace AC
 			{
 				return null;
 			}
+			if (jsonData is TrackData && !jsonString.Contains ("enabledStates"))
+			{
+				return null;
+			}
 			if (jsonData is TransformData && !jsonString.Contains ("bringBack"))
 			{
 				return null;
@@ -115,11 +129,15 @@ namespace AC
 			{
 				return null;
 			}
-			if (jsonData is VisibilityData && !jsonString.Contains ("useDefaultTintMap"))
+			if (jsonData is VariablesData && !jsonString.Contains ("variablesData"))
 			{
 				return null;
 			}
-			if (jsonData is ParticleSystemData && !jsonString.Contains ("currentTime"))
+			if (jsonData is VideoPlayerData && !jsonString.Contains ("clipAssetID"))
+			{
+				return null;
+			}
+			if (jsonData is VisibilityData && !jsonString.Contains ("useDefaultTintMap"))
 			{
 				return null;
 			}

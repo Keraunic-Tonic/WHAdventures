@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionComment.cs"
  * 
@@ -29,16 +29,12 @@ namespace AC
 		protected string convertedText;
 		
 		
-		public ActionComment ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ActionList;
-			title = "Comment";
-			description = "Prints a comment for debug purposes.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.ActionList; }}
+		public override string Title { get { return "Comment"; }}
+		public override string Description { get { return "Prints a comment for debug purposes."; }}
 
 
-		public override void AssignValues (System.Collections.Generic.List<ActionParameter> parameters)
+		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			convertedText = AdvGame.ConvertTokens (commentText, 0, null, parameters);
 		}
@@ -70,11 +66,9 @@ namespace AC
 		public override void ShowGUI ()
 		{
 			EditorStyles.textField.wordWrap = true;
-			commentText = EditorGUILayout.TextArea (commentText, GUILayout.MaxWidth (280f));
+			commentText = CustomGUILayout.TextArea ("Comment:", commentText);
 
 			acLogType = (ACLogType) EditorGUILayout.EnumPopup ("Display in Console?", acLogType);
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -124,7 +118,7 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 			string tokenText = AdvGame.GetVariableTokenText (location, varID);
@@ -148,7 +142,7 @@ namespace AC
 		 */
 		public static ActionComment CreateNew (string text, bool displayAsWarning = false)
 		{
-			ActionComment newAction = (ActionComment) CreateInstance <ActionComment>();
+			ActionComment newAction = CreateNew<ActionComment> ();
 			newAction.commentText = text;
 			newAction.acLogType = (displayAsWarning) ? ACLogType.AsWarning : ACLogType.AsInfo;
 			return newAction;

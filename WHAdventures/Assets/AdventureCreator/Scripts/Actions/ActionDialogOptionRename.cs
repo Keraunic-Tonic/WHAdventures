@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionDialogOptionRename.cs"
  * 
@@ -32,13 +32,9 @@ namespace AC
 		protected Conversation runtimeLinkedConversation;
 
 
-		public ActionDialogOptionRename ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Dialogue;
-			title = "Rename option";
-			description = "Renames the label of a dialogue option.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Dialogue; }}
+		public override string Title { get { return "Rename option"; }}
+		public override string Description { get { return "Renames the label of a dialogue option."; }}
 
 
 		public override void AssignValues ()
@@ -72,8 +68,6 @@ namespace AC
 				optionID = ShowOptionGUI (linkedConversation.options, optionID);
 				newLabel = EditorGUILayout.TextField ("New label text:", newLabel);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -178,7 +172,7 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 			string tokenText = AdvGame.GetVariableTokenText (location, varID);
@@ -196,7 +190,7 @@ namespace AC
 		{
 			if (linkedConversation != null && linkedConversation.gameObject == _gameObject) return true;
 			if (constantID == id) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -280,7 +274,7 @@ namespace AC
 		 */
 		public static ActionDialogOptionRename CreateNew (Conversation conversationToModify, int dialogueOptionID, string newLabelText, int translationID = -1)
 		{
-			ActionDialogOptionRename newAction = (ActionDialogOptionRename) CreateInstance <ActionDialogOptionRename>();
+			ActionDialogOptionRename newAction = CreateNew<ActionDialogOptionRename> ();
 			newAction.linkedConversation = conversationToModify;
 			newAction.optionID = dialogueOptionID;
 			newAction.newLabel = newLabelText;

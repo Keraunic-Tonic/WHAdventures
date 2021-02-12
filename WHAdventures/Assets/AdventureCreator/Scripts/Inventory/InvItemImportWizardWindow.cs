@@ -187,14 +187,14 @@ namespace AC
 
 			public void ShowGUI (int i)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				GUILayout.Label ("Column # : " + header);
 
 				if (i > 0)
 				{
 					importColumnType = (ImportColumnType) EditorGUILayout.EnumPopup ("Import rule:", importColumnType);
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
 

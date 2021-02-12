@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionEndGame.cs"
  * 
@@ -32,25 +32,21 @@ namespace AC
 		public bool resetMenus;
 		
 		
-		public ActionEndGame ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Engine;
-			title = "End game";
-			description = "Ends the current game, either by loading an autosave, restarting or quitting the game executable.";
-			numSockets = 0;
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Engine; }}
+		public override string Title { get { return "End game"; }}
+		public override string Description { get { return "Ends the current game, either by loading an autosave, restarting or quitting the game executable."; }}
+		public override int NumSockets { get { return 0; }}
+
+
 		public override float Run ()
 		{
 			switch (endGameType)
 			{
 				case AC_EndGameType.QuitGame:
 					#if UNITY_EDITOR
-					UnityEditor.EditorApplication.isPlaying = false;
+					EditorApplication.isPlaying = false;
 					#else
-						Application.Quit ();
+					Application.Quit ();
 					#endif
 					break;
 
@@ -72,12 +68,6 @@ namespace AC
 			}
 
 			return 0f;
-		}
-		
-		
-		public override ActionEnd End (List<Action> actions)
-		{
-			return GenerateStopActionEnd ();
 		}
 		
 		
@@ -118,7 +108,7 @@ namespace AC
 		 */
 		public static ActionEndGame CreateNew_QuitGame ()
 		{
-			ActionEndGame newAction = (ActionEndGame) CreateInstance <ActionEndGame>();
+			ActionEndGame newAction = CreateNew<ActionEndGame> ();
 			newAction.endGameType = AC_EndGameType.QuitGame;
 			return newAction;
 		}
@@ -130,7 +120,7 @@ namespace AC
 		 */
 		public static ActionEndGame CreateNew_ResetScene ()
 		{
-			ActionEndGame newAction = (ActionEndGame) CreateInstance <ActionEndGame>();
+			ActionEndGame newAction = CreateNew<ActionEndGame> ();
 			newAction.endGameType = AC_EndGameType.ResetScene;
 			return newAction;
 		}
@@ -142,7 +132,7 @@ namespace AC
 		 */
 		public static ActionEndGame CreateNew_LoadAutosave ()
 		{
-			ActionEndGame newAction = (ActionEndGame) CreateInstance <ActionEndGame>();
+			ActionEndGame newAction = CreateNew<ActionEndGame> ();
 			newAction.endGameType = AC_EndGameType.LoadAutosave;
 			return newAction;
 		}
@@ -156,7 +146,7 @@ namespace AC
 		 */
 		public static ActionEndGame CreateNew_RestartGame (int newSceneBuildIndex, bool resetMenus = true)
 		{
-			ActionEndGame newAction = (ActionEndGame) CreateInstance <ActionEndGame>();
+			ActionEndGame newAction = CreateNew<ActionEndGame> ();
 			newAction.endGameType = AC_EndGameType.RestartGame;
 			newAction.chooseSceneBy = ChooseSceneBy.Number;
 			newAction.resetMenus = resetMenus;

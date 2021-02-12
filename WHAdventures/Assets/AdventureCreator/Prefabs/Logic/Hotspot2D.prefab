@@ -78,6 +78,7 @@ MonoBehaviour:
   highlight: {fileID: 0}
   walkToMarker: {fileID: 0}
   centrePoint: {fileID: 0}
+  centrePointOverrides: 0
   provideUseInteraction: 0
   useButton:
     interaction: {fileID: 0}
@@ -150,6 +151,7 @@ MonoBehaviour:
     isBlocking: 0
     parameterID: -1
     invParameterID: -1
+  canBeLowerCase: 0
   drawGizmos: 1
   lastInteractionIndex: 0
   displayLineID: -1

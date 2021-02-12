@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMenuSetInputBox.cs"
  * 
@@ -37,13 +37,9 @@ namespace AC
 		public int varParameterID = -1;
 
 		
-		public ActionMenuSetInputBox ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Menu;
-			title = "Set Input box text";
-			description = "Replaces the text within an Input box element.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Menu; }}
+		public override string Title { get { return "Set Input box text"; }}
+		public override string Description { get { return "Replaces the text within an Input box element."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -115,8 +111,6 @@ namespace AC
 					varID = AdvGame.GlobalVariableGUI ("String variable:", varID, VariableType.String);
 				}
 			}
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -170,7 +164,7 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 
@@ -182,6 +176,25 @@ namespace AC
 
 			thisCount += base.GetVariableReferences (parameters, location, varID, _variables);
 			return thisCount;
+		}
+
+
+		public override int GetMenuReferences (string _menuName, string _elementName = "")
+		{
+			if (menuNameParameterID < 0 && menuName == _menuName)
+			{
+				if (string.IsNullOrEmpty (elementName))
+				{
+					return 1;
+				}
+
+				if (elementNameParameterID < 0 && _elementName == elementName)
+				{
+					return 1;
+				}
+			}
+
+			return 0;
 		}
 
 		#endif
@@ -196,7 +209,7 @@ namespace AC
 		 */
 		public static ActionMenuSetInputBox CreateNew_SetDirectly (string menuName, string inputBoxElementName, string newText)
 		{
-			ActionMenuSetInputBox newAction = (ActionMenuSetInputBox) CreateInstance <ActionMenuSetInputBox>();
+			ActionMenuSetInputBox newAction = CreateNew<ActionMenuSetInputBox> ();
 			newAction.menuName = menuName;
 			newAction.elementName = inputBoxElementName;
 			newAction.newLabel = newText;
@@ -213,7 +226,7 @@ namespace AC
 		 */
 		public static ActionMenuSetInputBox CreateNew_SetFromVariable (string menuName, string inputBoxElementName, int globalStringVariableID)
 		{
-			ActionMenuSetInputBox newAction = (ActionMenuSetInputBox) CreateInstance <ActionMenuSetInputBox>();
+			ActionMenuSetInputBox newAction = CreateNew<ActionMenuSetInputBox> ();
 			newAction.menuName = menuName;
 			newAction.elementName = inputBoxElementName;
 			newAction.varID = globalStringVariableID;

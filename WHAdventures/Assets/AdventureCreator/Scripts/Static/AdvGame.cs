@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AdvGame.cs"
  * 
@@ -27,11 +27,7 @@ namespace AC
 	 */
 	public class AdvGame : ScriptableObject
 	{
-		/** A List of Action classes currently stored in the copy buffer. */
-		public static List<AC.Action> copiedActions = new List<AC.Action>();
-
-		private static References references = null;
-
+		
 		#if UNITY_EDITOR
 		private static Texture2D _aaLineTex = null;
 		#endif
@@ -45,7 +41,7 @@ namespace AC
 		 */
 		public static void SetMixerVolume (AudioMixerGroup audioMixerGroup, string parameter, float volume)
 		{
-			if (audioMixerGroup != null && KickStarter.settingsManager.volumeControl == VolumeControl.AudioMixerGroups)
+			if (audioMixerGroup && KickStarter.settingsManager.volumeControl == VolumeControl.AudioMixerGroups)
 			{
 				float attenuation = (volume > 0f) ? (Mathf.Log10 (volume) * 20f) : -80f;
 				audioMixerGroup.audioMixer.SetFloat (parameter, attenuation);
@@ -60,9 +56,9 @@ namespace AC
 		 */
 		public static void AssignMixerGroup (AudioSource audioSource, SoundType soundType)
 		{
-			if (audioSource != null && KickStarter.settingsManager != null && KickStarter.settingsManager.volumeControl == VolumeControl.AudioMixerGroups)
+			if (audioSource && KickStarter.settingsManager != null && KickStarter.settingsManager.volumeControl == VolumeControl.AudioMixerGroups)
 			{
-				if (audioSource.outputAudioMixerGroup != null)
+				if (audioSource.outputAudioMixerGroup)
 				{
 					return;
 				}
@@ -129,11 +125,7 @@ namespace AC
 		 */
 		public static References GetReferences ()
 		{
-			if (references == null)
-			{
-				references = (References) Resources.Load (Resource.references);
-			}
-			return references;
+			return Resource.References;
 		}
 		
 
@@ -147,7 +139,7 @@ namespace AC
 		 */
 		public static RuntimeActionList RunActionListAsset (ActionListAsset actionListAsset, int parameterID = -1, int parameterValue = 0)
 		{
-			if (parameterID >= 0 && actionListAsset != null && actionListAsset.NumParameters > 0)
+			if (parameterID >= 0 && actionListAsset && actionListAsset.NumParameters > 0)
 			{
 				ActionParameter parameter = actionListAsset.GetParameter (parameterID);
 				if (parameter != null)
@@ -175,7 +167,7 @@ namespace AC
 		 */
 		public static RuntimeActionList RunActionListAsset (ActionListAsset actionListAsset, GameObject parameterValue)
 		{
-			if (actionListAsset != null && actionListAsset.NumParameters > 0)
+			if (actionListAsset && actionListAsset.NumParameters > 0)
 			{
 				ActionParameter parameter = actionListAsset.GetParameters ()[0];
 				if (parameter.parameterType == ParameterType.GameObject)
@@ -233,15 +225,15 @@ namespace AC
 				ACDebug.LogWarning ("Cannot run an ActionList asset file without the presence of the Action List Asset Manager component - is this an AC scene?");
 				return null;
 			}
-			if (actionListAsset != null && actionListAsset.actions.Count > 0)
+			if (actionListAsset && actionListAsset.actions.Count > 0)
 			{
 				int numInstances = KickStarter.actionListAssetManager.GetNumInstances (actionListAsset);
 
-				GameObject runtimeActionListObject = (GameObject) Instantiate (Resources.Load (Resource.runtimeActionList));
+				GameObject runtimeActionListObject = new GameObject ();
 				runtimeActionListObject.name = actionListAsset.name;
 				if (numInstances > 0) runtimeActionListObject.name += " " + numInstances.ToString ();
 
-				RuntimeActionList runtimeActionList = runtimeActionListObject.GetComponent <RuntimeActionList>();
+				RuntimeActionList runtimeActionList = runtimeActionListObject.AddComponent <RuntimeActionList>();
 				runtimeActionList.DownloadActions (actionListAsset, endConversation, i, doSkip, addToSkipQueue);
 
 				return runtimeActionList;
@@ -328,7 +320,7 @@ namespace AC
 				}
 				return (string2 + string1);
 			}
-
+			
 			if (separateWithSpace)
 			{
 				return (string1 + " " + string2);
@@ -372,7 +364,7 @@ namespace AC
 			
 			if (!string.IsNullOrEmpty (_text))
 			{
-				if (KickStarter.runtimeVariables != null && KickStarter.eventManager != null && KickStarter.runtimeVariables.TextEventTokenKeys != null)
+				if (KickStarter.runtimeVariables && KickStarter.eventManager && KickStarter.runtimeVariables.TextEventTokenKeys != null)
 				{
 					string[] eventKeys = KickStarter.runtimeVariables.TextEventTokenKeys;
 					foreach (string eventKey in eventKeys)
@@ -611,7 +603,7 @@ namespace AC
 								if (id != 0)
 								{
 									Variables variables = ConstantID.GetComponent <Variables> (id);
-									if (variables != null)
+									if (variables)
 									{
 										tokenValueStartIndex = idStartIndex + idEndIndex + 1;
 										tokenValueEndIndex = _text.Substring (tokenValueStartIndex).IndexOf ("]");
@@ -724,7 +716,7 @@ namespace AC
 		 */
 		public static void DrawCubeCollider (Transform transform, Color color)
 		{
-			if (transform.GetComponent <BoxCollider2D>() != null)
+			if (transform.GetComponent <BoxCollider2D>())
 			{
 				BoxCollider2D _boxCollider2D = transform.GetComponent <BoxCollider2D>();
 				Vector2 pos = _boxCollider2D.offset;
@@ -734,7 +726,7 @@ namespace AC
 				Gizmos.DrawCube (pos, _boxCollider2D.size);
 				Gizmos.matrix = Matrix4x4.identity;
 			}
-			else if (transform.GetComponent <BoxCollider>() != null)
+			else if (transform.GetComponent <BoxCollider>())
 			{
 				BoxCollider _boxCollider = transform.GetComponent <BoxCollider>();
 
@@ -787,7 +779,7 @@ namespace AC
 		 */
 		public static void DrawMeshCollider (Transform transform, Mesh mesh, Color color)
 		{
-			if (mesh != null)
+			if (mesh)
 			{
 				Gizmos.color = color;
 				Gizmos.DrawMesh (mesh, 0, transform.position, transform.rotation, transform.lossyScale);
@@ -803,7 +795,7 @@ namespace AC
 		 */
 		public static void DrawSphereCollider (Transform transform, SphereCollider sphereCollider, Color color)
 		{
-			if (sphereCollider != null)
+			if (sphereCollider)
 			{
 				Gizmos.color = color;
 				Vector3 centre = transform.TransformPoint (sphereCollider.center);
@@ -863,6 +855,12 @@ namespace AC
 		{
 			string originalScene = UnityVersionHandler.GetCurrentSceneName ();
 			
+			if (Application.isPlaying)
+			{
+				Debug.LogWarning ("Cannot locate file while in Play Mode.");
+				return;
+			}
+
 			if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo ())
 			{
 				// Search scene files for ID
@@ -985,7 +983,7 @@ namespace AC
 		 */
 		public static int GlobalVariableGUI (string label, int variableID, VariableType variableType, string tooltip = "")
 		{
-			if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().variablesManager != null)
+			if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().variablesManager)
 			{
 				return VariableGUI (label, variableID, variableType, VariableLocation.Global, AdvGame.GetReferences ().variablesManager.vars, tooltip);
 			}
@@ -1002,7 +1000,7 @@ namespace AC
 		 */
 		public static int GlobalVariableGUI (string label, int variableID, VariableType[] variableTypes, string tooltip = "")
 		{
-			if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().variablesManager != null)
+			if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().variablesManager)
 			{
 				return VariableGUI (label, variableID, variableTypes, VariableLocation.Global, AdvGame.GetReferences ().variablesManager.vars, tooltip);
 			}
@@ -1019,7 +1017,7 @@ namespace AC
 		 */
 		public static int LocalVariableGUI (string label, int variableID, VariableType variableType)
 		{
-			if (KickStarter.localVariables != null)
+			if (KickStarter.localVariables)
 			{
 				return VariableGUI (label, variableID, variableType, VariableLocation.Local, KickStarter.localVariables.localVars);
 			}
@@ -1036,7 +1034,7 @@ namespace AC
 		 */
 		public static int LocalVariableGUI (string label, int variableID, VariableType[] variableTypes)
 		{
-			if (KickStarter.localVariables != null)
+			if (KickStarter.localVariables)
 			{
 				return VariableGUI (label, variableID, variableTypes, VariableLocation.Local, KickStarter.localVariables.localVars);
 			}
@@ -1054,7 +1052,7 @@ namespace AC
 		 */
 		public static int ComponentVariableGUI (string label, int variableID, VariableType variableType, Variables variables)
 		{
-			if (variables != null)
+			if (variables)
 			{
 				return VariableGUI (label, variableID, variableType, VariableLocation.Component, variables.vars);
 			}
@@ -1072,7 +1070,7 @@ namespace AC
 		 */
 		public static int ComponentVariableGUI (string label, int variableID, VariableType[] variableTypes, Variables variables)
 		{
-			if (variables != null)
+			if (variables)
 			{
 				return VariableGUI (label, variableID, variableTypes, VariableLocation.Component, variables.vars);
 			}
@@ -1289,27 +1287,6 @@ namespace AC
 				return _aaLineTex;
 			}
 		}
-		
-
-		/**
-		 * Duplicates the Actions within the copy buffer, so that they do not reference their original source (Unity Editor only).
-		 */
-		public static void DuplicateActionsBuffer ()
-		{
-			List<AC.Action> tempList = new List<AC.Action>();
-			foreach (Action action in copiedActions)
-			{
-				if (action != null)
-				{
-					Action copyAction = Object.Instantiate (action) as Action;
-					copyAction.skipActionActual = null;
-					tempList.Add (copyAction);
-				}
-			}
-			
-			copiedActions.Clear ();
-			copiedActions = tempList;
-		}
 
 
 		public static LayerMask LayerMaskField (string label, LayerMask layerMask, string tooltip = "")
@@ -1463,29 +1440,6 @@ namespace AC
 			{
 				return name;
 			}
-		}
-		
-
-		/**
-		 * <summary>Gets the name of an asset file, given its path.</summary>
-		 * <param name = "resourceName">The full path of the asset file</param>
-		 * <returns>The name of the asset</returns>
-		 */
-		public static string GetName (string resourceName)
-		{
-			int slash = resourceName.IndexOf ("/");
-			string newName;
-			
-			if (slash > 0)
-			{
-				newName = resourceName.Remove (0, slash+1);
-			}
-			else
-			{
-				newName = resourceName;
-			}
-			
-			return newName;
 		}
 
 
@@ -1801,7 +1755,7 @@ namespace AC
 		 */
 		public static void DrawTextEffect (Rect rect, string text, GUIStyle style, Color outColor, Color inColor, float size, TextEffects textEffects)
 		{
-			if (AdvGame.GetReferences ().menuManager != null && AdvGame.GetReferences ().menuManager.scaleTextEffects)
+			if (AdvGame.GetReferences ().menuManager && AdvGame.GetReferences ().menuManager.scaleTextEffects)
 			{
 				size = ACScreen.safeArea.width / 200f / size;
 			}
@@ -1975,19 +1929,19 @@ namespace AC
 
 		public static Vector3 GetCharLookVector (CharDirection direction, Char _character = null)
 		{
-			Vector3 camForward = KickStarter.CameraMain.transform.forward;
+			Vector3 camForward = KickStarter.CameraMainTransform.forward;
 			camForward = new Vector3 (camForward.x, 0f, camForward.z).normalized;
 
 			if (SceneSettings.IsTopDown ())
 			{
-				camForward = -KickStarter.CameraMain.transform.forward;
+				camForward = -KickStarter.CameraMainTransform.forward;
 			}
 			else if (SceneSettings.CameraPerspective == CameraPerspective.TwoD)
 			{
-				camForward = KickStarter.CameraMain.transform.up;
+				camForward = KickStarter.CameraMainTransform.up;
 			}
 
-			Vector3 camRight = new Vector3 (KickStarter.CameraMain.transform.right.x, 0f, KickStarter.CameraMain.transform.right.z);
+			Vector3 camRight = new Vector3 (KickStarter.CameraMainTransform.right.x, 0f, KickStarter.CameraMainTransform.right.z);
 
 			// Angle slightly so that left->right rotations face camera
 			if (KickStarter.settingsManager.IsInFirstPerson ())

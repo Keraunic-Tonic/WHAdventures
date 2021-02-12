@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberTrigger.cs"
  * 
@@ -33,15 +33,19 @@ namespace AC
 		{
 			if (loadedData) return;
 
-			if (GameIsPlaying () && GetComponent <AC_Trigger>())
+			if (GameIsPlaying () && isActiveAndEnabled)
 			{
-				if (startState == AC_OnOff.On)
-				{
-					GetComponent <AC_Trigger>().TurnOn ();
-				}
-				else
-				{
-					GetComponent <AC_Trigger>().TurnOff ();
+				AC_Trigger trigger = GetComponent<AC_Trigger>();
+				if (trigger)
+				{ 
+					if (startState == AC_OnOff.On)
+					{
+						trigger.TurnOn ();
+					}
+					else
+					{
+						trigger.TurnOff ();
+					}
 				}
 			}
 		}
@@ -57,17 +61,22 @@ namespace AC
 			triggerData.objectID = constantID;
 			triggerData.savePrevented = savePrevented;
 
-			if (GetComponent <Collider>())
+			Collider _collider = GetComponent <Collider>();
+			if (_collider)
 			{
-				triggerData.isOn = GetComponent <Collider>().enabled;
-			}
-			else if (GetComponent <Collider2D>())
-			{
-				triggerData.isOn = GetComponent <Collider2D>().enabled;
+				triggerData.isOn = _collider.enabled;
 			}
 			else
 			{
-				triggerData.isOn = false;
+				Collider2D _collider2D = GetComponent <Collider2D>();
+				if (_collider2D)
+				{
+					triggerData.isOn = _collider2D.enabled;
+				}
+				else
+				{
+					triggerData.isOn = false;
+				}
 			}
 
 			return Serializer.SaveScriptData <TriggerData> (triggerData);
@@ -88,13 +97,18 @@ namespace AC
 			}
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			if (GetComponent <Collider>())
+			Collider _collider = GetComponent <Collider>();
+			if (_collider)
 			{
-				GetComponent <Collider>().enabled = data.isOn;
+				_collider.enabled = data.isOn;
 			}
-			else if (GetComponent <Collider2D>())
+			else 
 			{
-				GetComponent <Collider2D>().enabled = data.isOn;
+				Collider2D _collider2D = GetComponent <Collider2D>();
+				if (_collider2D)
+				{
+					_collider2D.enabled = data.isOn;
+				}
 			}
 
 			loadedData = true;

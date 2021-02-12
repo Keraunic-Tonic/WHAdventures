@@ -23,7 +23,7 @@ namespace AC
 		{
 			_target.GetAnimEngine ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Animation settings", EditorStyles.boldLabel);
 			_target.animationEngine = (AnimationEngine) CustomGUILayout.EnumPopup ("Animation engine:", _target.animationEngine, "", "The animation engine that the character relies on for animation playback");
 			if (_target.animationEngine == AnimationEngine.Custom)
@@ -31,11 +31,11 @@ namespace AC
 				_target.customAnimationClass = CustomGUILayout.TextField ("Script name:", _target.customAnimationClass, "", "The class name of the AnimEngine ScriptableObject subclass that animates the character");
 			}
 			_target.motionControl = (MotionControl) CustomGUILayout.EnumPopup ("Motion control:", _target.motionControl, "", "How motion is controlled");
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			_target.GetAnimEngine ().CharSettingsGUI ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Movement settings", EditorStyles.boldLabel);
 
 			_target.walkSpeedScale = CustomGUILayout.FloatField ("Walk speed scale:", _target.walkSpeedScale, "", "The movement speed when walking");
@@ -61,16 +61,16 @@ namespace AC
 				_target.reverseSpeedFactor = CustomGUILayout.Slider ("Reverse speed factor:", _target.reverseSpeedFactor, 0f, 1f, "", "The factor by which speed is reduced when reversing");
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
 		protected void SharedGUITwo (AC.Char _target)
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Physics settings", EditorStyles.boldLabel);
 			_target.ignoreGravity = CustomGUILayout.Toggle ("Ignore gravity?", _target.ignoreGravity, "", "If True, the character will ignore the effects of gravity");
-			if (_target.GetComponent <Rigidbody>() != null || _target.GetComponent <Rigidbody2D>() != null)
+			if (_target.GetComponent <Rigidbody>() != null || _target.GetComponent <Rigidbody2D>())
 			{
 				if (_target.motionControl == MotionControl.Automatic)
 				{
@@ -128,10 +128,10 @@ namespace AC
 			{
 				_target.groundCheckLayerMask = LayerMaskField ("Ground-check layer(s):", _target.groundCheckLayerMask);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Audio clips", EditorStyles.boldLabel);
 		
 			_target.walkSound = (AudioClip) CustomGUILayout.ObjectField <AudioClip> ("Walk sound:", _target.walkSound, false, "", "The sound to play when walking");
@@ -142,9 +142,9 @@ namespace AC
 			}
 			_target.soundChild = (Sound) CustomGUILayout.ObjectField <Sound> ("SFX Sound child:", _target.soundChild, true, "", "");
 			_target.speechAudioSource = (AudioSource) CustomGUILayout.ObjectField <AudioSource> ("Speech AudioSource:", _target.speechAudioSource, true, "", "The AudioSource from which to play speech audio");
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Dialogue settings", EditorStyles.boldLabel);
 
 			_target.speechColor = CustomGUILayout.ColorField ("Speech text colour:", _target.speechColor, "", "");
@@ -167,7 +167,7 @@ namespace AC
 				_target.GetAnimEngine ().CharExpressionsGUI ();
 
 				EditorGUILayout.Space ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				for (int i=0; i<_target.expressions.Count; i++)
 				{
 					EditorGUILayout.BeginHorizontal ();
@@ -185,10 +185,10 @@ namespace AC
 				{
 					_target.expressions.Add (new Expression (GetExpressionIDArray (_target.expressions)));
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 

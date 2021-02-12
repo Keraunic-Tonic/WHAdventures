@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ArrowPrompt.cs"
  * 
@@ -397,14 +397,14 @@ namespace AC
 		{
 			if (actionListSource == ActionListSource.AssetFile)
 			{
-				if (linkedActionList != null)
+				if (linkedActionList)
 				{
 					linkedActionList.Interact ();
 				}
 			}
 			else if (actionListSource == ActionListSource.InScene)
 			{
-				if (linkedCutscene != null)
+				if (linkedCutscene)
 				{
 					linkedCutscene.Interact ();
 				}

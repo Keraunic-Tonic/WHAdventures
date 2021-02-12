@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionTransformRecord.cs"
  * 
@@ -46,13 +46,9 @@ namespace AC
 		protected LocalVariables localVariables;
 
 
-		public ActionTransformRecord ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Record transform";
-			description = "Records the transform values of a GameObject.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Record transform"; }}
+		public override string Description { get { return "Records the transform values of a GameObject."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -245,8 +241,6 @@ namespace AC
 					}
 					break;
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -279,15 +273,15 @@ namespace AC
 			if (!isPlayer && obToReadParameterID < 0)
 			{
 				if (obToRead != null && obToRead == gameObject) return true;
-				if (obToReadConstantID == id) return true;
+				if (obToReadConstantID == id && id != 0) return true;
 			}
 			if (isPlayer && gameObject.GetComponent <Player>() != null) return true;
 			if (variableParameterID < 0 && variableLocation == VariableLocation.Component)
 			{
 				if (variables != null && variables.gameObject == gameObject) return true;
-				if (variablesConstantID == id) return true;
+				if (variablesConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -314,7 +308,7 @@ namespace AC
 		 */
 		public static ActionTransformRecord CreateNew (GameObject objectToRecord, TransformRecordType recordType, bool inWorldSpace, VariableLocation variableLocation, int variableID, Variables variables = null)
 		{
-			ActionTransformRecord newAction = (ActionTransformRecord) CreateInstance <ActionTransformRecord>();
+			ActionTransformRecord newAction = CreateNew<ActionTransformRecord> ();
 			newAction.obToRead = objectToRecord;
 			newAction.transformRecordType = recordType;
 			newAction.transformLocation = (inWorldSpace) ? GlobalLocal.Global : GlobalLocal.Local;

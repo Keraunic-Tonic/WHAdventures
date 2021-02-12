@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Player.cs"
  * 
@@ -10,7 +10,6 @@
  */
 
 using UnityEngine;
-using System.Collections;
 
 namespace AC
 {
@@ -59,9 +58,9 @@ namespace AC
 
 		protected new void Awake ()
 		{
-			if (soundChild && soundChild.gameObject.GetComponent <AudioSource>())
+			if (soundChild && soundChild.audioSource)
 			{
-				audioSource = soundChild.gameObject.GetComponent <AudioSource>();
+				audioSource = soundChild.audioSource;
 			}
 
 			skinnedMeshRenderers = GetComponentsInChildren <SkinnedMeshRenderer>();
@@ -69,11 +68,11 @@ namespace AC
 			if (KickStarter.playerMovement)
 			{
 				firstPersonCamera = GetComponentInChildren <FirstPersonCamera>();
-				if (firstPersonCamera == null && KickStarter.settingsManager.movementMethod == MovementMethod.FirstPerson && KickStarter.player != null && KickStarter.player.FirstPersonCamera == null)
+				if (firstPersonCamera == null && KickStarter.settingsManager.movementMethod == MovementMethod.FirstPerson && KickStarter.player && KickStarter.player.FirstPersonCamera == null)
 				{
 					ACDebug.LogWarning ("Could not find a FirstPersonCamera script on the Player - one is necessary for first-person movement.", KickStarter.player);
 				}
-				if (firstPersonCamera != null)
+				if (firstPersonCamera)
 				{
 					firstPersonCameraTransform = firstPersonCamera.transform;
 				}
@@ -81,9 +80,9 @@ namespace AC
 
 			_Awake ();
 
-			if (GetAnimEngine () != null && KickStarter.settingsManager != null && KickStarter.settingsManager.hotspotDetection == HotspotDetection.PlayerVicinity && GetAnimEngine ().isSpriteBased && hotspotDetector != null)
+			if (GetAnimEngine () != null && KickStarter.settingsManager && KickStarter.settingsManager.hotspotDetection == HotspotDetection.PlayerVicinity && GetAnimEngine ().isSpriteBased && hotspotDetector)
 			{
-				if (spriteChild != null && hotspotDetector.transform == spriteChild) {} // OK
+				if (spriteChild && hotspotDetector.transform == spriteChild) {} // OK
 				else if (turn2DCharactersIn3DSpace)
 				{
 					if (hotspotDetector.transform == transform)
@@ -103,7 +102,7 @@ namespace AC
 		{
 			base.OnEnable ();
 			EventManager.OnSetPlayer += OnSetPlayer;
-
+			
 			AutoSyncHotspot ();
 		}
 
@@ -124,7 +123,7 @@ namespace AC
 				return;
 			}
 
-			if (firstPersonCamera != null && !KickStarter.stateHandler.MovementIsOff)
+			if (firstPersonCamera && !KickStarter.stateHandler.MovementIsOff)
 			{
 				firstPersonCamera._UpdateFPCamera ();
 			}
@@ -157,10 +156,10 @@ namespace AC
 					}
 				}
 				else if ((KickStarter.stateHandler.gameState == GameState.Cutscene && !lockedPath) || 
-				         (KickStarter.settingsManager.movementMethod == MovementMethod.PointAndClick) ||
-						 (KickStarter.settingsManager.movementMethod == MovementMethod.None) ||
-				         (KickStarter.settingsManager.movementMethod == MovementMethod.StraightToCursor && KickStarter.settingsManager.singleTapStraight) || 
-				         IsMovingToHotspot ())
+						(KickStarter.settingsManager.movementMethod == MovementMethod.PointAndClick) ||
+						(KickStarter.settingsManager.movementMethod == MovementMethod.None) ||
+						(KickStarter.settingsManager.movementMethod == MovementMethod.StraightToCursor && (KickStarter.settingsManager.singleTapStraight || KickStarter.settingsManager.pathfindUpdateFrequency > 0f)) || 
+						IsMovingToHotspot ())
 				{
 					charState = CharState.Move;
 				}
@@ -267,7 +266,7 @@ namespace AC
 
 			if (IsGrounded () && activePath == null)
 			{
-				if (_rigidbody != null && !_rigidbody.isKinematic)
+				if (_rigidbody && !_rigidbody.isKinematic)
 				{
 					if (useRigidbodyForMovement)
 					{	
@@ -289,7 +288,7 @@ namespace AC
 				{
 					if (motionControl == MotionControl.Automatic)
 					{
-						if (_rigidbody != null && _rigidbody.isKinematic)
+						if (_rigidbody && _rigidbody.isKinematic)
 						{
 							ACDebug.Log ("Player cannot jump without a non-kinematic Rigidbody component.", gameObject);
 						}
@@ -341,11 +340,11 @@ namespace AC
 					
 					if (pathOb.affectY)
 					{
-						transform.position = pathOb.transform.position;
+						Transform.position = pathOb.Transform.position;
 					}
 					else
 					{
-						transform.position = new Vector3 (pathOb.transform.position.x, transform.position.y, pathOb.transform.position.z);
+						Transform.position = new Vector3 (pathOb.Transform.position.x, Transform.position.y, pathOb.Transform.position.z);
 					}
 					
 					activePath = pathOb;
@@ -389,7 +388,7 @@ namespace AC
 		 */
 		public bool IsTilting ()
 		{
-			if (firstPersonCamera != null)
+			if (firstPersonCamera)
 			{
 				return firstPersonCamera.IsTilting ();
 			}
@@ -402,7 +401,7 @@ namespace AC
 		 */
 		public float GetTilt ()
 		{
-			if (firstPersonCamera != null)
+			if (firstPersonCamera)
 			{
 				return firstPersonCamera.GetTilt ();;
 			}
@@ -506,12 +505,12 @@ namespace AC
 		{
 			playerData.playerID = ID;
 			
-			playerData.playerLocX = transform.position.x;
-			playerData.playerLocY = transform.position.y;
-			playerData.playerLocZ = transform.position.z;
+			playerData.playerLocX = Transform.position.x;
+			playerData.playerLocY = Transform.position.y;
+			playerData.playerLocZ = Transform.position.z;
 			playerData.playerRotY = TransformRotation.eulerAngles.y;
 
-			playerData.inCustomCharState = (charState == CharState.Custom && GetAnimator () != null && GetAnimator ().GetComponent <RememberAnimator>());
+			playerData.inCustomCharState = (charState == CharState.Custom && GetAnimator () && GetAnimator ().GetComponent <RememberAnimator>());
 			
 			playerData.playerWalkSpeed = walkSpeedScale;
 			playerData.playerRunSpeed = runSpeedScale;
@@ -600,7 +599,7 @@ namespace AC
 			
 			// Head target
 			playerData.playerLockHotspotHeadTurning = lockHotspotHeadTurning;
-			if (headFacing == HeadFacing.Manual && headTurnTarget != null)
+			if (headFacing == HeadFacing.Manual && headTurnTarget)
 			{
 				playerData.isHeadTurning = true;
 				playerData.headTargetID = Serializer.GetConstantID (headTurnTarget);
@@ -622,14 +621,16 @@ namespace AC
 			}
 
 			FollowSortingMap followSortingMap = GetComponentInChildren <FollowSortingMap>();
-			if (followSortingMap != null)
+			if (followSortingMap)
 			{
 				playerData.followSortingMap = followSortingMap.followSortingMap;
-				if (!playerData.followSortingMap && followSortingMap.GetSortingMap () != null)
+				if (!playerData.followSortingMap && followSortingMap.GetSortingMap ())
 				{
-					if (followSortingMap.GetSortingMap ().GetComponent <ConstantID>() != null)
+					ConstantID followSortingMapConstantID = followSortingMap.GetSortingMap ().GetComponent <ConstantID>();
+
+					if (followSortingMapConstantID)
 					{
-						playerData.customSortingMapID = followSortingMap.GetSortingMap ().GetComponent <ConstantID>().constantID;
+						playerData.customSortingMapID = followSortingMapConstantID.constantID;
 					}
 					else
 					{
@@ -649,7 +650,7 @@ namespace AC
 			}
 
 			// Inactive Player follow
-			if (followTarget != null && !IsActivePlayer ())
+			if (followTarget && !IsActivePlayer ())
 			{
 				if (!followTargetIsPlayer)
 				{
@@ -662,6 +663,7 @@ namespace AC
 						playerData.followDistanceMax = followDistanceMax;
 						playerData.followFaceWhenIdle = followFaceWhenIdle;
 						playerData.followRandomDirection = followRandomDirection;
+						playerData.followAcrossScenes = false;
 					}
 					else
 					{
@@ -677,6 +679,7 @@ namespace AC
 					playerData.followDistanceMax = followDistanceMax;
 					playerData.followFaceWhenIdle = followFaceWhenIdle;
 					playerData.followRandomDirection = followRandomDirection;
+					playerData.followAcrossScenes = followAcrossScenes;
 				}
 			}
 			else
@@ -688,6 +691,7 @@ namespace AC
 				playerData.followDistanceMax = 0f;
 				playerData.followFaceWhenIdle = false;
 				playerData.followRandomDirection = false;
+				playerData.followAcrossScenes = false;
 			}
 
 			playerData.leftHandIKState = LeftHandIKController.CreateSaveData ();
@@ -752,12 +756,18 @@ namespace AC
 			// Animation clips
 			GetAnimEngine ().LoadPlayerData (playerData, this);
 
-			// Sound
-			walkSound = AssetLoader.RetrieveAsset (walkSound, playerData.playerWalkSound);
-			runSound = AssetLoader.RetrieveAsset (runSound, playerData.playerRunSound);
-
-			// Portrait graphic
-			portraitIcon.ReplaceTexture (AssetLoader.RetrieveAsset (portraitIcon.texture, playerData.playerPortraitGraphic));
+			/*#if AddressableIsPresent
+			if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
+			{
+				StartCoroutine (LoadDataFromAddressables (playerData));
+			}
+			else
+			#endif
+			{
+				walkSound = AssetLoader.RetrieveAsset (walkSound, playerData.playerWalkSound);
+				runSound = AssetLoader.RetrieveAsset (runSound, playerData.playerRunSound);
+				portraitIcon.ReplaceTexture (AssetLoader.RetrieveAsset (portraitIcon.texture, playerData.playerPortraitGraphic));
+			}*/
 
 			// Speech label
 			SetName (playerData.playerSpeechLabel, playerData.playerDisplayLineID);
@@ -812,9 +822,9 @@ namespace AC
 				}
 			}
 
-			if (charToFollow != null || (playerData.followTargetIsPlayer && KickStarter.player != null))
+			if (charToFollow != null || (playerData.followTargetIsPlayer && KickStarter.player))
 			{
-				FollowAssign (charToFollow, playerData.followTargetIsPlayer, playerData.followFrequency, playerData.followDistance, playerData.followDistanceMax, playerData.followFaceWhenIdle, playerData.followRandomDirection);
+				FollowAssign (charToFollow, playerData.followTargetIsPlayer, playerData.followFrequency, playerData.followDistance, playerData.followDistanceMax, playerData.followFaceWhenIdle, playerData.followRandomDirection, playerData.followAcrossScenes);
 			}
 			else
 			{
@@ -876,7 +886,7 @@ namespace AC
 			if (playerData.isHeadTurning)
 			{
 				ConstantID _headTargetID = ConstantID.GetComponent <ConstantID> (playerData.headTargetID);
-				if (_headTargetID != null)
+				if (_headTargetID)
 				{
 					SetHeadTurnTarget (_headTargetID.transform, new Vector3 (playerData.headTargetX, playerData.headTargetY, playerData.headTargetZ), true);
 				}
@@ -892,15 +902,15 @@ namespace AC
 			
 			ignoreGravity = playerData.playerIgnoreGravity;
 
-			if (GetComponentsInChildren <FollowSortingMap>() != null)
+			FollowSortingMap[] followSortingMaps = GetComponentsInChildren <FollowSortingMap>();
+			if (followSortingMaps != null && followSortingMaps.Length > 0)
 			{
-				FollowSortingMap[] followSortingMaps = GetComponentsInChildren <FollowSortingMap>();
 				SortingMap customSortingMap = ConstantID.GetComponent <SortingMap> (playerData.customSortingMapID);
 				
 				foreach (FollowSortingMap followSortingMap in followSortingMaps)
 				{
 					followSortingMap.followSortingMap = playerData.followSortingMap;
-					if (!playerData.followSortingMap && customSortingMap != null)
+					if (!playerData.followSortingMap && customSortingMap)
 					{
 						followSortingMap.SetSortingMap (customSortingMap);
 					}
@@ -971,6 +981,11 @@ namespace AC
 				ACDebug.Log ("Spawned instance of Player '" + GetName () + "' into scene " + newInstance.gameObject.scene.name + ".", newInstance);
 			}
 
+			if (KickStarter.eventManager)
+			{
+				KickStarter.eventManager.Call_OnPlayerSpawn (newInstance);
+			}
+
 			return newInstance;
 		}
 
@@ -978,6 +993,11 @@ namespace AC
 		/** Removes the Player GameObject from the scene */
 		public void RemoveFromScene ()
 		{
+			if (KickStarter.eventManager)
+			{
+				KickStarter.eventManager.Call_OnPlayerRemove (this);
+			}
+
 			ReleaseHeldObjects ();
 
 			Renderer[] playerObRenderers = gameObject.GetComponentsInChildren<Renderer> ();
@@ -994,6 +1014,17 @@ namespace AC
 			}
 
 			KickStarter.sceneChanger.ScheduleForDeletion (gameObject);
+		}
+
+
+		/** Returns True if the Player is inactive, but following the active Player across scenes */
+		public bool IsFollowingActivePlayerAcrossScenes ()
+		{
+			if (followAcrossScenes && followTargetIsPlayer)
+			{ 
+				return true;
+			}
+			return false;
 		}
 
 		#endregion
@@ -1016,7 +1047,7 @@ namespace AC
 
 		protected bool IsMovingToHotspot ()
 		{
-			if (KickStarter.playerInteraction != null && KickStarter.playerInteraction.GetHotspotMovingTo () != null)
+			if (KickStarter.playerInteraction && KickStarter.playerInteraction.GetHotspotMovingTo ())
 			{
 				return true;
 			}
@@ -1100,6 +1131,20 @@ namespace AC
 		}
 
 
+		/** The Player's collection of Inventory items */
+		public InvCollection Inventory
+		{
+			get
+			{
+				if (KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow && KickStarter.player != this)
+				{
+					return KickStarter.saveSystem.GetItemsFromPlayer (ID);
+				}
+				return KickStarter.runtimeInventory.PlayerInvCollection;
+			}
+		}
+
+
 		public override bool IsPlayer
 		{
 			get
@@ -1120,7 +1165,7 @@ namespace AC
 			{
 				id = value;
 
-				if (id < -1 && KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
+				if (id < -1 && KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
 				{
 					ACDebug.LogWarning ("The use of 'in-scene' local Players is not recommended when Player-switching is enabled - consider using the 'Player: Switch' Action to change Player instead.");
 				}

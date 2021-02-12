@@ -24,7 +24,7 @@ namespace AC
 		{
 			if (_target == null) return;
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Conversation settings", EditorStyles.boldLabel);
 			_target.interactionSource = (AC.InteractionSource) CustomGUILayout.EnumPopup ("Interaction source:", _target.interactionSource, "", "The source of the commands that are run when an option is chosen");
 			_target.autoPlay = CustomGUILayout.Toggle ("Auto-play lone option?", _target.autoPlay, "", "If True, and only one option is available, then the option will be chosen automatically");
@@ -51,7 +51,7 @@ namespace AC
 					_target.defaultOption = -1;
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			EditorGUILayout.Space ();
 			CreateOptionsGUI ();
@@ -131,7 +131,7 @@ namespace AC
 		
 		private void EditOptionGUI (ButtonDialog option, InteractionSource source)
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			
 			if (option.lineID > -1)
 			{
@@ -191,7 +191,7 @@ namespace AC
 				option.linkedInventoryID = CreateInventoryGUI (option.linkedInventoryID);
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberTimeline.cs"
  * 
@@ -15,13 +15,16 @@ using UnityEngine;
 using UnityEngine.Timeline;
 #endif
 using UnityEngine.Playables;
+#if AddressableIsPresent
+using System.Collections;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace AC
 {
 
-	/**
-	 * Attach this script to PlayableDirector objects you wish to save.
-	 */
+	/** Attach this script to PlayableDirector objects you wish to save. */
 	[RequireComponent (typeof (PlayableDirector))]
 	[AddComponentMenu("Adventure Creator/Save system/Remember Timeline")]
 	[HelpURL("https://www.adventurecreator.org/scripting-guide/class_a_c_1_1_remember_timeline.html")]
@@ -35,29 +38,26 @@ namespace AC
 		/** If True, and the Timeline was not playing when it was saved, it will be evaluated at its playback point - causing the effects of it running at that single frame to be restored */
 		public bool evaluateWhenStopped;
 
+		private PlayableDirector playableDirector;
 
-		/**
-		 * <summary>Serialises appropriate GameObject values into a string.</summary>
-		 * <returns>The data, serialised as a string</returns>
-		 */
+
 		public override string SaveData ()
 		{
 			TimelineData timelineData = new TimelineData ();
 			timelineData.objectID = constantID;
 			timelineData.savePrevented = savePrevented;
 
-			PlayableDirector director = GetComponent <PlayableDirector>();
-			timelineData.isPlaying = (director.state == PlayState.Playing);
-			timelineData.currentTime = director.time;
+			timelineData.isPlaying = (PlayableDirector.state == PlayState.Playing);
+			timelineData.currentTime = PlayableDirector.time;
 			timelineData.trackObjectData = string.Empty;
 			timelineData.timelineAssetID = string.Empty;
 
-			if (director.playableAsset != null)
+			if (PlayableDirector.playableAsset)
 			{
 				#if !ACIgnoreTimeline
-				TimelineAsset timeline = (TimelineAsset) director.playableAsset;
+				TimelineAsset timeline = (TimelineAsset) PlayableDirector.playableAsset;
 
-				if (timeline != null)
+				if (timeline)
 				{
 					if (saveTimelineAsset)
 					{
@@ -70,12 +70,12 @@ namespace AC
 						for (int i=0; i<bindingIDs.Length; i++)
 						{
 							TrackAsset trackAsset = timeline.GetOutputTrack (i);
-							GameObject trackObject = director.GetGenericBinding (trackAsset) as GameObject;
+							GameObject trackObject = PlayableDirector.GetGenericBinding (trackAsset) as GameObject;
 							bindingIDs[i] = 0;
-							if (trackObject != null)
+							if (trackObject)
 							{
 								ConstantID cIDComponent = trackObject.GetComponent <ConstantID>();
-								if (cIDComponent != null)
+								if (cIDComponent)
 								{
 									bindingIDs[i] = cIDComponent.constantID;
 								}
@@ -105,25 +105,75 @@ namespace AC
 			if (data == null) return;
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			PlayableDirector director = GetComponent <PlayableDirector>();
+			#if AddressableIsPresent
 
-			#if !ACIgnoreTimeline
-			if (director != null && director.playableAsset != null)
+			if (saveTimelineAsset && KickStarter.settingsManager.saveAssetReferencesWithAddressables && !string.IsNullOrEmpty (data.timelineAssetID))
 			{
-				TimelineAsset timeline = (TimelineAsset) director.playableAsset;
+				StopAllCoroutines ();
+				StartCoroutine (LoadDataFromAddressable (data));
+				return;
+			}
 
-				if (timeline != null)
+			#endif
+
+			LoadDataFromResources (data);
+		}
+
+
+		#if AddressableIsPresent
+
+		private IEnumerator LoadDataFromAddressable (TimelineData data)
+		{
+			AsyncOperationHandle<TimelineAsset> handle = Addressables.LoadAssetAsync<TimelineAsset> (data.timelineAssetID);
+			yield return handle;
+			if (handle.Status == AsyncOperationStatus.Succeeded)
+			{
+				PlayableDirector.playableAsset = handle.Result;
+			}
+			Addressables.Release (handle);
+
+			LoadRemainingData (data);
+		}
+
+		#endif
+
+
+		private void LoadDataFromResources (TimelineData data)
+		{
+			#if !ACIgnoreTimeline
+			if (PlayableDirector.playableAsset)
+			{
+				TimelineAsset timeline = (TimelineAsset) PlayableDirector.playableAsset;
+
+				if (timeline)
 				{
 					if (saveTimelineAsset)
 					{
 						TimelineAsset _timeline = AssetLoader.RetrieveAsset (timeline, data.timelineAssetID);
-						if (_timeline != null)
+						Debug.Log ("Get " + _timeline + " from " + data.timelineAssetID);
+						if (_timeline)
 						{
-							director.playableAsset = _timeline;
+							PlayableDirector.playableAsset = _timeline;
 							timeline = _timeline;
 						}
 					}
+				}
+			}
+			#endif
 
+			LoadRemainingData (data);
+		}
+
+
+		private void LoadRemainingData (TimelineData data)
+		{
+			#if !ACIgnoreTimeline
+			if (PlayableDirector.playableAsset)
+			{
+				TimelineAsset timeline = (TimelineAsset) PlayableDirector.playableAsset;
+
+				if (timeline)
+				{
 					if (saveBindings && !string.IsNullOrEmpty (data.trackObjectData))
 					{
 						string[] bindingIDs = data.trackObjectData.Split (","[0]);
@@ -136,44 +186,55 @@ namespace AC
 								if (bindingID != 0)
 								{
 									var track = timeline.GetOutputTrack (i);
-									if (track != null)
+									if (track)
 									{
 										ConstantID savedObject = ConstantID.GetComponent (bindingID, gameObject.scene, true);
-										if (savedObject != null)
+										if (savedObject)
 										{
-											director.SetGenericBinding (track, savedObject.gameObject);
+											PlayableDirector.SetGenericBinding (track, savedObject.gameObject);
 										}
 									}
-				                }
-				              }
+								}
+							}
 						}
 					}
 				}
 			}
 			#endif
 
-			director.time = data.currentTime;
+			PlayableDirector.time = data.currentTime;
 			if (data.isPlaying)
 			{
-				director.Play ();
+				PlayableDirector.Play ();
 			}
 			else
 			{
-				director.Stop ();
+				PlayableDirector.Stop ();
 
 				if (evaluateWhenStopped)
 				{
-					director.Evaluate ();
+					PlayableDirector.Evaluate ();
 				}
+			}
+		}
+
+
+		private PlayableDirector PlayableDirector
+		{
+			get
+			{
+				if (playableDirector == null)
+				{
+					playableDirector = GetComponent <PlayableDirector>();
+				}
+				return playableDirector;
 			}
 		}
 		
 	}
 	
 
-	/**
-	 * A data container used by the RememberTimeline script.
-	 */
+	/** A data container used by the RememberTimeline script. */
 	[System.Serializable]
 	public class TimelineData : RememberData
 	{
@@ -188,9 +249,7 @@ namespace AC
 		public string timelineAssetID;
 
 		
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public TimelineData () { }
 
 	}

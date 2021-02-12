@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"FirstPersonCamera.cs"
  * 
@@ -119,7 +119,7 @@ namespace AC
 		{
 			if (actualTilt != targetTilt)
 			{
-				if (player != null)
+				if (player)
 				{
 					actualTilt = tiltLerp.Update (actualTilt, targetTilt, player.turnSpeed);
 				}
@@ -158,9 +158,9 @@ namespace AC
 						break;
 
 					case FirstPersonHeadBobMethod.CustomAnimation:
-						if (headBobAnimator != null)
+						if (headBobAnimator)
 						{
-							bool isGrounded = (player != null && player.IsGrounded (true));
+							bool isGrounded = (player && player.IsGrounded (true));
 
 							if (!string.IsNullOrEmpty (headBobSpeedParameter))
 							{
@@ -202,7 +202,7 @@ namespace AC
 				return;
 			}
 
-			if (allowMouseWheelZooming && Camera != null)
+			if (allowMouseWheelZooming && Camera)
 			{
 				float scrollWheelInput = KickStarter.playerInput.InputGetAxis ("Mouse ScrollWheel");
 				if (scrollWheelInput > 0f)
@@ -223,7 +223,7 @@ namespace AC
 		 */
 		public float GetHeadBobSpeed ()
 		{
-			if (player != null && player.IsGrounded (true))
+			if (player && player.IsGrounded (true))
 			{
 				return Mathf.Abs (player.GetMoveSpeed ());
 			}

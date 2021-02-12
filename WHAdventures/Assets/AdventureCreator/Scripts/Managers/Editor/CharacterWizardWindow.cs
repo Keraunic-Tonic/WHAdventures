@@ -156,7 +156,7 @@ namespace AC
 			GUI.Label (pageRect, "Page " + (pageNumber + 1) + " of " + (numPages + 1));
 
 			GUILayout.FlexibleSpace ();
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 		
 		

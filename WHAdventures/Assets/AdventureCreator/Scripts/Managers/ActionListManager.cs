@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionListManager.cs"
  * 
@@ -591,12 +591,15 @@ namespace AC
 				foreach (string chunk in dataArray)
 				{
 					ActiveList activeList = new ActiveList ();
-					if (activeList.LoadData (chunk, subScene))
-					{
-						activeLists.Add (activeList);
-					}
+					activeList.LoadData (chunk, subScene);
 				}
 			}
+		}
+
+
+		public void AddToList (ActiveList activeList)
+		{
+			activeLists.Add (activeList);
 		}
 
 

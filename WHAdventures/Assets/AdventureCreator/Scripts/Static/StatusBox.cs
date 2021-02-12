@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"StatusBox.cs"
  * 
@@ -35,6 +35,7 @@ namespace AC
 					return;
 				}
 				#endif
+				GUI.depth = KickStarter.menuManager.globalDepth + 1;
 				debugWindowRect.height = 21f;
 				debugWindowRect = GUILayout.Window (10, debugWindowRect, StatusWindow, "AC status", GUILayout.Width (260));
 			}
@@ -51,10 +52,8 @@ namespace AC
 
 			GUILayout.Label ("Current game state: " + KickStarter.stateHandler.gameState.ToString ());
 
-			if (KickStarter.settingsManager.useProfiles)
-			{
-				GUILayout.Label ("Current profile ID: " + Options.GetActiveProfileID ());
-			}
+			Options.DrawStatus ();
+			KickStarter.sceneChanger.DrawStatus ();
 
 			if (KickStarter.player != null)
 			{
@@ -80,6 +79,8 @@ namespace AC
 					#endif
 				}
 			}
+
+			KickStarter.playerInput.DrawStatus ();
 			
 			GUILayout.Space (4f);
 

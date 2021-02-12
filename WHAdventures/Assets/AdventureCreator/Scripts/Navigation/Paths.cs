@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Paths.cs"
  * 
@@ -12,6 +12,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using System.Net;
 
 namespace AC
 {
@@ -45,6 +46,8 @@ namespace AC
 		/** The time, in seconds, that a character will wait at each node before continuing along the path */
 		public float nodePause;
 
+		private Transform _transform;
+
 		#endregion
 
 
@@ -59,11 +62,11 @@ namespace AC
 
 			if (nodes == null || nodes.Count == 0)
 			{
-				nodes.Add (transform.position);
+				nodes.Add (Transform.position);
 			}
 			else
 			{
-				nodes[0] = transform.position;
+				nodes[0] = Transform.position;
 			}
 		}
 
@@ -77,7 +80,7 @@ namespace AC
 
 			if (nodes.Count > 0)
 			{
-				nodes[0] = transform.position;
+				nodes[0] = Transform.position;
 			}
 
 			if (pathType == AC_PathType.IsRandom && numNodes > 1)
@@ -151,9 +154,9 @@ namespace AC
 				targetPosition = AdvGame.GetScreenNavMesh (targetPosition);
 			}
 
-			if (KickStarter.navigationManager != null)
+			if (KickStarter.navigationManager)
 			{
-				pointArray = KickStarter.navigationManager.navigationEngine.GetPointsArray (transform.position, targetPosition);
+				pointArray = KickStarter.navigationManager.navigationEngine.GetPointsArray (Transform.position, targetPosition);
 			}
 			else
 			{
@@ -184,7 +187,7 @@ namespace AC
 				List<Vector3> newNodes = new List<Vector3>();
 				
 				newNodes.Clear ();
-				newNodes.Add (this.transform.position);
+				newNodes.Add (Transform.position);
 
 				nodeCommands.Clear ();
 
@@ -195,7 +198,7 @@ namespace AC
 						// If first point, ignore if same as position
 						if (SceneSettings.IsUnity2D ())
 						{
-							Vector2 testPoint = new Vector2 (transform.position.x, transform.position.y);
+							Vector2 testPoint = new Vector2 (Transform.position.x, Transform.position.y);
 							Vector2 testPoint2 = new Vector2 (pointData[0].x, pointData[0].y);
 							if ((testPoint - testPoint2).magnitude < 0.001f)
 							{
@@ -204,7 +207,7 @@ namespace AC
 						}
 						else
 						{
-							Vector3 testPoint = new Vector3 (transform.position.x, pointData[0].y, transform.position.z);
+							Vector3 testPoint = new Vector3 (Transform.position.x, pointData[0].y, Transform.position.z);
 							if ((testPoint - pointData[0]).magnitude < 0.001f)
 							{
 								continue;
@@ -459,10 +462,21 @@ namespace AC
 			}
 		}
 
+
+		/** A cache of the Path's transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
+			}
+		}
+
 		#endregion
 
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		protected bool relativeMode;
 		protected Vector3 lastFramePosition;
 
@@ -540,7 +554,7 @@ namespace AC
 
 		public void SetParameter (ActionListSource source, GameObject gameObject)
 		{
-			if (source == ActionListSource.InScene && cutscene != null)
+			if (source == ActionListSource.InScene && cutscene)
 			{
 				if (parameterID >= 0 && cutscene.NumParameters > parameterID)
 				{
@@ -556,7 +570,7 @@ namespace AC
 					cutscene.Interact ();
 				}
 			}
-			else if (source == ActionListSource.AssetFile && actionListAsset != null)
+			else if (source == ActionListSource.AssetFile && actionListAsset)
 			{
 				if (parameterID >= 0 && actionListAsset.NumParameters > parameterID)
 				{

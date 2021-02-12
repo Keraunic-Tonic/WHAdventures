@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"NavigationEngine_UnityNavigation.cs"
  * 
@@ -76,6 +76,7 @@ namespace AC
 
 				if (!foundNewEnd)
 				{
+					ACDebug.LogWarning ("No path could be calculated between " + startPosition + " and " + targetPosition);
 					return new Vector3[0];
 				}
 

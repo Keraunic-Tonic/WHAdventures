@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionPlayerSwitch.cs"
  * 
@@ -64,19 +64,13 @@ namespace AC
 		protected Marker runtimeNewPlayerMarker;
 
 		
+		public override ActionCategory Category { get { return ActionCategory.Player; }}
+		public override string Title { get { return "Switch"; }}
+		public override string Description { get { return "Swaps out the Player prefab mid-game. If the new prefab has been used before, you can restore that prefab's position data – otherwise you can set the position or scene of the new player. This Action only applies to games for which 'Player switching' has been allowed in the Settings Manager."; }}
 
-		public ActionPlayerSwitch ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Player;
-			title = "Switch";
-			description = "Swaps out the Player prefab mid-game. If the new prefab has been used before, you can restore that prefab's position data – otherwise you can set the position or scene of the new player. This Action only applies to games for which 'Player switching' has been allowed in the Settings Manager.";
-		}
-		
-		
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
-			Upgrade ();
 			playerID = AssignInteger (parameters, playerIDParameterID, playerID);
 		}
 
@@ -106,7 +100,7 @@ namespace AC
 							{
 								if (keepInventory)
 								{
-									KickStarter.saveSystem.AssignItemsToPlayer (KickStarter.runtimeInventory.localItems, playerID);
+									KickStarter.saveSystem.AssignItemsToPlayer (KickStarter.runtimeInventory.PlayerInvCollection, playerID);
 								}
 
 								_Camera oldCamera = KickStarter.mainCamera.attachedCamera;
@@ -137,6 +131,7 @@ namespace AC
 								// Same camera
 								if (oldCamera != null && KickStarter.mainCamera.attachedCamera != oldCamera)
 								{
+									oldCamera.MoveCameraInstant ();
 									KickStarter.mainCamera.SetGameCamera (oldCamera);
 								}
 
@@ -159,7 +154,7 @@ namespace AC
 
 							if (keepInventory)
 							{
-								KickStarter.saveSystem.AssignItemsToPlayer (KickStarter.runtimeInventory.localItems, playerID);
+								KickStarter.saveSystem.AssignItemsToPlayer (KickStarter.runtimeInventory.PlayerInvCollection, playerID);
 							}
 
 							int sceneIndexToLoad = KickStarter.saveSystem.GetPlayerSceneIndex (playerID);
@@ -204,7 +199,7 @@ namespace AC
 								KickStarter.player.StopFollowing ();
 							}
 						
-							if (KickStarter.mainCamera.attachedCamera && alwaysSnapCamera)
+							if (alwaysSnapCamera && KickStarter.mainCamera.attachedCamera && KickStarter.mainCamera)
 							{
 								KickStarter.mainCamera.attachedCamera.MoveCameraInstant ();
 							}
@@ -225,13 +220,14 @@ namespace AC
 		}
 
 
-		private void Upgrade ()
+		public override void Upgrade ()
 		{
 			if (newPlayerPosition == NewPlayerPosition.ReplaceCurrentPlayer)
 			{
 				takeOldPlayerPosition = true;
 				newPlayerPosition = NewPlayerPosition.ReplaceNPC;
 			}
+			base.Upgrade ();
 		}
 
 		
@@ -255,8 +251,6 @@ namespace AC
 				return;
 			}
 
-			Upgrade ();
-			
 			if (settingsManager.players.Count > 0)
 			{
 				playerIDParameterID = Action.ChooseParameterGUI ("New Player ID:", parameters, playerIDParameterID, ParameterType.Integer);
@@ -328,8 +322,6 @@ namespace AC
 				EditorGUILayout.LabelField ("No players exist!");
 				playerID = -1;
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -400,7 +392,7 @@ namespace AC
 		 */
 		public static ActionPlayerSwitch CreateNew (int newPlayerID, bool takeOldPlayerPosition = false, bool transferInventory = false)
 		{
-			ActionPlayerSwitch newAction = (ActionPlayerSwitch) CreateInstance <ActionPlayerSwitch>();
+			ActionPlayerSwitch newAction = CreateNew<ActionPlayerSwitch> ();
 			newAction.playerID = newPlayerID;
 			newAction.keepInventory = transferInventory;
 			newAction.takeOldPlayerPosition = takeOldPlayerPosition;

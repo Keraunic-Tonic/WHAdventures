@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AutoLipsync.cs"
  * 
@@ -91,7 +91,7 @@ namespace AC
 				output = 0f;
 			}
 
-			if (_character != null && !_character.isTalking && Mathf.Approximately (output, 0f))
+			if (_character && !_character.isTalking && Mathf.Approximately (output, 0f))
 			{
 				return;
 			}

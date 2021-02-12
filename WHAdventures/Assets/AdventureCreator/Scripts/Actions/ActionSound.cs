@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionSound.cs"
  * 
@@ -42,14 +42,10 @@ namespace AC
 		protected Sound runtimeSound;
 
 
-		public ActionSound ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Sound;
-			title = "Play";
-			description = "Triggers a Sound object to start playing. Can be used to fade sounds in or out.";
-		}
-
+		public override ActionCategory Category { get { return ActionCategory.Sound; }}
+		public override string Title { get { return "Play"; }}
+		public override string Description { get { return "Triggers a Sound object to start playing. Can be used to fade sounds in or out."; }}
+		
 
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
@@ -93,7 +89,7 @@ namespace AC
 
 				if (runtimeSound.soundType == SoundType.Music && autoEndOtherMusicWhenPlayed && (soundAction == SoundAction.Play || soundAction == SoundAction.FadeIn))
 				{
-					Sound[] sounds = FindObjectsOfType (typeof (Sound)) as Sound[];
+					Sound[] sounds = Object.FindObjectsOfType (typeof (Sound)) as Sound[];
 					foreach (Sound sound in sounds)
 					{
 						sound.EndOld (SoundType.Music, runtimeSound);
@@ -245,8 +241,6 @@ namespace AC
 					willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 				}
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -275,9 +269,9 @@ namespace AC
 			if (parameterID < 0)
 			{
 				if (soundObject != null && soundObject.gameObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -295,7 +289,8 @@ namespace AC
 		 */
 		public static ActionSound CreateNew_Play (Sound sound, AudioClip newClip, float fadeDuration = 0f, bool doLoop = false, bool ignoreIfAlreadyPlaying = true, bool waitUntilFinish = false)
 		{
-			ActionSound newAction = (ActionSound) CreateInstance <ActionSound>();
+			ActionSound newAction = CreateNew<ActionSound> ();
+			newAction.soundObject = sound;
 			newAction.soundAction = (fadeDuration > 0f) ? SoundAction.FadeIn : SoundAction.Play;
 			newAction.audioClip = newClip;
 			newAction.loop = doLoop;
@@ -314,7 +309,8 @@ namespace AC
 		 */
 		public static ActionSound CreateNew_Stop (Sound sound, float fadeDuration = 0f, bool waitUntilFinish = false)
 		{
-			ActionSound newAction = (ActionSound) CreateInstance <ActionSound>();
+			ActionSound newAction = CreateNew<ActionSound> ();
+			newAction.soundObject = sound;
 			newAction.soundAction = (fadeDuration > 0f) ? SoundAction.FadeOut : SoundAction.Stop;
 			newAction.willWait = waitUntilFinish;
 			return newAction;

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Moveable_Drag.cs"
  * 
@@ -31,6 +31,8 @@ namespace AC
 		public DragMode dragMode = DragMode.LockToTrack;
 		/** The DragTrack the object is locked to (if dragMode = DragMode.LockToTrack */
 		public DragTrack track;
+		/** Which direction the object can be dragged along the track in */
+		public DragTrackDirection dragTrackDirection = DragTrackDirection.NoRestriction;
 		/** If True, and dragMode = DragMode.LockToTrack, then the position and rotation of all child objects will be maintained when the object is attached to the track */
 		public bool retainOriginalTransform = false;
 
@@ -38,7 +40,9 @@ namespace AC
 		public bool setOnStart = true;
 		/** How far along its DragTrack that the object should be placed at when the game begins */
 		public float trackValueOnStart = 0f;
-		
+		/** If True, the object will recieve an additional gravity force when not held by the Player or being moved automatically */
+		public bool applyGravity = false;
+
 		/** Where to locate interactions */
 		public ActionListSource actionListSource = ActionListSource.InScene;
 		/** The Interaction to run whenever the object is moved by the player (and actionListSource = ActionListSource.InScene) */
@@ -97,7 +101,10 @@ namespace AC
 		private LerpUtils.Vector3Lerp torqueDampingLerp = new LerpUtils.Vector3Lerp (true);
 
 		private Vector3 lastFrameForce;
-
+		private float lastFrameTrackValue;
+		private float lastFrameTotalPositionAlong;
+		private float heldIntensity = 0f;
+		
 		#endregion
 
 
@@ -124,11 +131,11 @@ namespace AC
 			}
 
 			SphereCollider sphereCollider = GetComponent <SphereCollider>();
-			if (sphereCollider != null)
+			if (sphereCollider)
 			{
-				colliderRadius = sphereCollider.radius * transform.localScale.x;
+				colliderRadius = sphereCollider.radius * Transform.localScale.x;
 			}
-			else if (dragMode == DragMode.LockToTrack && track != null && track.UsesEndColliders)
+			else if (dragMode == DragMode.LockToTrack && track && track.UsesEndColliders)
 			{
 				ACDebug.LogWarning ("Cannot calculate collider radius for Draggable object '" + gameObject.name + "' - it should have either a SphereCollider attached, even if it's disabled.", this);
 			}
@@ -137,6 +144,19 @@ namespace AC
 			{
 				StartCoroutine (InitToTrack ());
 			}
+
+			CheckGameplayBlockers ();
+		}
+
+
+		protected override void Start ()
+		{
+			if (dragMode != DragMode.LockToTrack)
+			{
+				LimitCollisions ();
+			}
+
+			base.Start ();
 		}
 
 
@@ -148,12 +168,17 @@ namespace AC
 			}
 			else if (dragMode == DragMode.RotateOnly && !UsesRigidbody)
 			{
-				transform.Rotate (thisFrameTorque, Space.World);
+				Transform.Rotate (thisFrameTorque, Space.World);
 
 				if (!isHeld)
 				{
 					thisFrameTorque = torqueDampingLerp.Update (thisFrameTorque, Vector3.zero, toruqeDamping);
 				}
+			}
+
+			if (UsesRigidbody && !IsHeld && applyGravity && !IsAutoMoving ())
+			{
+				_rigidbody.AddForceAtPosition (-Physics.gravity * Time.deltaTime, _rigidbody.position, ForceMode.Force);
 			}
 		}
 
@@ -171,7 +196,7 @@ namespace AC
 		{
 			if (newTrack == null) return;
 
-			if (track != null && newTrack != track)
+			if (track && newTrack != track)
 			{
 				track.OnDisconnect (this);
 			}
@@ -224,24 +249,56 @@ namespace AC
 		public override void UpdateMovement ()
 		{
 			base.UpdateMovement ();
-		
 			if (dragMode == DragMode.LockToTrack && track)
 			{
 				track.UpdateDraggable (this);
-
+				
 				if (UsesRigidbody && (_rigidbody.angularVelocity != Vector3.zero || _rigidbody.velocity != Vector3.zero))
 				{
 					RunInteraction (true);
 				}
 
-				if (IsAutoMoving () && activeAutoMove.CheckForEnd (this))
+				if (IsAutoMoving ())
 				{
-					StopAutoMove (true);
+					if (activeAutoMove.CheckForEnd (this))
+					{
+						StopAutoMove (true);
+					}
+				}
+				else if (!UsesRigidbody && dragMode == DragMode.LockToTrack && track)
+				{
+					if (IsHeld)
+					{
+						heldIntensity = 1f;
+					}
+					else
+					{
+						if (heldIntensity > 0.01f && trackValue > 0f && trackValue < 1f)
+						{
+							switch (track.dragMovementCalculation)
+							{
+								case DragMovementCalculation.DragVector:
+									track.ApplyDragForce (lastFrameForce * heldIntensity, this);
+									break;
+
+								case DragMovementCalculation.CursorPosition:
+									if (simulatedMass > 0)
+									{
+										track.ApplyAutoForce (lastFrameTotalPositionAlong, heldIntensity * speedFactor * 0.02f / simulatedMass, this, false);
+									}
+									break;
+
+								default:
+									break;
+							}
+						}
+						heldIntensity = Mathf.Lerp (heldIntensity, 0f, Time.deltaTime * simulatedMass);
+					}
 				}
 
-				if (collideSound && collideSoundClip && track is DragTrack_Hinge)
+				if (collideSound && !track.UsesEndColliders)
 				{
-					if (trackValue > 0.05f && trackValue < 0.95f)
+					if (trackValue > 0.03f && trackValue < 0.97f)
 					{
 						canPlayCollideSound = true;
 					}
@@ -262,15 +319,18 @@ namespace AC
 
 			if (moveSoundClip && moveSound)
 			{
-				if (dragMode == DragMode.LockToTrack && track != null)
+				if (dragMode == DragMode.LockToTrack && track)
 				{
-					PlayMoveSound (track.GetMoveSoundIntensity (this), trackValue);
+					PlayMoveSound (track.GetMoveSoundIntensity (trackValue - lastFrameTrackValue));
+					
 				}
 				else if (_rigidbody)
 				{
-					PlayMoveSound (_rigidbody.velocity.magnitude, trackValue);
+					PlayMoveSound (_rigidbody.velocity.magnitude);
 				}
 			}
+
+			lastFrameTrackValue = trackValue;
 		}
 		
 
@@ -279,11 +339,11 @@ namespace AC
 		 */
 		public override void DrawGrabIcon ()
 		{
-			if (isHeld && showIcon && KickStarter.CameraMain.WorldToScreenPoint (transform.position).z > 0f && icon != null)
+			if (isHeld && showIcon && KickStarter.CameraMain.WorldToScreenPoint (Transform.position).z > 0f && icon != null)
 			{
-				if (dragMode == DragMode.LockToTrack && track != null && track.IconIsStationary ())
+				if (dragMode == DragMode.LockToTrack && track && track.IconIsStationary ())
 				{
-					Vector3 screenPosition = KickStarter.CameraMain.WorldToScreenPoint (grabPositionRelative + transform.position);
+					Vector3 screenPosition = KickStarter.CameraMain.WorldToScreenPoint (grabPositionRelative + Transform.position);
 					icon.Draw (new Vector3 (screenPosition.x, screenPosition.y));
 				}
 				else
@@ -298,7 +358,7 @@ namespace AC
 		public override void ApplyDragForce (Vector3 force, Vector3 mousePosition, float _distanceToCamera)
 		{
 			distanceToCamera = _distanceToCamera;
-
+			
 			// Scale force
 			force *= speedFactor * distanceToCamera / 50f;
 
@@ -311,7 +371,7 @@ namespace AC
 			switch (dragMode)
 			{
 				case DragMode.LockToTrack:
-					if (track != null)
+					if (track)
 					{
 						switch (track.dragMovementCalculation)
 						{
@@ -330,9 +390,10 @@ namespace AC
 								break;
 
 							case DragMovementCalculation.CursorPosition:
-								float mousePositionAlong = track.GetScreenPointProportionAlong(mousePosition);
+								float mousePositionAlong = track.GetScreenPointProportionAlong (mousePosition, grabPositionRelative, this);
+								
 								float totalPositionAlong = mousePositionAlong + screenToWorldOffset;
-
+								
 								if (track.preventEndToEndJumping)
 								{
 									bool inDeadZone = (totalPositionAlong >= 1f || totalPositionAlong <= 0f);
@@ -361,8 +422,29 @@ namespace AC
 									}
 								}
 
+								switch (dragTrackDirection)
+								{
+									case DragTrackDirection.ForwardOnly:
+										if (totalPositionAlong < GetPositionAlong ())
+										{
+											return;
+										}
+										break;
+
+									case DragTrackDirection.BackwardOnly:
+										if (totalPositionAlong > GetPositionAlong ())
+										{
+											return;
+										}
+										break;
+
+									default:
+										break;
+								}
+
 								RunInteraction (true);
-								track.ApplyAutoForce (totalPositionAlong, speedFactor / 10f, this);
+								lastFrameTotalPositionAlong = totalPositionAlong;
+								track.ApplyAutoForce (totalPositionAlong, speedFactor * 0.02f / simulatedMass, this, false);
 								break;
 						}
 					}
@@ -370,12 +452,12 @@ namespace AC
 
 				case DragMode.MoveAlongPlane:
 					{
-						Vector3 newRot = Vector3.Cross (force, KickStarter.CameraMain.transform.forward);
+						Vector3 newRot = Vector3.Cross (force, KickStarter.CameraMainTransform.forward);
 						if (alignMovement == AlignDragMovement.AlignToPlane)
 						{
 							if (plane)
 							{
-								_rigidbody.AddForceAtPosition(Vector3.Cross(newRot, plane.up), transform.position + (plane.up * grabDistance));
+								_rigidbody.AddForceAtPosition (Vector3.Cross(newRot, plane.up), Transform.position + (plane.up * grabDistance));
 							}
 							else
 							{
@@ -384,15 +466,15 @@ namespace AC
 						}
 						else
 						{
-							_rigidbody.AddForceAtPosition(force, transform.position - (KickStarter.CameraMain.transform.forward * grabDistance));
+							_rigidbody.AddForceAtPosition (force, Transform.position - (KickStarter.CameraMainTransform.forward * grabDistance));
 						}
 					}
 					break;
 
 				case DragMode.RotateOnly:
 					{
-						Vector3 newRot = Vector3.Cross (force, KickStarter.CameraMain.transform.forward);
-						newRot /= Mathf.Sqrt((grabPoint.position - transform.position).magnitude) * 2.4f * rotationFactor;
+						Vector3 newRot = Vector3.Cross (force, KickStarter.CameraMainTransform.forward);
+						newRot /= Mathf.Sqrt((grabPoint.position - Transform.position).magnitude) * 2.4f * rotationFactor;
 
 						if (UsesRigidbody)
 						{
@@ -417,7 +499,7 @@ namespace AC
 		/**
 		 * Detaches the object from the player's control.
 		 */
-		public override void LetGo (bool ignoreEvents = false)
+		public override void LetGo (bool ignoreInteractions = false)
 		{
 			lastFrameForce = Vector3.zero;
 			canCallSnapEvents = true;
@@ -429,39 +511,37 @@ namespace AC
 				_rigidbody.velocity = Vector3.zero;
 			}
 
-			if (!ignoreEvents)
+			if (!ignoreInteractions)
 			{
 				RunInteraction (false);
 			}
 
-			base.LetGo (ignoreEvents);
+			base.LetGo (ignoreInteractions);
 			
-			if (dragMode == DragMode.LockToTrack && track != null)
+			if (dragMode == DragMode.LockToTrack && track)
 			{
 				track.OnLetGo (this);
 			}
 		}
 
 
-		/**
-		 * <summary>Attaches the object to the player's control.</summary>
-		 * <param name = "grabPosition">The point of contact on the object</param>
-		 */
 		public override void Grab (Vector3 grabPosition)
 		{
 			isHeld = true;
 			grabPoint.position = grabPosition;
-			grabPositionRelative = grabPosition - transform.position;
+			grabPositionRelative = grabPosition - Transform.position;
 			grabDistance = grabPositionRelative.magnitude;
 
-			if (dragMode == DragMode.LockToTrack && track != null)
+			if (dragMode == DragMode.LockToTrack && track)
 			{
 				StopAutoMove (false);
 
 				if (track.dragMovementCalculation == DragMovementCalculation.CursorPosition)
 				{
-					screenToWorldOffset = trackValue - track.GetScreenPointProportionAlong (KickStarter.playerInput.GetMousePosition ());
+					screenToWorldOffset = trackValue - track.GetScreenPointProportionAlong (KickStarter.playerInput.GetMousePosition (), grabPositionRelative, this);
 					endLocked = false;
+
+					lastFrameTotalCursorPositionAlong = GetPositionAlong ();
 
 					if (track.Loops)
 					{
@@ -494,6 +574,8 @@ namespace AC
 			{
 				_rigidbody.velocity = Vector3.zero;
 			}
+
+			KickStarter.eventManager.Call_OnGrabMoveable (this);
 		}
 
 
@@ -502,10 +584,10 @@ namespace AC
 		 */
 		public void UpdateScrewVector ()
 		{
-			float forwardDot = Vector3.Dot (grabPoint.position - transform.position, transform.forward);
-			float rightDot = Vector3.Dot (grabPoint.position - transform.position, transform.right);
+			float forwardDot = Vector3.Dot (grabPoint.position - Transform.position, Transform.forward);
+			float rightDot = Vector3.Dot (grabPoint.position - Transform.position, Transform.right);
 			
-			_dragVector = (transform.forward * -rightDot) + (transform.right * forwardDot);
+			_dragVector = (Transform.forward * -rightDot) + (Transform.right * forwardDot);
 		}
 
 
@@ -575,7 +657,7 @@ namespace AC
 		 */
 		public void AutoMoveAlongTrack (float _targetTrackValue, float _targetTrackSpeed, bool removePlayerControl, LayerMask layerMask, int snapID = -1)
 		{
-			if (dragMode == DragMode.LockToTrack && track != null)
+			if (dragMode == DragMode.LockToTrack && track)
 			{
 				if (snapID < 0)
 				{
@@ -593,7 +675,7 @@ namespace AC
 				{
 					isHeld = false;
 				}
-
+				
 				activeAutoMove = new AutoMoveTrackData (_targetTrackValue, _targetTrackSpeed / 6000f, layerMask, snapID);
 			}
 			else
@@ -607,9 +689,30 @@ namespace AC
 
 		#region ProtectedFunctions
 
+		protected void CheckGameplayBlockers ()
+		{
+			switch (actionListSource)
+			{
+				case ActionListSource.InScene:
+					if (interactionOnMove && interactionOnMove.actionListType == ActionListType.PauseGameplay)
+					{
+						ACDebug.LogWarning ("The Draggable " + gameObject.name + "'s 'Interaction on move' is set to Pause Gameplay - this should be set to Run In Background to prevent issues.", this);
+					}
+					break;
+
+				case ActionListSource.AssetFile:
+					if (actionListAssetOnMove && actionListAssetOnMove.actionListType == ActionListType.PauseGameplay)
+					{
+						ACDebug.LogWarning ("The Draggable " + gameObject.name + "'s 'ActionList on move' is set to Pause Gameplay - this should be set to Run In Background to prevent issues.", this);
+					}
+					break;
+			}
+		}
+
+
 		protected IEnumerator InitToTrack ()
 		{
-			if (track != null)
+			if (track)
 			{
 				ChildTransformData[] childTransformData = GetChildTransforms ();
 
@@ -638,9 +741,9 @@ namespace AC
 		protected ChildTransformData[] GetChildTransforms ()
 		{
 			List<ChildTransformData> childTransformData = new List<ChildTransformData>();
-			for (int i=0; i<transform.childCount; i++)
+			for (int i=0; i<Transform.childCount; i++)
 			{
-				Transform childTransform = transform.GetChild (i);
+				Transform childTransform = Transform.GetChild (i);
 				childTransformData.Add (new ChildTransformData (childTransform.position, childTransform.rotation));
 			}
 			return childTransformData.ToArray ();
@@ -649,9 +752,9 @@ namespace AC
 
 		protected void SetChildTransforms (ChildTransformData[] childTransformData)
 		{
-			for (int i=0; i<transform.childCount; i++)
+			for (int i=0; i<Transform.childCount; i++)
 			{
-				Transform childTransform = transform.GetChild (i);
+				Transform childTransform = Transform.GetChild (i);
 				childTransformData[i].UpdateTransform (childTransform);
 			}
 		}
@@ -665,7 +768,7 @@ namespace AC
 			{
 				case ActionListSource.InScene:
 					Interaction interaction = (onMove) ? interactionOnMove : interactionOnDrop;
-					if (interaction != null && gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer))
+					if (interaction && gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer))
 					{
 						if (!onMove || !KickStarter.actionListManager.IsListRunning (interaction))
 						{
@@ -685,7 +788,7 @@ namespace AC
 
 				case ActionListSource.AssetFile:
 					ActionListAsset actionListAsset = (onMove) ? actionListAssetOnMove : actionListAssetOnDrop;
-					if (actionListAsset != null && gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer))
+					if (actionListAsset && gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer))
 					{
 						if (!onMove || !KickStarter.actionListAssetManager.IsListRunning (actionListAsset))
 						{
@@ -729,7 +832,7 @@ namespace AC
 		{
 			if (dragMode != DragMode.LockToTrack)
 			{
-				if (noGravityWhenHeld && _rigidbody != null)
+				if (noGravityWhenHeld && _rigidbody)
 				{
 					_rigidbody.useGravity = value;
 				}
@@ -763,7 +866,7 @@ namespace AC
 				}
 				else
 				{
-					if (GetComponent <Rigidbody>() != null)
+					if (GetComponent <Rigidbody>())
 					{
 						return moveWithRigidbody;
 					}
@@ -797,7 +900,7 @@ namespace AC
 			
 			public void Update (DragTrack track, Moveable_Drag draggable)
 			{
-				track.ApplyAutoForce (targetValue, speed, draggable);
+				track.ApplyAutoForce (targetValue, speed, draggable, true);
 			}
 
 
@@ -824,10 +927,13 @@ namespace AC
 					if (draggable.canCallSnapEvents && snapID >= 0)
 					{
 						TrackSnapData snapData = draggable.track.GetSnapData (snapID);
-						snapData.RunSnapCutscene (draggable.track.actionListSource);
+						if (snapData.IsEnabled)
+						{
+							snapData.RunSnapCutscene (draggable.track.actionListSource);
 
-						KickStarter.eventManager.Call_OnDraggableSnap (draggable, draggable.track, snapData);
-						draggable.canCallSnapEvents = false;
+							KickStarter.eventManager.Call_OnDraggableSnap (draggable, draggable.track, snapData);
+							draggable.canCallSnapEvents = false;
+						}
 					}
 
 					if (!beAccurate)

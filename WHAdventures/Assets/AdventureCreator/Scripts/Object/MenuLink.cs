@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuLink.cs"
  * 
@@ -71,7 +71,7 @@ namespace AC
 			{
 				int languageNumber = Options.GetLanguage ();
 
-				if (textMesh != null)
+				if (textMesh)
 				{
 					textMesh.text = GetLabel (languageNumber);
 				}

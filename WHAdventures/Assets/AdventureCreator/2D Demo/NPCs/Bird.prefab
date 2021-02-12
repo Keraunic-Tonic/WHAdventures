@@ -125,7 +125,6 @@ MonoBehaviour:
   doDirections: 0
   crossfadeAnims: 0
   doDiagonals: 0
-  isTalking: 0
   frameFlipping: 0
   flipCustomAnims: 0
   _spriteDirectionData:
@@ -340,6 +339,7 @@ MonoBehaviour:
   highlight: {fileID: 0}
   walkToMarker: {fileID: 0}
   centrePoint: {fileID: 0}
+  centrePointOverrides: 0
   provideUseInteraction: 1
   useButton:
     interaction: {fileID: 0}
@@ -457,6 +457,7 @@ MonoBehaviour:
     isBlocking: 0
     parameterID: -1
     invParameterID: -1
+  canBeLowerCase: 0
   drawGizmos: 0
   lastInteractionIndex: 0
   displayLineID: -1

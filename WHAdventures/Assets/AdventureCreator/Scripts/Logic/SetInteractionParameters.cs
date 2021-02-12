@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SetInteractionParameters.cs"
  * 
@@ -104,7 +104,7 @@ namespace AC
 			}
 
 			hotspot = (Hotspot) EditorGUILayout.ObjectField ("Hotspot:", hotspot, typeof (Hotspot), true);
-			if (hotspot != null)
+			if (hotspot)
 			{
 				interactionType = (InteractionType) EditorGUILayout.EnumPopup ("Interaction type:", interactionType);
 
@@ -115,7 +115,7 @@ namespace AC
 						string[] labelArray = new string[hotspot.useButtons.Count];
 						for (int i=0; i<hotspot.useButtons.Count; i++)
 						{
-							string label = (KickStarter.cursorManager != null)
+							string label = (KickStarter.cursorManager)
 											? i.ToString () + ": " + KickStarter.cursorManager.GetLabelFromID (hotspot.useButtons[i].iconID, 0)
 											: i.ToString ();
 							labelArray[i] = label;
@@ -136,7 +136,7 @@ namespace AC
 						string[] labelArray = new string[hotspot.invButtons.Count];
 						for (int i=0; i<hotspot.invButtons.Count; i++)
 						{
-							string label = (KickStarter.inventoryManager != null)
+							string label = (KickStarter.inventoryManager)
 											? i.ToString () + ": " + KickStarter.inventoryManager.GetLabel (hotspot.invButtons[i].invID)
 											: i.ToString ();
 							labelArray[i] = label;
@@ -165,11 +165,11 @@ namespace AC
 
 		protected void ShowParametersGUI (Button button, string label)
 		{
-			if (hotspot.interactionSource == InteractionSource.InScene && button.interaction != null)
+			if (hotspot.interactionSource == InteractionSource.InScene && button.interaction)
 			{
 				ShowParametersGUI (button.interaction);
 			}
-			else if (hotspot.interactionSource == InteractionSource.AssetFile && button.assetFile != null)
+			else if (hotspot.interactionSource == InteractionSource.AssetFile && button.assetFile)
 			{
 				ShowParametersGUI (button.assetFile);
 			}
@@ -184,7 +184,7 @@ namespace AC
 		{
 			if (interaction == null) return;
 
-			if (interaction.source == ActionListSource.AssetFile && interaction.assetFile != null && interaction.assetFile.NumParameters > 0)
+			if (interaction.source == ActionListSource.AssetFile && interaction.assetFile && interaction.assetFile.NumParameters > 0)
 			{
 				ShowActionListReference (interaction.assetFile);
 				ShowParametersGUI (interaction.assetFile.DefaultParameters, interaction.syncParamValues);
@@ -219,7 +219,7 @@ namespace AC
 
 		protected void ShowActionListReference (Interaction interaction)
 		{
-			if (interaction != null)
+			if (interaction)
 			{
 				EditorGUILayout.BeginHorizontal ();
 				EditorGUILayout.LabelField ("Interaction: " + interaction);
@@ -234,7 +234,7 @@ namespace AC
 
 		protected void ShowActionListReference (ActionListAsset actionListAsset)
 		{
-			if (actionListAsset != null)
+			if (actionListAsset)
 			{
 				EditorGUILayout.BeginHorizontal ();
 				EditorGUILayout.LabelField ("Asset file: " + actionListAsset);

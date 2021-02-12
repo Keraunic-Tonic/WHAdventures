@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"UltimateFPSIntegration.cs"
  * 
@@ -283,7 +283,7 @@ namespace AC
 			{
 				if (state)
 				{
-					KickStarter.mainCamera.attachedCamera = null;
+					//KickStarter.mainCamera.attachedCamera = null;
 				}
 				
 				if (KickStarter.mainCamera.attachedCamera == null && !state && !force)

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMenuJournal.cs"
  * 
@@ -35,13 +35,9 @@ namespace AC
 		public int pageNumberParameterID = -1;
 
 		
-		public ActionMenuJournal ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Menu;
-			title = "Set Journal page";
-			description = "Set which page of a Journal is currently open.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Menu; }}
+		public override string Title { get { return "Set Journal page"; }}
+		public override string Description { get { return "Set which page of a Journal is currently open."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -116,14 +112,31 @@ namespace AC
 					pageNumber = EditorGUILayout.IntField ("Page #:", pageNumber);
 				}
 			}
-			
-			AfterRunningOption ();
 		}
 		
 		
 		public override string SetLabel ()
 		{
 			return setJournalPage.ToString ();
+		}
+
+
+		public override int GetMenuReferences (string _menuName, string _elementName = "")
+		{
+			if (menuToChangeParameterID < 0 && menuToChange == _menuName)
+			{
+				if (string.IsNullOrEmpty (elementToChange))
+				{
+					return 1;
+				}
+
+				if (elementToChangeParameterID < 0 && _elementName == elementToChange)
+				{
+					return 1;
+				}
+			}
+
+			return 0;
 		}
 		
 		#endif
@@ -138,7 +151,7 @@ namespace AC
 		 */
 		public static ActionMenuJournal CreateNew (string menuName, string journalElementName, int pageIndexNumber)
 		{
-			ActionMenuJournal newAction = (ActionMenuJournal) CreateInstance <ActionMenuJournal>();
+			ActionMenuJournal newAction = CreateNew<ActionMenuJournal> ();
 			newAction.menuToChange = menuName;
 			newAction.elementToChange = journalElementName;
 			newAction.pageNumber = pageIndexNumber;

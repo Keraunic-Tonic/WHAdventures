@@ -11,10 +11,10 @@ namespace AC
 		{
 			RememberMoveable _target = (RememberMoveable) target;
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Moveable", EditorStyles.boldLabel);
 			_target.startState = (AC_OnOff) CustomGUILayout.EnumPopup ("Moveable state on start:", _target.startState, "", "The interactive state of the object when the game begins");
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			if (_target.GetComponent <Moveable>() == null)
 			{

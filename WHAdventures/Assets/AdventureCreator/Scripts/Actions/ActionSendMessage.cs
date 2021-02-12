@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionSendMessage.cs"
  * 
@@ -50,13 +50,9 @@ namespace AC
 		public bool ignoreWhenSkipping = false;
 
 
-		public ActionSendMessage ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Send message";
-			description = "Sends a given message to a GameObject. Can be either a message commonly-used by Adventure Creator (Interact, TurnOn, etc) or a custom one, with an integer argument.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Send message"; }}
+		public override string Description { get { return "Sends a given message to a GameObject. Can be either a message commonly-used by Adventure Creator (Interact, TurnOn, etc) or a custom one, with an integer argument."; }}
 		
 		
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -97,11 +93,11 @@ namespace AC
 					{
 						if (!sendValue)
 						{
-							runtimeLinkedObject.SendMessage (customMessage);
+							runtimeLinkedObject.SendMessage (customMessage, SendMessageOptions.DontRequireReceiver);
 						}
 						else
 						{
-							runtimeLinkedObject.SendMessage (customMessage, customValue);
+							runtimeLinkedObject.SendMessage (customMessage, customValue, SendMessageOptions.DontRequireReceiver);
 						}
 					}
 				}
@@ -113,7 +109,7 @@ namespace AC
 					}
 					else
 					{
-						runtimeLinkedObject.SendMessage (messageToSend.ToString ());
+						runtimeLinkedObject.SendMessage (messageToSend.ToString (), SendMessageOptions.DontRequireReceiver);
 					}
 				}
 			}
@@ -132,24 +128,6 @@ namespace AC
 			{
 				Run ();
 			}
-		}
-		
-		
-		public override ActionEnd End (List<AC.Action> actions)
-		{
-			// If the linkedObject is an immediately-starting ActionList, don't end the cutscene
-			if (runtimeLinkedObject && messageToSend == MessageToSend.Interact)
-			{
-				Cutscene tempAction = runtimeLinkedObject.GetComponent<Cutscene>();
-				if (tempAction != null && tempAction.triggerTime <= 0f)
-				{
-					ActionEnd actionEnd = new ActionEnd ();
-					actionEnd.resultAction = ResultAction.RunCutscene;
-					return actionEnd;
-				}
-			}
-			
-			return (base.End (actions));
 		}
 		
 		
@@ -206,8 +184,6 @@ namespace AC
 			
 			affectChildren = EditorGUILayout.Toggle ("Send to children too?", affectChildren);
 			ignoreWhenSkipping = EditorGUILayout.Toggle ("Ignore when skipping?", ignoreWhenSkipping);
-			
-			AfterRunningOption ();
 		}
 
 
@@ -258,10 +234,10 @@ namespace AC
 			if (!isPlayer && parameterID < 0)
 			{
 				if (linkedObject != null && linkedObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
 			if (isPlayer && gameObject.GetComponent <Player>() != null) return true;
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -286,7 +262,7 @@ namespace AC
 		 */
 		public static ActionSendMessage CreateNew (GameObject receivingObject, string messageName, bool affectChildren = false, bool ignoreWhenSkipping = false)
 		{
-			ActionSendMessage newAction = (ActionSendMessage) CreateInstance <ActionSendMessage>();
+			ActionSendMessage newAction = CreateNew<ActionSendMessage> ();
 			newAction.linkedObject = receivingObject;
 			newAction.messageToSend = MessageToSend.Custom;
 			newAction.customMessage = messageName;
@@ -308,7 +284,7 @@ namespace AC
 		 */
 		public static ActionSendMessage CreateNew (GameObject receivingObject, string messageName, int parameterValue, bool affectChildren = false, bool ignoreWhenSkipping = false)
 		{
-			ActionSendMessage newAction = (ActionSendMessage) CreateInstance <ActionSendMessage>();
+			ActionSendMessage newAction = CreateNew<ActionSendMessage> ();
 			newAction.linkedObject = receivingObject;
 			newAction.messageToSend = MessageToSend.Custom;
 			newAction.customMessage = messageName;

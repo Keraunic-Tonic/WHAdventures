@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"PlayerInput.cs"
  * 
@@ -10,6 +10,10 @@
  */
 
 using UnityEngine;
+using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace AC
 {
@@ -36,7 +40,7 @@ namespace AC
 		/** The game's current Time.timeScale value */
 		[HideInInspector] public float timeScale = 1f;
 		
-		/** If True, Menus can be controlled via the keyboard or controller during gameplay (if SettingsManager.inputMethod = InputMethod.KeyboardOrController */
+		/** If True, Menus can be controlled via the keyboard or controller during gameplay */
 		[HideInInspector] public bool canKeyboardControlMenusDuringGameplay = false;
 		/** The name of the Input button that skips movies played with ActionMove */
 		[HideInInspector] public string skipMovieKey = "";
@@ -85,11 +89,10 @@ namespace AC
 
 		// Draggable
 		protected bool canDragMoveable = false;
-		protected DragBase dragObject = null;
+		protected List<HeldObjectData> heldObjectDatas = new List<HeldObjectData>();
 		protected Vector2 lastMousePosition, unconstrainedMousePosition;
 		protected bool resetMouseDelta = false;
 		protected Vector3 lastCameraPosition;
-		protected Vector3 dragForce;
 		protected Vector2 deltaDragMouse;
 
 		/** The active Conversation */
@@ -146,6 +149,20 @@ namespace AC
 		private LerpUtils.Vector2Lerp directMoveLerp = new LerpUtils.Vector2Lerp (true);
 
 
+		private void OnEnable ()
+		{
+			EventManager.OnGrabMoveable += OnGrabMoveable;
+			EventManager.OnDropMoveable += OnDropMoveable;
+		}
+
+
+		private void OnDisable ()
+		{
+			EventManager.OnGrabMoveable -= OnGrabMoveable;
+			EventManager.OnDropMoveable -= OnDropMoveable;
+		}
+
+
 		public void OnInitGameEngine ()
 		{
 			InitialiseCursorLock (KickStarter.settingsManager.movementMethod);
@@ -155,7 +172,7 @@ namespace AC
 
 			xboxCursor = LockedCursorPosition;
 
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.CanDragCursor ())
+			if (KickStarter.settingsManager && KickStarter.settingsManager.CanDragCursor ())
 			{
 				mousePosition = xboxCursor;
 			}
@@ -173,7 +190,7 @@ namespace AC
 				float timeIndex = Time.time - changeTimeStart;
 				if (timeCurve [timeCurve.length -1].time < timeIndex)
 				{
-					SetTimeScale (timeCurve [timeCurve.length -1].time);
+					SetTimeScale (timeCurve [timeCurve.length -1].value);
 					timeCurve = null;
 				}
 				else
@@ -233,7 +250,7 @@ namespace AC
 					{
 						cursorIsLocked = false;
 					}
-					else if (dragObject != null && 
+					else if (IsDragObjectHeld () && 
 							 KickStarter.settingsManager.IsInFirstPerson () && 
 							 KickStarter.settingsManager.disableFreeAimWhenDragging)
 					{
@@ -251,7 +268,7 @@ namespace AC
 						}
 						else
 						{
-							if (KickStarter.player != null && KickStarter.player.freeAimLocked && KickStarter.settingsManager.IsInFirstPerson ())
+							if (KickStarter.player && KickStarter.player.freeAimLocked && KickStarter.settingsManager.IsInFirstPerson ())
 							{
 								cursorIsLocked = false;
 							}
@@ -440,6 +457,7 @@ namespace AC
 								dragStartPosition = GetInvertedMouse ();
 								
 								mouseState = MouseState.SingleClick;
+
 								ResetClick ();
 								ResetDoubleClick ();
 							}
@@ -524,9 +542,9 @@ namespace AC
 				{
 					// Cursor lock
 					
-					if (dragObject != null && 
-							 KickStarter.settingsManager.IsInFirstPerson () && 
-							 KickStarter.settingsManager.disableFreeAimWhenDragging)
+					if (IsDragObjectHeld () && 
+						KickStarter.settingsManager.IsInFirstPerson () && 
+						KickStarter.settingsManager.disableFreeAimWhenDragging)
 					{
 						cursorIsLocked = false;
 					}
@@ -542,7 +560,7 @@ namespace AC
 						}
 						else
 						{
-							if (KickStarter.player != null && KickStarter.player.freeAimLocked && KickStarter.settingsManager.IsInFirstPerson ())
+							if (KickStarter.player && KickStarter.player.freeAimLocked && KickStarter.settingsManager.IsInFirstPerson ())
 							{
 								cursorIsLocked = false;
 							}
@@ -598,8 +616,8 @@ namespace AC
 							else if (CanClick ())
 							{
 								dragStartPosition = GetInvertedMouse ();
-								
 								mouseState = MouseState.SingleClick;
+
 								ResetClick ();
 								ResetDoubleClick ();
 							}
@@ -634,7 +652,7 @@ namespace AC
 					SetDoubleClickState ();
 				}
 
-				if (KickStarter.playerInteraction.GetHotspotMovingTo () != null)
+				if (KickStarter.playerInteraction.GetHotspotMovingTo ())
 				{
 					ClearFreeAimInput ();
 				}
@@ -647,12 +665,12 @@ namespace AC
 				if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot &&
 					InputGetButtonDown ("DefaultInteraction") &&
 					KickStarter.settingsManager.allowDefaultInventoryInteractions &&
-					KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple &&
+					KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple &&
 					KickStarter.settingsManager.CanSelectItems (false) &&
-					KickStarter.runtimeInventory.hoverItem != null && 
+					InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance) && 
 					KickStarter.playerInteraction.GetActiveHotspot () == null)
 				{
-					KickStarter.runtimeInventory.hoverItem.RunDefaultInteraction ();
+					KickStarter.runtimeInventory.HoverInstance.RunDefaultInteraction ();
 					ResetMouseClick ();
 					ResetClick ();
 					return;
@@ -694,7 +712,12 @@ namespace AC
 				}
 
 				unconstrainedMousePosition = mousePosition;
-				mousePosition = KickStarter.mainCamera.LimitToAspect (mousePosition);
+
+				if (KickStarter.mainCamera)
+				{
+					mousePosition = KickStarter.mainCamera.LimitToAspect (mousePosition);
+				}
+
 				if (resetMouseDelta)
 				{
 					lastMousePosition = unconstrainedMousePosition;
@@ -908,7 +931,7 @@ namespace AC
 			{
 				if (mouseState == MouseState.Normal)
 				{
-					if (KickStarter.runtimeInventory.SelectedItem != null &&  KickStarter.settingsManager.InventoryDragDrop)
+					if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) &&  KickStarter.settingsManager.InventoryDragDrop)
 					{
 						return true;
 					}
@@ -924,7 +947,7 @@ namespace AC
 		 */
 		public void DetectConversationNumerics ()
 		{		
-			if (activeConversation != null && KickStarter.settingsManager.runConversationsWithKeys)
+			if (activeConversation && KickStarter.settingsManager.runConversationsWithKeys)
 			{
 				Event e = Event.current;
 				if (e.isKey && e.type == EventType.KeyDown)
@@ -984,7 +1007,7 @@ namespace AC
 		 */
 		public void DetectConversationInputs ()
 		{		
-			if (activeConversation != null && KickStarter.settingsManager.runConversationsWithKeys)
+			if (activeConversation && KickStarter.settingsManager.runConversationsWithKeys)
 			{
 				if (InputGetButtonDown ("DialogueOption1"))
 				{
@@ -1085,7 +1108,7 @@ namespace AC
 				return;
 			}
 
-			if (activeArrows != null)
+			if (activeArrows)
 			{
 				if (activeArrows.arrowPromptType == ArrowPromptType.KeyOnly || activeArrows.arrowPromptType == ArrowPromptType.KeyAndClick)
 				{
@@ -1123,7 +1146,7 @@ namespace AC
 					}
 				}
 					
-				if (activeArrows != null && (activeArrows.arrowPromptType == ArrowPromptType.ClickOnly || activeArrows.arrowPromptType == ArrowPromptType.KeyAndClick))
+				if (activeArrows && (activeArrows.arrowPromptType == ArrowPromptType.ClickOnly || activeArrows.arrowPromptType == ArrowPromptType.KeyAndClick))
 				{
 					// Arrow Prompt is displayed: respond to mouse clicks
 					Vector2 invertedMouse = GetInvertedMouse ();
@@ -1182,7 +1205,7 @@ namespace AC
 					v = InputGetAxisRaw ("Vertical");
 				}
 
-				if (KickStarter.player != null)
+				if (KickStarter.player)
 				{
 					if ((KickStarter.player.upMovementLocked && v > 0f) || (KickStarter.player.downMovementLocked && v < 0f))
 					{
@@ -1822,21 +1845,22 @@ namespace AC
 
 		public void EnforcePreInventoryDragState ()
 		{
-			if (KickStarter.runtimeInventory.SelectedItem != null &&
+			if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) &&
 				KickStarter.settingsManager.InventoryDragDrop &&
 				KickStarter.settingsManager.dragDropThreshold > 0 &&
 				(KickStarter.stateHandler.IsInGameplay () || KickStarter.stateHandler.gameState == GameState.Paused))
 			{
 				dragState = DragState.PreInventory;
+				dragStartPosition = GetInvertedMouse ();
 			}
 		}
-		
-		
+
+
 		protected void SetDragState ()
 		{
 			DragState oldDragState = dragState;
 			
-			if (KickStarter.runtimeInventory.SelectedItem != null && KickStarter.settingsManager.InventoryDragDrop && (KickStarter.stateHandler.IsInGameplay () || KickStarter.stateHandler.gameState == GameState.Paused))
+			if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) && KickStarter.settingsManager.InventoryDragDrop && (KickStarter.stateHandler.IsInGameplay () || KickStarter.stateHandler.gameState == GameState.Paused))
 			{
 				if (dragVector.magnitude >= KickStarter.settingsManager.dragDropThreshold)
 				{
@@ -1851,17 +1875,25 @@ namespace AC
 			{
 				dragState = DragState.Menu;
 			}
-			else if (activeArrows != null && KickStarter.settingsManager.inputMethod == InputMethod.TouchScreen)
+			else if (activeArrows && KickStarter.settingsManager.inputMethod == InputMethod.TouchScreen)
 			{
 				dragState = DragState.ScreenArrows;
 			}
-			else if (dragObject != null)
+			else if (IsDragObjectHeld ())
 			{
 				dragState = DragState.Moveable;
 			}
-			else if (KickStarter.mainCamera.attachedCamera && KickStarter.mainCamera.attachedCamera.isDragControlled)
+			else if (KickStarter.mainCamera && KickStarter.mainCamera.attachedCamera && KickStarter.mainCamera.attachedCamera.isDragControlled && !KickStarter.stateHandler.AreCamerasDisabled ())
 			{
-				if (!KickStarter.playerInteraction.IsMouseOverHotspot ())
+				if (dragState == DragState.Moveable)
+				{
+					return;
+				}
+
+				if (!KickStarter.playerInteraction.IsMouseOverHotspot () ||
+					(KickStarter.playerInteraction.GetActiveHotspot () && 
+						(KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive || 
+						(KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction () && KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction))))
 				{
 					dragState = DragState._Camera;
 
@@ -1900,13 +1932,13 @@ namespace AC
 
 		protected void SetDragStateTouchScreen ()
 		{
-			if (KickStarter.runtimeInventory.SelectedItem != null &&  KickStarter.settingsManager.InventoryDragDrop && (KickStarter.stateHandler.IsInGameplay () || KickStarter.stateHandler.gameState == GameState.Paused))
+			if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) && KickStarter.settingsManager.InventoryDragDrop && (KickStarter.stateHandler.IsInGameplay () || KickStarter.stateHandler.gameState == GameState.Paused))
 			{}
 			else if (activeDragElement != null && (KickStarter.stateHandler.IsInGameplay () || KickStarter.stateHandler.gameState == GameState.Paused))
 			{}
-			else if (activeArrows != null && KickStarter.settingsManager.inputMethod == InputMethod.TouchScreen)
+			else if (activeArrows && KickStarter.settingsManager.inputMethod == InputMethod.TouchScreen)
 			{}
-			else if (dragObject != null)
+			else if (IsDragObjectHeld ())
 			{}
 			else if (KickStarter.mainCamera.attachedCamera && KickStarter.mainCamera.attachedCamera.isDragControlled)
 			{}
@@ -1946,50 +1978,36 @@ namespace AC
 				}
 			}
 
-			if (dragObject && KickStarter.stateHandler.gameState != GameState.Normal)
+			bool isInGameplay = KickStarter.stateHandler.IsInGameplay ();
+			
+			if (mouseState == MouseState.HeldDown && dragState == DragState.None && KickStarter.stateHandler.CanInteractWithDraggables () && !KickStarter.playerMenus.IsMouseOverMenu () && isInGameplay)
 			{
-				LetGo ();
-				return;
+				AttemptGrab ();
 			}
-
-			if (mouseState == MouseState.HeldDown && dragState == DragState.None && KickStarter.stateHandler.CanInteractWithDraggables () && !KickStarter.playerMenus.IsMouseOverMenu ())
+			else
 			{
-				Grab ();
-			}
-			else if (dragState == DragState.Moveable)
-			{
-				if (dragObject)
+				for (int i=0; i<heldObjectDatas.Count; i++)
 				{
-					if (dragObject.IsHeld && dragObject.IsOnScreen () && dragObject.IsCloseToCamera (KickStarter.settingsManager.moveableRaycastLength))
-					{
-						//Drag ();
-					}
-					else
-					{
-						LetGo ();
-					}
+					heldObjectDatas[i].AttemptRelease (!isInGameplay);
 				}
-			}
-			else if (dragObject)
-			{
-				LetGo ();
 			}
 		}
 
 
 		public void _FixedUpdate ()
 		{
-			if (mouseState == MouseState.HeldDown && dragState == DragState.None && KickStarter.stateHandler.CanInteract () && !KickStarter.playerMenus.IsMouseOverMenu ())
-			{}
-			else if (dragState == DragState.Moveable)
+			if (KickStarter.CameraMainTransform)
 			{
-				if (dragObject)
+				Vector3 cameraPosition = KickStarter.CameraMainTransform.position;
+
+				Vector3 deltaCamera = cameraPosition - lastCameraPosition;
+
+				foreach (HeldObjectData heldObjectData in heldObjectDatas)
 				{
-					if (dragObject.IsHeld && dragObject.IsOnScreen () && dragObject.IsCloseToCamera (KickStarter.settingsManager.moveableRaycastLength))
-					{
-						Drag ();
-					}
+					heldObjectData.Drag (deltaCamera, deltaDragMouse, unconstrainedMousePosition);
 				}
+
+				lastCameraPosition = cameraPosition;
 			}
 		}
 
@@ -1997,72 +2015,101 @@ namespace AC
 		/** Forces the letting-go of the currently-held DragBase, if set. */
 		public void LetGo ()
 		{
-			if (dragObject != null)
+			for (int i=0; i<heldObjectDatas.Count; i++)
 			{
-				dragObject.LetGo ();
-				dragObject = null;
+				heldObjectDatas[i].DragObject.LetGo ();
 			}
 		}
 		
 		
-		protected void Grab ()
+		protected void AttemptGrab ()
 		{
-			if (dragObject)
+			if (heldObjectDatas.Count > 0)
 			{
-				dragObject.LetGo ();
-				dragObject = null;
+				for (int i=0; i<heldObjectDatas.Count; i++)
+				{
+					heldObjectDatas[i].DragObject.LetGo ();
+				}
+				return;
 			}
-			else if (canDragMoveable)
+
+			if (canDragMoveable)
 			{
 				canDragMoveable = false;
 				
 				Ray ray = KickStarter.CameraMain.ScreenPointToRay (mousePosition); 
 				RaycastHit hit = new RaycastHit ();
 				
-				if (Physics.Raycast (ray, out hit, KickStarter.settingsManager.moveableRaycastLength))
+				if (Physics.Raycast (ray, out hit, KickStarter.settingsManager.moveableRaycastLength, 1 << LayerMask.NameToLayer (KickStarter.settingsManager.hotspotLayer)))
 				{
-					DragBase dragBase = hit.transform.GetComponent <DragBase>();
-					if (dragBase != null && dragBase.PlayerIsWithinBoundary ())
+					DragBase dragBase = hit.collider.GetComponent <DragBase>();
+					if (dragBase == null || !dragBase.CanGrab ())
 					{
-						dragObject = dragBase;
-						dragObject.Grab (hit.point);
-						lastCameraPosition = KickStarter.CameraMain.transform.position;
-
-						KickStarter.eventManager.Call_OnGrabMoveable (dragObject);
+						dragBase = hit.transform.GetComponent <DragBase>();
+					}
+					if (dragBase && dragBase.CanGrab ())
+					{
+						dragBase.Grab (hit.point);
+						lastCameraPosition = KickStarter.CameraMainTransform.position;
 					}
 				}
 			}
 		}
 
-		
-		protected void Drag ()
+
+		/**
+		 * <summary>Gets the data related to the holding of a draggable object</summary>
+		 * <param name="dragBase">The draggable object to get data for</param>
+		 * <returns>Data related to the holding of the draggable object</returns>
+		 */
+		public HeldObjectData GetHeldObjectData (DragBase dragBase)
 		{
-			// Convert to a 3D force
-			if (dragObject.invertInput)
+			foreach (HeldObjectData heldObjectData in heldObjectDatas)
 			{
-				dragForce = (-KickStarter.CameraMain.transform.right * deltaDragMouse.x) + (-KickStarter.CameraMain.transform.up * deltaDragMouse.y);
+				if (heldObjectData.DragObject == dragBase)
+				{
+					return heldObjectData;
+				}
 			}
-			else
-			{
-				dragForce = (KickStarter.CameraMain.transform.right * deltaDragMouse.x) + (KickStarter.CameraMain.transform.up * deltaDragMouse.y);
-			}
-
-			// Scale force with distance to camera, to lessen effects when close
-			float distanceToCamera = (KickStarter.CameraMain.transform.position - dragObject.transform.position).magnitude;
-			
-			// Incoporate camera movement
-			if (dragObject.playerMovementInfluence > 0f)
-			{
-				Vector3 deltaCamera = KickStarter.CameraMain.transform.position - lastCameraPosition;
-				dragForce += deltaCamera * 100000f * dragObject.playerMovementInfluence;
-			}
-
-			dragForce /= Time.fixedDeltaTime * 50f;
-			dragObject.ApplyDragForce (dragForce, unconstrainedMousePosition, distanceToCamera);
-			
-			lastCameraPosition = KickStarter.CameraMain.transform.position;
+			return null;
 		}
-		
+
+
+		/** Gets all data related to the draggable objects currently being held. */
+		public HeldObjectData[] GetHeldObjectData ()
+		{
+			return heldObjectDatas.ToArray ();
+		}
+
+
+		protected void OnGrabMoveable (DragBase dragBase)
+		{
+			foreach (HeldObjectData heldObjectData in heldObjectDatas)
+			{
+				if (heldObjectData.DragObject == dragBase)
+				{
+					return;
+				}
+			}
+
+			heldObjectDatas.Add (new HeldObjectData (dragBase));
+		}
+
+
+		protected void OnDropMoveable (DragBase dragBase)
+		{
+			if (dragBase == null) return;
+
+			foreach (HeldObjectData heldObjectData in heldObjectDatas)
+			{
+				if (heldObjectData.DragObject == dragBase)
+				{
+					heldObjectDatas.Remove (heldObjectData);
+					return;
+				}
+			}
+		}
+
 
 		/**
 		 * <summary>Gets the drag vector.</summary>
@@ -2084,7 +2131,7 @@ namespace AC
 		 */
 		public bool ActiveArrowsDisablingHotspots ()
 		{
-			if (activeArrows != null && activeArrows.disableHotspots)
+			if (activeArrows && activeArrows.disableHotspots)
 			{
 				return true;
 			}
@@ -2094,9 +2141,12 @@ namespace AC
 
 		protected void ToggleCursor ()
 		{
-			if (dragObject != null && !dragObject.CanToggleCursor ())
+			foreach (HeldObjectData heldObjectData in heldObjectDatas)
 			{
-				return;
+				if (!heldObjectData.DragObject.CanToggleCursor ())
+				{
+					return;
+				}
 			}
 			toggleCursorOn = !toggleCursorOn;
 		}
@@ -2134,13 +2184,17 @@ namespace AC
 		 */
 		public bool IsDragObjectHeld (DragBase _dragBase)
 		{
-			if (_dragBase == null || dragObject == null)
+			if (_dragBase == null)
 			{
 				return false;
 			}
-			if (_dragBase == dragObject)
+
+			foreach (HeldObjectData heldObjectData in heldObjectDatas)
 			{
-				return true;
+				if (heldObjectData.DragObject == _dragBase)
+				{
+					return true;
+				}
 			}
 			return false;
 		}
@@ -2152,7 +2206,7 @@ namespace AC
 		 */
 		public bool IsDragObjectHeld ()
 		{
-			return (dragObject != null);
+			return (heldObjectDatas.Count > 0);
 		}
 
 
@@ -2162,9 +2216,9 @@ namespace AC
 		 */
 		public float GetDragMovementSlowDown ()
 		{
-			if (dragObject != null)
+			if (heldObjectDatas.Count > 0)
 			{
-				return (1f - dragObject.playerMovementReductionFactor);
+				return (1f - heldObjectDatas[0].DragObject.playerMovementReductionFactor);
 			}
 			return 1f;
 		}
@@ -2238,9 +2292,7 @@ namespace AC
 		}
 
 
-		/**
-		 * Resets the mouse click so that nothing else will be affected by it this frame.
-		 */
+		/** Resets the mouse click so that nothing else will be affected by it this frame. */
 		public void ResetMouseClick ()
 		{
 			mouseState = MouseState.Normal;
@@ -2326,7 +2378,7 @@ namespace AC
 		 */
 		public Vector2 GetFreeAim ()
 		{
-			if (KickStarter.player != null && KickStarter.player.freeAimLocked)
+			if (KickStarter.player && KickStarter.player.freeAimLocked)
 			{
 				return Vector2.zero;
 			}
@@ -2343,9 +2395,9 @@ namespace AC
 			}
 
 			float factor = 1f;
-			if (dragObject != null)
+			if (heldObjectDatas.Count > 0)
 			{
-				factor = 1f - dragObject.playerMovementReductionFactor;
+				factor = 1f - heldObjectDatas[0].DragObject.playerMovementReductionFactor;
 			}
 
 			return freeAimLerp.Update (freeAim, targetFreeAim * factor, KickStarter.settingsManager.freeAimSmoothSpeed);
@@ -2370,8 +2422,8 @@ namespace AC
 		public MainData SaveMainData (MainData mainData)
 		{
 			mainData.timeScale = KickStarter.playerInput.timeScale;
-			mainData.activeArrows = (activeArrows != null) ? Serializer.GetConstantID (activeArrows.gameObject) : 0;
-			mainData.activeConversation = (activeConversation != null) ? Serializer.GetConstantID (activeConversation.gameObject) : 0;
+			mainData.activeArrows = (activeArrows) ? Serializer.GetConstantID (activeArrows.gameObject) : 0;
+			mainData.activeConversation = (activeConversation) ? Serializer.GetConstantID (activeConversation.gameObject) : 0;
 			mainData.canKeyboardControlMenusDuringGameplay = canKeyboardControlMenusDuringGameplay;
 
 			return mainData;
@@ -2384,6 +2436,8 @@ namespace AC
 		 */
 		public void LoadMainData (MainData mainData)
 		{
+			LetGo ();
+
 			// Active screen arrows
 			RemoveActiveArrows ();
 			ArrowPrompt loadedArrows = ConstantID.GetComponent <ArrowPrompt> (mainData.activeArrows);
@@ -2426,11 +2480,12 @@ namespace AC
 				{
 					if (KickStarter.stateHandler.gameState == GameState.DialogOptions ||
 						KickStarter.stateHandler.gameState == GameState.Paused ||
+						(KickStarter.stateHandler.gameState == GameState.Cutscene && menu.CanClickInCutscenes ()) ||
 						(KickStarter.stateHandler.IsInGameplay () && canKeyboardControlMenusDuringGameplay))
 					{
 						Vector2 rawInput = new Vector2 (InputGetAxisRaw (KickStarter.menuManager.horizontalInputAxis), InputGetAxisRaw (KickStarter.menuManager.verticalInputAxis));
 						scrollingLocked = menu.GetNextSlot (rawInput, scrollingLocked);
-
+						
 						if (rawInput.y < 0.05f && rawInput.y > -0.05f && rawInput.x < 0.05f && rawInput.x > -0.05f)
 						{
 							scrollingLocked = false;
@@ -2446,13 +2501,31 @@ namespace AC
 		 */
 		public void EndConversation ()
 		{
-			if (activeConversation != null)
+			if (activeConversation)
 			{
 				KickStarter.eventManager.Call_OnEndConversation (activeConversation);
 				activeConversation = null;
 			}
 		}
 
+
+		/** Displays input-related information for the AC Status window */
+		public void DrawStatus ()
+		{
+			if (activeConversation)
+			{
+				if (GUILayout.Button ("Conversation: " + activeConversation.name))
+				{
+					#if UNITY_EDITOR
+					EditorGUIUtility.PingObject (activeConversation);
+					#endif
+				}
+			}
+			foreach (HeldObjectData heldObjectData in heldObjectDatas)
+			{ 
+				GUILayout.Label ("Dragging: " + heldObjectData.DragObject.name);
+			}
+		}
 
 		/**
 		 * <summary>Checks if a Conversation is currently active</summary>
@@ -2461,11 +2534,11 @@ namespace AC
 		 */
 		public bool IsInConversation (bool alsoPendingOption = false)
 		{
-			if (activeConversation != null)
+			if (activeConversation)
 			{
 				return true;
 			}
-			if (pendingOptionConversation != null && alsoPendingOption)
+			if (pendingOptionConversation && alsoPendingOption)
 			{
 				return true;
 			}
@@ -2496,14 +2569,47 @@ namespace AC
 		}
 
 
-		public Vector3 DragForce
+		/** If True, Menus can be controlled via the keyboard or controller during gameplay */
+		public bool CanKeyboardControlMenusDuringGameplay
 		{
 			get
 			{
-				return dragForce;
+				return canKeyboardControlMenusDuringGameplay;
+			}
+			set
+			{
+				if (canKeyboardControlMenusDuringGameplay && !value)
+				{
+					List<Menu> allMenus = PlayerMenus.GetMenus (true);
+					foreach (Menu menu in allMenus)
+					{
+						if (menu.CanCurrentlyKeyboardControl (GameState.Normal))
+						{
+							if (KickStarter.playerMenus.DeselectEventSystemMenu (menu))
+							{
+								break;
+							}
+						}
+					}
+				}
+
+				canKeyboardControlMenusDuringGameplay = value;
 			}
 		}
 
+
+		public Vector3 GetDragForce (DragBase dragBase)
+		{
+			foreach (HeldObjectData heldObjectData in heldObjectDatas)
+			{
+				if (heldObjectData.DragObject == dragBase)
+				{
+					return heldObjectData.DragForce;
+				}
+			}
+			return Vector3.zero;
+		}
+
 	}
-	
+
 }

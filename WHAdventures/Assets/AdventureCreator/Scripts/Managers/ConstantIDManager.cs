@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ConstantIDManager.cs"
  * 
@@ -23,6 +23,7 @@ namespace AC
 		#region Variables
 
 		private HashSet<ConstantID> constantIDs;
+		private HashSet<ConstantID> menuConstantIDs;
 
 		#endregion
 
@@ -41,7 +42,7 @@ namespace AC
 			{
 				prioritisePersistentOrMainScene = false;
 			}
-
+			
 			if (prioritisePersistentOrMainScene)
 			{
 				foreach (ConstantID constantID in ConstantIDs)
@@ -66,7 +67,7 @@ namespace AC
 
 			foreach (ConstantID constantID in ConstantIDs)
 			{
-				if (constantID.constantID != constantIDValue)
+				if (constantID == null || constantID.constantID != constantIDValue)
 				{
 					continue;
 				}
@@ -312,6 +313,16 @@ namespace AC
 				}
 			}
 
+			foreach (ConstantID menuConstantID in MenuConstantIDs)
+			{
+				if (menuConstantID == null || menuConstantID.gameObject == null) continue;
+				T[] _components = menuConstantID.gameObject.GetComponents<T> ();
+				foreach (T component in _components)
+				{
+					components.Add (component);
+				}
+			}
+
 			return components;
 		}
 
@@ -368,6 +379,16 @@ namespace AC
 		 */
 		public void Register (ConstantID constantID)
 		{
+			if (constantID is Remember)
+			{
+				Canvas canvas = constantID.transform.root.GetComponent <Canvas>();
+				if (canvas && canvas.gameObject.IsPersistent ())
+				{
+					MenuConstantIDs.Add (constantID);
+					return;
+				}
+			}
+
 			ConstantIDs.Add (constantID);
 		}
 
@@ -378,6 +399,16 @@ namespace AC
 		 */
 		public void Unregister (ConstantID constantID)
 		{
+			if (constantID is Remember)
+			{
+				Canvas canvas = constantID.transform.root.GetComponent<Canvas> ();
+				if (canvas && canvas.gameObject.IsPersistent ())
+				{
+					// Always keep UI ConstantIDs registered
+					return;
+				}
+			}
+
 			ConstantIDs.Remove (constantID);
 		}
 
@@ -393,6 +424,17 @@ namespace AC
 			{
 				if (constantIDs == null) constantIDs = new HashSet<ConstantID>();
 				return constantIDs;
+			}
+		}
+
+
+		/** All ConstantID components recorded that are part of Unity UI-based menus */
+		public HashSet<ConstantID> MenuConstantIDs
+		{
+			get
+			{
+				if (menuConstantIDs == null) menuConstantIDs = new HashSet<ConstantID> ();
+				return menuConstantIDs;
 			}
 		}
 

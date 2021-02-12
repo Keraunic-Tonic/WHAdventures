@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuProfilesList.cs"
  * 
@@ -127,22 +127,21 @@ namespace AC
 		}
 		
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObjects.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			int i=0;
 			foreach (UISlot uiSlot in uiSlots)
 			{
 				uiSlot.LinkUIElements (canvas, linkUIGraphic);
-				if (uiSlot != null && uiSlot.uiButton != null)
+				if (addEventListeners)
 				{
-					int j=i;
-					uiSlot.uiButton.onClick.AddListener (() => {
-						ProcessClickUI (_menu, j, KickStarter.playerInput.GetMouseState ());
-					});
+					if (uiSlot != null && uiSlot.uiButton)
+					{
+						int j=i;
+						uiSlot.uiButton.onClick.AddListener (() => {
+							ProcessClickUI (_menu, j, KickStarter.playerInput.GetMouseState ());
+						});
+					}
 				}
 				i++;
 			}
@@ -151,7 +150,7 @@ namespace AC
 
 		public override GameObject GetObjectToSelect (int slotIndex = 0)
 		{
-			if (uiSlots != null && uiSlots.Length > slotIndex && uiSlots[slotIndex].uiButton != null)
+			if (uiSlots != null && uiSlots.Length > slotIndex && uiSlots[slotIndex].uiButton)
 			{
 				return uiSlots[0].uiButton.gameObject;
 			}
@@ -196,7 +195,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuProfilesList)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			fixedOption = CustomGUILayout.Toggle ("Fixed Profile ID only?", fixedOption, apiPrefix + ".fixedOption", "If True, then only one profile slot will be shown");
 			if (fixedOption)
@@ -243,8 +242,8 @@ namespace AC
 
 			if (source != MenuSource.AdventureCreator)
 			{
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 				uiHideStyle = (UIHideStyle) CustomGUILayout.EnumPopup ("When invisible:", uiHideStyle, apiPrefix + ".uiHideStyle", "The method by which this element (or slots within it) are hidden from view when made invisible");
 				EditorGUILayout.LabelField ("Linked button objects", EditorStyles.boldLabel);
 
@@ -257,7 +256,7 @@ namespace AC
 				linkUIGraphic = (LinkUIGraphic) CustomGUILayout.EnumPopup ("Link graphics to:", linkUIGraphic, "", "What Image component the element's graphics should be linked to");
 			}
 			
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			base.ShowGUI (menu);
 		}
@@ -278,9 +277,9 @@ namespace AC
 		{
 			actionListOnClick = ActionListAssetMenu.AssetGUI (label, actionListOnClick, menuTitle + "_" + title + "_" + suffix, apiPrefix + ".actionListOnClick", tooltip);
 			
-			if (actionListOnClick != null && actionListOnClick.NumParameters > 0)
+			if (actionListOnClick && actionListOnClick.NumParameters > 0)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				EditorGUILayout.BeginHorizontal ();
 				parameterID = Action.ChooseParameterGUI (string.Empty, actionListOnClick.DefaultParameters, parameterID, ParameterType.Integer);
 				if (parameterID >= 0)
@@ -295,19 +294,8 @@ namespace AC
 					}
 				}
 				EditorGUILayout.EndHorizontal ();
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
-		}
-
-
-		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
-		{
-			foreach (UISlot uiSlot in uiSlots)
-			{
-				if (uiSlot.uiButton != null && uiSlot.uiButton == gameObject) return true;
-				if (uiSlot.uiButtonID == id) return true;
-			}
-			return false;
 		}
 
 
@@ -319,6 +307,17 @@ namespace AC
 		}
 
 		#endif
+
+
+		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
+		{
+			foreach (UISlot uiSlot in uiSlots)
+			{
+				if (uiSlot.uiButton != null && uiSlot.uiButton.gameObject == gameObject) return true;
+				if (uiSlot.uiButtonID == id && id != 0) return true;
+			}
+			return false;
+		}
 
 
 		/**
@@ -411,7 +410,7 @@ namespace AC
 
 		public override bool IsSelectedByEventSystem (int slotIndex)
 		{
-			if (uiSlots != null && slotIndex >= 0 && uiSlots.Length > slotIndex && uiSlots[slotIndex] != null && uiSlots[slotIndex].uiButton != null)
+			if (uiSlots != null && slotIndex >= 0 && uiSlots.Length > slotIndex && uiSlots[slotIndex] != null && uiSlots[slotIndex].uiButton)
 			{
 				return KickStarter.playerMenus.IsEventSystemSelectingObject (uiSlots[slotIndex].uiButton.gameObject);
 			}
@@ -477,31 +476,18 @@ namespace AC
 		}
 		
 
-		/**
-		 * <summary>Performs what should happen when the element is clicked on.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 * <param name = "_slot">The index number of ths slot that was clicked</param>
-		 * <param name = "_mouseState">The state of the mouse button</param>
-		 */
-		public override void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public override bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			if (KickStarter.stateHandler.gameState == GameState.Cutscene)
 			{
-				return;
+				return false;
 			}
 			
 			if (autoHandle)
 			{
-				bool isSuccess = false;
-
-				if (fixedOption)
-				{
-					isSuccess = Options.SwitchProfileID (optionToShow);
-				}
-				else
-				{
-					isSuccess = KickStarter.options.SwitchProfile (_slot + offset, showActive);
-				}
+				bool isSuccess = (fixedOption)
+								 ? Options.SwitchProfileID (optionToShow)
+								 : KickStarter.options.SwitchProfile (_slot + offset, showActive);
 
 				if (isSuccess)
 				{
@@ -513,7 +499,7 @@ namespace AC
 				RunActionList (_slot);
 			}
 
-			base.ProcessClick (_menu, _slot, _mouseState);
+			return base.ProcessClick (_menu, _slot, _mouseState);
 		}
 
 

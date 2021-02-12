@@ -5,7 +5,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"GameCamera25D.cs"
  * 
@@ -46,7 +46,7 @@ namespace AC
 		{
 			if (backgroundImage)
 			{
-				if (BackgroundCamera.Instance != null && BackgroundImageUI.Instance != null)
+				if (BackgroundCamera.Instance && BackgroundImageUI.Instance)
 				{
 					// Update mask/layers
 				}
@@ -136,8 +136,8 @@ namespace AC
 			{
 				Camera targetCamera = GetComponent <Camera>();
 
-				KickStarter.mainCamera.transform.position = transform.position;
-				KickStarter.mainCamera.transform.rotation = transform.rotation;
+				KickStarter.mainCamera.Transform.position = Transform.position;
+				KickStarter.mainCamera.Transform.rotation = Transform.rotation;
 				KickStarter.mainCamera.Camera.orthographic = targetCamera.orthographic;
 
 				KickStarter.mainCamera.Camera.fieldOfView = targetCamera.fieldOfView;

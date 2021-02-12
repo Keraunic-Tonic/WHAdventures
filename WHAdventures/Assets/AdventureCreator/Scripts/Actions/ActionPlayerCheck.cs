@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionPlayerCheck.cs"
  * 
@@ -31,13 +31,9 @@ namespace AC
 		#endif
 
 		
-		public ActionPlayerCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Player;
-			title = "Check";
-			description = "Queries which Player prefab is currently being controlled. This only applies to games for which 'Player switching' has been allowed in the Settings Manager.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Player; }}
+		public override string Title { get { return "Check"; }}
+		public override string Description { get { return "Queries which Player prefab is currently being controlled. This only applies to games for which 'Player switching' has been allowed in the Settings Manager."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -167,7 +163,7 @@ namespace AC
 		 */
 		public static ActionPlayerCheck CreateNew (int playerIDToCheck)
 		{
-			ActionPlayerCheck newAction = (ActionPlayerCheck) CreateInstance <ActionPlayerCheck>();
+			ActionPlayerCheck newAction = CreateNew<ActionPlayerCheck> ();
 			newAction.playerID = playerIDToCheck;
 			return newAction;
 		}

@@ -31,21 +31,51 @@ namespace AC
 				KickStarter.settingsManager.musicStorages = value;
 			}
 		}
-		
-		
+
+
+		protected override string APIPrefix
+		{
+			get
+			{
+				return "AC.KickStarter.settingsManager.musicStorages.";
+			}
+		}
+
+
 		protected void OnGUI ()
 		{
-			SharedGUI ("Sound: Play music");
+			if (AdvGame.GetReferences().settingsManager == null)
+			{
+				EditorGUILayout.HelpBox ("A Settings Manager must be assigned before this window can display correctly.", MessageType.Warning);
+				return;
+			}
 
 			if (KickStarter.settingsManager)
 			{
-				KickStarter.settingsManager.playMusicWhilePaused = EditorGUILayout.ToggleLeft ("Music can play when game is paused?", KickStarter.settingsManager.playMusicWhilePaused);
-
-				if (GUI.changed)
+				EditorGUILayout.BeginVertical (CustomStyles.thinBox);
+				showOptions = CustomGUILayout.ToggleHeader (showOptions, "Music settings");
+				if (showOptions)
 				{
-					EditorUtility.SetDirty (KickStarter.settingsManager);
+					KickStarter.settingsManager.playMusicWhilePaused = CustomGUILayout.ToggleLeft ("Can play when game is paused?", KickStarter.settingsManager.playMusicWhilePaused, "AC.KickStarter.settingsManager.playMusicWhilePaused", "If True, then music can play when the game is paused");
+					KickStarter.settingsManager.loadMusicFadeTime = CustomGUILayout.Slider ("Fade time after loading:", KickStarter.settingsManager.loadMusicFadeTime, 0f, 5f, "AC.KickStarter.settingsManager.loadMusicFadeTime", "The fade-in duration when resuming music audio after loading a save game");
+					if (KickStarter.settingsManager.loadMusicFadeTime > 0f)
+					{
+						KickStarter.settingsManager.crossfadeMusicWhenLoading = CustomGUILayout.ToggleLeft ("Crossfade after loading?", KickStarter.settingsManager.crossfadeMusicWhenLoading, "AC.KickStarter.settingsManager.crossfadeMusicWhenLoading", "If True, previously-playing music audio will be crossfaded out upon loading");
+					}
+					KickStarter.settingsManager.restartMusicTrackWhenLoading = CustomGUILayout.ToggleLeft ("Restart track after loading?", KickStarter.settingsManager.restartMusicTrackWhenLoading, "AC.KickStarter.settingsManager.restartMusicTrackWhenLoading", "If True, then the music track at the time of saving will be resumed from the start upon loading");
+					KickStarter.settingsManager.autoEndOtherMusicWhenPlayed = CustomGUILayout.ToggleLeft ("Auto-end all Music when play?", KickStarter.settingsManager.autoEndOtherMusicWhenPlayed, "AC.KickStarter.settingsManager.autoEndOtherMusicWhenPlayed", "If True, then playing Music will force all other Sounds in the scene to stop if they are also playing Music");
+
+					if (GUI.changed)
+					{
+						EditorUtility.SetDirty (KickStarter.settingsManager);
+					}
 				}
+
+				EditorGUILayout.Space ();
+				CustomGUILayout.EndVertical ();
 			}
+
+			SharedGUI ("Music tracks");
 		}
 
 	}

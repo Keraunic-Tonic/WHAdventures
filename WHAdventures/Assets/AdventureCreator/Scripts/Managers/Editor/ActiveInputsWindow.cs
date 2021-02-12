@@ -20,9 +20,9 @@ namespace AC
 		[MenuItem ("Adventure Creator/Editors/Active Inputs Editor", false, 0)]
 		public static void Init ()
 		{
-			ActiveInputsWindow window = GetWindowWithRect <ActiveInputsWindow> (new Rect (0, 0, 450, 460), true, "Active inputs", true);
+			ActiveInputsWindow window = GetWindowWithRect <ActiveInputsWindow> (new Rect (0, 0, 450, 490), true, "Active inputs", true);
 			window.titleContent.text = "Active Inputs";
-			window.position = new Rect (300, 200, 450, 460);
+			window.position = new Rect (300, 200, 450, 490);
 		}
 		
 		
@@ -72,7 +72,7 @@ namespace AC
 						}
 					}
 
-					if (GUILayout.Button ("", CustomStyles.IconCog))
+					if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
 					{
 						SideMenu (activeInput);
 					}
@@ -82,6 +82,7 @@ namespace AC
 				EditorGUILayout.EndScrollView ();
 
 				EditorGUILayout.Space ();
+				EditorGUILayout.BeginHorizontal ();
 				if (GUILayout.Button ("Create new Active Input"))
 				{
 					Undo.RecordObject (this, "Create new Active Input");
@@ -107,7 +108,16 @@ namespace AC
 						settingsManager.activeInputs.Add (newActiveInput);
 					}
 				}
-				EditorGUILayout.EndVertical ();
+
+				if (settingsManager.activeInputs.Count > 1)
+				{
+					if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
+					{
+						GlobalSideMenu ();
+					}
+				}
+				EditorGUILayout.EndHorizontal ();
+				CustomGUILayout.EndVertical ();
 			}
 
 			EditorGUILayout.Space ();
@@ -121,7 +131,7 @@ namespace AC
 				{
 					selectedActiveInput.ShowGUI ();
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 		}
 
@@ -207,6 +217,33 @@ namespace AC
 			AssetDatabase.SaveAssets ();
 			
 			sideInput = -1;
+		}
+
+
+		private void GlobalSideMenu ()
+		{
+			GenericMenu menu = new GenericMenu ();
+			menu.AddItem (new GUIContent ("Delete all"), false, GlobalCallback, "Delete all");
+			menu.ShowAsContext ();
+		}
+
+
+		private void GlobalCallback (object obj)
+		{
+			switch (obj.ToString ())
+			{
+				case "Delete all":
+					Undo.RecordObject (settingsManager, "Delete all Active Inputs");
+					selectedActiveInput = null;
+					settingsManager.activeInputs.Clear ();
+					break;
+
+				default:
+					break;
+			}
+
+			EditorUtility.SetDirty (settingsManager);
+			AssetDatabase.SaveAssets ();
 		}
 
 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"LimitVisibility.cs"
  * 
@@ -107,7 +107,7 @@ namespace AC
 
 			activeCamera = KickStarter.mainCamera.attachedCamera;
 
-			if (activeCamera != null && !isLockedOff)
+			if (activeCamera && !isLockedOff)
 			{
 				if (limitToCameras.Contains (activeCamera))
 				{
@@ -139,7 +139,7 @@ namespace AC
 				limitToCameras = new List<_Camera>();
 			}
 
-			if (limitToCamera != null)
+			if (limitToCamera)
 			{
 				if (!limitToCameras.Contains (limitToCamera))
 				{
@@ -184,11 +184,11 @@ namespace AC
 				return;
 			}
 
-			if (activeCamera != null && limitToCameras.Contains (activeCamera))
+			if (activeCamera && limitToCameras.Contains (activeCamera))
 			{
 				SetVisibility (!negateEffect);
 			}
-			else if (transitionCamera != null && limitToCameras.Contains (transitionCamera))
+			else if (transitionCamera && limitToCameras.Contains (transitionCamera))
 			{
 				SetVisibility (!negateEffect);
 			}
@@ -205,11 +205,11 @@ namespace AC
 
 		protected void SetVisibility (bool state)
 		{
-			if (_renderer != null)
+			if (_renderer)
 			{
 				_renderer.enabled = state;
 			}
-			else if (spriteRenderer != null)
+			else if (spriteRenderer)
 			{
 				spriteRenderer.enabled = state;
 			}
@@ -228,7 +228,7 @@ namespace AC
 			}
 
 			#if ALLOW_VIDEO
-			if (videoPlayer != null)
+			if (videoPlayer)
 			{
 				videoPlayer.targetCameraAlpha = (state) ? 1f : 0f;
 			}

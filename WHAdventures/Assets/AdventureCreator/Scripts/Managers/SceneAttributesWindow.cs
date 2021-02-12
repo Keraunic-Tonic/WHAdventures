@@ -52,7 +52,7 @@ namespace AC
 
 				string apiPrefix = "AC.KickStarter.variablesManager.GetProperty (" + selectedSceneAttribute.id + ")";
 				EditorGUILayout.BeginVertical (CustomStyles.thinBox);
-				EditorGUILayout.LabelField ("Attribute '" + selectedSceneAttribute.label + "' properties",  CustomStyles.subHeader);
+				EditorGUILayout.LabelField ("Attribute '" + selectedSceneAttribute.label + "' properties", CustomStyles.subHeader);
 				EditorGUILayout.Space ();
 
 				selectedSceneAttribute.label = CustomGUILayout.TextField ("Name:", selectedSceneAttribute.label, apiPrefix + ".label");
@@ -62,7 +62,7 @@ namespace AC
 					selectedSceneAttribute.popUps = VariablesManager.PopupsGUI (selectedSceneAttribute.popUps);
 				}
 
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
 			settingsManager.sceneAttributes = sceneAttributes;
@@ -118,7 +118,7 @@ namespace AC
 				ActivateAttribute (newSceneAttribute);
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 

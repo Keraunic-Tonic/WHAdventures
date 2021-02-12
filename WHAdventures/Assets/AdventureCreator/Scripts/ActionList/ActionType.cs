@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionType.cs"
  * 
@@ -49,9 +49,9 @@ namespace AC
 		public ActionType (string _fileName, Action _action)
 		{
 			fileName = _fileName;
-			category = _action.category;
-			title = _action.title;
-			description = _action.description;
+			category = _action.Category;
+			title = _action.Title;
+			description = _action.Description;
 			isEnabled = true;
 			color = Color.white;
 		}

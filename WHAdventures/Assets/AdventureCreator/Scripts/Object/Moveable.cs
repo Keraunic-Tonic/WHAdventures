@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Moveable.cs"
  * 
@@ -24,7 +24,7 @@ namespace AC
 	public class Moveable : MonoBehaviour
 	{
 
-		#region UnityStandards
+		#region Variables
 
 		protected float positionChangeTime;
 		protected float positionStartTime;
@@ -58,6 +58,8 @@ namespace AC
 		protected Char character;
 		protected Rigidbody _rigidbody;
 
+		private Transform _transform;
+
 		#endregion
 
 
@@ -89,13 +91,13 @@ namespace AC
 				{
 					if (inWorldSpace)
 					{
-						transform.position = (positionMethod == MoveMethod.Curved)
+						Transform.position = (positionMethod == MoveMethod.Curved)
 							? Vector3.Slerp (startPosition, endPosition, AdvGame.Interpolate (positionStartTime, positionChangeTime, positionMethod, positionTimeCurve)) 
 							:AdvGame.Lerp (startPosition, endPosition, AdvGame.Interpolate (positionStartTime, positionChangeTime, positionMethod, positionTimeCurve));
 					}
 					else
 					{
-						transform.localPosition = (positionMethod == MoveMethod.Curved)
+						Transform.localPosition = (positionMethod == MoveMethod.Curved)
 							? Vector3.Slerp (startPosition, endPosition, AdvGame.Interpolate (positionStartTime, positionChangeTime, positionMethod, positionTimeCurve)) 
 							:AdvGame.Lerp (startPosition, endPosition, AdvGame.Interpolate (positionStartTime, positionChangeTime, positionMethod, positionTimeCurve));
 					}
@@ -104,11 +106,11 @@ namespace AC
 				{
 					if (inWorldSpace)
 					{
-						transform.position = endPosition;
+						Transform.position = endPosition;
 					}
 					else
 					{
-						transform.localPosition = endPosition;
+						Transform.localPosition = endPosition;
 					}
 
 					positionChangeTime = 0f;
@@ -123,28 +125,28 @@ namespace AC
 					{
 						if (inWorldSpace)
 						{
-							transform.eulerAngles = (rotateMethod == MoveMethod.Curved)
+							Transform.eulerAngles = (rotateMethod == MoveMethod.Curved)
 								? Vector3.Slerp (startEulerRotation, endEulerRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve))
 								: AdvGame.Lerp (startEulerRotation, endEulerRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve));
 						}
 						else
 						{
-							transform.localEulerAngles = (rotateMethod == MoveMethod.Curved)
-							? Vector3.Slerp (startEulerRotation, endEulerRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve))
-							: AdvGame.Lerp (startEulerRotation, endEulerRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve)); 
+							Transform.localEulerAngles = (rotateMethod == MoveMethod.Curved)
+								? Vector3.Slerp (startEulerRotation, endEulerRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve))
+								: AdvGame.Lerp (startEulerRotation, endEulerRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve)); 
 						}
 					}
 					else
 					{
 						if (inWorldSpace)
 						{
-							transform.rotation = (rotateMethod == MoveMethod.Curved)
+							Transform.rotation = (rotateMethod == MoveMethod.Curved)
 								? Quaternion.Slerp (startRotation, endRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve))
 								: AdvGame.Lerp (startRotation, endRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve));
 						}
 						else
 						{
-							transform.localRotation = (rotateMethod == MoveMethod.Curved)
+							Transform.localRotation = (rotateMethod == MoveMethod.Curved)
 								? Quaternion.Slerp (startRotation, endRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve))
 								: AdvGame.Lerp (startRotation, endRotation, AdvGame.Interpolate (rotateStartTime, rotateChangeTime, rotateMethod, rotateTimeCurve)); 
 						}
@@ -156,22 +158,22 @@ namespace AC
 					{
 						if (inWorldSpace)
 						{
-							transform.eulerAngles = endEulerRotation;
+							Transform.eulerAngles = endEulerRotation;
 						}
 						else
 						{
-							transform.localEulerAngles = endEulerRotation;
+							Transform.localEulerAngles = endEulerRotation;
 						}
 					}
 					else
 					{
 						if (inWorldSpace)
 						{
-							transform.rotation = endRotation;
+							Transform.rotation = endRotation;
 						}
 						else
 						{
-							transform.localRotation = endRotation;
+							Transform.localRotation = endRotation;
 						}
 					}
 
@@ -180,7 +182,7 @@ namespace AC
 						character = GetComponent <Char>();
 					}
 
-					if (character != null)
+					if (character)
 					{
 						character.SetLookDirection (character.TransformRotation * Vector3.forward, true);
 						character.StopTurning ();
@@ -196,16 +198,16 @@ namespace AC
 				{
 					if (scaleMethod == MoveMethod.Curved)
 					{
-						transform.localScale = Vector3.Slerp (startScale, endScale, AdvGame.Interpolate (scaleStartTime, scaleChangeTime, scaleMethod, scaleTimeCurve)); 
+						Transform.localScale = Vector3.Slerp (startScale, endScale, AdvGame.Interpolate (scaleStartTime, scaleChangeTime, scaleMethod, scaleTimeCurve)); 
 					}
 					else
 					{
-						transform.localScale = AdvGame.Lerp (startScale, endScale, AdvGame.Interpolate (scaleStartTime, scaleChangeTime, scaleMethod, scaleTimeCurve)); 
+						Transform.localScale = AdvGame.Lerp (startScale, endScale, AdvGame.Interpolate (scaleStartTime, scaleChangeTime, scaleMethod, scaleTimeCurve)); 
 					}
 				}
 				else
 				{
-					transform.localScale = endScale;
+					Transform.localScale = endScale;
 					scaleChangeTime = 0f;
 				}
 			}
@@ -227,24 +229,21 @@ namespace AC
 
 		public bool IsMoving (TransformType transformType)
 		{
-			if (transformType == TransformType.Translate)
+			switch (transformType)
 			{
-				return (positionChangeTime > 0f);
-			}
-			else if (transformType == TransformType.Rotate)
-			{
-				return (rotateChangeTime > 0f);
-			}
-			else if (transformType == TransformType.Scale)
-			{
-				return (scaleChangeTime > 0f);
-			}
-			else if (transformType == TransformType.CopyMarker)
-			{
-				return (positionChangeTime > 0f);
-			}
+				case TransformType.Translate:
+				case TransformType.CopyMarker:
+					return (positionChangeTime > 0f);
 
-			return false;
+				case TransformType.Rotate:
+					return (rotateChangeTime > 0f);
+
+				case TransformType.Scale:
+					return (scaleChangeTime > 0f);
+
+				default: 
+					return false;
+			}
 		}
 		
 
@@ -255,24 +254,24 @@ namespace AC
 		{
 			if (positionChangeTime > 0f)
 			{
-				transform.localPosition = endPosition;
+				Transform.localPosition = endPosition;
 			}
 
 			if (rotateChangeTime > 0f)
 			{
 				if (doEulerRotation)
 				{
-					transform.localEulerAngles = endEulerRotation;
+					Transform.localEulerAngles = endEulerRotation;
 				}
 				else
 				{
-					transform.localRotation = endRotation;
+					Transform.localRotation = endRotation;
 				}
 			}
 
 			if (scaleChangeTime > 0f)
 			{
-				transform.localScale = endScale;
+				Transform.localScale = endScale;
 			}
 
 			StopMoving ();
@@ -292,7 +291,7 @@ namespace AC
 		 */
 		public void Move (Vector3 _newVector, MoveMethod _moveMethod, bool _inWorldSpace, float _transitionTime, TransformType _transformType, bool _doEulerRotation, AnimationCurve _timeCurve, bool clearExisting)
 		{
-			if (_rigidbody != null && !_rigidbody.isKinematic)
+			if (_rigidbody && !_rigidbody.isKinematic)
 			{
 				_rigidbody.velocity = _rigidbody.angularVelocity = Vector3.zero;
 			}
@@ -310,11 +309,11 @@ namespace AC
 				{
 					if (inWorldSpace)
 					{
-						transform.position = _newVector;
+						Transform.position = _newVector;
 					}
 					else
 					{
-						transform.localPosition = _newVector;
+						Transform.localPosition = _newVector;
 					}
 					positionChangeTime = 0f;
 				}
@@ -322,11 +321,11 @@ namespace AC
 				{
 					if (inWorldSpace)
 					{
-						transform.eulerAngles = _newVector;
+						Transform.eulerAngles = _newVector;
 					}
 					else
 					{
-						transform.localEulerAngles = _newVector;
+						Transform.localEulerAngles = _newVector;
 					}
 					rotateChangeTime = 0f;
 				}
@@ -334,14 +333,14 @@ namespace AC
 				{
 					if (inWorldSpace)
 					{
-						Transform oldParent = transform.parent;
-						transform.SetParent (null, true);
-						transform.localScale = _newVector;
+						Transform oldParent = Transform.parent;
+						Transform.SetParent (null, true);
+						Transform.localScale = _newVector;
 						if (oldParent) transform.SetParent (oldParent, true);
 					}
 					else
 					{
-						transform.localScale = _newVector;
+						Transform.localScale = _newVector;
 					}
 					scaleChangeTime = 0f;
 				}
@@ -350,7 +349,7 @@ namespace AC
 			{
 				if (_transformType == TransformType.Translate)
 				{
-					startPosition = endPosition = (inWorldSpace) ? transform.position : transform.localPosition;
+					startPosition = endPosition = (inWorldSpace) ? Transform.position : Transform.localPosition;
 					endPosition = _newVector;
 
 					positionMethod = _moveMethod;
@@ -381,8 +380,8 @@ namespace AC
 				}
 				else if (_transformType == TransformType.Rotate)
 				{
-					startEulerRotation = endEulerRotation = (inWorldSpace) ? transform.eulerAngles : transform.localEulerAngles;
-					startRotation = endRotation = (inWorldSpace) ? transform.rotation : transform.localRotation;
+					startEulerRotation = endEulerRotation = (inWorldSpace) ? Transform.eulerAngles : Transform.localEulerAngles;
+					startRotation = endRotation = (inWorldSpace) ? Transform.rotation : Transform.localRotation;
 					endRotation = Quaternion.Euler (_newVector);
 					endEulerRotation = _newVector;
 
@@ -422,7 +421,7 @@ namespace AC
 						ACDebug.LogWarning ("Cannot change the world-space scale value of " + gameObject.name + " over time.", gameObject);
 					}
 
-					startScale = endScale = transform.localScale;
+					startScale = endScale = Transform.localScale;
 					endScale = _newVector;
 
 					scaleMethod = _moveMethod;
@@ -465,7 +464,7 @@ namespace AC
 		 */
 		public void Move (Marker _marker, MoveMethod _moveMethod, bool _inWorldSpace, float _transitionTime, AnimationCurve _timeCurve)
 		{
-			if (_rigidbody != null && !_rigidbody.isKinematic)
+			if (_rigidbody && !_rigidbody.isKinematic)
 			{
 				_rigidbody.velocity = _rigidbody.angularVelocity = Vector3.zero;
 			}
@@ -478,18 +477,18 @@ namespace AC
 
 				if (inWorldSpace)
 				{
-					Transform oldParent = transform.parent;
-					transform.SetParent (null, true);
-					transform.localScale = _marker.transform.lossyScale;
-					transform.position = _marker.Position;
-					transform.rotation = _marker.Rotation;
-					if (oldParent) transform.SetParent (oldParent, true);
+					Transform oldParent = Transform.parent;
+					Transform.SetParent (null, true);
+					Transform.localScale = _marker.Transform.lossyScale;
+					Transform.position = _marker.Position;
+					Transform.rotation = _marker.Rotation;
+					if (oldParent) Transform.SetParent (oldParent, true);
 				}
 				else
 				{
-					transform.localPosition = _marker.transform.localPosition;
-					transform.localEulerAngles = _marker.transform.localEulerAngles;
-					transform.localScale = _marker.transform.localScale;
+					Transform.localPosition = _marker.Transform.localPosition;
+					Transform.localEulerAngles = _marker.Transform.localEulerAngles;
+					Transform.localScale = _marker.Transform.localScale;
 				}
 			}
 			else
@@ -499,23 +498,23 @@ namespace AC
 
 				if (inWorldSpace)
 				{
-					startPosition = transform.position;
-					startRotation = transform.rotation;
-					startScale = transform.localScale;
+					startPosition = Transform.position;
+					startRotation = Transform.rotation;
+					startScale = Transform.localScale;
 					
 					endPosition = _marker.Position;
 					endRotation = _marker.Rotation;
-					endScale = _marker.transform.localScale;
+					endScale = _marker.Transform.localScale;
 				}
 				else
 				{
-					startPosition = transform.localPosition;
-					startRotation = transform.localRotation;
-					startScale = transform.localScale;
+					startPosition = Transform.localPosition;
+					startRotation = Transform.localRotation;
+					startScale = Transform.localScale;
 					
-					endPosition = _marker.transform.localPosition;
-					endRotation = _marker.transform.localRotation;
-					endScale = _marker.transform.localScale;
+					endPosition = _marker.Transform.localPosition;
+					endRotation = _marker.Transform.localRotation;
+					endScale = _marker.Transform.localScale;
 				}
 
 				if (startPosition == endPosition && startRotation == endRotation && startScale == endScale)
@@ -603,11 +602,11 @@ namespace AC
 			{
 				if (inWorldSpace)
 				{
-					transform.rotation = new Quaternion (saveData.RotW, saveData.RotX, saveData.RotY, saveData.RotZ);
+					Transform.rotation = new Quaternion (saveData.RotW, saveData.RotX, saveData.RotY, saveData.RotZ);
 				}
 				else
 				{
-					transform.localRotation = new Quaternion (saveData.RotW, saveData.RotX, saveData.RotY, saveData.RotZ);
+					Transform.localRotation = new Quaternion (saveData.RotW, saveData.RotX, saveData.RotY, saveData.RotZ);
 				}
 			}
 
@@ -638,8 +637,19 @@ namespace AC
 			}
 		}
 
+
+		/** A cache of the Hotspot's transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
+			}
+		}
+
 		#endregion
-		
+
 	}
 	
 }

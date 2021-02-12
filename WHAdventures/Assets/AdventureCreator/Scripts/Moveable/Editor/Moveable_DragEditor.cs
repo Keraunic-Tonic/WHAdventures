@@ -13,40 +13,37 @@ namespace AC
 			Moveable_Drag _target = (Moveable_Drag) target;
 			GetReferences ();
 
-			EditorGUILayout.BeginVertical ("Button");
-			EditorGUILayout.LabelField ("Movement settings:", EditorStyles.boldLabel);
-			_target.maxSpeed = CustomGUILayout.FloatField ("Max speed:", _target.maxSpeed, "", "The maximum force magnitude that can be applied to itself");
-			_target.playerMovementReductionFactor = CustomGUILayout.Slider ("Player motion reduction:", _target.playerMovementReductionFactor, 0f, 1f, "", "How much player movement is reduced by when the object is being dragged");
-			_target.playerMovementInfluence = CustomGUILayout.FloatField ("Player motion influence:", _target.playerMovementInfluence, "", "The influence that player movement has on the drag force");
-			_target.invertInput = CustomGUILayout.Toggle ("Invert input?", _target.invertInput, "", "If True, input vectors will be inverted");
-			_target.offScreenRelease = (OffScreenRelease)CustomGUILayout.EnumPopup("Off-screen release:", _target.offScreenRelease, "", "What should cause the object to be automatically released upon leaving the screen");
-			EditorGUILayout.EndVertical ();
+			if (Application.isPlaying)
+			{
+				if (KickStarter.settingsManager && _target.gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.hotspotLayer))
+				{
+					EditorGUILayout.HelpBox ("Current state: OFF", MessageType.Info);
+				}
+			}
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
+			EditorGUILayout.LabelField ("Movement settings:", EditorStyles.boldLabel);
+			_target.maxSpeed = CustomGUILayout.FloatField ("Max speed:", _target.maxSpeed, string.Empty, "The maximum force magnitude that can be applied to itself");
+			_target.playerMovementReductionFactor = CustomGUILayout.Slider ("Player motion reduction:", _target.playerMovementReductionFactor, 0f, 1f, string.Empty, "How much player movement is reduced by when the object is being dragged");
+			_target.playerMovementInfluence = CustomGUILayout.FloatField ("Player motion influence:", _target.playerMovementInfluence, string.Empty, "The influence that player movement has on the drag force");
+			_target.invertInput = CustomGUILayout.Toggle ("Invert input?", _target.invertInput, string.Empty, "If True, input vectors will be inverted");
+			_target.offScreenRelease = (OffScreenRelease)CustomGUILayout.EnumPopup("Off-screen release:", _target.offScreenRelease, string.Empty, "What should cause the object to be automatically released upon leaving the screen");
+			CustomGUILayout.EndVertical ();
+
+			CustomGUILayout.BeginVertical ();
 
 			EditorGUILayout.LabelField ("Drag settings:", EditorStyles.boldLabel);
-			_target.dragMode = (DragMode) CustomGUILayout.EnumPopup ("Drag mode:", _target.dragMode, "", "The way in which the object can be dragged");
+			_target.dragMode = (DragMode) CustomGUILayout.EnumPopup ("Drag mode:", _target.dragMode, string.Empty, "The way in which the object can be dragged");
 			if (_target.dragMode == DragMode.LockToTrack)
 			{
-				_target.track = (DragTrack) CustomGUILayout.ObjectField <DragTrack> ("Track to stick to:", _target.track, true, "", "The DragTrack the object is locked to");
+				_target.track = (DragTrack) CustomGUILayout.ObjectField <DragTrack> ("Track to stick to:", _target.track, true, string.Empty, "The DragTrack the object is locked to");
 				
 				if (_target.track != null && _target.track.UsesEndColliders && _target.GetComponent <SphereCollider>() == null)
 				{
 					EditorGUILayout.HelpBox ("For best results, ensure the first collider on this GameObject is a Sphere Collider covering the breath of the mesh.\r\nIt can be disabled if necessary, but will be used to set correct limit boundaries.", MessageType.Info);
 				}
-
-				_target.setOnStart = CustomGUILayout.ToggleLeft ("Set starting position?", _target.setOnStart, "", "If True, then the object will be placed at a specific point along the track when the game begins");
-				if (_target.setOnStart)
-				{
-					_target.trackValueOnStart = CustomGUILayout.Slider ("Initial distance along:", _target.trackValueOnStart, 0f, 1f, "", "How far along its DragTrack that the object should be placed at when the game begins");
-				}
-				_target.retainOriginalTransform = CustomGUILayout.ToggleLeft ("Maintain original child transforms?", _target.retainOriginalTransform, "", "If True, then the position and rotation of all child objects will be maintained when the object is attached to the track");
-
-				if (Application.isPlaying && _target.track != null)
-				{
-					EditorGUILayout.Space ();
-					EditorGUILayout.LabelField ("Distance along: " + _target.GetPositionAlong ().ToString (), EditorStyles.miniLabel);
-				}
+				
+				_target.dragTrackDirection = (DragTrackDirection) CustomGUILayout.EnumPopup ("Drag direction:", _target.dragTrackDirection);
 
 				if (_target.GetComponent<Rigidbody>())
 				{
@@ -54,11 +51,28 @@ namespace AC
 				}
 				if (!_target.UsesRigidbody)
 				{
-					_target.simulatedMass = CustomGUILayout.Slider ("Simulated mass:", _target.simulatedMass, 0f, 2f);
+					_target.simulatedMass = CustomGUILayout.Slider ("Simulated mass:", _target.simulatedMass, 0f, 2f, string.Empty, "The object's simulated mass, if not using a Rigidbody");
+				}
+				else
+				{
+					_target.applyGravity = CustomGUILayout.Toggle ("Apply gravity force?", _target.applyGravity, string.Empty, "If True, an additional gravitational force will be applied when not held or moving automatically");
 				}
 
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				_target.setOnStart = CustomGUILayout.ToggleLeft ("Set starting position?", _target.setOnStart, string.Empty, "If True, then the object will be placed at a specific point along the track when the game begins");
+				if (_target.setOnStart)
+				{
+					_target.trackValueOnStart = CustomGUILayout.Slider ("Initial distance along:", _target.trackValueOnStart, 0f, 1f, string.Empty, "How far along its DragTrack that the object should be placed at when the game begins");
+				}
+				_target.retainOriginalTransform = CustomGUILayout.ToggleLeft ("Maintain original child transforms?", _target.retainOriginalTransform, string.Empty, "If True, then the position and rotation of all child objects will be maintained when the object is attached to the track");
+
+				if (Application.isPlaying && _target.track != null)
+				{
+					EditorGUILayout.Space ();
+					EditorGUILayout.LabelField ("Distance along: " + _target.GetPositionAlong ().ToString (), EditorStyles.miniLabel);
+				}
+
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 				EditorGUILayout.LabelField ("Interactions", EditorStyles.boldLabel);
 
 				_target.actionListSource = (ActionListSource) CustomGUILayout.EnumPopup ("Actions source:", _target.actionListSource, "", "The source of the commands that are run when the object is interacted with");
@@ -73,7 +87,7 @@ namespace AC
 						{
 							Undo.RecordObject (_target, "Create Interaction");
 							Interaction newInteraction = SceneManager.AddPrefab ("Logic", "Interaction", true, false, true).GetComponent <Interaction>();
-							newInteraction.gameObject.name = AdvGame.UniqueName ("Move : " + _target.gameObject.name);
+							newInteraction.gameObject.name = AdvGame.UniqueName (_target.gameObject.name + ": Move");
 							_target.interactionOnMove = newInteraction;
 						}
 					}
@@ -100,7 +114,7 @@ namespace AC
 						{
 							Undo.RecordObject (_target, "Create Interaction");
 							Interaction newInteraction = SceneManager.AddPrefab ("Logic", "Interaction", true, false, true).GetComponent <Interaction>();
-							newInteraction.gameObject.name = AdvGame.UniqueName ("LetGo : " + _target.gameObject.name);
+							newInteraction.gameObject.name = AdvGame.UniqueName (_target.gameObject.name + ": LetGo");
 							_target.interactionOnDrop = newInteraction;
 						}
 					}
@@ -174,7 +188,7 @@ namespace AC
 				}
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (_target.dragMode == DragMode.LockToTrack && _target.track is DragTrack_Hinge)
 			{

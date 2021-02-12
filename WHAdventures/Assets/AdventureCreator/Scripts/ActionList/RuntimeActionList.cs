@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RuntimeActionList.cs"
  * 
@@ -95,20 +95,24 @@ namespace AC
 			conversation = endConversation;
 			actions.Clear ();
 			
-			foreach (AC.Action action in actionListAsset.actions)
+			foreach (Action action in actionListAsset.actions)
 			{
 				if (action != null)
 				{
-					ActionEnd _lastResult = action.lastResult;
+					int lastResultIndex = action.LastRunOutput;
 
+					#if AC_ActionListPrefabs
+					Action newAction = JsonAction.CreateCopy (action);
+					#else
 					// Really we should re-instantiate all Actions, but this is 'safer'
 					Action newAction = (actionListAsset.canRunMultipleInstances)
-										? (Object.Instantiate (action) as Action)
+										? Instantiate (action)
 										: action;
-				
+					#endif
+
 					if (doSkip)
 					{
-						newAction.lastResult = _lastResult;
+						newAction.SetLastResult (lastResultIndex);
 					}
 
 					actions.Add (newAction);
@@ -119,16 +123,7 @@ namespace AC
 				}
 			}
 
-			/*if (!useParameters)
-			{
-				foreach (Action action in actions)
-				{
-					action.AssignValues (null);
-				}
-			}*/
-
 			actionListAsset.AfterDownloading ();
-
 
 			if (!dontRun)
 			{
@@ -204,9 +199,9 @@ namespace AC
 		}
 
 
-		protected new void ReturnLastResultToSource (ActionEnd _lastResult, int i)
+		protected override void ReturnLastResultToSource (int index, int i)
 		{
-			assetSource.actions[i].lastResult = _lastResult;
+			assetSource.actions[i].SetLastResult (index);
 		}
 
 
@@ -214,6 +209,27 @@ namespace AC
 		{
 			KickStarter.actionListAssetManager.AssignResumeIndices (assetSource, resumeIndices.ToArray ());
 			CheckEndCutscene ();
+		}
+
+
+		protected override void PrintActionComment (Action action)
+		{
+			switch (KickStarter.settingsManager.actionCommentLogging)
+			{
+				case ActionCommentLogging.Always:
+					action.PrintComment (this, assetSource);
+					break;
+
+				case ActionCommentLogging.OnlyIfVisible:
+					if (action.showComment)
+					{
+						action.PrintComment (this, assetSource);
+					}
+					break;
+
+				default:
+					break;
+			}
 		}
 
 

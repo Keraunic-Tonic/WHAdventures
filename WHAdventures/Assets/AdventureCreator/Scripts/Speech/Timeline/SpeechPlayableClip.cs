@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SpeechPlayableClip.cs"
  * 
@@ -78,11 +78,7 @@ namespace AC
 				EditorGUILayout.LabelField ("Speech Manager ID:", speechPlayableData.lineID.ToString ());
 			}
 
-			EditorGUILayout.BeginHorizontal ();
-			EditorGUILayout.LabelField ("Line text:", GUILayout.Width (65f));
-			EditorStyles.textField.wordWrap = true;
-			speechPlayableData.messageText = EditorGUILayout.TextArea (speechPlayableData.messageText, GUILayout.MaxWidth (400f));
-			EditorGUILayout.EndHorizontal ();
+			speechPlayableData.messageText = CustomGUILayout.TextArea ("Line text:", speechPlayableData.messageText);
 		}
 
 		#endif

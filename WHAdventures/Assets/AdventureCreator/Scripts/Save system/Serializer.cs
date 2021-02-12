@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Serializer.cs"
  * 
@@ -55,7 +55,7 @@ namespace AC
 		 */
 		public static T GetGameObjectComponent <T> (int constantID, GameObject gameObject) where T : Component
 		{
-			if (constantID != 0 && gameObject != null)
+			if (constantID != 0 && gameObject)
 			{
 				T[] objects = gameObject.GetComponentsInChildren <T>();
 
@@ -86,7 +86,7 @@ namespace AC
 		 */
 		public static int GetConstantID (GameObject _gameObject, bool reportMissing = true)
 		{
-			if (_gameObject != null)
+			if (_gameObject)
 			{
 				if (_gameObject.GetComponent <ConstantID>())
 				{
@@ -115,7 +115,7 @@ namespace AC
 		 */
 		public static int GetConstantID (Transform _transform)
 		{
-			if (_transform != null)
+			if (_transform)
 			{
 				if (_transform.GetComponent <ConstantID>())
 				{
@@ -152,7 +152,7 @@ namespace AC
 			}
 			string serializedString = SaveSystem.FileFormatHandler.SerializeObject <T> (dataObject);
 
-			if (serializedString != "" && addMethodName)
+			if (!string.IsNullOrEmpty (serializedString) && addMethodName)
 			{
 				serializedString = fileFormatHandler.GetSaveMethod () + serializedString;
 			}

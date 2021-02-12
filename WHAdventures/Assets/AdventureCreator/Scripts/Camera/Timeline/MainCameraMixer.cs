@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MainCameraMixer.cs"
  * 
@@ -22,18 +22,28 @@ namespace AC
 	internal sealed class MainCameraMixer : PlayableBehaviour
 	{
 
-		#region PublicFunctions
+		#region Variables
 
 		private _Camera lastFrameCamera;
 		private bool callCustomEvents;
+		private bool setsCameraAfterRunning;
 
+		#endregion
+
+
+		#region PublicFunctions
 
 		public override void OnGraphStop (Playable playable)
 		{
-			if (MainCamera != null)
+			if (MainCamera)
 			{
 				lastFrameCamera = null;
 				MainCamera.ReleaseTimelineOverride ();
+
+				if (callCustomEvents && lastFrameCamera != KickStarter.mainCamera.attachedCamera)
+				{
+					KickStarter.eventManager.Call_OnSwitchCamera(lastFrameCamera, KickStarter.mainCamera.attachedCamera, 0f);
+				}
 			}
 		}
 
@@ -59,7 +69,11 @@ namespace AC
 
 				MainCameraPlayableBehaviour shot = clip.GetBehaviour ();
 
-				if (shot != null) callCustomEvents = shot.callCustomEvents;
+				if (shot != null)
+				{
+					callCustomEvents = shot.callCustomEvents;
+					setsCameraAfterRunning = shot.setsCameraAfterRunning;
+				}
 
 				if (shot != null && 
 					shot.IsValid &&
@@ -125,11 +139,20 @@ namespace AC
 			if (callCustomEvents)
 			{
 				_Camera thisFrameCamera = (incomingIsB) ? cameraB : cameraA;
+				if (thisFrameCamera == null)
+				{
+					thisFrameCamera = KickStarter.mainCamera.attachedCamera;
+				}
 				if (thisFrameCamera != lastFrameCamera)
 				{
 					KickStarter.eventManager.Call_OnSwitchCamera (lastFrameCamera, thisFrameCamera, 0f);
 					lastFrameCamera = thisFrameCamera;
 				}
+			}
+
+			if (setsCameraAfterRunning && incomingIsB && camWeightB >= 1f && cameraB && KickStarter.mainCamera.attachedCamera != cameraB)
+			{
+				KickStarter.mainCamera.SetGameCamera (cameraB);
 			}
 		}
 

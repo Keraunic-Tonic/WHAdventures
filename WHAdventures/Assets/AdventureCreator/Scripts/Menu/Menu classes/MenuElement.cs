@@ -1,13 +1,13 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuElement.cs"
  * 
  *	This is the base class for all menu elements.  It should never
  *	be added itself to a menu, as it is only a container of shared data.
- * 
+ * ecal
  */
 
 using UnityEngine;
@@ -201,8 +201,10 @@ namespace AC
 		/**
 		 * <summary>Initialises the linked Unity UI GameObject.</summary>
 		 * <param name = "_menu">The element's parent Menu</param>
+		 * <param name="canvas">The runtime Canvas associated with the Menu</param>
+		 * <param name="addEventListeners">If True, then event listeners should be added to the UI's Interactive component(s)</param>
 		 */
-		public virtual void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public virtual void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{}
 
 
@@ -243,7 +245,18 @@ namespace AC
 		}
 
 
-		protected void ProcessClickUI (AC.Menu _menu, int _slot, MouseState _mouseState)
+		protected void CreateHoverSoundHandler (Selectable selectable, AC.Menu _menu, int _slotIndex = 0)
+		{
+			UISlotClick uiSlotClick = selectable.gameObject.GetComponent <UISlotClick>();
+			if (uiSlotClick == null)
+			{
+				uiSlotClick = selectable.gameObject.AddComponent<UISlotClick>();
+				uiSlotClick.Setup (_menu, this, _slotIndex);
+			}
+		}
+
+
+		protected virtual void ProcessClickUI (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			KickStarter.playerInput.ResetClick ();
 			ProcessClick (_menu, _slot, _mouseState);
@@ -255,15 +268,17 @@ namespace AC
 		 * <param name = "_menu">The element's parent Menu</param>
 		 * <param name = "_slot">The index number of the slot that was clicked on</param>
 		 * <param name = "_mouseState">The state of the mouse button</param>
+		 * <returns>True if the click had an effect, and so should be consumed</returns>
 		 */
-		public virtual void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public virtual bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
-			if (clickSound != null)
+			if (clickSound)
 			{
 				KickStarter.sceneSettings.PlayDefaultSound (clickSound, false);
 			}
 
 			KickStarter.eventManager.Call_OnMenuElementClick (_menu, this, _slot, (int) _mouseState);
+			return true;
 		}
 
 
@@ -271,9 +286,12 @@ namespace AC
 		 * <summary>Performs what should happen when the element is clicked on continuously.</summary>
 		 * <param name = "_menu">The element's parent Menu</param>
 		 * <param name = "_mouseState">The state of the mouse button</param>
+		 * <returns>True if the click has an effect</returns>
 		 */
-		public virtual void ProcessContinuousClick (AC.Menu _menu, MouseState _mouseState)
-		{}
+		public virtual bool ProcessContinuousClick (AC.Menu _menu, MouseState _mouseState)
+		{
+			return false;
+		}
 
 
 		/**
@@ -363,7 +381,7 @@ namespace AC
 
 
 		/** If True, then the element is visible */
-		public bool IsVisible
+		public virtual bool IsVisible
 		{
 			get
 			{
@@ -389,7 +407,7 @@ namespace AC
 			EditorGUILayout.Space ();	
 			title = CustomGUILayout.TextField ("Element name:", title, apiPrefix + ".title", "A text identifier for use in Actions and custom scripts");
 			isVisible = CustomGUILayout.Toggle ("Is visible?", isVisible, apiPrefix + ".IsVisible", "If True, the element is enabled and visible");
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			ShowGUI (menu);
 		}
@@ -416,14 +434,14 @@ namespace AC
 					EditorGUILayout.BeginVertical (CustomStyles.thinBox);
 					hoverSound = (AudioClip) CustomGUILayout.ObjectField <AudioClip> ("Hover sound:", hoverSound, false, apiPrefix + ".hoverSound", "The sound to play when the cursor hovers over the element");
 					clickSound = (AudioClip) CustomGUILayout.ObjectField <AudioClip> ("Click sound:", clickSound, false, apiPrefix + ".clickSound", "The sound to play when the element is clicked on");
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 				return;
 			}
 
 			if (!(this is MenuGraphic))
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				font = (Font) CustomGUILayout.ObjectField <Font> ("Font:", font, false, apiPrefix + ".font", "The text font");
 				fontScaleFactor = CustomGUILayout.Slider ("Text size:", fontScaleFactor, 1f, 4f, apiPrefix + ".fontScaleFactor", "The font size");
 
@@ -434,10 +452,10 @@ namespace AC
 				{
 					fontHighlightColor = CustomGUILayout.ColorField ("Text colour (highlighted):", fontHighlightColor, apiPrefix + ".fontHighlightColor", "The font colour when the element is highlighted");
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			ShowTextureGUI (apiPrefix);
 
@@ -446,7 +464,7 @@ namespace AC
 			backgroundTexture = (Texture2D) CustomGUILayout.ObjectField <Texture2D> (backgroundTexture, false, GUILayout.Width (70f), GUILayout.Height (30f), apiPrefix + ".backgroundTexture");
 			EditorGUILayout.EndHorizontal ();
 
-			if (numSlots > 1 && backgroundTexture != null)
+			if (numSlots > 1 && backgroundTexture)
 			{
 				singleSlotBackgrounds = CustomGUILayout.ToggleLeft ("Background texture is per slot?", singleSlotBackgrounds, apiPrefix + ".singleSlotBackgrounds", "If True, then each slot will have its own background texture - as opposed to a single background texture that spans the whole element");
 			}
@@ -462,7 +480,7 @@ namespace AC
 				clickSound = (AudioClip) CustomGUILayout.ObjectField <AudioClip> ("Click sound:", clickSound, false, apiPrefix + ".clickSound", "The sound to play when the element is clicked on");
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			EndGUI (apiPrefix);
 		}
@@ -470,7 +488,7 @@ namespace AC
 		
 		protected void EndGUI (string apiPrefix)
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			positionType = (AC_PositionType2) CustomGUILayout.EnumPopup ("Position:", positionType, apiPrefix + ".positionType", "How the element is positioned");
 			if (positionType == AC_PositionType2.AbsolutePixels)
 			{
@@ -490,9 +508,9 @@ namespace AC
 				relativePosition.y = EditorGUILayout.Slider (relativePosition.y, 0f, 100f);
 				EditorGUILayout.EndHorizontal ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			sizeType = (AC_SizeType) CustomGUILayout.EnumPopup ("Size:", sizeType, apiPrefix + ".sizeType", "How the element is scaled");
 			if (sizeType == AC_SizeType.Manual)
 			{
@@ -547,7 +565,7 @@ namespace AC
 					maxAutoWidthFactor = CustomGUILayout.Slider ("Max auto-width factor:", maxAutoWidthFactor, 0f, 1f, apiPrefix + ".maxAutoWidthFactor", "How much width, as a proportion of the total screen width, the element can take up when re-sizing itself automatically.");
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 		
 		
@@ -618,7 +636,7 @@ namespace AC
 			if (changeCursor)
 			{
 				CursorManager cursorManager = AdvGame.GetReferences ().cursorManager;
-				if (cursorManager != null)
+				if (cursorManager)
 				{
 					int cursorIndex = cursorManager.GetIntFromID (cursorID);
 					cursorIndex = CustomGUILayout.Popup ("Cursor:", cursorIndex, cursorManager.GetLabelsArray (), apiPrefix + ".cursorID", "The Cursor to display when the mouse hovers of the element");
@@ -656,18 +674,6 @@ namespace AC
 
 
 		/**
-		 * <summary>Checks if the Element makes reference to a particular GameObject</summary>
-		 * <param name = "gameObject">The GameObject to check for</param>
-		 * <param name = "id">The GameObject's associated ConstantID value</param>
-		 * <returns>True if the Element references the GameObject</param>
-		 */
-		public virtual bool ReferencesObjectOrID (GameObject gameObject, int id)
-		{
-			return false;
-		}
-
-
-		/**
 		 * <summary>Checks if the Menu makes reference to a particular ActionList asset</summary>
 		 * <param name = "actionListAsset">The ActionList to check for</param>
 		 * <returns>True if the Menu references the ActionList</param>
@@ -678,6 +684,18 @@ namespace AC
 		}
 
 		#endif
+
+
+		/**
+		 * <summary>Checks if the Element makes reference to a particular GameObject</summary>
+		 * <param name = "gameObject">The GameObject to check for</param>
+		 * <param name = "id">The GameObject's associated ConstantID value</param>
+		 * <returns>True if the Element references the GameObject</param>
+		 */
+		public virtual bool ReferencesObjectOrID (GameObject gameObject, int id)
+		{
+			return false;
+		}
 
 
 		/**
@@ -770,7 +788,7 @@ namespace AC
 		 */
 		public virtual void Display (GUIStyle _style, int _slot, float zoom, bool isActive)
 		{
-			if (backgroundTexture != null)
+			if (backgroundTexture)
 			{
 				if (singleSlotBackgrounds)
 				{
@@ -963,7 +981,7 @@ namespace AC
 
 		protected void SetAbsoluteSize (Vector2 _size)
 		{
-			Vector2 playableAreaSize = (KickStarter.mainCamera != null) ? KickStarter.mainCamera.GetPlayableScreenArea (false).size : new Vector2 ( ACScreen.width, ACScreen.height);
+			Vector2 playableAreaSize = (KickStarter.mainCamera) ? KickStarter.mainCamera.GetPlayableScreenArea (false).size : new Vector2 ( ACScreen.width, ACScreen.height);
 			SetSize (new Vector2 (_size.x * 100f / playableAreaSize.x, _size.y * 100f / playableAreaSize.y));
 		}
 
@@ -989,7 +1007,14 @@ namespace AC
 			Vector2 screenFactor = Vector2.one;
 			if (sizeType != AC_SizeType.AbsolutePixels)
 			{
-				screenFactor = new Vector2 (KickStarter.mainCamera.GetPlayableScreenArea (false).size.x / 100f, KickStarter.mainCamera.GetPlayableScreenArea (false).size.y / 100f);
+				if (KickStarter.mainCamera)
+				{
+					screenFactor = new Vector2 (KickStarter.mainCamera.GetPlayableScreenArea (false).size.x / 100f, KickStarter.mainCamera.GetPlayableScreenArea (false).size.y / 100f);
+				}
+				else
+				{
+					screenFactor = new Vector2 (ACScreen.safeArea.size.x / 100f, ACScreen.safeArea.size.y / 100f);
+				}
 			}
 
 			Rect positionRect = relativeRect;
@@ -1049,7 +1074,7 @@ namespace AC
 
 			if (sizeType != AC_SizeType.AbsolutePixels)
 			{
-				if (KickStarter.mainCamera != null)
+				if (KickStarter.mainCamera)
 				{
 					screenSize = new Vector2 (KickStarter.mainCamera.GetPlayableScreenArea (false).size.x / 100f, KickStarter.mainCamera.GetPlayableScreenArea (false).size.y / 100f);
 				}
@@ -1114,7 +1139,7 @@ namespace AC
 				return (int) (fontScaleFactor * 10f);
 			}
 
-			float xScale = (KickStarter.mainCamera != null) ? KickStarter.mainCamera.GetPlayableScreenArea (false).size.x : ACScreen.width;
+			float xScale = (KickStarter.mainCamera) ? KickStarter.mainCamera.GetPlayableScreenArea (false).size.x : ACScreen.width;
 			return (int) (xScale * fontScaleFactor / 100);
 		}
 
@@ -1247,7 +1272,7 @@ namespace AC
 
 		protected T LinkUIElement <T> (Canvas canvas) where T : Behaviour
 		{
-			if (canvas != null)
+			if (canvas)
 			{
 				T field = Serializer.GetGameObjectComponent <T> (linkedUiID, canvas.gameObject);
 
@@ -1263,7 +1288,7 @@ namespace AC
 
 		protected void UpdateUISelectable <T> (T field, UISelectableHideStyle uiSelectableHideStyle) where T : Selectable
 		{
-			if (Application.isPlaying && field != null)
+			if (Application.isPlaying && field)
 			{
 				if (uiSelectableHideStyle == UISelectableHideStyle.DisableObject)
 				{
@@ -1279,7 +1304,7 @@ namespace AC
 
 		protected void UpdateUIElement <T> (T field) where T : Behaviour
 		{
-			if (Application.isPlaying && field != null && field.gameObject.activeSelf != isVisible)
+			if (Application.isPlaying && field && field.gameObject.activeSelf != isVisible)
 			{
 				field.gameObject.SetActive (isVisible);
 			}

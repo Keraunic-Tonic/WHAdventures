@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionParent.cs"
  * 
@@ -47,13 +47,9 @@ namespace AC
 		public Vector3 newRotation;
 
 
-		public ActionParent ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Set parent";
-			description = "Parent one GameObject to another. Can also set the child's local position and rotation.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Set parent"; }}
+		public override string Description { get { return "Parent one GameObject to another. Can also set the child's local position and rotation."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -158,8 +154,6 @@ namespace AC
 					newRotation = EditorGUILayout.Vector3Field ("Rotation vector:", newRotation);
 				}
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -212,10 +206,10 @@ namespace AC
 			if (!isPlayer && obToAffectParameterID < 0)
 			{
 				if (obToAffect != null && obToAffect == gameObject) return true;
-				if (obToAffectID == id) return true;
+				if (obToAffectID == id && id != 0) return true;
 			}
 			if (isPlayer && gameObject.GetComponent <Player>() != null) return true;
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -238,7 +232,7 @@ namespace AC
 		 */
 		public static ActionParent CreateNew_SetParent (GameObject objectToParent, Transform newParent)
 		{
-			ActionParent newAction = (ActionParent) CreateInstance <ActionParent>();
+			ActionParent newAction = CreateNew<ActionParent> ();
 			newAction.parentAction = ParentAction.SetParent;
 			newAction.obToAffect = objectToParent;
 			newAction.parentTransform = newParent;
@@ -254,7 +248,7 @@ namespace AC
 		 */
 		public static ActionParent CreateNew_ClearParent (GameObject objectToClear)
 		{
-			ActionParent newAction = (ActionParent) CreateInstance <ActionParent>();
+			ActionParent newAction = CreateNew<ActionParent> ();
 			newAction.parentAction = ParentAction.ClearParent;
 			newAction.obToAffect = objectToClear;
 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuJournal.cs"
  * 
@@ -164,11 +164,7 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObject.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			#if TextMeshProIsPresent
 			uiText = LinkUIElement <TMPro.TextMeshProUGUI> (canvas);
@@ -224,7 +220,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuJournal)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			journalType = (JournalType) CustomGUILayout.EnumPopup ("Journal type:", journalType, apiPrefix + ".journalType", "What type of journal this is");
 			if (journalType == JournalType.DisplayExistingJournal || journalType == JournalType.DisplayActiveDocument)
@@ -294,8 +290,8 @@ namespace AC
 
 				numPages = pages.Count;
 
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 
 				if (numPages > 1)
 				{
@@ -323,8 +319,8 @@ namespace AC
 			}
 			else
 			{
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 
 				#if TextMeshProIsPresent
 				uiText = LinkedUiGUI <TMPro.TextMeshProUGUI> (uiText, "Linked Text:", source);
@@ -338,7 +334,7 @@ namespace AC
 				actionListOnAddPage = (ActionListAsset) CustomGUILayout.ObjectField <ActionListAsset> ("ActionList on add page:", actionListOnAddPage, false, apiPrefix + ".actionListOnAddPage", "An ActionList to run whenever a new page is added");
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			base.ShowGUI (menu);
 		}
@@ -474,14 +470,6 @@ namespace AC
 		}
 
 
-		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
-		{
-			if (uiText != null && uiText.gameObject == gameObject) return true;
-			if (linkedUiID == id) return true;
-			return false;
-		}
-
-
 		public override bool ReferencesAsset (ActionListAsset actionListAsset)
 		{
 			if (journalType == JournalType.NewJournal && actionListOnAddPage == actionListAsset)
@@ -490,6 +478,14 @@ namespace AC
 		}
 
 		#endif
+
+
+		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
+		{
+			if (uiText && uiText.gameObject == gameObject) return true;
+			if (linkedUiID == id && id != 0) return true;
+			return false;
+		}
 
 
 		public override void OnMenuTurnOn (Menu menu)
@@ -549,7 +545,7 @@ namespace AC
 				}
 			}
 
-			if (uiText != null)
+			if (uiText)
 			{
 				UpdateUIElement (uiText);
 				uiText.text = fullText;
@@ -711,7 +707,7 @@ namespace AC
 				}
 			}
 
-			if (pageText == "" && backgroundTexture != null)
+			if (string.IsNullOrEmpty (pageText) && backgroundTexture)
 			{
 				GUIContent content = new GUIContent (backgroundTexture);
 				AutoSize (content);

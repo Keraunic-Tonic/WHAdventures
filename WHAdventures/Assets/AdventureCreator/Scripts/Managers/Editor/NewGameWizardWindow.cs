@@ -2,6 +2,7 @@
 #define ON_MOBILE
 #endif
 
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -51,7 +52,7 @@ namespace AC
 		
 		private void GetReferences ()
 		{
-			references = (References) Resources.Load (Resource.references);
+			references = Resource.References;
 		}
 
 
@@ -155,7 +156,7 @@ namespace AC
 			GUI.Label (pageRect, "Page " + (pageNumber + 1) + " of " + (numPages + 1));
 
 			GUILayout.FlexibleSpace ();
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -229,6 +230,7 @@ namespace AC
 				AssetDatabase.RenameAsset ("Assets/" + managerPath + "/SettingsManager.asset", gameName + "_SettingsManager");
 
 				newSettingsManager.saveFileName = gameName;
+				newSettingsManager.separateEditorSaveFiles = true;
 				newSettingsManager.cameraPerspective = cameraPerspective;
 				newSettingsManager.movingTurning = movingTurning;
 				newSettingsManager.movementMethod = movementMethod;
@@ -237,7 +239,7 @@ namespace AC
 				newSettingsManager.hotspotDetection = hotspotDetection;
 				if (cameraPerspective == CameraPerspective.TwoPointFiveD)
 				{
-					newSettingsManager.forceAspectRatio = true;
+					newSettingsManager.aspectRatioEnforcement = AspectRatioEnforcement.Fixed;
 				}
 				references.settingsManager = newSettingsManager;
 
@@ -410,6 +412,99 @@ namespace AC
 						{
 							newSpeechManager.previewMenuName = "Subtitles";
 							EditorUtility.SetDirty (newSpeechManager);
+						}
+
+
+						if (wizardMenu != WizardMenu.Blank)
+						{
+							System.IO.Directory.CreateDirectory (Application.dataPath + "/" + gameName + "/UI/ActionLists");
+						}
+
+						string actionListPath = gameName + "/UI/ActionLists";
+
+						ActionListAsset asset_quitButton = CreateActionList_QuitButton (actionListPath);
+						ActionListAsset asset_deselectInventory = CreateActionList_DeselectInventory (actionListPath);
+						Menu pauseMenu = newMenuManager.GetMenuWithName ("Pause");
+						if (pauseMenu)
+						{
+							pauseMenu.actionListOnTurnOn = asset_deselectInventory;
+
+							MenuElement quitElement = pauseMenu.GetElementWithName ("QuitButton");
+							if (quitElement && quitElement is MenuButton)
+							{
+								MenuButton quitButton = quitElement as MenuButton;
+								quitButton.actionList = asset_quitButton;
+							}
+						}
+
+						ActionListAsset asset_createNewProfile = CreateActionList_CreateNewProfile (actionListPath);
+						ActionListAsset asset_deleteActiveProfile = CreateActionList_DeleteActiveProfile (actionListPath);
+						ActionListAsset asset_setupProfilesMenu = CreateActionList_SetupProfilesMenu (actionListPath);
+						Menu profilesMenu = newMenuManager.GetMenuWithName ("Profiles");
+						if (profilesMenu)
+						{
+							profilesMenu.actionListOnTurnOn = asset_setupProfilesMenu;
+
+							MenuElement newElement = profilesMenu.GetElementWithName ("NewButton");
+							if (newElement && newElement is MenuButton)
+							{
+								MenuButton newButton = newElement as MenuButton;
+								newButton.actionList = asset_createNewProfile;
+							}
+
+							MenuElement deleteElement = profilesMenu.GetElementWithName ("DeleteActiveProfileButton");
+							if (deleteElement && deleteElement is MenuButton)
+							{
+								MenuButton deleteButton = deleteElement as MenuButton;
+								deleteButton.actionList = asset_deleteActiveProfile;
+							}
+						}
+
+						ActionListAsset asset_closeCrafting = CreateActionList_CloseCrafting (actionListPath);
+						ActionListAsset asset_doCrafting = CreateActionList_DoCrafting (actionListPath);
+						Menu craftingMenu = newMenuManager.GetMenuWithName ("Crafting");
+						if (craftingMenu)
+						{
+							MenuElement closeElement = craftingMenu.GetElementWithName ("CloseButton");
+							if (closeElement && closeElement is MenuButton)
+							{
+								MenuButton closeButton = closeElement as MenuButton;
+								closeButton.actionList = asset_closeCrafting;
+							}
+
+							MenuElement createElement = craftingMenu.GetElementWithName ("CreateButton");
+							if (createElement && createElement is MenuButton)
+							{
+								MenuButton createButton = createElement as MenuButton;
+								createButton.actionList = asset_doCrafting;
+							}
+						}
+
+						ActionListAsset asset_hideSelectedObjective = CreateActionList_HideSelectedObjective (actionListPath);
+						ActionListAsset asset_showSelectedObjective = CreateActionList_ShowSelectedObjective (actionListPath);
+						Menu objectivesMenu = newMenuManager.GetMenuWithName ("Objectives");
+						if (objectivesMenu)
+						{
+							objectivesMenu.actionListOnTurnOn = asset_hideSelectedObjective;
+
+							MenuElement objectivesElement = objectivesMenu.GetElementWithName ("ObjectivesList");
+							if (objectivesElement && objectivesElement is MenuInventoryBox)
+							{
+								MenuInventoryBox objectivesList = objectivesElement as MenuInventoryBox;
+								objectivesList.actionListOnClick = asset_showSelectedObjective;
+							}
+						}
+
+						ActionListAsset asset_takeAllContainerItems = CreateActionList_TakeAllContainerItems (actionListPath);
+						Menu containerMenu = newMenuManager.GetMenuWithName ("Container");
+						if (containerMenu)
+						{
+							MenuElement takeElement = containerMenu.GetElementWithName ("TakeAllButton");
+							if (takeElement && takeElement is MenuButton)
+							{
+								MenuButton takeButton = takeElement as MenuButton;
+								takeButton.actionList = asset_takeAllContainerItems;
+							}
 						}
 					}
 					else
@@ -663,7 +758,12 @@ namespace AC
 			{
 				GUILayout.Label ("Your game's Managers have been set up!");
 				GUILayout.Space (5f);
-				GUILayout.Label ("Your next step is to create and set your Player prefab, which you can do using the Character Wizard.");
+				GUILayout.Label ("Now you can use the AC Game Editor to start building your game.  For a step-by-step guide, follow the link below:");
+
+				if (GUILayout.Button ("Tutorial: The Game Editor window", CustomStyles.linkCentre))
+				{
+					Application.OpenURL (Resource.introTutorialLink);
+				}
 			}
 		}
 
@@ -690,6 +790,177 @@ namespace AC
 			AdventureCreator.Init ();
 			
 			return managerPackage;
+		}
+
+
+		private ActionListAsset CreateActionList_CloseCrafting (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionInventoryCrafting.CreateNew (ActionInventoryCrafting.ActionCraftingMethod.ClearRecipe),
+				ActionMenuState.CreateNew_TurnOffMenu ("Crafting"),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("CloseCrafting", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+			
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_CreateNewProfile (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionManageProfiles.CreateNew_CreateProfile (),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("CreateNewProfile", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_DeleteActiveProfile (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionManageProfiles.CreateNew_DeleteProfile (DeleteProfileType.ActiveProfile, string.Empty, string.Empty, 0),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("DeleteActiveProfile", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_DeselectInventory (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionInventorySelect.CreateNew_DeselectActive (),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("DeselectInventory", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_DoCrafting (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionInventoryCrafting.CreateNew (ActionInventoryCrafting.ActionCraftingMethod.CreateRecipe),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("DoCrafting", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_HideSelectedObjective (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionMenuState.CreateNew_SetElementVisibility ("Objectives", "SelectedTitle", false),
+				ActionMenuState.CreateNew_SetElementVisibility ("Objectives", "SelectedStateType", false),
+				ActionMenuState.CreateNew_SetElementVisibility ("Objectives", "SelectedDescription", false),
+				ActionMenuState.CreateNew_SetElementVisibility ("Objectives", "SelectedTexture", false),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("HideSelectedObjective", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_QuitButton (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionEndGame.CreateNew_QuitGame (),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("QuitButton", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_SetupProfilesMenu (string folderPath)
+		{
+			ActionSaveCheck saveCheck1 = ActionSaveCheck.CreateNew_NumberOfProfiles (1, IntCondition.MoreThan);
+
+			ActionMenuState hideDeleteButton = ActionMenuState.CreateNew_SetElementVisibility ("Profiles", "DeleteActiveProfileButton", false);
+
+			ActionMenuState showDeleteButton = ActionMenuState.CreateNew_SetElementVisibility ("Profiles", "DeleteActiveProfileButton", true);
+			ActionSaveCheck saveCheck2 = ActionSaveCheck.CreateNew_NumberOfProfiles (10, IntCondition.LessThan);
+
+			ActionMenuState hideNewButton = ActionMenuState.CreateNew_SetElementVisibility ("Profiles", "NewButton", false);
+
+			ActionMenuState showNewButton = ActionMenuState.CreateNew_SetElementVisibility ("Profiles", "NewButton", true);
+
+			List<Action> actions = new List<Action>
+			{
+				saveCheck1,
+				hideDeleteButton,
+				showDeleteButton,
+				saveCheck2,
+				hideNewButton,
+				showNewButton,
+			};
+
+			saveCheck1.SetOutputs (new ActionEnd (showDeleteButton), new ActionEnd (hideDeleteButton));
+			hideDeleteButton.SetOutput (new ActionEnd (true));
+			showDeleteButton.SetOutput (new ActionEnd (saveCheck2));
+			saveCheck2.SetOutputs (new ActionEnd (showNewButton), new ActionEnd (hideNewButton));
+			hideNewButton.SetOutput (new ActionEnd (true));
+			showNewButton.SetOutput (new ActionEnd (true));
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("SetupProfilesMenu", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_ShowSelectedObjective (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionMenuState.CreateNew_SetElementVisibility ("Objectives", "SelectedTitle", true),
+				ActionMenuState.CreateNew_SetElementVisibility ("Objectives", "SelectedStateType", true),
+				ActionMenuState.CreateNew_SetElementVisibility ("Objectives", "SelectedDescription", true),
+				ActionMenuState.CreateNew_SetElementVisibility ("Objectives", "SelectedTexture", true),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("ShowSelectedObjective", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
+		}
+
+
+		private ActionListAsset CreateActionList_TakeAllContainerItems (string folderPath)
+		{
+			List<Action> actions = new List<Action>
+			{
+				ActionContainerSet.CreateNew_RemoveAll (null, true),
+				ActionMenuState.CreateNew_TurnOffMenu ("Crafting"),
+			};
+
+			ActionListAsset newAsset = ActionListAsset.CreateFromActions ("TakeAllContainerItems", folderPath, actions);
+			newAsset.actionListType = ActionListType.RunInBackground;
+
+			return newAsset;
 		}
 
 	}

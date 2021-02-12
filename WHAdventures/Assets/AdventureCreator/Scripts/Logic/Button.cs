@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Button.cs"
  * 
@@ -65,11 +65,30 @@ namespace AC
 
 		#region Constructors
 
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public Button ()
 		{ }
+
+
+		/** A Constructor that copies its values from another Button */
+		public Button (Button button)
+		{
+			interaction = button.interaction;
+			assetFile = button.assetFile;
+			customScriptObject = button.customScriptObject;
+			customScriptFunction = button.customScriptFunction;
+			isDisabled = button.isDisabled;
+			invID = button.invID;
+			iconID = button.iconID;
+			selectItemMode = button.selectItemMode;
+			playerAction = button.playerAction;
+			setProximity = button.setProximity;
+			proximity = button.proximity;
+			faceAfter = button.faceAfter;
+			isBlocking = button.isBlocking;
+			parameterID = button.parameterID;
+			invParameterID = button.invParameterID;
+		}
 
 		#endregion
 
@@ -122,31 +141,42 @@ namespace AC
 		}
 
 
-		public string GetFullLabel (Hotspot _hotspot, int _language)
+		public string GetFullLabel (Hotspot _hotspot, InvInstance invInstance, int _language)
 		{
 			if (_hotspot == null) return string.Empty;
 
 			if (_hotspot.lookButton == this)
 			{
 				string prefix = KickStarter.cursorManager.GetLabelFromID (KickStarter.cursorManager.lookCursor_ID, _language);
-				return AdvGame.CombineLanguageString (prefix,
-													  _hotspot.GetName (_language),
-													  _language);
+				string hotspotName = _hotspot.GetName (_language);
+				if (_hotspot.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+				{
+					hotspotName = hotspotName.ToLower();
+				}
+
+				return AdvGame.CombineLanguageString (prefix, hotspotName, _language);
 			}
-			else if (_hotspot.useButtons.Contains (this))
+			else if (_hotspot.useButtons.Contains (this) || _hotspot.unhandledUseButton == this)
 			{
 				string prefix = KickStarter.cursorManager.GetLabelFromID (iconID, _language);
-				return AdvGame.CombineLanguageString (prefix,
-													  _hotspot.GetName (_language),
-													  _language);
+				string hotspotName = _hotspot.GetName (_language);
+				if (_hotspot.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+				{
+					hotspotName = hotspotName.ToLower ();
+				}
+
+				return AdvGame.CombineLanguageString (prefix, hotspotName, _language);
 			}
-			else if (_hotspot.invButtons.Contains (this))
+			else if (_hotspot.invButtons.Contains (this) && InvInstance.IsValid (invInstance))
 			{
-				InvItem item = KickStarter.runtimeInventory.GetItem (invID);
-				string prefix = KickStarter.runtimeInventory.GetHotspotPrefixLabel (item, item.GetLabel (_language), _language);
-				return AdvGame.CombineLanguageString (prefix,
-													  _hotspot.GetName (_language),
-													  _language);
+				string prefix = invInstance.GetHotspotPrefixLabel (_language);
+				string hotspotName = _hotspot.GetName (_language);
+				if (_hotspot.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+				{
+					hotspotName = hotspotName.ToLower ();
+				}
+
+				return AdvGame.CombineLanguageString (prefix, hotspotName, _language);
 			}
 
 			return string.Empty;

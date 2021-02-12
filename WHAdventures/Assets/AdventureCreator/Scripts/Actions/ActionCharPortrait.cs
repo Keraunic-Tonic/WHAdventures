@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCharPortrait.cs"
  * 
@@ -33,13 +33,9 @@ namespace AC
 		public Texture newPortraitGraphic;
 
 
-		public ActionCharPortrait ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Character;
-			title = "Switch Portrait";
-			description = "Changes the 'speaking' graphic used by Characters. To display this graphic in a Menu, place a Graphic element of type Dialogue Portrait in a Menu of Appear type: When Speech Plays. If the new graphic is placed in a Resources folder, it will be stored in saved game files.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Character; }}
+		public override string Title { get { return "Switch Portrait"; }}
+		public override string Description { get { return "Changes the 'speaking' graphic used by Characters. To display this graphic in a Menu, place a Graphic element of type Dialogue Portrait in a Menu of Appear type: When Speech Plays. If the new graphic is placed in a Resources folder, it will be stored in saved game files."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -113,7 +109,6 @@ namespace AC
 			}
 			
 			newPortraitGraphic = (Texture) EditorGUILayout.ObjectField ("New Portrait graphic:", newPortraitGraphic, typeof (Texture), true);
-			AfterRunningOption ();
 		}
 
 
@@ -156,7 +151,7 @@ namespace AC
 				if (constantID == id) return true;
 			}
 			if (isPlayer && _gameObject.GetComponent <Player>() != null) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -179,7 +174,7 @@ namespace AC
 		 */
 		public static ActionCharPortrait CreateNew (Char characterToUpdate, Texture newPortraitGraphic)
 		{
-			ActionCharPortrait newAction = (ActionCharPortrait) CreateInstance <ActionCharPortrait>();
+			ActionCharPortrait newAction = CreateNew<ActionCharPortrait> ();
 			newAction._char = characterToUpdate;
 			newAction.newPortraitGraphic = newPortraitGraphic;
 			return newAction;

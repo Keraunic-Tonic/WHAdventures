@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"NavigationManager.cs"
  * 
@@ -50,7 +50,7 @@ namespace AC
 
 			if (navigationEngine == null || navigationEngine.RequiresNavMeshGameObject)
 			{
-				if (defaultNavMesh != null)
+				if (defaultNavMesh)
 				{
 					defaultNavMesh.TurnOn ();
 				}

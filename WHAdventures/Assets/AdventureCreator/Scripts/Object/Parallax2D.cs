@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Parallax2D.cs"
  * 
@@ -59,6 +59,14 @@ namespace AC
 		protected float yDesired;
 		protected Vector2 perspectiveOffset;
 
+		public HorizontalParallaxConstraint horizontalConstraint;
+		public VerticalParallaxConstraint verticalConstraint;
+		public SpriteRenderer backgroundConstraint = null;
+		public enum HorizontalParallaxConstraint { Left, Right };
+		public enum VerticalParallaxConstraint { Top, Bottom };
+
+		private Transform _transform;
+
 		#endregion
 
 
@@ -106,7 +114,7 @@ namespace AC
 					}
 					else
 					{
-						perspectiveOffset = new Vector2 (KickStarter.CameraMain.transform.position.x, KickStarter.CameraMain.transform.position.y);
+						perspectiveOffset = new Vector2 (KickStarter.CameraMainTransform.position.x, KickStarter.CameraMainTransform.position.y);
 					}
 					break;
 
@@ -129,28 +137,42 @@ namespace AC
 			xDesired = xStart;
 			if (xScroll)
 			{
-				xDesired += perspectiveOffset.x * depth;
-				xDesired += xOffset;
+				if (limitX && reactsTo == ParallaxReactsTo.Camera && backgroundConstraint)
+				{
+					xDesired = GetHorizontalBackgroundConstraintPosition ();
+				}
+				else
+				{
+					xDesired += perspectiveOffset.x * depth;
+					xDesired += xOffset;
+				}
 			}
 
 			yDesired = yStart;
 			if (yScroll)
 			{
-				yDesired += perspectiveOffset.y * depth;
-				yDesired += yOffset;
+				if (limitY && reactsTo == ParallaxReactsTo.Camera && backgroundConstraint)
+				{
+					yDesired = GetVerticalBackgroundConstraintPosition ();
+				}
+				else
+				{
+					yDesired += perspectiveOffset.y * depth;
+					yDesired += yOffset;
+				}
 			}
 
 			if (xScroll && yScroll)
 			{
-				transform.localPosition = new Vector3 (xDesired, yDesired, transform.localPosition.z);
+				Transform.localPosition = new Vector3 (xDesired, yDesired, Transform.localPosition.z);
 			}
 			else if (xScroll)
 			{
-				transform.localPosition = new Vector3 (xDesired, transform.localPosition.y, transform.localPosition.z);
+				Transform.localPosition = new Vector3 (xDesired, Transform.localPosition.y, Transform.localPosition.z);
 			}
 			else if (yScroll)
 			{
-				transform.localPosition = new Vector3 (transform.localPosition.x, yDesired, transform.localPosition.z);
+				Transform.localPosition = new Vector3 (Transform.localPosition.x, yDesired, Transform.localPosition.z);
 			}
 		}
 
@@ -161,11 +183,93 @@ namespace AC
 
 		protected virtual void Initialise ()
 		{
-			xStart = transform.localPosition.x;
-			yStart = transform.localPosition.y;
+			xStart = Transform.localPosition.x;
+			yStart = Transform.localPosition.y;
 
 			xDesired = xStart;
 			yDesired = yStart;
+		}
+
+
+		private float GetHorizontalBackgroundConstraintPosition ()
+		{
+			if (!KickStarter.CameraMain.orthographic)
+			{
+				Debug.LogWarning (gameObject.name + " cannot use background for parallax constraint unless the Main Camera uses Orthographic projection.");
+				return 0f;
+			}
+
+			switch (horizontalConstraint)
+			{
+				case HorizontalParallaxConstraint.Left:
+					{
+						float cameraLeft = KickStarter.CameraMain.ViewportToWorldPoint (new Vector3 (0f, 0f, KickStarter.CameraMain.nearClipPlane)).x;
+						float backgroundLeft = backgroundConstraint.bounds.min.x;
+						float scroll = Mathf.Max (cameraLeft - backgroundLeft, 0f);
+						return backgroundConstraint.bounds.min.x + (scroll * depth) + xOffset;
+					}
+
+				case HorizontalParallaxConstraint.Right:
+					{
+						float cameraRight = KickStarter.CameraMain.ViewportToWorldPoint (new Vector3 (1f, 1f, KickStarter.CameraMain.nearClipPlane)).x;
+						float backgroundRight = backgroundConstraint.bounds.max.x;
+						float scroll = Mathf.Min (cameraRight - backgroundRight, 0f);
+						return backgroundConstraint.bounds.max.x + (scroll * depth) + xOffset;
+					}
+
+				default:
+					break;
+			}
+
+			return 0f;
+		}
+
+
+		private float GetVerticalBackgroundConstraintPosition ()
+		{
+			if (!KickStarter.CameraMain.orthographic)
+			{
+				Debug.LogWarning (gameObject.name + " cannot use background for parallax constraint unless the Main Camera uses Orthographic projection.");
+				return 0f;
+			}
+
+			switch (verticalConstraint)
+			{
+				case VerticalParallaxConstraint.Top:
+					{
+						float cameraTop = KickStarter.CameraMain.ViewportToWorldPoint (new Vector3 (0f, 1f, KickStarter.CameraMain.nearClipPlane)).y;
+						float backgroundTop = backgroundConstraint.bounds.max.y;
+						float offset = Mathf.Min (cameraTop - backgroundTop, 0f);
+						return backgroundConstraint.bounds.max.y - (offset * depth) + yOffset;
+					}
+
+				case VerticalParallaxConstraint.Bottom:
+					{
+						float cameraBottom = KickStarter.CameraMain.ViewportToWorldPoint (new Vector3 (1f, 0f, KickStarter.CameraMain.nearClipPlane)).y;
+						float backgroundBottom = backgroundConstraint.bounds.min.y;
+						float offset = Mathf.Max (cameraBottom - backgroundBottom, 0f);
+						return backgroundConstraint.bounds.min.y - (offset * depth) + yOffset;
+					}
+
+				default:
+					break;
+			}
+
+			return 0f;
+		}
+
+		#endregion
+
+
+		#region GetSet
+
+		private Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
+			}
 		}
 
 		#endregion

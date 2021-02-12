@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Music.cs"
  * 
@@ -24,8 +24,7 @@ namespace AC
 
 		#region Variables
 
-		/** If True, then playing audio from this component will force all other Sounds in the scene to stop if they are also playing Music */
-		public bool autoEndOtherMusicWhenPlayed = true;
+		private int timeSamplesBackup = -1;
 
 		#endregion
 
@@ -52,18 +51,19 @@ namespace AC
 			mainData.musicTimeSamples = 0;
 			mainData.lastMusicTimeSamples = LastTimeSamples;
 
-			if (GetCurrentTrackID () >= 0)
-			{
-				MusicStorage musicStorage = GetSoundtrack (GetCurrentTrackID ());
-				if (musicStorage != null && musicStorage.audioClip != null && audioSource.clip == musicStorage.audioClip && IsPlaying ())
-				{
-					mainData.musicTimeSamples = audioSource.timeSamples;
-				}
-			}
+			mainData.musicTimeSamples = (timeSamplesBackup >= 0) ? timeSamplesBackup : GetTimeSamplesToSave ();
+			timeSamplesBackup = -1;
 
 			mainData.oldMusicTimeSamples = CreateOldTimesampleString ();
 
 			return mainData;
+		}
+
+
+		/** Prepares save data that cannot be generated while threading */
+		public void PrepareSaveBeforeThreading ()
+		{
+			timeSamplesBackup = GetTimeSamplesToSave ();
 		}
 
 
@@ -79,7 +79,21 @@ namespace AC
 
 		protected override bool EndsOthers ()
 		{
-			return autoEndOtherMusicWhenPlayed;
+			return KickStarter.settingsManager.autoEndOtherMusicWhenPlayed;
+		}
+
+		
+		protected int GetTimeSamplesToSave ()
+		{
+			if (GetCurrentTrackID () >= 0)
+			{
+				MusicStorage musicStorage = GetSoundtrack (GetCurrentTrackID ());
+				if (musicStorage != null && musicStorage.audioClip != null && audioSource.clip == musicStorage.audioClip && IsPlaying ())
+				{
+					return audioSource.timeSamples;
+				}
+			}
+			return 0;
 		}
 
 		#endregion
@@ -101,6 +115,33 @@ namespace AC
 			get
 			{
 				return KickStarter.settingsManager.musicStorages;
+			}
+		}
+
+
+		protected override float LoadFadeTime
+		{
+			get
+			{
+				return KickStarter.settingsManager.loadMusicFadeTime;
+			}
+		}
+
+
+		protected override bool CrossfadeWhenLoading
+		{
+			get
+			{
+				return KickStarter.settingsManager.crossfadeMusicWhenLoading;
+			}
+		}
+
+
+		protected override bool RestartTrackWhenLoading
+		{
+			get
+			{
+				return KickStarter.settingsManager.restartMusicTrackWhenLoading;
 			}
 		}
 

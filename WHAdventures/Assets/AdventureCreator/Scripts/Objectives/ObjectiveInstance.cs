@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ObjectiveInstance.cs"
  * 
@@ -31,7 +31,7 @@ namespace AC
 
 		public ObjectiveInstance (int objectiveID)
 		{
-			if (KickStarter.inventoryManager != null)
+			if (KickStarter.inventoryManager)
 			{
 				linkedObjective = KickStarter.inventoryManager.GetObjective (objectiveID);
 				currentStateID = 0;
@@ -41,7 +41,7 @@ namespace AC
 
 		public ObjectiveInstance (int objectiveID, int startingStateID)
 		{
-			if (KickStarter.inventoryManager != null)
+			if (KickStarter.inventoryManager)
 			{
 				linkedObjective = KickStarter.inventoryManager.GetObjective (objectiveID);;
 				currentStateID = startingStateID;
@@ -51,7 +51,7 @@ namespace AC
 
 		public ObjectiveInstance (string saveData)
 		{
-			if (KickStarter.inventoryManager != null)
+			if (KickStarter.inventoryManager)
 			{
 				string[] chunkData = saveData.Split (SaveSystem.colon[0]);
 				if (chunkData.Length == 2)

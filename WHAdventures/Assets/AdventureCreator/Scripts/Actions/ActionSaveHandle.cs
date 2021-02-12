@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionSaveHandle.cs"
  * 
@@ -43,15 +43,12 @@ namespace AC
 		protected bool recievedCallback;
 
 		
-		public ActionSaveHandle ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Save;
-			title = "Save or load";
-			description = "Saves and loads save-game files";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Save; }}
+		public override string Title { get { return "Save or load"; }}
+		public override string Description { get { return "Saves and loads save-game files"; }}
+		public override int NumSockets { get { return (saveHandling == SaveHandling.OverwriteExistingSave || saveHandling == SaveHandling.SaveNewGame) ? 1 : 0; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			saveIndex = AssignInteger (parameters, saveIndexParameterID, saveIndex);
@@ -98,7 +95,7 @@ namespace AC
 				KickStarter.saveSystem.SetSelectiveLoadOptions (selectiveLoad);
 			}
 
-			string newSaveLabel = "";
+			string newSaveLabel = string.Empty;
 			if (customLabel && ((updateLabel && saveHandling == SaveHandling.OverwriteExistingSave) || saveHandling == AC.SaveHandling.SaveNewGame))
 			{
 				if (selectSaveType != SelectSaveType.Autosave)
@@ -116,7 +113,7 @@ namespace AC
 				}
 			}
 			
-			int i = Mathf.Max (0, saveIndex);
+			int i = saveIndex;
 
 			if (saveHandling == SaveHandling.ContinueFromLastSave)
 			{
@@ -205,6 +202,7 @@ namespace AC
 					{
 						if (selectSaveType == SelectSaveType.SetSaveID)
 						{
+
 							SaveSystem.SaveGame (0, i, true, updateLabel, newSaveLabel);
 						}
 						else
@@ -253,16 +251,6 @@ namespace AC
 
 			EventManager.OnFinishSaving -= OnFinishSaving;
 			EventManager.OnFailSaving -= OnFail;
-		}
-
-
-		public override ActionEnd End (List<Action> actions)
-		{
-			if (saveHandling == SaveHandling.OverwriteExistingSave || saveHandling == SaveHandling.SaveNewGame)
-			{
-				return base.End (actions);
-			}
-			return GenerateStopActionEnd ();
 		}
 		
 		
@@ -336,14 +324,9 @@ namespace AC
 					selectiveLoad.ShowGUI ();
 				}
 			}
-
-			if (saveHandling == SaveHandling.OverwriteExistingSave || saveHandling == SaveHandling.SaveNewGame)
-			{
-				AfterRunningOption ();
-			}
 		}
-		
-		
+
+
 		public override string SetLabel ()
 		{
 			return saveHandling.ToString ();
@@ -359,7 +342,7 @@ namespace AC
 		 */
 		public static ActionSaveHandle CreateNew_SaveNew (int customLabelGlobalStringVariableID = -1)
 		{
-			ActionSaveHandle newAction = (ActionSaveHandle) CreateInstance <ActionSaveHandle>();
+			ActionSaveHandle newAction = CreateNew<ActionSaveHandle> ();
 			newAction.saveHandling = SaveHandling.SaveNewGame;
 			newAction.customLabel = (customLabelGlobalStringVariableID >= 0);
 			newAction.varID = customLabelGlobalStringVariableID;
@@ -373,7 +356,7 @@ namespace AC
 		 */
 		public static ActionSaveHandle CreateNew_SaveAutosave ()
 		{
-			ActionSaveHandle newAction = (ActionSaveHandle) CreateInstance <ActionSaveHandle>();
+			ActionSaveHandle newAction = CreateNew<ActionSaveHandle> ();
 			newAction.saveHandling = SaveHandling.OverwriteExistingSave;
 			newAction.selectSaveType = SelectSaveType.Autosave;
 			return newAction;
@@ -389,7 +372,7 @@ namespace AC
 		 */
 		public static ActionSaveHandle CreateNew_LoadFromSlot (string menuName, string savesListElementName, int saveSlotIndex)
 		{
-			ActionSaveHandle newAction = (ActionSaveHandle) CreateInstance <ActionSaveHandle>();
+			ActionSaveHandle newAction = CreateNew<ActionSaveHandle> ();
 			newAction.saveHandling = SaveHandling.LoadGame;
 			newAction.selectSaveType = SelectSaveType.SetSlotIndex;
 			newAction.saveIndex = saveSlotIndex;
@@ -405,7 +388,7 @@ namespace AC
 		 */
 		public static ActionSaveHandle CreateNew_LoadAutosave ()
 		{
-			ActionSaveHandle newAction = (ActionSaveHandle) CreateInstance <ActionSaveHandle>();
+			ActionSaveHandle newAction = CreateNew<ActionSaveHandle> ();
 			newAction.saveHandling = SaveHandling.LoadGame;
 			newAction.selectSaveType = SelectSaveType.Autosave;
 			return newAction;
@@ -418,7 +401,7 @@ namespace AC
 		 */
 		public static ActionSaveHandle CreateNew_ContinueLast ()
 		{
-			ActionSaveHandle newAction = (ActionSaveHandle) CreateInstance <ActionSaveHandle>();
+			ActionSaveHandle newAction = CreateNew<ActionSaveHandle> ();
 			newAction.saveHandling = SaveHandling.ContinueFromLastSave;
 			return newAction;
 		}
@@ -433,7 +416,7 @@ namespace AC
 		 */
 		public static ActionSaveHandle CreateNew_SaveInSlot (string menuName, string savesListElementName, int saveSlotIndex)
 		{
-			ActionSaveHandle newAction = (ActionSaveHandle) CreateInstance <ActionSaveHandle>();
+			ActionSaveHandle newAction = CreateNew<ActionSaveHandle> ();
 			newAction.saveHandling = SaveHandling.OverwriteExistingSave;
 			newAction.selectSaveType = SelectSaveType.SetSlotIndex;
 			newAction.saveIndex = saveSlotIndex;

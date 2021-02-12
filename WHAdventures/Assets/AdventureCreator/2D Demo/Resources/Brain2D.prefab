@@ -384,7 +384,6 @@ MonoBehaviour:
   doDirections: 1
   crossfadeAnims: 0
   doDiagonals: 1
-  isTalking: 0
   frameFlipping: 0
   flipCustomAnims: 0
   _spriteDirectionData:

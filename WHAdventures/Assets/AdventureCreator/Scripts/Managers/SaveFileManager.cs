@@ -99,7 +99,7 @@ namespace AC
 
 				EditorGUILayout.HelpBox ("Save format and location handlers can be modified through script - see the Manual's 'Custom save formats and handling' chapter.", MessageType.Info);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (settingsManager.useProfiles)
 			{
@@ -142,7 +142,7 @@ namespace AC
 						EditorGUILayout.HelpBox ("No save profiles found.", MessageType.Warning);
 					}
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 			else
 			{
@@ -178,7 +178,7 @@ namespace AC
 					
 					if (KickStarter.variablesManager != null)
 					{
-						List<GVar> linkedVariables = SaveSystem.UnloadVariablesData (prefsData.linkedVariables, KickStarter.variablesManager.vars, true);
+						List<GVar> linkedVariables = SaveSystem.UnloadVariablesData (prefsData.linkedVariables, false, KickStarter.variablesManager.vars, true);
 						foreach (GVar linkedVariable in linkedVariables)
 						{
 							if (linkedVariable.link == VarLink.OptionsData)
@@ -213,7 +213,7 @@ namespace AC
 					EditorGUILayout.EndHorizontal ();
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 
@@ -271,9 +271,9 @@ namespace AC
 						saveFileHandler.DeleteAll (selectedProfileID);
 					}
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (selectedSaveIndex < 0 || foundSaveFiles == null || selectedSaveIndex >= foundSaveFiles.Count)
 			{
@@ -298,7 +298,7 @@ namespace AC
 				{
 					CustomGUILayout.MultiLineLabelGUI ("Filename:", selectedSaveFile.screenshotFilename);
 				}
-				EditorGUILayout.LabelField ("Is auto-save?", selectedSaveFile.isAutoSave.ToString ());
+				EditorGUILayout.LabelField ("Is auto-save?", selectedSaveFile.IsAutoSave.ToString ());
 
 				GUILayout.BeginHorizontal ();
 				GUI.enabled = Application.isPlaying;
@@ -327,7 +327,7 @@ namespace AC
 				}
 				GUILayout.EndHorizontal ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 
@@ -349,13 +349,13 @@ namespace AC
 				{
 					for (int i = 0; i < cachedLevelData.Count; i++)
 					{
-						GUILayout.Box (string.Empty, GUILayout.ExpandWidth (true), GUILayout.Height (1));
+						CustomGUILayout.DrawUILine ();
 						EditorGUILayout.LabelField ("Scene data " + i.ToString () + ":", CustomStyles.subHeader);
 						cachedLevelData[i].ShowGUI ();
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionVarSequence.cs"
  * 
@@ -21,12 +21,14 @@ namespace AC
 {
 	
 	[System.Serializable]
-	public class ActionVarSequence : ActionCheckMultiple
+	public class ActionVarSequence : Action
 	{
 		
 		public int parameterID = -1;
 		public int variableID;
 		public bool doLoop = false;
+
+		public int numSockets = 2;
 
 		public bool saveToVariable = true;
 		protected int ownVarValue = 0;
@@ -41,15 +43,12 @@ namespace AC
 		protected Variables runtimeVariables;
 
 		
-		public ActionVarSequence ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Variable;
-			title = "Run sequence";
-			description = "Uses the value of an integer Variable to determine which Action is run next. The value is incremented by one each time (and reset to zero when a limit is reached), allowing for different subsequent Actions to play each time the Action is run.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Variable; }}
+		public override string Title { get { return "Run sequence"; }}
+		public override string Description { get { return "Uses the value of an integer Variable to determine which Action is run next. The value is incremented by one each time (and reset to zero when a limit is reached), allowing for different subsequent Actions to play each time the Action is run."; }}
+		public override int NumSockets { get { return numSockets; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			runtimeVariable = null;
@@ -99,12 +98,12 @@ namespace AC
 		}
 		
 		
-		public override ActionEnd End (List<Action> actions)
+		public override int GetNextOutputIndex ()
 		{
 			if (numSockets <= 0)
 			{
 				LogWarning ("Could not compute Random check because no values were possible!");
-				return GenerateStopActionEnd ();
+				return -1;
 			}
 
 			if (!saveToVariable)
@@ -123,12 +122,12 @@ namespace AC
 					}
 				}
 
-				return ProcessResult (value, actions);
+				return value;
 			}
 			
 			if (variableID == -1)
 			{
-				return GenerateStopActionEnd ();
+				return -1;
 			}
 			
 			if (runtimeVariable != null)
@@ -148,7 +147,7 @@ namespace AC
 
 					runtimeVariable.IntegerValue = newValue;
 					runtimeVariable.Upload (location, runtimeVariables);
-					return ProcessResult (originalValue, actions);
+					return originalValue;
 				}
 				else
 				{
@@ -156,7 +155,7 @@ namespace AC
 				}
 			}
 			
-			return GenerateStopActionEnd ();
+			return -1;
 		}
 		
 		
@@ -309,13 +308,13 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 
 			if (saveToVariable && location == _location && variableID == varID && parameterID < 0)
 			{
-				if (location != VariableLocation.Component || (variables != null && variables == _variables))
+				if (location != VariableLocation.Component || (variables && variables == _variables) || (_variablesConstantID != 0 && variablesConstantID == _variablesConstantID))
 				{
 					thisCount ++;
 				}
@@ -341,9 +340,9 @@ namespace AC
 			if (parameterID < 0 && location == VariableLocation.Component)
 			{
 				if (variables != null && variables.gameObject == gameObject) return true;
-				return (variablesConstantID == id);
+				return (variablesConstantID == id && id != 0);
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -357,7 +356,7 @@ namespace AC
 		 */
 		public static ActionVarSequence CreateNew (int numOutcomes, bool doLoop)
 		{
-			ActionVarSequence newAction = (ActionVarSequence) CreateInstance <ActionVarSequence>();
+			ActionVarSequence newAction = CreateNew<ActionVarSequence> ();
 			newAction.numSockets = numOutcomes;
 			newAction.doLoop = doLoop;
 			return newAction;

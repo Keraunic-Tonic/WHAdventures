@@ -31,6 +31,7 @@ MonoBehaviour:
   pauseTexture: {fileID: 0}
   scaleTextEffects: 0
   keyboardControlWhenPaused: 0
+  keyboardControlWhenCutscene: 0
   keyboardControlWhenDialogOptions: 0
   autoSelectValidRaycasts: 0
   horizontalInputAxis: Horizontal
@@ -1804,83 +1805,11 @@ MonoBehaviour:
   categoryIDs: 
   linkUIGraphic: 0
   preventInteractions: 0
+  preventSelection: 0
   limitMaxScroll: 1
   highlightEmptySlots: 0
   updateHotspotLabelWhenHover: 0
   hoverSoundOverEmptySlots: 1
-  items:
-  - label: Prop sword
-    id: 0
-    altLabel: 
-    carryOnStart: 0
-    carryOnStartNotDefault: 0
-    carryOnStartID: 0
-    carryOnStartIDs: 
-    vars:
-    - label: Property 1
-      id: 0
-      type: 0
-      val: 0
-      floatVal: 0
-      textVal: 
-      popUps: []
-      vector3Val: {x: 0, y: 0, z: 0}
-      link: 0
-      pmVar: 
-      updateLinkOnStart: 0
-      canTranslate: 1
-      popUpID: 0
-      textValLineID: -1
-      popUpsLineID: -1
-      description: 
-      showInFilter: 0
-      limitToCategories: 0
-      categoryIDs: 
-    canCarryMultiple: 0
-    count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
-    tex: {fileID: 2800000, guid: a01609783128744659e8933c2954ac90, type: 3}
-    activeTex: {fileID: 2800000, guid: e54effe7242064987b6b9ae71576d6fc, type: 3}
-    selectedTex: {fileID: 0}
-    linkedPrefab: {fileID: 0}
-    cursorIcon:
-      texture: {fileID: 0}
-      isAnimated: 0
-      numFrames: 1
-      numRows: 1
-      numCols: 1
-      size: 0.04
-      animSpeed: 4
-      endAnimOnLastFrame: 0
-      skipFirstFrameWhenLooping: 0
-      clickOffset: {x: 0, y: 0}
-      frameSpeeds: []
-      alwaysAnimate: 0
-      dontCycle: 0
-      label: Icon 1
-      lineID: -1
-      id: 0
-    lineID: 62
-    useIconID: 0
-    binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
-    overrideUseSyntax: 0
-    hotspotPrefix1:
-      label: 
-      lineID: 0
-    hotspotPrefix2:
-      label: 
-      lineID: 0
-    useActionList: {fileID: 0}
-    lookActionList: {fileID: 0}
-    interactions: []
-    combineActionList: []
-    combineID: 
-    unhandledActionList: {fileID: 0}
-    unhandledCombineActionList: {fileID: 0}
-    showInFilter: 0
   containerSelectMode: 1
   displayType: 1
   uiHideStyle: 1
@@ -2258,6 +2187,7 @@ MonoBehaviour:
   timerType: 0
   uiSelectableHideStyle: 0
   smoothingFactor: 0
+  autoSetVisibility: 0
 --- !u!114 &11400056
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2503,83 +2433,11 @@ MonoBehaviour:
   categoryIDs: 
   linkUIGraphic: 0
   preventInteractions: 0
+  preventSelection: 0
   limitMaxScroll: 1
   highlightEmptySlots: 0
   updateHotspotLabelWhenHover: 0
   hoverSoundOverEmptySlots: 1
-  items:
-  - label: Prop sword
-    id: 0
-    altLabel: 
-    carryOnStart: 0
-    carryOnStartNotDefault: 0
-    carryOnStartID: 0
-    carryOnStartIDs: 
-    vars:
-    - label: Property 1
-      id: 0
-      type: 0
-      val: 0
-      floatVal: 0
-      textVal: 
-      popUps: []
-      vector3Val: {x: 0, y: 0, z: 0}
-      link: 0
-      pmVar: 
-      updateLinkOnStart: 0
-      canTranslate: 1
-      popUpID: 0
-      textValLineID: -1
-      popUpsLineID: -1
-      description: 
-      showInFilter: 0
-      limitToCategories: 0
-      categoryIDs: 
-    canCarryMultiple: 0
-    count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
-    tex: {fileID: 2800000, guid: a01609783128744659e8933c2954ac90, type: 3}
-    activeTex: {fileID: 2800000, guid: e54effe7242064987b6b9ae71576d6fc, type: 3}
-    selectedTex: {fileID: 0}
-    linkedPrefab: {fileID: 0}
-    cursorIcon:
-      texture: {fileID: 0}
-      isAnimated: 0
-      numFrames: 1
-      numRows: 1
-      numCols: 1
-      size: 0.04
-      animSpeed: 4
-      endAnimOnLastFrame: 0
-      skipFirstFrameWhenLooping: 0
-      clickOffset: {x: 0, y: 0}
-      frameSpeeds: []
-      alwaysAnimate: 0
-      dontCycle: 0
-      label: Icon 1
-      lineID: -1
-      id: 0
-    lineID: 62
-    useIconID: 0
-    binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
-    overrideUseSyntax: 0
-    hotspotPrefix1:
-      label: 
-      lineID: 0
-    hotspotPrefix2:
-      label: 
-      lineID: 0
-    useActionList: {fileID: 0}
-    lookActionList: {fileID: 0}
-    interactions: []
-    combineActionList: []
-    combineID: 
-    unhandledActionList: {fileID: 11400000, guid: 54296a732499f4243b4013168b66ef94, type: 2}
-    unhandledCombineActionList: {fileID: 0}
-    showInFilter: 0
   containerSelectMode: 1
   displayType: 1
   uiHideStyle: 0
@@ -2783,83 +2641,11 @@ MonoBehaviour:
   categoryIDs: 
   linkUIGraphic: 0
   preventInteractions: 0
+  preventSelection: 0
   limitMaxScroll: 1
   highlightEmptySlots: 0
   updateHotspotLabelWhenHover: 0
   hoverSoundOverEmptySlots: 1
-  items:
-  - label: Prop sword
-    id: 0
-    altLabel: 
-    carryOnStart: 0
-    carryOnStartNotDefault: 0
-    carryOnStartID: 0
-    carryOnStartIDs: 
-    vars:
-    - label: Property 1
-      id: 0
-      type: 0
-      val: 0
-      floatVal: 0
-      textVal: 
-      popUps: []
-      vector3Val: {x: 0, y: 0, z: 0}
-      link: 0
-      pmVar: 
-      updateLinkOnStart: 0
-      canTranslate: 1
-      popUpID: 0
-      textValLineID: -1
-      popUpsLineID: -1
-      description: 
-      showInFilter: 0
-      limitToCategories: 0
-      categoryIDs: 
-    canCarryMultiple: 0
-    count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
-    tex: {fileID: 2800000, guid: a01609783128744659e8933c2954ac90, type: 3}
-    activeTex: {fileID: 2800000, guid: e54effe7242064987b6b9ae71576d6fc, type: 3}
-    selectedTex: {fileID: 0}
-    linkedPrefab: {fileID: 0}
-    cursorIcon:
-      texture: {fileID: 0}
-      isAnimated: 0
-      numFrames: 1
-      numRows: 1
-      numCols: 1
-      size: 0.04
-      animSpeed: 4
-      endAnimOnLastFrame: 0
-      skipFirstFrameWhenLooping: 0
-      clickOffset: {x: 0, y: 0}
-      frameSpeeds: []
-      alwaysAnimate: 0
-      dontCycle: 0
-      label: Icon 1
-      lineID: -1
-      id: 0
-    lineID: 62
-    useIconID: 0
-    binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
-    overrideUseSyntax: 0
-    hotspotPrefix1:
-      label: 
-      lineID: 0
-    hotspotPrefix2:
-      label: 
-      lineID: 0
-    useActionList: {fileID: 0}
-    lookActionList: {fileID: 0}
-    interactions: []
-    combineActionList: []
-    combineID: 
-    unhandledActionList: {fileID: 11400000, guid: 54296a732499f4243b4013168b66ef94, type: 2}
-    unhandledCombineActionList: {fileID: 0}
-    showInFilter: 0
   containerSelectMode: 1
   displayType: 1
   uiHideStyle: 1
@@ -3142,83 +2928,11 @@ MonoBehaviour:
   categoryIDs: 
   linkUIGraphic: 0
   preventInteractions: 0
+  preventSelection: 0
   limitMaxScroll: 1
   highlightEmptySlots: 0
   updateHotspotLabelWhenHover: 0
   hoverSoundOverEmptySlots: 1
-  items:
-  - label: Prop sword
-    id: 0
-    altLabel: 
-    carryOnStart: 0
-    carryOnStartNotDefault: 0
-    carryOnStartID: 0
-    carryOnStartIDs: 
-    vars:
-    - label: Property 1
-      id: 0
-      type: 0
-      val: 0
-      floatVal: 0
-      textVal: 
-      popUps: []
-      vector3Val: {x: 0, y: 0, z: 0}
-      link: 0
-      pmVar: 
-      updateLinkOnStart: 0
-      canTranslate: 1
-      popUpID: 0
-      textValLineID: -1
-      popUpsLineID: -1
-      description: 
-      showInFilter: 0
-      limitToCategories: 0
-      categoryIDs: 
-    canCarryMultiple: 0
-    count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
-    tex: {fileID: 2800000, guid: a01609783128744659e8933c2954ac90, type: 3}
-    activeTex: {fileID: 2800000, guid: e54effe7242064987b6b9ae71576d6fc, type: 3}
-    selectedTex: {fileID: 0}
-    linkedPrefab: {fileID: 0}
-    cursorIcon:
-      texture: {fileID: 0}
-      isAnimated: 0
-      numFrames: 1
-      numRows: 1
-      numCols: 1
-      size: 0.04
-      animSpeed: 4
-      endAnimOnLastFrame: 0
-      skipFirstFrameWhenLooping: 0
-      clickOffset: {x: 0, y: 0}
-      frameSpeeds: []
-      alwaysAnimate: 0
-      dontCycle: 0
-      label: Icon 1
-      lineID: -1
-      id: 0
-    lineID: 62
-    useIconID: 0
-    binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
-    overrideUseSyntax: 0
-    hotspotPrefix1:
-      label: 
-      lineID: 0
-    hotspotPrefix2:
-      label: 
-      lineID: 0
-    useActionList: {fileID: 0}
-    lookActionList: {fileID: 0}
-    interactions: []
-    combineActionList: []
-    combineID: 
-    unhandledActionList: {fileID: 11400000, guid: 54296a732499f4243b4013168b66ef94, type: 2}
-    unhandledCombineActionList: {fileID: 0}
-    showInFilter: 0
   containerSelectMode: 1
   displayType: 1
   uiHideStyle: 1
@@ -3547,83 +3261,11 @@ MonoBehaviour:
   categoryIDs: 
   linkUIGraphic: 0
   preventInteractions: 0
+  preventSelection: 0
   limitMaxScroll: 1
   highlightEmptySlots: 0
   updateHotspotLabelWhenHover: 0
   hoverSoundOverEmptySlots: 1
-  items:
-  - label: Prop sword
-    id: 0
-    altLabel: 
-    carryOnStart: 0
-    carryOnStartNotDefault: 0
-    carryOnStartID: 0
-    carryOnStartIDs: 
-    vars:
-    - label: Property 1
-      id: 0
-      type: 0
-      val: 0
-      floatVal: 0
-      textVal: 
-      popUps: []
-      vector3Val: {x: 0, y: 0, z: 0}
-      link: 0
-      pmVar: 
-      updateLinkOnStart: 0
-      canTranslate: 1
-      popUpID: 0
-      textValLineID: -1
-      popUpsLineID: -1
-      description: 
-      showInFilter: 0
-      limitToCategories: 0
-      categoryIDs: 
-    canCarryMultiple: 0
-    count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
-    tex: {fileID: 2800000, guid: a01609783128744659e8933c2954ac90, type: 3}
-    activeTex: {fileID: 2800000, guid: e54effe7242064987b6b9ae71576d6fc, type: 3}
-    selectedTex: {fileID: 0}
-    linkedPrefab: {fileID: 0}
-    cursorIcon:
-      texture: {fileID: 0}
-      isAnimated: 0
-      numFrames: 1
-      numRows: 1
-      numCols: 1
-      size: 0.04
-      animSpeed: 4
-      endAnimOnLastFrame: 0
-      skipFirstFrameWhenLooping: 0
-      clickOffset: {x: 0, y: 0}
-      frameSpeeds: []
-      alwaysAnimate: 0
-      dontCycle: 0
-      label: Icon 1
-      lineID: -1
-      id: 0
-    lineID: 62
-    useIconID: 0
-    binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
-    overrideUseSyntax: 0
-    hotspotPrefix1:
-      label: 
-      lineID: 0
-    hotspotPrefix2:
-      label: 
-      lineID: 0
-    useActionList: {fileID: 0}
-    lookActionList: {fileID: 0}
-    interactions: []
-    combineActionList: []
-    combineID: 
-    unhandledActionList: {fileID: 11400000, guid: 54296a732499f4243b4013168b66ef94, type: 2}
-    unhandledCombineActionList: {fileID: 0}
-    showInFilter: 0
   containerSelectMode: 1
   displayType: 1
   uiHideStyle: 0
@@ -3692,85 +3334,13 @@ MonoBehaviour:
   textEffects: 0
   outlineSize: 2
   craftingType: 0
-  items:
-  - label: Prop sword
-    id: 0
-    altLabel: 
-    carryOnStart: 0
-    carryOnStartNotDefault: 0
-    carryOnStartID: 0
-    carryOnStartIDs: 
-    vars:
-    - label: Property 1
-      id: 0
-      type: 0
-      val: 0
-      floatVal: 0
-      textVal: 
-      popUps: []
-      vector3Val: {x: 0, y: 0, z: 0}
-      link: 0
-      pmVar: 
-      updateLinkOnStart: 0
-      canTranslate: 1
-      popUpID: 0
-      textValLineID: -1
-      popUpsLineID: -1
-      description: 
-      showInFilter: 0
-      limitToCategories: 0
-      categoryIDs: 
-    canCarryMultiple: 0
-    count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
-    tex: {fileID: 2800000, guid: a01609783128744659e8933c2954ac90, type: 3}
-    activeTex: {fileID: 2800000, guid: e54effe7242064987b6b9ae71576d6fc, type: 3}
-    selectedTex: {fileID: 0}
-    linkedPrefab: {fileID: 0}
-    cursorIcon:
-      texture: {fileID: 0}
-      isAnimated: 0
-      numFrames: 1
-      numRows: 1
-      numCols: 1
-      size: 0.04
-      animSpeed: 4
-      endAnimOnLastFrame: 0
-      skipFirstFrameWhenLooping: 0
-      clickOffset: {x: 0, y: 0}
-      frameSpeeds: []
-      alwaysAnimate: 0
-      dontCycle: 0
-      label: Icon 1
-      lineID: -1
-      id: 0
-    lineID: 62
-    useIconID: 0
-    binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
-    overrideUseSyntax: 0
-    hotspotPrefix1:
-      label: 
-      lineID: 0
-    hotspotPrefix2:
-      label: 
-      lineID: 0
-    useActionList: {fileID: 0}
-    lookActionList: {fileID: 0}
-    interactions: []
-    combineActionList: []
-    combineID: 
-    unhandledActionList: {fileID: 11400000, guid: 54296a732499f4243b4013168b66ef94, type: 2}
-    unhandledCombineActionList: {fileID: 0}
-    showInFilter: 0
   displayType: 1
   uiHideStyle: 0
   actionListOnWrongIngredients: {fileID: 0}
   linkUIGraphic: 0
   autoCreate: 1
   inventoryItemCountDisplay: 0
+  containerSelectMode: 1
 --- !u!114 &11400092
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3963,85 +3533,13 @@ MonoBehaviour:
   textEffects: 0
   outlineSize: 2
   craftingType: 1
-  items:
-  - label: Prop sword
-    id: 0
-    altLabel: 
-    carryOnStart: 0
-    carryOnStartNotDefault: 0
-    carryOnStartID: 0
-    carryOnStartIDs: 
-    vars:
-    - label: Property 1
-      id: 0
-      type: 0
-      val: 0
-      floatVal: 0
-      textVal: 
-      popUps: []
-      vector3Val: {x: 0, y: 0, z: 0}
-      link: 0
-      pmVar: 
-      updateLinkOnStart: 0
-      canTranslate: 1
-      popUpID: 0
-      textValLineID: -1
-      popUpsLineID: -1
-      description: 
-      showInFilter: 0
-      limitToCategories: 0
-      categoryIDs: 
-    canCarryMultiple: 0
-    count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
-    tex: {fileID: 2800000, guid: a01609783128744659e8933c2954ac90, type: 3}
-    activeTex: {fileID: 2800000, guid: e54effe7242064987b6b9ae71576d6fc, type: 3}
-    selectedTex: {fileID: 0}
-    linkedPrefab: {fileID: 0}
-    cursorIcon:
-      texture: {fileID: 0}
-      isAnimated: 0
-      numFrames: 1
-      numRows: 1
-      numCols: 1
-      size: 0.04
-      animSpeed: 4
-      endAnimOnLastFrame: 0
-      skipFirstFrameWhenLooping: 0
-      clickOffset: {x: 0, y: 0}
-      frameSpeeds: []
-      alwaysAnimate: 0
-      dontCycle: 0
-      label: Icon 1
-      lineID: -1
-      id: 0
-    lineID: 62
-    useIconID: 0
-    binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
-    overrideUseSyntax: 0
-    hotspotPrefix1:
-      label: 
-      lineID: 0
-    hotspotPrefix2:
-      label: 
-      lineID: 0
-    useActionList: {fileID: 0}
-    lookActionList: {fileID: 0}
-    interactions: []
-    combineActionList: []
-    combineID: 
-    unhandledActionList: {fileID: 11400000, guid: 54296a732499f4243b4013168b66ef94, type: 2}
-    unhandledCombineActionList: {fileID: 0}
-    showInFilter: 0
   displayType: 1
   uiHideStyle: 0
   actionListOnWrongIngredients: {fileID: 0}
   linkUIGraphic: 0
   autoCreate: 1
   inventoryItemCountDisplay: 0
+  containerSelectMode: 1
 --- !u!114 &11400098
 MonoBehaviour:
   m_ObjectHideFlags: 1

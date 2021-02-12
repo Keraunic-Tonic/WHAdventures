@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEditor;
 #endif
 using System.Collections.Generic;
@@ -8,24 +7,22 @@ namespace AC
 {
 
 	[System.Serializable]
-	public class ActionObjectiveCheckType : ActionCheckMultiple
+	public class ActionObjectiveCheckType : Action
 	{
 
 		public int objectiveID;
 		public int playerID;
 		public bool setPlayer;
+		public int numSockets = 4;
 
 		
-		public ActionObjectiveCheckType ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Objective;
-			title = "Check state type";
-			description = "Queries the current state type of an objective.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Objective; }}
+		public override string Title { get { return "Check state type"; }}
+		public override string Description { get { return "Queries the current state type of an objective."; }}
+		public override int NumSockets { get { return numSockets; }}
 
 
-		public override ActionEnd End (List<Action> actions)
+		public override int GetNextOutputIndex ()
 		{
 			Objective objective = KickStarter.inventoryManager.GetObjective (objectiveID);
 			if (objective != null)
@@ -35,10 +32,10 @@ namespace AC
 				ObjectiveState currentObjectiveState = KickStarter.runtimeObjectives.GetObjectiveState (objectiveID, _playerID);
 				if (currentObjectiveState != null)
 				{
-					return ProcessResult ((int) currentObjectiveState.stateType, actions);
+					return (int) currentObjectiveState.stateType;
 				}
 			}
-			return ProcessResult (0, actions);
+			return 0;
 		}
 
 		
@@ -63,6 +60,8 @@ namespace AC
 					playerID = ChoosePlayerGUI (playerID, false);
 				}
 			}
+
+			numSockets = 4;
 		}
 		
 
@@ -77,80 +76,35 @@ namespace AC
 		}
 
 
-		public override void SkipActionGUI (List<Action> actions, bool showGUI)
+		protected override string GetSocketLabel (int i)
 		{
-			if (KickStarter.inventoryManager == null) return;
-
-			numSockets = 4;
-
-			if (numSockets < endings.Count)
+			switch (i)
 			{
-				endings.RemoveRange (numSockets, endings.Count - numSockets);
-			}
-			else if (numSockets > endings.Count)
-			{
-				if (numSockets > endings.Capacity)
-				{
-					endings.Capacity = numSockets;
-				}
-				for (int i=endings.Count; i<numSockets; i++)
-				{
-					ActionEnd newEnd = new ActionEnd ();
-					if (i > 0)
-					{
-						newEnd.resultAction = ResultAction.Stop;
-					}
-					endings.Add (newEnd);
-				}
-			}
-			
-			foreach (ActionEnd ending in endings)
-			{
-				if (showGUI)
-				{
-					EditorGUILayout.Space ();
-					int i = endings.IndexOf (ending);
+				case 0:
+					return "If Inactive:";
 
-					switch (i)
-					{
-						case 0:
-							ending.resultAction = (ResultAction) EditorGUILayout.EnumPopup ("If Inactive:", (ResultAction) ending.resultAction);
-							break;
+				case 1:
+					return "If Active:";
 
-						case 1:
-							ending.resultAction = (ResultAction) EditorGUILayout.EnumPopup ("If Active:", (ResultAction) ending.resultAction);
-							break;
+				case 2:
+					return "If Complete:";
 
-						case 2:
-							ending.resultAction = (ResultAction) EditorGUILayout.EnumPopup ("If Complete:", (ResultAction) ending.resultAction);
-							break;
+				case 3:
+					return "If Failed:";
 
-						case 3:
-							ending.resultAction = (ResultAction) EditorGUILayout.EnumPopup ("If Failed:", (ResultAction) ending.resultAction);
-							break;
-					}
-				}
-				
-				if (ending.resultAction == ResultAction.RunCutscene && showGUI)
-				{
-					if (isAssetFile)
-					{
-						ending.linkedAsset = (ActionListAsset) EditorGUILayout.ObjectField ("ActionList to run:", ending.linkedAsset, typeof (ActionListAsset), false);
-					}
-					else
-					{
-						ending.linkedCutscene = (Cutscene) EditorGUILayout.ObjectField ("Cutscene to run:", ending.linkedCutscene, typeof (Cutscene), true);
-					}
-				}
-				else if (ending.resultAction == ResultAction.Skip)
-				{
-					SkipActionGUI (ending, actions, showGUI);
-				}
+				default:
+					return string.Empty;
 			}
 		}
 
+
+		public override int GetObjectiveReferences (int _objectiveID)
+		{
+			return (objectiveID == _objectiveID) ? 1 : 0;
+		}
+
 		#endif
-		
+
 	}
 
 }

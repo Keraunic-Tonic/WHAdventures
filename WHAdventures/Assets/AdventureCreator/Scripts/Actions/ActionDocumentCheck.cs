@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionDocumentCheck.cs"
  * 
@@ -27,13 +27,9 @@ namespace AC
 		public int parameterID = -1;
 
 		
-		public ActionDocumentCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Document;
-			title = "Check";
-			description = "Checks to see if a particular Document is in the Player's possession.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Document; }}
+		public override string Title { get { return "Check"; }}
+		public override string Description { get { return "Checks to see if a particular Document is in the Player's possession."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -90,7 +86,7 @@ namespace AC
 		 */
 		public static ActionDocumentCheck CreateNew (int documentID)
 		{
-			ActionDocumentCheck newAction = (ActionDocumentCheck) CreateInstance <ActionDocumentCheck>();
+			ActionDocumentCheck newAction = CreateNew<ActionDocumentCheck> ();
 			newAction.documentID = documentID;
 			return newAction;
 		}

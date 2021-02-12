@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Conversation.cs"
  * 
@@ -95,12 +95,12 @@ namespace AC
 		{
 			overrideActiveList = null;
 			
-			if (actionList != null)
+			if (actionList)
 			{
 				onFinishActiveList = null;
 
 				int actionIndex = actionList.actions.IndexOf (actionConversation);
-				if (actionList != null && actionIndex >= 0 && actionIndex < actionList.actions.Count)
+				if (actionList && actionIndex >= 0 && actionIndex < actionList.actions.Count)
 				{
 					if (actionConversation.overrideOptions)
 					{
@@ -128,13 +128,13 @@ namespace AC
 								case ResultAction.RunCutscene:
 									if (actionList is RuntimeActionList)
 									{
-										if (ending.linkedAsset != null)
+										if (ending.linkedAsset)
 										{
 											onFinishActiveList = new ActiveList (null, true, 0);
 											onFinishActiveList.actionListAsset = ending.linkedAsset;
 										}
 									}
-									else if (ending.linkedCutscene != null)
+									else if (ending.linkedCutscene)
 									{
 										onFinishActiveList = new ActiveList (ending.linkedCutscene, true, 0);
 									}
@@ -199,11 +199,48 @@ namespace AC
 
 
 		/**
+		 * <summary>Checks if the Conversation is currently active.</summary>
+		 * <param name = "includeResponses">If True, then the Conversation will be considered active if any of its dialogue option ActionLists are currently-running, as opposed to only when its options are displayed as choices on screen</param>
+		 * </returns>True if the Conversation is active</returns>
+		 */
+		public bool IsActive (bool includeResponses)
+		{
+			if (KickStarter.playerInput.activeConversation == this ||
+				KickStarter.playerInput.PendingOptionConversation == this)
+			{
+				return true;
+			}
+
+			if (includeResponses)
+			{
+				foreach (ButtonDialog buttonDialog in options)
+				{
+					if (interactionSource == InteractionSource.InScene)
+					{
+						if (KickStarter.actionListManager.IsListRunning (buttonDialog.dialogueOption))
+						{
+							return true;
+						}
+					}
+					else if (interactionSource == InteractionSource.AssetFile)
+					{
+						if (KickStarter.actionListAssetManager.IsListRunning (buttonDialog.assetFile))
+						{
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+
+
+		/**
 		 * Hides the Conversation's dialogue options, if it is the currently-active Conversation.
 		 */
 		public void TurnOff ()
 		{
-			if (KickStarter.playerInput != null && KickStarter.playerInput.activeConversation == this)
+			if (KickStarter.playerInput && KickStarter.playerInput.activeConversation == this)
 			{
 				CancelInvoke ("RunDefault");
 				KickStarter.playerInput.EndConversation ();
@@ -225,7 +262,7 @@ namespace AC
 				return;
 			}
 
-			if (interactionSource == AC.InteractionSource.CustomScript)
+			if (!gameObject.activeInHierarchy || interactionSource == AC.InteractionSource.CustomScript)
 			{
 				RunOption (options[i]);
 			}
@@ -514,11 +551,11 @@ namespace AC
 
 				if (overrideActiveList != null)
 				{
-					if (overrideActiveList.actionListAsset != null)
+					if (overrideActiveList.actionListAsset)
 					{
 						overrideActiveList.actionList = AdvGame.RunActionListAsset (overrideActiveList.actionListAsset, overrideActiveList.startIndex, true);
 					}
-					else if (overrideActiveList.actionList != null)
+					else if (overrideActiveList.actionList)
 					{
 						overrideActiveList.actionList.Interact (overrideActiveList.startIndex, true);
 					}
@@ -537,7 +574,7 @@ namespace AC
 				{
 					endConversation = this;
 				}
-				else if (_option.conversationAction == ConversationAction.RunOtherConversation && _option.newConversation != null)
+				else if (_option.conversationAction == ConversationAction.RunOtherConversation && _option.newConversation)
 				{
 					endConversation = _option.newConversation;
 				}
@@ -549,7 +586,7 @@ namespace AC
 			}
 			else if (interactionSource == AC.InteractionSource.CustomScript)
 			{
-				if (_option.customScriptObject != null && !string.IsNullOrEmpty (_option.customScriptFunction))
+				if (_option.customScriptObject && !string.IsNullOrEmpty (_option.customScriptFunction))
 				{
 					_option.customScriptObject.SendMessage (_option.customScriptFunction);
 				}
@@ -564,7 +601,7 @@ namespace AC
 				ACDebug.Log ("No DialogueOption object found on Conversation '" + gameObject.name + "'", this);
 				KickStarter.eventManager.Call_OnEndConversation (this);
 
-				if (endConversation != null)
+				if (endConversation)
 				{
 					endConversation.Interact ();
 				}
@@ -642,7 +679,7 @@ namespace AC
 					}
 					else if (interactionSource == InteractionSource.AssetFile)
 					{
-						if (actionListAsset != null && buttonDialog.assetFile == actionListAsset)
+						if (actionListAsset && buttonDialog.assetFile == actionListAsset)
 						{
 							KickStarter.eventManager.Call_OnEndConversation (this);
 							return;
@@ -657,11 +694,11 @@ namespace AC
 		{
 			if (conversation == this && onFinishActiveList != null)
 			{
-				if (onFinishActiveList.actionListAsset != null)
+				if (onFinishActiveList.actionListAsset)
 				{
 					onFinishActiveList.actionList = AdvGame.RunActionListAsset (onFinishActiveList.actionListAsset, onFinishActiveList.startIndex, true);
 				}
-				else if (onFinishActiveList.actionList != null)
+				else if (onFinishActiveList.actionList)
 				{
 					onFinishActiveList.actionList.Interact (onFinishActiveList.startIndex, true);
 				}

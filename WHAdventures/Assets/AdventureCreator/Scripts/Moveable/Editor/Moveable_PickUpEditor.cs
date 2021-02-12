@@ -13,34 +13,35 @@ namespace AC
 			Moveable_PickUp _target = (Moveable_PickUp) target;
 			GetReferences ();
 
-			EditorGUILayout.BeginVertical ("Button");
-			EditorGUILayout.LabelField ("Movment settings:", EditorStyles.boldLabel);
-			_target.maxSpeed = CustomGUILayout.FloatField ("Max speed:", _target.maxSpeed, "", "The maximum force magnitude that can be applied to itself");
-			_target.playerMovementReductionFactor = CustomGUILayout.Slider ("Player movement reduction:", _target.playerMovementReductionFactor, 0f, 1f, "", "How much player movement is reduced by when the object is being dragged");
-			_target.invertInput = CustomGUILayout.Toggle ("Invert input?", _target.invertInput, "", "If True, input vectors will be inverted");
-			_target.breakForce = CustomGUILayout.FloatField ("Break force:", _target.breakForce, "", "The maximum force magnitude that can be applied by the player - if exceeded, control will be removed");
-			_target.initialLift = CustomGUILayout.Slider ("Initial lift:", _target.initialLift, 0f, 1f, "", "The lift to give objects picked up, so that they aren't touching the ground when initially held");
+			CustomGUILayout.BeginVertical ();
+			EditorGUILayout.LabelField ("Movement settings:", EditorStyles.boldLabel);
+			_target.maxSpeed = CustomGUILayout.FloatField ("Max speed:", _target.maxSpeed, string.Empty, "The maximum force magnitude that can be applied to itself");
+			_target.playerMovementReductionFactor = CustomGUILayout.Slider ("Player movement reduction:", _target.playerMovementReductionFactor, 0f, 1f, string.Empty, "How much player movement is reduced by when the object is being dragged");
+			_target.invertInput = CustomGUILayout.Toggle ("Invert input?", _target.invertInput, string.Empty, "If True, input vectors will be inverted");
+			_target.breakForce = CustomGUILayout.FloatField ("Break force:", _target.breakForce, string.Empty, "The maximum force magnitude that can be applied by the player - if exceeded, control will be removed");
+			_target.initialLift = CustomGUILayout.Slider ("Initial lift:", _target.initialLift, 0f, 1f, string.Empty, "The lift to give objects picked up, so that they aren't touching the ground when initially held");
+			_target.autoSetConstraints = CustomGUILayout.Toggle ("Auto set RB constraints?", _target.autoSetConstraints, string.Empty, "If True, the Rigidbody's constraints will be set automatically based on the state of the interaction.");
 
-			_target.offScreenRelease = (OffScreenRelease)CustomGUILayout.EnumPopup ("Off-screen release:", _target.offScreenRelease, "", "What should cause the object to be automatically released upon leaving the screen");
+			_target.offScreenRelease = (OffScreenRelease)CustomGUILayout.EnumPopup ("Off-screen release:", _target.offScreenRelease, string.Empty, "What should cause the object to be automatically released upon leaving the screen");
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Interactions", EditorStyles.boldLabel);
 
-			_target.actionListSource = (ActionListSource) CustomGUILayout.EnumPopup ("Actions source:", _target.actionListSource, "", "The source of the commands that are run when the object is interacted with");
+			_target.actionListSource = (ActionListSource) CustomGUILayout.EnumPopup ("Actions source:", _target.actionListSource, string.Empty, "The source of the commands that are run when the object is interacted with");
 
 			if (_target.actionListSource == ActionListSource.InScene)
 			{
 				EditorGUILayout.BeginHorizontal ();
-				_target.interactionOnGrab = (Interaction) CustomGUILayout.ObjectField <Interaction> ("Interaction on move:", _target.interactionOnGrab, true, "", "The Interaction to run whenever the object is moved by the player");
+				_target.interactionOnGrab = (Interaction) CustomGUILayout.ObjectField <Interaction> ("Interaction on move:", _target.interactionOnGrab, true, string.Empty, "The Interaction to run whenever the object is moved by the player");
 				if (_target.interactionOnGrab == null)
 				{
 					if (GUILayout.Button ("Create", GUILayout.MaxWidth (60f)))
 					{
 						Undo.RecordObject (_target, "Create Interaction");
 						Interaction newInteraction = SceneManager.AddPrefab ("Logic", "Interaction", true, false, true).GetComponent <Interaction>();
-						newInteraction.gameObject.name = AdvGame.UniqueName ("Grab : " + _target.gameObject.name);
+						newInteraction.gameObject.name = AdvGame.UniqueName (_target.gameObject.name + ": Grab");
 						_target.interactionOnGrab = newInteraction;
 					}
 				}
@@ -60,20 +61,20 @@ namespace AC
 				}
 
 				EditorGUILayout.BeginHorizontal ();
-				_target.interactionOnDrop = (Interaction) CustomGUILayout.ObjectField <Interaction> ("Interaction on let go:", _target.interactionOnDrop, true, "", "The Interaction to run whenever the object is let go by the player");
+				_target.interactionOnDrop = (Interaction) CustomGUILayout.ObjectField <Interaction> ("Interaction on let go:", _target.interactionOnDrop, true, string.Empty, "The Interaction to run whenever the object is let go by the player");
 				if (_target.interactionOnDrop == null)
 				{
 					if (GUILayout.Button ("Create", GUILayout.MaxWidth (60f)))
 					{
 						Undo.RecordObject (_target, "Create Interaction");
 						Interaction newInteraction = SceneManager.AddPrefab ("Logic", "Interaction", true, false, true).GetComponent <Interaction>();
-						newInteraction.gameObject.name = AdvGame.UniqueName ("LetGo : " + _target.gameObject.name);
+						newInteraction.gameObject.name = AdvGame.UniqueName (_target.gameObject.name + ": LetGo");
 						_target.interactionOnDrop = newInteraction;
 					}
 				}
 				EditorGUILayout.EndHorizontal ();
 
-				if (_target.interactionOnDrop != null)
+				if (_target.interactionOnDrop)
 				{
 					if (_target.interactionOnDrop.source == ActionListSource.InScene && _target.interactionOnDrop.NumParameters > 0)
 					{
@@ -91,7 +92,7 @@ namespace AC
 			}
 			else if (_target.actionListSource == ActionListSource.AssetFile)
 			{
-				_target.actionListAssetOnGrab = (ActionListAsset) CustomGUILayout.ObjectField <ActionListAsset> ("Interaction on grab:", _target.actionListAssetOnGrab, true, "", "The ActionList asset to run whenever the object is moved by the player");
+				_target.actionListAssetOnGrab = (ActionListAsset) CustomGUILayout.ObjectField <ActionListAsset> ("Interaction on grab:", _target.actionListAssetOnGrab, true, string.Empty, "The ActionList asset to run whenever the object is moved by the player");
 
 				if (_target.actionListAssetOnGrab != null && _target.actionListAssetOnGrab.NumParameters> 0)
 				{
@@ -100,7 +101,7 @@ namespace AC
 					EditorGUILayout.EndHorizontal ();
 				}
 
-				_target.actionListAssetOnDrop = (ActionListAsset) CustomGUILayout.ObjectField <ActionListAsset> ("Interaction on let go:", _target.actionListAssetOnDrop, true, "", "The ActionList asset to run whenever the object is let go by the player");
+				_target.actionListAssetOnDrop = (ActionListAsset) CustomGUILayout.ObjectField <ActionListAsset> ("Interaction on let go:", _target.actionListAssetOnDrop, true, string.Empty, "The ActionList asset to run whenever the object is let go by the player");
 
 				if (_target.actionListAssetOnDrop != null && _target.actionListAssetOnDrop.NumParameters > 0)
 				{
@@ -109,38 +110,38 @@ namespace AC
 					EditorGUILayout.EndHorizontal ();
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Rotation settings:", EditorStyles.boldLabel);
-			_target.allowRotation = CustomGUILayout.Toggle ("Allow rotation?", _target.allowRotation, "", "If True, the object can be rotated");
+			_target.allowRotation = CustomGUILayout.Toggle ("Allow rotation?", _target.allowRotation, string.Empty, "If True, the object can be rotated");
 			if (_target.allowRotation)
 			{
-				_target.rotationFactor = CustomGUILayout.FloatField ("Rotation factor:", _target.rotationFactor, "", "The speed by which the object can be rotated");
+				_target.rotationFactor = CustomGUILayout.FloatField ("Rotation factor:", _target.rotationFactor, string.Empty, "The speed by which the object can be rotated");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Zoom settings:", EditorStyles.boldLabel);
-			_target.allowZooming = CustomGUILayout.Toggle ("Allow zooming?", _target.allowZooming, "", "If True, the object can be moved towards and away from the camera");
+			_target.allowZooming = CustomGUILayout.Toggle ("Allow zooming?", _target.allowZooming, string.Empty, "If True, the object can be moved towards and away from the camera");
 			if (_target.allowZooming)
 			{
-				_target.zoomSpeed = CustomGUILayout.FloatField ("Zoom speed:", _target.zoomSpeed, "", "The speed at which the object can be moved towards and away from the camera");
-				_target.minZoom = CustomGUILayout.FloatField ("Closest distance:", _target.minZoom, "", "The minimum distance that there can be between the object and the camera");
-				_target.maxZoom = CustomGUILayout.FloatField ("Farthest distance:", _target.maxZoom, "", "The maximum distance that there can be between the object and the camera");
+				_target.zoomSpeed = CustomGUILayout.FloatField ("Zoom speed:", _target.zoomSpeed, string.Empty, "The speed at which the object can be moved towards and away from the camera");
+				_target.minZoom = CustomGUILayout.FloatField ("Closest distance:", _target.minZoom, string.Empty, "The minimum distance that there can be between the object and the camera");
+				_target.maxZoom = CustomGUILayout.FloatField ("Farthest distance:", _target.maxZoom, string.Empty, "The maximum distance that there can be between the object and the camera");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Throw settings:", EditorStyles.boldLabel);
-			_target.allowThrow = CustomGUILayout.Toggle ("Allow throwing?", _target.allowThrow, "", "If True, the object can be thrown");
+			_target.allowThrow = CustomGUILayout.Toggle ("Allow throwing?", _target.allowThrow, string.Empty, "If True, the object can be thrown");
 			if (_target.allowThrow)
 			{
-				_target.throwForce = CustomGUILayout.FloatField ("Force scale:", _target.throwForce, "", "How far the object can be thrown");
-				_target.chargeTime = CustomGUILayout.FloatField ("Charge time:", _target.chargeTime, "", "How long a 'charge' takes, if the object cen be thrown");
-				_target.pullbackDistance = CustomGUILayout.FloatField ("Pull-back distance:", _target.pullbackDistance, "", "How far the object is pulled back while chargine, if the object can be thrown");
+				_target.throwForce = CustomGUILayout.FloatField ("Force scale:", _target.throwForce, string.Empty, "How far the object can be thrown");
+				_target.chargeTime = CustomGUILayout.FloatField ("Charge time:", _target.chargeTime, string.Empty, "How long a 'charge' takes, if the object cen be thrown");
+				_target.pullbackDistance = CustomGUILayout.FloatField ("Pull-back distance:", _target.pullbackDistance, string.Empty, "How far the object is pulled back while chargine, if the object can be thrown");
 			}		
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			SharedGUI (_target, false);
 

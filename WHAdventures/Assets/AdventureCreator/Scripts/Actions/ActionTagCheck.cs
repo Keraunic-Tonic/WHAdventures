@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionTagCheck.cs"
  * 
@@ -31,13 +31,9 @@ namespace AC
 		public int tagsToCheckParameterID = -1;
 
 
-		public ActionTagCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Check tag";
-			description = "This action checks which tag has been assigned to a given GameObject.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Check tag"; }}
+		public override string Description { get { return "This action checks which tag has been assigned to a given GameObject."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -116,9 +112,9 @@ namespace AC
 			if (objectToCheckParameterID < 0)
 			{
 				if (objectToCheck != null && objectToCheck == gameObject) return true;
-				if (objectToCheckConstantID == id) return true;
+				if (objectToCheckConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -132,7 +128,7 @@ namespace AC
 		 */
 		public static ActionTagCheck CreateNew (GameObject gameObject, string tag)
 		{
-			ActionTagCheck newAction = (ActionTagCheck) CreateInstance <ActionTagCheck>();
+			ActionTagCheck newAction = CreateNew<ActionTagCheck> ();
 			newAction.objectToCheck = gameObject;
 			newAction.tagsToCheck = tag;
 			return newAction;
@@ -147,7 +143,7 @@ namespace AC
 		 */
 		public static ActionTagCheck CreateNew (GameObject gameObject, string[] tags)
 		{
-			ActionTagCheck newAction = (ActionTagCheck) CreateInstance <ActionTagCheck>();
+			ActionTagCheck newAction = CreateNew<ActionTagCheck> ();
 			newAction.objectToCheck = gameObject;
 			string combined = string.Empty;
 			for (int i=0; i<tags.Length; i++)

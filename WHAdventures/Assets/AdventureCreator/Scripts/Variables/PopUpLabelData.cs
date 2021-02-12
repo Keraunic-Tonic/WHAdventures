@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"PopUpLabelData.cs"
  * 
@@ -249,6 +249,16 @@ namespace AC
 			get
 			{
 				return lineID;
+			}
+		}
+
+
+		/** An array of the labels */
+		public string[] Labels
+		{
+			get
+			{
+				return labels;
 			}
 		}
 

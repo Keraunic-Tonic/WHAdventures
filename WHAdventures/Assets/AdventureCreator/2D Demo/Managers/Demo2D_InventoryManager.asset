@@ -18,13 +18,13 @@ MonoBehaviour:
     altLabel: 
     carryOnStart: 0
     carryOnStartNotDefault: 0
-    carryOnStartID: 0
     carryOnStartIDs: 
     vars: []
     canCarryMultiple: 0
     count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
+    canBeLowerCase: 0
+    maxCount: 0
+    itemStackingMode: 0
     tex: {fileID: 2800000, guid: dc008b16a8cbf4215a275efe13cba3e5, type: 3}
     activeTex: {fileID: 0}
     selectedTex: {fileID: 0}
@@ -49,8 +49,6 @@ MonoBehaviour:
     lineID: -1
     useIconID: 0
     binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
     overrideUseSyntax: 0
     hotspotPrefix1:
       label: 
@@ -62,6 +60,7 @@ MonoBehaviour:
     lookActionList: {fileID: 11400000, guid: b75e0091c65f04251bfbea6836c4b3c1, type: 2}
     interactions:
     - actionList: {fileID: 11400000, guid: b75e0091c65f04251bfbea6836c4b3c1, type: 2}
+      idPlusOne: 0
       icon:
         texture: {fileID: 2800000, guid: e0394f989f329496584e377a81d4031f, type: 3}
         isAnimated: 0
@@ -79,10 +78,15 @@ MonoBehaviour:
         label: Look at
         lineID: 65
         id: 2
+      disabledOnStart: 0
+    combineInteractions: []
     combineActionList: []
     combineID: 
     unhandledActionList: {fileID: 0}
     unhandledCombineActionList: {fileID: 0}
+    carryOnStartID: 0
+    useSeparateSlots: 0
+    selectSingle: 0
     showInFilter: 0
   bins: []
   invVars: []

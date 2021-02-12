@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionListAssetManager.cs"
  * 
@@ -70,7 +70,7 @@ namespace AC
 				{
 					if (activeLists[i].IsFor (actionListAsset))
 					{
-						if (actionListAsset.canRunMultipleInstances && removeMultipleInstances)
+						//if (actionListAsset.canRunMultipleInstances && removeMultipleInstances)
 						{
 							activeLists[i].Reset (false);
 						}
@@ -230,11 +230,11 @@ namespace AC
 						}
 					}
 
-					GameObject runtimeActionListObject = (GameObject) Instantiate (Resources.Load (Resource.runtimeActionList));
+					GameObject runtimeActionListObject = new GameObject ();
 					runtimeActionListObject.name = actionListAsset.name;
 					if (numInstances > 0) runtimeActionListObject.name += " " + numInstances.ToString ();
 
-					RuntimeActionList runtimeActionList = runtimeActionListObject.GetComponent <RuntimeActionList>();
+					RuntimeActionList runtimeActionList = runtimeActionListObject.AddComponent <RuntimeActionList>();
 					runtimeActionList.DownloadActions (actionListAsset, activeLists[i].GetConversationOnEnd (), activeLists[i].startIndex, false, activeLists[i].inSkipQueue, true);
 					activeLists[i].Resume (runtimeActionList, rerunPausedActions);
 					foundInstance = true;
@@ -260,7 +260,7 @@ namespace AC
 		public string GetSaveData ()
 		{
 			PurgeLists ();
-			string assetResumeData = "";
+			string assetResumeData = string.Empty;
 			for (int i=0; i<activeLists.Count; i++)
 			{
 				string thisResumeData = activeLists[i].GetSaveData (null);
@@ -292,12 +292,15 @@ namespace AC
 				foreach (string chunk in dataArray)
 				{
 					ActiveList activeList = new ActiveList ();
-					if (activeList.LoadData (chunk))
-					{
-						activeLists.Add (activeList);
-					}
+					activeList.LoadData (chunk);
 				}
 			}
+		}
+
+
+		public void AddToList (ActiveList activeList)
+		{
+			activeLists.Add (activeList);
 		}
 
 

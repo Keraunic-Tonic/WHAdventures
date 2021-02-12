@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AnimEngine_SpritesUnity.cs"
  * 
@@ -63,13 +63,13 @@ namespace AC
 		{
 			#if UNITY_EDITOR
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Standard 2D animations:", EditorStyles.boldLabel);
 			
 			character.talkingAnimation = (TalkingAnimation) CustomGUILayout.EnumPopup ("Talk animation style:", character.talkingAnimation, "", "How talking animations are handled");
 			character.spriteChild = (Transform) CustomGUILayout.ObjectField <Transform> ("Sprite child:", character.spriteChild, true, "", "The sprite Transform, which should be a child GameObject");
 
-			if (character.spriteChild != null && character.spriteChild.GetComponent <Animator>() == null)
+			if (character.spriteChild && character.spriteChild.GetComponent <Animator>() == null)
 			{
 				character.customAnimator = (Animator) CustomGUILayout.ObjectField <Animator> ("Animator (if not on s.c.):", character.customAnimator, true, "", "The Animator component, which will be assigned automatically if not set manually.");
 			}
@@ -116,7 +116,7 @@ namespace AC
 					{
 						EditorGUILayout.HelpBox ("This feature will disable use of the Rigidbody2D component.", MessageType.Warning);
 					}
-					if (character.IsPlayer && AdvGame.GetReferences () != null && AdvGame.GetReferences ().settingsManager != null)
+					if (character.IsPlayer && AdvGame.GetReferences () != null && AdvGame.GetReferences ().settingsManager)
 					{
 						if (AdvGame.GetReferences ().settingsManager.movementMethod != MovementMethod.PointAndClick && AdvGame.GetReferences ().settingsManager.movementMethod != MovementMethod.None)
 						{
@@ -158,9 +158,9 @@ namespace AC
 				EditorGUILayout.HelpBox ("The following animations are required, based on the settings above (numbers are the Animator layer indices):" + result, MessageType.Info);
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
-			if (GUI.changed && character != null)
+			if (GUI.changed && character)
 			{
 				EditorUtility.SetDirty (character);
 			}
@@ -225,7 +225,7 @@ namespace AC
 
 				action.includeDirection = EditorGUILayout.Toggle ("Add directional suffix?", action.includeDirection);
 
-				if (action.animChar != null && action.animChar.talkingAnimation == TalkingAnimation.Standard && action.animChar.separateTalkingLayer)
+				if (action.animChar && action.animChar.talkingAnimation == TalkingAnimation.Standard && action.animChar.separateTalkingLayer)
 				{
 					action.hideHead = EditorGUILayout.Toggle ("Hide head?", action.hideHead);
 					if (action.hideHead)
@@ -283,11 +283,6 @@ namespace AC
 				action.idleAfterCustom = EditorGUILayout.Toggle ("Wait for animation to finish?", action.idleAfterCustom);
 			}
 			
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
-			
 			#endif
 		}
 		
@@ -319,9 +314,16 @@ namespace AC
 						character.charState = CharState.Custom;
 						character.GetAnimator ().CrossFade (clip2DNew, action.fadeTime, action.layerInt);
 
-						if (action.hideHead && character.talkingAnimation == TalkingAnimation.Standard && character.separateTalkingLayer)
+						if (character.talkingAnimation == TalkingAnimation.Standard && character.separateTalkingLayer)
 						{
-							PlayHeadAnim (hideHeadClip, false);
+							if (action.hideHead)
+							{
+								PlayHeadAnim (hideHeadClip, false);
+							}
+							else if (action.willWait && action.layerInt == 0 && character.headLayer != action.layerInt)
+							{
+								PlaySeparateHead ();
+							}
 						}
 					}
 				}
@@ -378,7 +380,7 @@ namespace AC
 					{
 						if (action.standard == AnimStandard.Walk)
 						{
-							if (action.newSound != null)
+							if (action.newSound)
 							{
 								character.walkSound = action.newSound;
 							}
@@ -389,7 +391,7 @@ namespace AC
 						}
 						else if (action.standard == AnimStandard.Run)
 						{
-							if (action.newSound != null)
+							if (action.newSound)
 							{
 								character.runSound = action.newSound;
 							}
@@ -428,6 +430,15 @@ namespace AC
 					
 					if (timeLeft > 0f)
 					{
+						if (character.talkingAnimation == TalkingAnimation.Standard && character.separateTalkingLayer && action.layerInt == 0 && character.headLayer != action.layerInt)
+						{
+							if (!action.hideHead &&action.willWait)
+							{
+								PlaySeparateHead ();
+								return action.defaultPauseTime;
+							}
+						}	
+
 						return (timeLeft);
 					}
 					else
@@ -497,7 +508,7 @@ namespace AC
 		{
 			#if UNITY_EDITOR
 			
-			if (speaker != null && speaker.talkingAnimation == TalkingAnimation.CustomFace)
+			if (speaker && speaker.talkingAnimation == TalkingAnimation.CustomFace)
 			{
 				action.play2DHeadAnim = EditorGUILayout.BeginToggleGroup ("Custom head animation?", action.play2DHeadAnim);
 				action.headClip2D = EditorGUILayout.TextField ("Head animation:", action.headClip2D);
@@ -508,11 +519,6 @@ namespace AC
 				action.mouthClip2D = EditorGUILayout.TextField ("Mouth animation:", action.mouthClip2D);
 				action.mouthLayer = EditorGUILayout.IntField ("Mecanim layer:", action.mouthLayer);
 				EditorGUILayout.EndToggleGroup ();
-			}
-			
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
 			}
 			
 			#endif
@@ -584,25 +590,20 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("BlendShapes are not available in 2D animation.", MessageType.Info);
 			}
-			
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
-			
+						
 			#endif
 		}
 		
 		
 		public override string ActionAnimLabel (ActionAnim action)
 		{
-			string label = "";
+			string label = string.Empty;
 			
 			if (action.animator)
 			{
 				label = action.animator.name;
 				
-				if (action.method == AnimMethod.PlayCustom && action.clip2D != "")
+				if (action.method == AnimMethod.PlayCustom && !string.IsNullOrEmpty (action.clip2D))
 				{
 					label += " - " + action.clip2D;
 				}
@@ -737,11 +738,6 @@ namespace AC
 			if (action.setNewDirections)
 			{
 				action.spriteDirectionData.ShowGUI ();
-			}
-			
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
 			}
 			
 			#endif
@@ -917,6 +913,26 @@ namespace AC
 				float headAngle = character.GetSpriteAngle () + spinAngleOffset;
 
 				headDirection = "_" + character.spriteDirectionData.GetDirectionalSuffix (headAngle);
+
+				switch (character.frameFlipping)
+				{
+					case AC_2DFrameFlipping.LeftMirrorsRight:
+						if (headDirection.Contains ("L"))
+						{
+							headDirection = headDirection.Replace ("L", "R");
+						}
+						break;
+
+					case AC_2DFrameFlipping.RightMirrorsLeft:
+						if (headDirection.Contains ("R"))
+						{
+							headDirection = headDirection.Replace ("R", "L");
+						}
+						break;
+
+					default:
+						break;
+				}
 			}
 		}
 

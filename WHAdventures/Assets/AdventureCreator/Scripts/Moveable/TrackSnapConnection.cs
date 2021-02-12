@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"TrackSnapConnection.cs"
  * 
@@ -68,8 +68,10 @@ namespace AC
 
 			foreach (TrackSnapData trackSnapData in connectedTrack.allTrackSnapData)
 			{
+				if (!trackSnapData.IsEnabled) continue;
+
 				Vector3 snapWorldPosition = trackSnapData.GetWorldPosition (connectedTrack);
-				float sqrDist = (snapWorldPosition - draggable.transform.position).sqrMagnitude;
+				float sqrDist = (snapWorldPosition - draggable.Transform.position).sqrMagnitude;
 				if (sqrDist < winningDistance)
 				{
 					winningDistance = sqrDist;
@@ -87,7 +89,7 @@ namespace AC
 		/** Checks if the data is valid */
 		public bool IsValid ()
 		{
-			if (connectedTrack != null && connectedTrack.TypeSupportsSnapConnections ())
+			if (connectedTrack && connectedTrack.TypeSupportsSnapConnections ())
 			{
 				if (connectedTrack.allTrackSnapData != null && connectedTrack.allTrackSnapData.Count > 0)
 				{
@@ -100,12 +102,12 @@ namespace AC
 		#endregion
 
 
-#if UNITY_EDITOR
+		#if UNITY_EDITOR
 
 		public TrackSnapConnection ShowGUI (DragTrack ownTrack, int i)
 		{
 			connectedTrack = (DragTrack) CustomGUILayout.ObjectField <DragTrack> ("Connected track " + i + ":", connectedTrack, true, "", "A connected track that a draggable object can transfer to when positioned at this point.");
-			if (connectedTrack != null)
+			if (connectedTrack)
 			{
 				if (connectedTrack == ownTrack)
 				{
@@ -131,7 +133,7 @@ namespace AC
 
 		public void DrawHandles (Vector3 ownPosition)
 		{
-			if (connectedTrack != null)
+			if (connectedTrack)
 			{
 				TrackSnapData winningSnap = null;
 				float winningDistance = Mathf.Infinity;
@@ -156,7 +158,7 @@ namespace AC
 			}
 		}
 
-#endif
+		#endif
 
 	}
 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"TintMap.cs"
  * 
@@ -101,7 +101,7 @@ namespace AC
 		{
 			if (GetComponent <MeshRenderer>().material)
 			{
-				if (newTexture != null)
+				if (newTexture)
 				{
 					GetComponent <MeshRenderer>().material.mainTexture = newTexture;
 				}

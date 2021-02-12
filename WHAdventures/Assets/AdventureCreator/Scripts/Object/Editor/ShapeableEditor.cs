@@ -45,7 +45,7 @@ namespace AC
 		{
 			EditorGUILayout.Space ();
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Shape group " + shapeGroup.label, EditorStyles.boldLabel);
 			
 			shapeGroup.label = CustomGUILayout.TextField ("Group label:", shapeGroup.label, "", "The editor-friendly name of the group");
@@ -56,7 +56,7 @@ namespace AC
 				selectedKey = KeyGUI (selectedKey, blendShapeNames);
 			}
 			
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			return shapeGroup;
 		}

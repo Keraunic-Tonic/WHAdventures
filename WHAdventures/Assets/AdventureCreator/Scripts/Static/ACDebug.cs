@@ -11,7 +11,7 @@ namespace AC
 
 		public static void Log (object message, UnityEngine.Object context = null)
 		{
-			if (Application.isPlaying && KickStarter.eventManager != null)
+			if (KickStarter.eventManager)
 			{
 				message = KickStarter.eventManager.Call_OnDebugLog (message, DebugLogType.Info, context, CanDisplay (DebugLogType.Info));
 			}
@@ -24,7 +24,7 @@ namespace AC
 
 		public static void LogWarning (object message, UnityEngine.Object context = null)
 		{
-			if (Application.isPlaying && KickStarter.eventManager != null)
+			if (KickStarter.eventManager)
 			{
 				message = KickStarter.eventManager.Call_OnDebugLog (message, DebugLogType.Warning, context, CanDisplay (DebugLogType.Warning));
 			}
@@ -37,7 +37,7 @@ namespace AC
 
 		public static void LogError (object message, UnityEngine.Object context = null)
 		{
-			if (Application.isPlaying && KickStarter.eventManager != null)
+			if (KickStarter.eventManager)
 			{
 				message = KickStarter.eventManager.Call_OnDebugLog (message, DebugLogType.Error, context, CanDisplay (DebugLogType.Error));
 			}
@@ -50,7 +50,7 @@ namespace AC
 
 		public static void Log (object message, ActionList actionList, AC.Action action, UnityEngine.Object context = null)
 		{
-			if (Application.isPlaying && KickStarter.eventManager != null)
+			if (KickStarter.eventManager)
 			{
 				message = KickStarter.eventManager.Call_OnDebugLog (message, DebugLogType.Info, context, CanDisplay (DebugLogType.Info));
 			}
@@ -64,7 +64,7 @@ namespace AC
 
 		public static void LogWarning (object message, ActionList actionList, AC.Action action, UnityEngine.Object context = null)
 		{
-			if (Application.isPlaying && KickStarter.eventManager != null)
+			if (KickStarter.eventManager)
 			{
 				message = KickStarter.eventManager.Call_OnDebugLog (message, DebugLogType.Warning, context, CanDisplay (DebugLogType.Warning));
 			}
@@ -78,7 +78,7 @@ namespace AC
 
 		public static void LogError (object message, ActionList actionList, AC.Action action, UnityEngine.Object context = null)
 		{
-			if (Application.isPlaying && KickStarter.eventManager != null)
+			if (KickStarter.eventManager)
 			{
 				message = KickStarter.eventManager.Call_OnDebugLog (message, DebugLogType.Error, context, CanDisplay (DebugLogType.Error));
 			}
@@ -92,13 +92,13 @@ namespace AC
 
 		private static string GetActionListSuffix (ActionList actionList, AC.Action action)
 		{
-			if (actionList != null && actionList.actions.Contains (action))
+			if (actionList && actionList.actions.Contains (action))
 			{
 				return ("\n(From Action #" + actionList.actions.IndexOf (action) + " in ActionList '" + actionList.name + "')");
 			}
 			else if (action != null)
 			{
-				return ("\n(From Action '" + action.category + ": " + action.title + "')");
+				return ("\n(From Action '" + action.Category + ": " + action.Title + "')");
 			}
 			return string.Empty;
 		}
@@ -107,22 +107,22 @@ namespace AC
 		private static bool CanDisplay (DebugLogType debugLogType)
 		{
 			#if UNITY_EDITOR
-			if (!Application.isPlaying)
+			if (KickStarter.stateHandler == null)
 			{
 				return true;
 			}
 			#endif
-			if (KickStarter.settingsManager != null)
+			if (KickStarter.settingsManager)
 			{
 				switch (KickStarter.settingsManager.showDebugLogs)
 				{
-					case ShowDebugLogs.Always :
+					case ShowDebugLogs.Always:
 						return true;
 
-					case ShowDebugLogs.Never :
+					case ShowDebugLogs.Never:
 						return false;
 
-					case ShowDebugLogs.OnlyWarningsOrErrors :
+					case ShowDebugLogs.OnlyWarningsOrErrors:
 						return debugLogType != DebugLogType.Info;
 
 					default:

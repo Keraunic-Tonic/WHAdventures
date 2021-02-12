@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"NavMeshBase.cs"
  * 
@@ -72,7 +72,7 @@ namespace AC
 			}
 			#endif
 
-			if (_meshRenderer != null)
+			if (_meshRenderer)
 			{
 				_meshRenderer.enabled = false;
 			}
@@ -92,11 +92,11 @@ namespace AC
 			}
 			#endif
 
-			if (_meshRenderer != null)
+			if (_meshRenderer)
 			{
 				_meshRenderer.enabled = true;
 
-				if (_meshFilter != null && _meshCollider != null && _meshCollider.sharedMesh)
+				if (_meshFilter && _meshCollider != null && _meshCollider.sharedMesh)
 				{
 					_meshFilter.mesh = _meshCollider.sharedMesh;
 				}
@@ -116,7 +116,7 @@ namespace AC
 					allColliders = FindObjectsOfType (typeof(Collider)) as Collider[];
 				}
 
-				if (_collider != null && _collider.enabled && _collider.gameObject.activeInHierarchy)
+				if (_collider && _collider.enabled && _collider.gameObject.activeInHierarchy)
 				{
 					foreach (Collider otherCollider in allColliders)
 					{

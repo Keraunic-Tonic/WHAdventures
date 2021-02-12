@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberShapeable.cs"
  * 
@@ -31,7 +31,7 @@ namespace AC
 			shapeableData.savePrevented = savePrevented;
 
 			Shapeable shapeable = GetComponent <Shapeable>();
-			if (shapeable != null)
+			if (shapeable)
 			{
 				List<int> activeKeyIDs = new List<int>();
 				List<float> values = new List<float>();
@@ -57,7 +57,7 @@ namespace AC
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
 			Shapeable shapeable = GetComponent <Shapeable>();
-			if (shapeable != null)
+			if (shapeable)
 			{
 				int[] activeKeyIDs = StringToIntArray (data._activeKeyIDs);
 				float[] values = StringToFloatArray (data._values);

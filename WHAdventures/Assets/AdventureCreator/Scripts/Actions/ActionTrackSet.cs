@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionTrackSet.cs"
  * 
@@ -45,14 +45,10 @@ namespace AC
 		public LayerMask layerMask;
 
 
-		public ActionTrackSet ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Moveable;
-			title = "Set track position";
-			description = "Moves a Draggable object along its track automatically to a specific point. The effect will be disabled once the object reaches the intended point, or the Action is run again with the speed value set as a negative number.";
-		}
-
+		public override ActionCategory Category { get { return ActionCategory.Moveable; }}
+		public override string Title { get { return "Set track position"; }}
+		public override string Description { get { return "Moves a Draggable object along its track automatically to a specific point. The effect will be disabled once the object reaches the intended point, or the Action is run again with the speed value set as a negative number."; }}
+		
 
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
@@ -134,11 +130,6 @@ namespace AC
 
 		public override void ShowGUI (List<ActionParameter> parameters)
 		{
-			newTrack = (DragTrack) EditorGUILayout.ObjectField ("Track (optional):", newTrack, typeof (DragTrack), true);
-				
-			newTrackConstantID = FieldToID <DragTrack> (newTrack, newTrackConstantID);
-			newTrack = IDToField <DragTrack> (newTrack, newTrackConstantID, false);
-
 			dragParameterID = Action.ChooseParameterGUI ("Draggable object:", parameters, dragParameterID, ParameterType.GameObject);
 			if (dragParameterID >= 0)
 			{
@@ -157,6 +148,11 @@ namespace AC
 					EditorGUILayout.HelpBox ("The chosen Drag object must be in 'Lock To Track' mode", MessageType.Warning);
 				}
 			}
+
+			newTrack = (DragTrack)EditorGUILayout.ObjectField("Track (optional):", newTrack, typeof(DragTrack), true);
+
+			newTrackConstantID = FieldToID<DragTrack>(newTrack, newTrackConstantID);
+			newTrack = IDToField<DragTrack>(newTrack, newTrackConstantID, false);
 
 			positionParameterID = Action.ChooseParameterGUI ("New track position:", parameters, positionParameterID, ParameterType.Float);
 			if (positionParameterID < 0)
@@ -180,8 +176,6 @@ namespace AC
 					willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 				}
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -210,16 +204,16 @@ namespace AC
 			if (dragParameterID < 0)
 			{
 				if (dragObject != null && dragObject.gameObject == gameObject) return true;
-				if (dragConstantID == id) return true;
+				if (dragConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
 
 
 		/**
-		 * <summary>Creates a new instance of the 'Object: Set track position' Action</summary>
+		 * <summary>Creates a new instance of the 'Moveable: Set track position' Action</summary>
 		 * <param name = "dragObject">The moveable object to move</param>
 		 * <param name = "newTrackPosition">The moveable object's new target track position</param>
 		 * <param name = "movementSpeed">How quickly to move the object</param>
@@ -231,7 +225,7 @@ namespace AC
 		 */
 		public static ActionTrackSet CreateNew (Moveable_Drag draggableObject, float newTrackPosition, float movementSpeed = 0f, bool removePlayerControl = false, bool stopUponCollision = false, LayerMask collisionLayer = new LayerMask (), bool waitUntilFinish = false)
 		{
-			ActionTrackSet newAction = (ActionTrackSet) CreateInstance <ActionTrackSet>();
+			ActionTrackSet newAction = CreateNew<ActionTrackSet> ();
 			newAction.dragObject = draggableObject;
 			newAction.positionAlong = newTrackPosition;
 			newAction.isInstant = (movementSpeed <= 0f);

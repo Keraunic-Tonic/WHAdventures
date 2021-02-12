@@ -59,9 +59,9 @@ namespace AC
 			}
 			GUI.enabled = true;
 
-			if (GUILayout.Button ("Documentation"))
+			if (GUILayout.Button ("Manual"))
 			{
-				Application.OpenURL (Resource.manualLink);
+				Application.OpenURL (System.Environment.CurrentDirectory + "/" + Resource.MainFolderPath + "/Manual.pdf");
 			}
 
 			if (GUILayout.Button ("Tutorials"))
@@ -85,7 +85,7 @@ namespace AC
 			{
 				if (GUILayout.Button ("New Game Wizard"))
 				{
-					this.Close ();
+					Close ();
 					NewGameWizardWindow.Init ();
 				}
 			}

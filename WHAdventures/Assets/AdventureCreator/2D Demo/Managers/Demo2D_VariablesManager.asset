@@ -19,6 +19,8 @@ MonoBehaviour:
     val: 0
     floatVal: 0
     textVal: 
+    gameObjectVal: {fileID: 0}
+    gameObjectSaveReferences: 1
     popUps: []
     vector3Val: {x: 0, y: 0, z: 0}
     link: 0
@@ -36,6 +38,8 @@ MonoBehaviour:
     val: 0
     floatVal: 0
     textVal: 
+    gameObjectVal: {fileID: 0}
+    gameObjectSaveReferences: 1
     popUps: []
     vector3Val: {x: 0, y: 0, z: 0}
     link: 0
@@ -53,6 +57,8 @@ MonoBehaviour:
     val: 0
     floatVal: 0
     textVal: 
+    gameObjectVal: {fileID: 0}
+    gameObjectSaveReferences: 1
     popUps: []
     vector3Val: {x: 0, y: 0, z: 0}
     link: 0

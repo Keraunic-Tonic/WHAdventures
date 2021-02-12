@@ -13,7 +13,7 @@ namespace AC
 			GameCameraThirdPerson _target = (GameCameraThirdPerson) target;
 
 			// Target
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Target", EditorStyles.boldLabel);
 			_target.targetIsPlayer = CustomGUILayout.Toggle ("Is player?", _target.targetIsPlayer, "", "If True, the camera will follow the active Player");
 			if (!_target.targetIsPlayer)
@@ -22,10 +22,10 @@ namespace AC
 			}
 			_target.horizontalOffset = CustomGUILayout.FloatField ("Horizontal offset:", _target.horizontalOffset, "", "The horizontal position offset");
 			_target.verticalOffset = CustomGUILayout.FloatField ("Vertical offset:", _target.verticalOffset, "", "The vertical position offset");
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			// Distance
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Distance", EditorStyles.boldLabel);
 			_target.distance = CustomGUILayout.FloatField ("Distance from target:", _target.distance, "", "The normal distance to keep from its target");
 			_target.allowMouseWheelZooming = CustomGUILayout.Toggle ("Mousewheel zooming?", _target.allowMouseWheelZooming, "", "If True, the mousewheel can be used to zoom the camera's distance from the target");
@@ -48,10 +48,10 @@ namespace AC
 			{
 				_target.maxDistance = CustomGUILayout.FloatField ("Maximum distance:", _target.maxDistance, "", "The maximum distance to keep from its target");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			// Spin
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField (new GUIContent ("Spin rotation", "How spin rotation is affected"), EditorStyles.boldLabel, GUILayout.Width (130f));
 			_target.spinLock = (RotationLock) EditorGUILayout.EnumPopup (_target.spinLock);
@@ -88,10 +88,10 @@ namespace AC
 					_target.spinOffset = CustomGUILayout.FloatField ("Offset angle:", _target.spinOffset, "", "The offset in spin (yaw) angle");
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			// Pitch
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField (new GUIContent ("Pitch rotation", "How pitch rotation is affected"), EditorStyles.boldLabel, GUILayout.Width (130f));
 			_target.pitchLock = (RotationLock) EditorGUILayout.EnumPopup (_target.pitchLock);
@@ -121,9 +121,9 @@ namespace AC
 			{
 				_target.maxPitch = CustomGUILayout.FloatField ("Fixed angle:", _target.maxPitch, "", "The fixed pitch angle");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Depth of field", EditorStyles.boldLabel);
 			_target.focalPointIsTarget = CustomGUILayout.Toggle ("Focal point is target object?", _target.focalPointIsTarget, "", "If True, then the focal distance will match the distance to the target");
 			if (!_target.focalPointIsTarget)
@@ -134,7 +134,7 @@ namespace AC
 			{
 				EditorGUILayout.LabelField ("Focal distance: " +  _target.focalDistance.ToString (), EditorStyles.miniLabel);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			DisplayInputList (_target);
 

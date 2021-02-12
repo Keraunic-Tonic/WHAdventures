@@ -98,6 +98,9 @@ MonoBehaviour:
   hotspotPrefix4:
     label: to
     lineID: -1
+  displayCountSize: 1.6
+  displayCountFont: {fileID: 12800000, guid: c6e3b07edbe7e4f62837dde56356b819, type: 3}
+  displayCountTextEffects: 0
   cursorIcons:
   - texture: {fileID: 2800000, guid: fca3605bfa5c847a19ca115a1c925bd1, type: 3}
     isAnimated: 0
@@ -152,6 +155,8 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   passUnhandledHotspotAsParameter: 0
+  onlyShowCursorLabelOverHotspots: 0
+  allowCursorCyclingWhenPaused: 0
   lookUseCursorAction: 0
   lookCursor_ID: 2
   hideCursorWhenDraggingMoveables: 1

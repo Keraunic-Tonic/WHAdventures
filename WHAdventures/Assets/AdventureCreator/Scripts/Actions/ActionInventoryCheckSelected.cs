@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionInventoryCheckSelected.cs"
  * 
@@ -37,20 +37,14 @@ namespace AC
 		#endif
 
 
-		public ActionInventoryCheckSelected ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Inventory;
-			title = "Check selected";
-			description = "Queries whether or not the chosen item, or no item, is currently selected.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Inventory; }}
+		public override string Title { get { return "Check selected"; }}
+		public override string Description { get { return "Queries whether or not the chosen item, or no item, is currently selected."; }}
 
-		
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			invID = AssignInvItemID (parameters, parameterID, invID);
-
-			Upgrade ();
 		}
 		
 		
@@ -61,7 +55,7 @@ namespace AC
 				switch (selectedCheckMethod)
 				{
 					case SelectedCheckMethod.NoneSelected:
-						if (KickStarter.runtimeInventory.SelectedItem == null)
+						if (!InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 						{
 							return true;
 						}
@@ -70,14 +64,14 @@ namespace AC
 					case SelectedCheckMethod.SpecificItem:
 						if (includeLast)
 						{
-							if (KickStarter.runtimeInventory.LastSelectedItem != null && KickStarter.runtimeInventory.LastSelectedItem.id == invID)
+							if (InvInstance.IsValid (KickStarter.runtimeInventory.LastSelectedInstance) && KickStarter.runtimeInventory.LastSelectedInstance.ItemID == invID)
 							{
 								return true;
 							}
 						}
 						else
 						{
-							if (KickStarter.runtimeInventory.SelectedItem != null && KickStarter.runtimeInventory.SelectedItem.id == invID)
+							if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) && KickStarter.runtimeInventory.SelectedInstance.ItemID == invID)
 							{
 								return true;
 							}
@@ -87,14 +81,14 @@ namespace AC
 					case SelectedCheckMethod.InSpecificCategory:
 						if (includeLast)
 						{
-							if (KickStarter.runtimeInventory.LastSelectedItem != null && KickStarter.runtimeInventory.LastSelectedItem.binID == binID)
+							if (InvInstance.IsValid (KickStarter.runtimeInventory.LastSelectedInstance) && KickStarter.runtimeInventory.LastSelectedInstance.InvItem.binID == binID)
 							{
 								return true;
 							}
 						}
 						else
 						{
-							if (KickStarter.runtimeInventory.SelectedItem != null && KickStarter.runtimeInventory.SelectedItem.binID == binID)
+							if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) && KickStarter.runtimeInventory.SelectedInstance.InvItem.binID == binID)
 							{
 								return true;
 							}
@@ -106,13 +100,15 @@ namespace AC
 		}
 
 
-		private void Upgrade ()
+		public override void Upgrade ()
 		{
 			if (checkNothing)
 			{
 				selectedCheckMethod = SelectedCheckMethod.NoneSelected;
 				checkNothing = false;
 			}
+
+			base.Upgrade ();
 		}
 		
 		
@@ -120,8 +116,6 @@ namespace AC
 		
 		public override void ShowGUI (List<ActionParameter> parameters)
 		{
-			Upgrade ();
-
 			if (inventoryManager == null)
 			{
 				inventoryManager = AdvGame.GetReferences ().inventoryManager;
@@ -282,7 +276,7 @@ namespace AC
 		 */
 		public static ActionInventoryCheckSelected CreateNew_SpecificItem (int itemID, bool includeLastSelected = false)
 		{
-			ActionInventoryCheckSelected newAction = (ActionInventoryCheckSelected) CreateInstance <ActionInventoryCheckSelected>();
+			ActionInventoryCheckSelected newAction = CreateNew<ActionInventoryCheckSelected> ();
 			newAction.selectedCheckMethod = SelectedCheckMethod.SpecificItem;
 			newAction.invID = itemID;
 			newAction.includeLast = includeLastSelected;
@@ -298,7 +292,7 @@ namespace AC
 		 */
 		public static ActionInventoryCheckSelected CreateNew_InSpecificCategory (int categoryID, bool includeLastSelected = false)
 		{
-			ActionInventoryCheckSelected newAction = (ActionInventoryCheckSelected) CreateInstance <ActionInventoryCheckSelected>();
+			ActionInventoryCheckSelected newAction = CreateNew<ActionInventoryCheckSelected> ();
 			newAction.selectedCheckMethod = SelectedCheckMethod.InSpecificCategory;
 			newAction.binID = categoryID;
 			newAction.includeLast = includeLastSelected;
@@ -312,7 +306,7 @@ namespace AC
 		 */
 		public static ActionInventoryCheckSelected CreateNew_NoneSelected ()
 		{
-			ActionInventoryCheckSelected newAction = (ActionInventoryCheckSelected) CreateInstance <ActionInventoryCheckSelected>();
+			ActionInventoryCheckSelected newAction = CreateNew<ActionInventoryCheckSelected> ();
 			newAction.selectedCheckMethod = SelectedCheckMethod.NoneSelected;
 			return newAction;
 		}

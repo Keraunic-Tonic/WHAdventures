@@ -42,7 +42,7 @@ namespace AC
 
 		private static void UpdateCB ()
 		{
-			if (AdvGame.GetReferences () && AdvGame.GetReferences ().settingsManager && !AdvGame.GetReferences ().settingsManager.showHierarchyIcons)
+			if (!ACEditorPrefs.ShowHierarchyIcons)
 			{
 				return;
 			}
@@ -59,6 +59,8 @@ namespace AC
 			rememberIDs = new List<int>();
 			foreach (ConstantID constantID in constantIDs)
 			{
+				if (constantID == null || !constantID.isActiveAndEnabled) continue;
+
 				rememberIDs.Add (constantID.gameObject.GetInstanceID());
 			}
 		}
@@ -66,7 +68,7 @@ namespace AC
 
 		private static void HierarchyItemCB (int instanceID, Rect selectionRect)
 		{
-			if (AdvGame.GetReferences () && AdvGame.GetReferences ().settingsManager && !AdvGame.GetReferences ().settingsManager.showHierarchyIcons)
+			if (!ACEditorPrefs.ShowHierarchyIcons)
 			{
 				return;
 			}
@@ -80,7 +82,9 @@ namespace AC
 			{
 				foreach (ActionList actionList in actionLists)
 				{
-					if (actionList != null && actionList.gameObject.GetInstanceID () == instanceID)
+					if (actionList == null || !actionList.isActiveAndEnabled) continue;
+
+					if (actionList.gameObject.GetInstanceID () == instanceID)
 					{
 						if (GUI.Button (r, string.Empty, CustomStyles.IconNodes))
 						{

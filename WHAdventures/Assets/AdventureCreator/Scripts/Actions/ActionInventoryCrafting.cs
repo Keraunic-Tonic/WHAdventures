@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionInventoryCrafting.cs"
  * 
@@ -24,24 +24,25 @@ namespace AC
 		public ActionCraftingMethod craftingMethod;
 
 
-		public ActionInventoryCrafting ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Inventory;
-			title = "Crafting";
-			description = "Either clears the current arrangement of crafting ingredients, or evaluates them to create an appropriate result (if this is not done automatically by the recipe itself).";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Inventory; }}
+		public override string Title { get { return "Crafting"; }}
+		public override string Description { get { return "Either clears the current arrangement of crafting ingredients, or evaluates them to create an appropriate result (if this is not done automatically by the recipe itself)."; }}
 
-		
+
 		public override float Run ()
 		{
-			if (craftingMethod == ActionCraftingMethod.ClearRecipe)
+			switch (craftingMethod)
 			{
-				KickStarter.runtimeInventory.RemoveRecipes ();
-			}
-			else if (craftingMethod == ActionCraftingMethod.CreateRecipe)
-			{
-				PlayerMenus.CreateRecipe ();
+				case ActionCraftingMethod.ClearRecipe:
+					KickStarter.runtimeInventory.RemoveRecipes ();
+					break;
+
+				case ActionCraftingMethod.CreateRecipe:
+					PlayerMenus.CreateRecipe ();
+					break;
+
+				default:
+					break;
 			}
 
 			return 0f;
@@ -53,22 +54,22 @@ namespace AC
 		public override void ShowGUI ()
 		{
 			craftingMethod = (ActionCraftingMethod) EditorGUILayout.EnumPopup ("Method:", craftingMethod);
-
-			AfterRunningOption ();
 		}
 		
 		
 		public override string SetLabel ()
 		{
-			if (craftingMethod == ActionCraftingMethod.CreateRecipe)
+			switch (craftingMethod)
 			{
-				return "Create recipe";
+				case ActionCraftingMethod.CreateRecipe:
+					return "Create recipe";
+					
+				case ActionCraftingMethod.ClearRecipe:
+					return "Clear recipe";
+					
+				default:
+					return string.Empty;
 			}
-			else if (craftingMethod == ActionCraftingMethod.ClearRecipe)
-			{
-				return "Clear recipe";
-			}
-			return string.Empty;
 		}
 		
 		#endif
@@ -81,7 +82,7 @@ namespace AC
 		 */
 		public static ActionInventoryCrafting CreateNew (ActionCraftingMethod craftingMethod)
 		{
-			ActionInventoryCrafting newAction = (ActionInventoryCrafting) CreateInstance <ActionInventoryCrafting>();
+			ActionInventoryCrafting newAction = CreateNew<ActionInventoryCrafting> ();
 			newAction.craftingMethod = craftingMethod;
 			return newAction;
 		}

@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionTeleport.cs"
  * 
@@ -59,13 +59,9 @@ namespace AC
 		protected LocalVariables localVariables;
 
 
-		public ActionTeleport ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Teleport";
-			description = "Moves a GameObject to a Marker instantly. Can also copy the Marker's rotation. The final position can optionally be made relative to the active camera, or the player. For example, if the Marker's position is (0, 0, 1) and Positon relative to is set to Relative To Active Camera, then the object will be teleported in front of the camera.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Teleport"; }}
+		public override string Description { get { return "Moves a GameObject to a Marker instantly. Can also copy the Marker's rotation. The final position can optionally be made relative to the active camera, or the player. For example, if the Marker's position is (0, 0, 1) and Positon relative to is set to Relative To Active Camera, then the object will be teleported in front of the camera."; }}
 		
 		
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -129,60 +125,67 @@ namespace AC
 		
 		public override float Run ()
 		{
-			if (runtimeTeleporter != null && runtimeObToMove != null)
+			if (runtimeObToMove != null)
 			{
-				Vector3 position = runtimeTeleporter.Position;
-				Quaternion rotation = runtimeTeleporter.Rotation;
+				Vector3 position = (runtimeTeleporter) ? runtimeTeleporter.Position : runtimeObToMove.transform.position;
+				Quaternion rotation = (runtimeTeleporter) ? runtimeTeleporter.Rotation : runtimeObToMove.transform.rotation;
 
-				if (positionRelativeTo == PositionRelativeTo.RelativeToActiveCamera)
+				switch (positionRelativeTo)
 				{
-					Transform mainCam = KickStarter.mainCamera.transform;
+					case PositionRelativeTo.RelativeToActiveCamera:
+						{
+							Transform mainCam = KickStarter.mainCamera.transform;
 
-					float right = runtimeTeleporter.Position.x;
-					float up = runtimeTeleporter.Position.y;
-					float forward = runtimeTeleporter.Position.z;
+							float right = position.x;
+							float up = position.y;
+							float forward = position.z;
 
-					position = mainCam.position + (mainCam.forward * forward) + (mainCam.right * right) + (mainCam.up * up);
-					rotation.eulerAngles += mainCam.transform.rotation.eulerAngles;
-				}
-				else if (positionRelativeTo == PositionRelativeTo.RelativeToPlayer && !isPlayer)
-				{
-					if (KickStarter.player)
-					{
-						Transform playerTransform = KickStarter.player.transform;
+							position = mainCam.position + (mainCam.forward * forward) + (mainCam.right * right) + (mainCam.up * up);
+							rotation.eulerAngles += mainCam.transform.rotation.eulerAngles;
+						}
+						break;
 
-						float right = runtimeTeleporter.Position.x;
-						float up = runtimeTeleporter.Position.y;
-						float forward = runtimeTeleporter.Position.z;
-						
-						position = playerTransform.position + (playerTransform.forward * forward) + (playerTransform.right * right) + (playerTransform.up * up);
-						rotation.eulerAngles += playerTransform.rotation.eulerAngles;
-					}
-				}
-				else if (positionRelativeTo == PositionRelativeTo.RelativeToGameObject)
-				{
-					if (relativeGameObject != null)
-					{
-						Transform relativeTransform = relativeGameObject.transform;
+					case PositionRelativeTo.RelativeToPlayer:
+						if (!isPlayer && KickStarter.player)
+						{
+							Transform playerTransform = KickStarter.player.transform;
 
-						float right = runtimeTeleporter.Position.x;
-						float up = runtimeTeleporter.Position.y;
-						float forward = runtimeTeleporter.Position.z;
-						
-						position = relativeTransform.position + (relativeTransform.forward * forward) + (relativeTransform.right * right) + (relativeTransform.up * up);
-						rotation.eulerAngles += relativeTransform.rotation.eulerAngles;
-					}
-				}
-				else if (positionRelativeTo == PositionRelativeTo.EnteredValue)
-				{
-					position += relativeVector;
-				}
-				else if (positionRelativeTo == PositionRelativeTo.VectorVariable)
-				{
-					if (runtimeVariable != null)
-					{
-						position += runtimeVariable.Vector3Value;
-					}
+							float right = position.x;
+							float up = position.y;
+							float forward = position.z;
+
+							position = playerTransform.position + (playerTransform.forward * forward) + (playerTransform.right * right) + (playerTransform.up * up);
+							rotation.eulerAngles += playerTransform.rotation.eulerAngles;
+						}
+						break;
+
+					case PositionRelativeTo.RelativeToGameObject:
+						if (relativeGameObject != null)
+						{
+							Transform relativeTransform = relativeGameObject.transform;
+
+							float right = position.x;
+							float up = position.y;
+							float forward = position.z;
+
+							position = relativeTransform.position + (relativeTransform.forward * forward) + (relativeTransform.right * right) + (relativeTransform.up * up);
+							rotation.eulerAngles += relativeTransform.rotation.eulerAngles;
+						}
+						break;
+
+					case PositionRelativeTo.EnteredValue:
+						position += relativeVector;
+						break;
+
+					case PositionRelativeTo.VectorVariable:
+						if (runtimeVariable != null)
+						{
+							position += runtimeVariable.Vector3Value;
+						}
+						break;
+
+					default:
+						break;
 				}
 
 				Char charToMove = runtimeObToMove.GetComponent <Char>();
@@ -214,6 +217,8 @@ namespace AC
 						KickStarter.mainCamera.attachedCamera.MoveCameraInstant ();
 					}
 				}
+
+				KickStarter.eventManager.Call_OnTeleport (runtimeObToMove);
 			}
 			
 			return 0f;
@@ -344,8 +349,6 @@ namespace AC
 			{
 				recalculateActivePathFind = EditorGUILayout.Toggle ("Recalculate pathfinding?", recalculateActivePathFind);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -403,20 +406,20 @@ namespace AC
 			if (!isPlayer && obToMoveParameterID < 0)
 			{
 				if (obToMove != null && obToMove == gameObject) return true;
-				if (obToMoveID == id) return true;
+				if (obToMoveID == id && id != 0) return true;
 			}
 			if (isPlayer && gameObject.GetComponent <Player>() != null) return true;
 			if (relativeGameObjectParameterID < 0 && positionRelativeTo == PositionRelativeTo.RelativeToGameObject)
 			{
 				if (relativeGameObject != null && relativeGameObject == gameObject) return true;
-				if (relativeGameObjectID == id) return true;
+				if (relativeGameObjectID == id && id != 0) return true;
 			}
 			if (positionRelativeTo == PositionRelativeTo.VectorVariable && variableLocation == VariableLocation.Component && vectorVarParameterID < 0)
 			{
 				if (variables != null && variables.gameObject == gameObject) return true;
-				if (variablesConstantID == id) return true;
+				if (variablesConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 		
 		#endif
@@ -431,7 +434,7 @@ namespace AC
 		 */
 		public static ActionTeleport CreateNew (GameObject objectToMove, Marker marketToTeleportTo, bool copyRotation = true)
 		{
-			ActionTeleport newAction = (ActionTeleport) CreateInstance <ActionTeleport>();
+			ActionTeleport newAction = CreateNew<ActionTeleport> ();
 			newAction.obToMove = objectToMove;
 			newAction.teleporter = marketToTeleportTo;
 			newAction.copyRotation = copyRotation;

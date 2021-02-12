@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionSceneAdd.cs"
  * 
@@ -27,7 +27,7 @@ namespace AC
 		public SceneAddRemove sceneAddRemove = SceneAddRemove.Add;
 		public bool runCutsceneOnStart;
 		public bool runCutsceneIfAlreadyOpen;
-
+		
 		public ChooseSceneBy chooseSceneBy = ChooseSceneBy.Number;
 		public int sceneNumber;
 		public int sceneNumberParameterID = -1;
@@ -38,13 +38,9 @@ namespace AC
 		private int numIterations;
 
 
-		public ActionSceneAdd ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Scene;
-			title = "Add or remove";
-			description = "Adds or removes a scene without affecting any other open scenes.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Scene; }}
+		public override string Title { get { return "Add or remove"; }}
+		public override string Description { get { return "Adds or removes a scene without affecting any other open scenes."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -70,24 +66,35 @@ namespace AC
 
 				int runtimeSceneIndex = (chooseSceneBy == ChooseSceneBy.Name) ? KickStarter.sceneChanger.NameToIndex (sceneName) : sceneNumber;
 
-				if (sceneAddRemove == SceneAddRemove.Add)
+				switch (sceneAddRemove)
 				{
-					if (KickStarter.sceneChanger.AddSubScene (runtimeSceneIndex))
-					{
+					case SceneAddRemove.Add:
+						if (KickStarter.sceneChanger.AddSubScene (runtimeSceneIndex))
+						{
+							awaitingCallback = true;
+							return defaultPauseTime;
+						}
+
+						if (runCutsceneIfAlreadyOpen && runCutsceneOnStart)
+						{
+							foreach (SubScene subScene in KickStarter.sceneChanger.SubScenes)
+							{
+								if (subScene.SceneIndex == runtimeSceneIndex)
+								{
+									PlayStartCutscene (subScene.SceneSettings);
+									break;
+								}
+							}
+						}
+						break;
+
+					case SceneAddRemove.Remove:
+						KickStarter.sceneChanger.RemoveScene (runtimeSceneIndex);
 						awaitingCallback = true;
 						return defaultPauseTime;
-					}
 
-					if (runCutsceneIfAlreadyOpen && runCutsceneOnStart)
-					{
-						KickStarter.sceneSettings.cutsceneOnStart.Interact ();
-					}
-				}
-				else if (sceneAddRemove == SceneAddRemove.Remove)
-				{
-					KickStarter.sceneChanger.RemoveScene (runtimeSceneIndex);
-					awaitingCallback = true;
-					return defaultPauseTime;
+					default:
+						break;
 				}
 			}
 			else
@@ -132,20 +139,48 @@ namespace AC
 					{
 						found = true;
 
-						if (runCutsceneOnStart && subScene.SceneSettings != null && subScene.SceneSettings.cutsceneOnStart != null)
+						if (runCutsceneOnStart)
 						{
-							subScene.SceneSettings.cutsceneOnStart.Interact ();
+							PlayStartCutscene (subScene.SceneSettings);
 						}
+
+						break;
 					}
 				}
 
 				if (!found)
 				{
 					int runtimeSceneIndex = (chooseSceneBy == ChooseSceneBy.Name) ? KickStarter.sceneChanger.NameToIndex (sceneName) : sceneNumber;
-					LogWarning ("Could not find SubScene class for scene " + runtimeSceneIndex + ". Ensure it has a GameEngine object and is added to Unity's Build Settings.");
+					LogWarning ("Could not find SubScene class for scene " + runtimeSceneIndex + " - is it added to Unity's Build Settings?\nIf this is a non-AC scene, add a SubScene component to it and check 'Self Initialise'.");
 				}
 
 				awaitingCallback = false;
+			}
+		}
+
+
+		private void PlayStartCutscene (SceneSettings sceneSettings)
+		{
+			if (sceneSettings == null) return;
+
+			switch (sceneSettings.actionListSource)
+			{
+				case ActionListSource.InScene:
+					if (sceneSettings.cutsceneOnStart)
+					{
+						sceneSettings.cutsceneOnStart.Interact ();
+					}
+					break;
+
+				case ActionListSource.AssetFile:
+					if (sceneSettings.actionListAssetOnStart)
+					{
+						sceneSettings.actionListAssetOnStart.Interact ();
+					}
+					break;
+
+				default:
+					break;
 			}
 		}
 
@@ -191,7 +226,7 @@ namespace AC
 					runCutsceneIfAlreadyOpen = EditorGUILayout.Toggle ("Run if already open?", runCutsceneIfAlreadyOpen);
 				}
 			}
-			else if (sceneAddRemove == SceneAddRemove.Remove && endAction != ResultAction.Stop)
+			else if (sceneAddRemove == SceneAddRemove.Remove && endings[0].resultAction != ResultAction.Stop)
 			{
 				if (isAssetFile)
 				{
@@ -202,8 +237,6 @@ namespace AC
 					EditorGUILayout.HelpBox ("If the active scene is removed, further Actions cannot be run - consider using an ActionList asset instead.", MessageType.Warning);
 				}
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -227,7 +260,7 @@ namespace AC
 		 */
 		public static ActionSceneAdd CreateNew_Add (int newSceneIndex, bool runCutsceneOnStart)
 		{
-			ActionSceneAdd newAction = (ActionSceneAdd) CreateInstance <ActionSceneAdd>();
+			ActionSceneAdd newAction = CreateNew<ActionSceneAdd> ();
 			newAction.sceneAddRemove = SceneAddRemove.Add;
 			newAction.sceneName = string.Empty;
 			newAction.sceneNumber = newSceneIndex;
@@ -244,7 +277,7 @@ namespace AC
 		 */
 		public static ActionSceneAdd CreateNew_Remove (int removeSceneIndex)
 		{
-			ActionSceneAdd newAction = (ActionSceneAdd) CreateInstance <ActionSceneAdd>();
+			ActionSceneAdd newAction = CreateNew<ActionSceneAdd> ();
 			newAction.sceneAddRemove = SceneAddRemove.Remove;
 			newAction.sceneName = string.Empty;
 			newAction.sceneNumber = removeSceneIndex;
@@ -261,7 +294,7 @@ namespace AC
 		 */
 		public static ActionSceneAdd CreateNew_Add (string newSceneName, bool runCutsceneOnStart)
 		{
-			ActionSceneAdd newAction = (ActionSceneAdd)CreateInstance<ActionSceneAdd> ();
+			ActionSceneAdd newAction = CreateNew<ActionSceneAdd> ();
 			newAction.sceneAddRemove = SceneAddRemove.Add;
 			newAction.sceneName = newSceneName;
 			newAction.sceneNumber = -1;
@@ -278,7 +311,7 @@ namespace AC
 		 */
 		public static ActionSceneAdd CreateNew_Remove (string removeSceneName)
 		{
-			ActionSceneAdd newAction = (ActionSceneAdd)CreateInstance<ActionSceneAdd> ();
+			ActionSceneAdd newAction = CreateNew<ActionSceneAdd> ();
 			newAction.sceneAddRemove = SceneAddRemove.Remove;
 			newAction.sceneName = removeSceneName;
 			newAction.sceneNumber = -1;

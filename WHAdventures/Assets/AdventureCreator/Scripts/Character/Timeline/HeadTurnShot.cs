@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"HeadTurnShot.cs"
  * 
@@ -27,6 +27,7 @@ namespace AC
 		#region Variables
 
 		public ExposedReference<Transform> headTurnTarget;
+		public Vector3 localSpaceOffset;
 		
 		#endregion
 
@@ -37,6 +38,7 @@ namespace AC
 		{
 			var playable = ScriptPlayable<HeadTurnPlayableBehaviour>.Create (graph);
 			playable.GetBehaviour().headTurnTarget = headTurnTarget.Resolve(graph.GetResolver());
+			playable.GetBehaviour().headTurnOffset = localSpaceOffset;
 			return playable;
 		}
 

@@ -610,20 +610,31 @@ MonoBehaviour:
   doDirections: 1
   crossfadeAnims: 0
   doDiagonals: 0
-  isTalking: 0
   frameFlipping: 0
   flipCustomAnims: 0
   _spriteDirectionData:
-    directions: 0
-    down: 0
-    left: 0
-    right: 0
-    up: 0
+    directions: 1
+    down: 1
+    left: 1
+    right: 1
+    up: 1
     downLeft: 0
     upLeft: 0
     upRight: 0
     downRight: 0
-    spriteDirections: []
+    spriteDirections:
+    - suffix: D
+      angle: 0
+      maxAngle: 45
+    - suffix: L
+      angle: 90
+      maxAngle: 135
+    - suffix: U
+      angle: 180
+      maxAngle: 225
+    - suffix: R
+      angle: 270
+      maxAngle: 315
     isUpgraded: 1
   angleSnapping: 0
   walkSpeedScale: 3

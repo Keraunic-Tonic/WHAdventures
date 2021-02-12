@@ -63,20 +63,25 @@ namespace AC
 
 		private void Create ()
 		{
-			if (location == VariableLocation.Global)
+			switch (location)
 			{
-				if (KickStarter.variablesManager == null) return;
-				Undo.RecordObject (KickStarter.variablesManager, "Add " + location + " variables");
-			}
-			else if (location == VariableLocation.Local)
-			{
-				if (KickStarter.localVariables == null) return;
-				Undo.RecordObject (KickStarter.localVariables, "Add " + location + " variables");
-			}
-			else if (location == VariableLocation.Component)
-			{
-				if (variables == null) return;
-				Undo.RecordObject (variables, "Add " + location + " variables");
+				case VariableLocation.Global:
+					if (KickStarter.variablesManager == null) return;
+					Undo.RecordObject (KickStarter.variablesManager, "Add " + location + " variables");
+					break;
+
+				case VariableLocation.Local:
+					if (KickStarter.localVariables == null) return;
+					Undo.RecordObject (KickStarter.localVariables, "Add " + location + " variables");
+					break;
+
+				case VariableLocation.Component:
+					if (variables == null) return;
+					Undo.RecordObject (variables, "Add " + location + " variables");
+					break;
+
+				default:
+					break;
 			}
 
 			if (Vars == null) return;
@@ -88,7 +93,27 @@ namespace AC
 				variable.label = newVar.label + "_" + i.ToString ();
 				Vars.Add (variable);
 			}
-			Debug.Log (numVars + " new " + location + " variables created");
+
+			switch (location)
+			{
+				case VariableLocation.Global:
+					EditorUtility.SetDirty (KickStarter.variablesManager);
+					AssetDatabase.SaveAssets ();
+					break;
+
+				case VariableLocation.Local:
+					UnityVersionHandler.CustomSetDirty (KickStarter.localVariables);
+					break;
+
+				case VariableLocation.Component:
+					EditorUtility.SetDirty (variables);
+					break;
+
+				default:
+					break;
+			}
+
+			ACDebug.Log (numVars + " new " + location + " variables created");
 		}
 
 

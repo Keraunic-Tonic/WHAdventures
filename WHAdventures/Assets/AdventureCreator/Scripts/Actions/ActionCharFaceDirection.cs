@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCharDirection.cs"
  * 
@@ -41,15 +41,11 @@ namespace AC
 		public enum RelativeTo { Camera, Character };
 
 
-		public ActionCharFaceDirection ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Character;
-			title = "Face direction";
-			description = "Makes a Character turn, either instantly or over time, to face a direction relative to the camera – i.e. up, down, left or right.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Character; }}
+		public override string Title { get { return "Face direction"; }}
+		public override string Description { get { return "Makes a Character turn, either instantly or over time, to face a direction relative to the camera – i.e. up, down, left or right."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			if (isPlayer)
@@ -164,8 +160,6 @@ namespace AC
 			{
 				willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -201,7 +195,7 @@ namespace AC
 				if (charToMoveID == id) return true;
 			}
 			if (isPlayer && _gameObject.GetComponent <Player>() != null) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -227,7 +221,7 @@ namespace AC
 		 */
 		public static ActionCharFaceDirection CreateNew (AC.Char characterToTurn, CharDirection directionToFace, RelativeTo relativeTo = RelativeTo.Camera, bool isInstant = false, bool waitUntilFinish = false)
 		{
-			ActionCharFaceDirection newAction = (ActionCharFaceDirection) CreateInstance <ActionCharFaceDirection>();
+			ActionCharFaceDirection newAction = CreateNew<ActionCharFaceDirection> ();
 			newAction.charToMove = characterToTurn;
 			newAction.direction = directionToFace;
 			newAction.relativeTo = relativeTo;

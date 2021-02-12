@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionInputCheck.cs"
  * 
@@ -32,15 +32,11 @@ namespace AC
 		public float axisValue;
 		
 		
-		public ActionInputCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Input;
-			title = "Check";
-			description = "Queries whether or not the player is invoking a button or axis declared in Unity's Input manager.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Input; }}
+		public override string Title { get { return "Check"; }}
+		public override string Description { get { return "Queries whether or not the player is invoking a button or axis declared in Unity's Input manager."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			inputName = AssignString (parameters, parameterID, inputName);
@@ -165,7 +161,7 @@ namespace AC
 		 */
 		public static ActionInputCheck CreateNew_Button (string buttonName)
 		{
-			ActionInputCheck newAction = (ActionInputCheck) CreateInstance <ActionInputCheck>();
+			ActionInputCheck newAction = CreateNew<ActionInputCheck> ();
 			newAction.checkType = InputCheckType.Button;
 			newAction.inputName = buttonName;
 			return newAction;
@@ -181,7 +177,7 @@ namespace AC
 		 */
 		public static ActionInputCheck CreateNew_Axis (string axisName, float axisValue = 0.2f, IntCondition condition = IntCondition.MoreThan)
 		{
-			ActionInputCheck newAction = (ActionInputCheck) CreateInstance <ActionInputCheck>();
+			ActionInputCheck newAction = CreateNew<ActionInputCheck> ();
 			newAction.checkType = InputCheckType.Axis;
 			newAction.inputName = axisName;
 			newAction.axisValue = axisValue;
@@ -197,7 +193,7 @@ namespace AC
 		 */
 		public static ActionInputCheck CreateNew_TapOrClick (bool requireDoubleClick = false)
 		{
-			ActionInputCheck newAction = (ActionInputCheck) CreateInstance <ActionInputCheck>();
+			ActionInputCheck newAction = CreateNew<ActionInputCheck> ();
 			newAction.checkType = (requireDoubleClick) ? InputCheckType.DoubleTapOrClick : InputCheckType.SingleTapOrClick;
 			return newAction;
 		}

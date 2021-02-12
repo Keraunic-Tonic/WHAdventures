@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberAnimator.cs"
  * 
@@ -15,13 +15,16 @@ using System.Text;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+#if AddressableIsPresent
+using System.Collections;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace AC
 {
 
-	/**
-	 * This script is attached to Animator components in the scene we wish to save the state of. (Unity 5-only)
-	 */
+	/** This script is attached to Animator components in the scene we wish to save the state of. */
 	[RequireComponent (typeof (Animator))]
 	[AddComponentMenu("Adventure Creator/Save system/Remember Animator")]
 	[HelpURL("https://www.adventurecreator.org/scripting-guide/class_a_c_1_1_remember_animator.html")]
@@ -34,13 +37,13 @@ namespace AC
 
 		private Animator _animator;
 		private bool loadedData = false;
-
+		
 		
 		private void Awake ()
 		{
 			if (loadedData) return;
 
-			if (GameIsPlaying () && setDefaultParameterValues)
+			if (GameIsPlaying () && setDefaultParameterValues && isActiveAndEnabled)
 			{
 				for (int i=0; i<Animator.parameters.Length; i++)
 				{
@@ -74,14 +77,14 @@ namespace AC
 			animatorData.objectID = constantID;
 			animatorData.savePrevented = savePrevented;
 
-			if (saveController && Animator != null && Animator.runtimeAnimatorController != null)
+			if (saveController && Animator && Animator.runtimeAnimatorController)
 			{
 				animatorData.controllerID = AssetLoader.GetAssetInstanceID (Animator.runtimeAnimatorController);
 			}
 			
-			animatorData.parameterData = ParameterValuesToString (Animator.parameters);
-			animatorData.layerWeightData = LayerWeightsToString ();
-			animatorData.stateData = StatesToString ();
+			animatorData.parameterData = ParameterValuesToString (Animator.parameters).ToString ();
+			animatorData.layerWeightData = LayerWeightsToString ().ToString ();
+			animatorData.stateData = StatesToString ().ToString ();
 
 			return Serializer.SaveScriptData <AnimatorData> (animatorData);
 		}
@@ -97,10 +100,21 @@ namespace AC
 			}
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			if (!string.IsNullOrEmpty (data.controllerID) && Animator != null)
+			loadedData = true;
+
+			if (!string.IsNullOrEmpty (data.controllerID) && Animator && saveController)
 			{
+				#if AddressableIsPresent
+
+				if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
+				{
+					StartCoroutine (LoadDataFromAddressable (data));
+					return;
+				}
+				#endif
+
 				RuntimeAnimatorController runtimeAnimatorController = AssetLoader.RetrieveAsset (Animator.runtimeAnimatorController, data.controllerID);
-				if (runtimeAnimatorController != null)
+				if (runtimeAnimatorController)
 				{
 					_animator.runtimeAnimatorController = runtimeAnimatorController;
 				}
@@ -109,16 +123,34 @@ namespace AC
 			StringToParameterValues (Animator.parameters, data.parameterData);
 			StringToLayerWeights (data.layerWeightData);
 			StringToStates (data.stateData);
-
-			loadedData = true;
 		}
+
+
+		#if AddressableIsPresent
+
+		private IEnumerator LoadDataFromAddressable (AnimatorData data)
+		{
+			AsyncOperationHandle<RuntimeAnimatorController> handle = Addressables.LoadAssetAsync<RuntimeAnimatorController> (data.controllerID);
+			yield return handle;
+			if (handle.Status == AsyncOperationStatus.Succeeded)
+			{
+				_animator.runtimeAnimatorController = handle.Result;
+			}
+			Addressables.Release (handle);
+
+			StringToParameterValues (Animator.parameters, data.parameterData);
+			StringToLayerWeights (data.layerWeightData);
+			StringToStates (data.stateData);
+		}
+
+		#endif
 
 
 		#if UNITY_EDITOR
 
 		public void ShowGUI ()
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			saveController = EditorGUILayout.ToggleLeft ("Save change in Controller?", saveController);
 
@@ -175,31 +207,30 @@ namespace AC
 				}
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 		#endif
 
 		
-		private string ParameterValuesToString (AnimatorControllerParameter[] parameters)
+		private StringBuilder ParameterValuesToString (AnimatorControllerParameter[] parameters)
 		{
 			StringBuilder stateString = new StringBuilder ();
-			
+
 			foreach (AnimatorControllerParameter parameter in parameters)
 			{
 				switch (parameter.type)
 				{
 					case AnimatorControllerParameterType.Bool:
-						string value = (Animator.GetBool (parameter.name)) ? "1" : "0";
-						stateString.Append (value);
+						stateString.Append (Animator.GetBool (parameter.name) ? "1" : "0");
 						break;
 
 					case AnimatorControllerParameterType.Float:
-						stateString.Append (Animator.GetFloat (parameter.name).ToString ());
+						stateString.Append (Animator.GetFloat (parameter.name));
 						break;
 
 					case AnimatorControllerParameterType.Int:
-						stateString.Append (Animator.GetInteger (parameter.name).ToString ());
+						stateString.Append (Animator.GetInteger (parameter.name));
 						break;
 
 					default:
@@ -210,11 +241,11 @@ namespace AC
 				stateString.Append (SaveSystem.pipe);
 			}
 			
-			return stateString.ToString ();
+			return stateString;
 		}
 
 
-		private string LayerWeightsToString ()
+		private StringBuilder LayerWeightsToString ()
 		{
 			StringBuilder stateString = new StringBuilder ();
 
@@ -223,16 +254,15 @@ namespace AC
 				for (int i=1; i<Animator.layerCount; i++)
 				{
 					float weight = Animator.GetLayerWeight (i);
-					stateString.Append (weight.ToString ());
-					stateString.Append (SaveSystem.pipe);
+					stateString.Append (weight).Append (SaveSystem.pipe);
 				}
 			}
 
-			return stateString.ToString ();
+			return stateString;
 		}
 
 
-		private string StatesToString ()
+		private StringBuilder StatesToString ()
 		{
 			StringBuilder stateString = new StringBuilder ();
 
@@ -240,21 +270,21 @@ namespace AC
 			{
 				if (Animator.IsInTransition (i))
 				{
-					stateString = ProcessState (stateString, Animator.GetNextAnimatorStateInfo (i));
+					ProcessState (ref stateString, Animator.GetNextAnimatorStateInfo (i));
 				}
 				else
 				{
-					stateString = ProcessState (stateString, Animator.GetCurrentAnimatorStateInfo (i));
+					ProcessState (ref stateString, Animator.GetCurrentAnimatorStateInfo (i));
 				}
 
 				stateString.Append (SaveSystem.pipe);
 			}
 
-			return stateString.ToString ();
+			return stateString;
 		}
 
 
-		private StringBuilder ProcessState (StringBuilder stateString, AnimatorStateInfo stateInfo)
+		private void ProcessState (ref StringBuilder stateString, AnimatorStateInfo stateInfo)
 		{
 			int nameHash = stateInfo.shortNameHash;
 			float timeAlong = stateInfo.normalizedTime;
@@ -271,8 +301,7 @@ namespace AC
 				}
 			}
 
-			stateString.Append (nameHash + "," + timeAlong);
-			return stateString;
+			stateString.Append (nameHash).Append (",").Append (timeAlong);
 		}
 		
 		
@@ -413,9 +442,7 @@ namespace AC
 	}
 	
 
-	/**
-	 * A data container used by the RememberAnimator script.
-	 */
+	/** A data container used by the RememberAnimator script. */
 	[System.Serializable]
 	public class AnimatorData : RememberData
 	{
@@ -429,9 +456,7 @@ namespace AC
 		/** Data for each layer's animation state. */
 		public string stateData;
 
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public AnimatorData () { }
 
 	}

@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberConversation.cs"
  * 
@@ -34,7 +34,7 @@ namespace AC
 			conversationData.objectID = constantID;
 			conversationData.savePrevented = savePrevented;
 
-			if (_Conversation != null)
+			if (_Conversation)
 			{
 				List<bool> optionStates = new List<bool>();
 				List<bool> optionLocks = new List<bool>();
@@ -74,7 +74,7 @@ namespace AC
 			if (data == null) return;
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			if (_Conversation != null)
+			if (_Conversation)
 			{
 				bool[] optionStates = StringToBoolArray (data._optionStates);
 				bool[] optionLocks = StringToBoolArray (data._optionLocks);

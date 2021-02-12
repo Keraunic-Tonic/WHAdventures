@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Highlight.cs"
  * 
@@ -84,7 +84,7 @@ namespace AC
 		{
 			// Go through own materials
 			_renderer = GetComponent <Renderer>();
-			if (_renderer != null)
+			if (_renderer)
 			{
 				foreach (Material material in _renderer.materials)
 				{

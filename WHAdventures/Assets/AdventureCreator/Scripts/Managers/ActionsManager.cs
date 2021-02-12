@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionsManager.cs"
  * 
@@ -171,8 +171,8 @@ namespace AC
 			if (!string.IsNullOrEmpty (defaultClassName) && subclass.fileName != defaultClassName)
 											{
 				menu.AddItem (new GUIContent ("Make default"), false, Callback, "Make default");
-				menu.AddItem (new GUIContent ("Edit script"), false, Callback, "Edit script");
-				menu.AddSeparator ("");
+				menu.AddItem (new GUIContent ("Edit script"), false, Callback, "EditSource");
+				menu.AddSeparator (string.Empty);
 			}
 
 			menu.AddItem (new GUIContent ("Search local instances"), false, Callback, "Search local instances");
@@ -198,16 +198,11 @@ namespace AC
 						}
 						break;
 
-					case "Edit script":
-						Action tempAction = (Action) CreateInstance (subclass.fileName);
+					case "EditSource":
+						Action tempAction = Action.CreateNew (subclass.fileName);
 						if (tempAction != null && tempAction is Action)
 						{
-							var script = MonoScript.FromScriptableObject (tempAction);
-							if (script != null)
-							{
-								AssetDatabase.OpenAsset (script);
-							}
-							DestroyImmediate (tempAction);
+							Action.EditSource (tempAction);
 						}
 						break;
 
@@ -264,7 +259,7 @@ namespace AC
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -274,6 +269,11 @@ namespace AC
 			showCustom = CustomGUILayout.ToggleHeader (showCustom, "Custom Action scripts");
 			if (showCustom)
 			{
+				if (customFolderPaths.Count == 0)
+				{
+					customFolderPaths.Add (string.Empty);
+				}
+
 				for (int i=0; i<customFolderPaths.Count; i++)
 				{
 					customFolderPaths[i] = ShowCustomFolderGUI (i);
@@ -294,17 +294,23 @@ namespace AC
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			GUILayout.Space (3f);
+			CustomGUILayout.EndVertical ();
 		}
 
 
 		private string ShowCustomFolderGUI (int i)
 		{
 			string _path = customFolderPaths[i];
+			string displayPath = _path;
+			if (!string.IsNullOrEmpty (displayPath) && displayPath.Length > 40)
+			{
+				displayPath = displayPath.Substring (0, 40) + "...";
+			}
 
 			GUILayout.BeginHorizontal ();
 			GUILayout.Label ("Folder #" + i.ToString () + ":", GUILayout.Width (110f));
-			GUILayout.Label (_path, EditorStyles.textField);
+			GUILayout.Label (displayPath, EditorStyles.textField);
 
 			if (GUILayout.Button (string.Empty, CustomStyles.FolderIcon))
 			{
@@ -372,7 +378,7 @@ namespace AC
 
 				EditorGUILayout.EndHorizontal ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (defaultClass > AllActions.Count - 1)
 			{
@@ -423,7 +429,7 @@ namespace AC
 					EditorGUILayout.EndHorizontal ();
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -456,7 +462,7 @@ namespace AC
 					EditorGUILayout.EndHorizontal ();
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -558,7 +564,7 @@ namespace AC
 				{
 					if (action == null) continue;
 
-					if ((action.category == actionType.category && action.title == actionType.title) ||
+					if ((action.Category == actionType.category && action.Title == actionType.title) ||
 					    (action.GetType ().ToString () == actionType.fileName) ||
 					    (action.GetType ().ToString () == "AC." + actionType.fileName))
 					{
@@ -609,7 +615,7 @@ namespace AC
 			{
 				return AllActions[index].GetFullTitle () + suffix;
 			}
-			return _action.category + ": " + _action.title + suffix;
+			return _action.Category + ": " + _action.Title + suffix;
 		}
 		
 		#endif
@@ -625,7 +631,7 @@ namespace AC
 			{
 				return AllActions[index].GetFullTitle ();
 			}
-			return _action.category + ": " + _action.title;
+			return _action.Category + ": " + _action.Title;
 		}
 
 
@@ -712,6 +718,28 @@ namespace AC
 		}
 
 
+		public ActionType GetActionType (Action _action)
+		{
+			if (_action != null)
+			{
+				string className = _action.GetType ().ToString ();
+				className = className.Replace ("AC.", "");
+				foreach (ActionType actionType in AllActions)
+				{
+					if (actionType.fileName == className)
+					{
+						return actionType;
+					}
+				}
+			}
+			else
+			{
+				ACDebug.LogWarning ("Null Action found.  Was an Action class deleted?");
+			}
+			return null;
+		}
+
+
 		/**
 		 * <summary>Gets the index number of an Action within EnabledActions.</summary>
 		 * <param name = "_category">The category of the Action to search for</param>
@@ -783,7 +811,7 @@ namespace AC
 		public int GetActionSubCategory (Action _action)
 		{
 			string fileName = _action.GetType ().ToString ().Replace ("AC.", "");
-			ActionCategory _category = _action.category;
+			ActionCategory _category = _action.Category;
 			
 			// Learn category
 			foreach (ActionType type in AllActions)

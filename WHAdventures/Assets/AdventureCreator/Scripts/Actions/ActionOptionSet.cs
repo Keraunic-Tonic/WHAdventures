@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionOptionSet.cs"
  * 
@@ -33,15 +33,11 @@ namespace AC
 
 		[SerializeField] protected SplitLanguageType splitLanguageType = SplitLanguageType.TextAndVoice;
 
-		
-		public ActionOptionSet ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Save;
-			title = "Set Option";
-			description = "Set an Options variable to a specific value";
-		}
 
+		public override ActionCategory Category { get { return ActionCategory.Save; }}
+		public override string Title { get { return "Set Option"; }}
+		public override string Description { get { return "Set an Options variable to a specific value"; }}
+		
 
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
@@ -177,8 +173,6 @@ namespace AC
 					}
 					break;
 			}
-
-			AfterRunningOption ();
 		}
 		
 
@@ -198,7 +192,7 @@ namespace AC
 		 */
 		public static ActionOptionSet CreateNew_Language (int languageIndex, SplitLanguageType splitLanguageType = SplitLanguageType.TextAndVoice)
 		{
-			ActionOptionSet newAction = (ActionOptionSet) CreateInstance <ActionOptionSet>();
+			ActionOptionSet newAction = CreateNew<ActionOptionSet> ();
 			newAction.method = OptionSetMethod.Language;
 			newAction.index = languageIndex;
 			newAction.splitLanguageType = splitLanguageType;
@@ -213,7 +207,7 @@ namespace AC
 		 */
 		public static ActionOptionSet CreateNew_Subtitles (bool newState)
 		{
-			ActionOptionSet newAction = (ActionOptionSet) CreateInstance <ActionOptionSet>();
+			ActionOptionSet newAction = CreateNew<ActionOptionSet> ();
 			newAction.method = OptionSetMethod.Subtitles;
 			newAction.index = (newState) ? 1 : 0;
 			return newAction;
@@ -227,7 +221,7 @@ namespace AC
 		 */
 		public static ActionOptionSet CreateNew_SFXVolume (float newVolume)
 		{
-			ActionOptionSet newAction = (ActionOptionSet) CreateInstance <ActionOptionSet>();
+			ActionOptionSet newAction = CreateNew<ActionOptionSet> ();
 			newAction.method = OptionSetMethod.SFXVolume;
 			newAction.volume = newVolume;
 			return newAction;
@@ -241,7 +235,7 @@ namespace AC
 		 */
 		public static ActionOptionSet CreateNew_MusicVolume (float newVolume)
 		{
-			ActionOptionSet newAction = (ActionOptionSet) CreateInstance <ActionOptionSet>();
+			ActionOptionSet newAction = CreateNew<ActionOptionSet> ();
 			newAction.method = OptionSetMethod.MusicVolume;
 			newAction.volume = newVolume;
 			return newAction;
@@ -255,7 +249,7 @@ namespace AC
 		 */
 		public static ActionOptionSet CreateNew_SpeechVolume (float newVolume)
 		{
-			ActionOptionSet newAction = (ActionOptionSet) CreateInstance <ActionOptionSet>();
+			ActionOptionSet newAction = CreateNew<ActionOptionSet> ();
 			newAction.method = OptionSetMethod.SpeechVolume;
 			newAction.volume = newVolume;
 			return newAction;

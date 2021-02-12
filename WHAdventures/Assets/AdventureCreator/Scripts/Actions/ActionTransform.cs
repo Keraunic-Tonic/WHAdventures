@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionTransform.cs"
  * 
@@ -70,13 +70,9 @@ namespace AC
 		protected LocalVariables localVariables;
 
 
-		public ActionTransform ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Transform";
-			description = "Transforms a GameObject over time, by or to a given amount, or towards a Marker in the scene. The GameObject must have a Moveable script attached.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Transform"; }}
+		public override string Description { get { return "Transforms a GameObject over time, by or to a given amount, or towards a Marker in the scene. The GameObject must have a Moveable script attached."; }}
 		
 		
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -440,8 +436,6 @@ namespace AC
 				}
 				willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -481,15 +475,15 @@ namespace AC
 			if (!isPlayer && parameterID < 0)
 			{
 				if (linkedProp != null && linkedProp.gameObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
 			if (isPlayer && gameObject.GetComponent <Player>() != null) return true;
 			if (transformType != TransformType.CopyMarker && setVectorMethod == SetVectorMethod.FromVector3Variable && variableLocation == VariableLocation.Component && vectorVarParameterID < 0)
 			{
 				if (variables != null && variables.gameObject == gameObject) return true;
-				if (variablesConstantID == id) return true;
+				if (variablesConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -515,7 +509,7 @@ namespace AC
 		 */
 		public static ActionTransform CreateNew (Moveable objectToMove, Marker markerToMoveTo, bool inWorldSpace = true, float transitionTime = 1f, MoveMethod moveMethod = MoveMethod.Smooth, AnimationCurve timeCurve = null, bool waitUntilFinish = false)
 		{
-			ActionTransform newAction = (ActionTransform) CreateInstance <ActionTransform>();
+			ActionTransform newAction = CreateNew<ActionTransform> ();
 			newAction.linkedProp = objectToMove;
 			newAction.transformType = TransformType.CopyMarker;
 			newAction.inWorldSpace = inWorldSpace;

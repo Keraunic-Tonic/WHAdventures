@@ -34,7 +34,7 @@ namespace AC
 			{
 				selectedVar = VariablesManager.ShowVarList (selectedVar, _target.vars, VariableLocation.Component, varFilter, _target.filter, typeFilter, !Application.isPlaying, _target);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (selectedVar != null && !_target.vars.Contains (selectedVar))
 			{
@@ -50,7 +50,7 @@ namespace AC
 				{
 					VariablesManager.ShowVarGUI (selectedVar, VariableLocation.Component, !Application.isPlaying, null, string.Empty, _target);
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
 			UnityVersionHandler.CustomSetDirty (_target);
@@ -77,7 +77,7 @@ namespace AC
 				EditorGUILayout.EndHorizontal ();
 			}
 		
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 	}

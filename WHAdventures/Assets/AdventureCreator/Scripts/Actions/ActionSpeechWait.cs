@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionSpeechWait.cs"
  * 
@@ -39,13 +39,9 @@ namespace AC
 		protected Char runtimeSpeaker;
 
 
-		public ActionSpeechWait ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Dialogue;
-			title = "Wait for speech";
-			description = "Waits until a particular character has stopped speaking.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Dialogue; }}
+		public override string Title { get { return "Wait for speech"; }}
+		public override string Description { get { return "Waits until a particular character has stopped speaking."; }}
 		
 		
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -173,8 +169,6 @@ namespace AC
 				default:
 					break;
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -211,7 +205,7 @@ namespace AC
 		 */
 		public static ActionSpeechWait CreateNew (AC.Char speakingCharacter)
 		{
-			ActionSpeechWait newAction = (ActionSpeechWait) CreateInstance <ActionSpeechWait>();
+			ActionSpeechWait newAction = CreateNew<ActionSpeechWait> ();
 			newAction.speaker = speakingCharacter;
 			return newAction;
 		}
@@ -222,10 +216,10 @@ namespace AC
 			if (!isPlayer && parameterID < 0)
 			{
 				if (speaker != null && speaker.gameObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
 			if (isPlayer && gameObject.GetComponent <Player>()) return true;
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 

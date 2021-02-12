@@ -11,15 +11,8 @@ namespace AC
 
 		#region Variables
 
-		/** The fade-in duration when resuming audio after loading a save game */
-		public float loadFadeTime = 0f;
-		/** If True, and loadFadetime > 0, then previously-playing audio will be crossfaded out upon loading */
-		public bool crossfadeWhenLoading = false;
-		/** If True, then the track at the time of saving will be resumed from the start upon loading */
-		public bool restartTrackWhenLoading = false;
-
 		protected List<QueuedSoundtrack> queuedSoundtrack = new List<QueuedSoundtrack>();
-		protected MusicCrossfade crossfade;
+		protected List<MusicCrossfade> crossfades = new List<MusicCrossfade>();
 		protected List<QueuedSoundtrack> lastQueuedSoundtrack = new List<QueuedSoundtrack>();
 		protected List<SoundtrackSample> oldSoundtrackSamples = new List<SoundtrackSample>();
 		protected int lastTimeSamples;
@@ -41,24 +34,26 @@ namespace AC
 
 		protected void Awake ()
 		{
-			crossfade = GetComponentInChildren <MusicCrossfade>();
-			crossfade.Init (playWhilePaused);
 			surviveSceneChange = true;
 
 			OnInitialiseScene ();
 
 			queuedSoundtrack.Clear ();
 			lastQueuedSoundtrack.Clear ();
+		}
 
-			if (crossfade == null)
-			{
-				ACDebug.LogWarning ("The " + gameObject.name + " requires a 'MusicCrossfade' component to be attached as a child component.\r\nOne has been added automatically, but you should update the source prefab.", gameObject);
-				GameObject crossfadeOb = new GameObject ("Crossfader");
-				crossfadeOb.AddComponent <AudioSource>();
-				crossfade = crossfadeOb.AddComponent <MusicCrossfade>();
-				crossfadeOb.transform.position = transform.position;
-				crossfadeOb.transform.parent = transform;
-			}
+
+		protected override void OnEnable ()
+		{
+			EventManager.OnRestartGame += OnRestartGame;
+			base.OnEnable ();
+		}
+
+
+		protected override void OnDisable ()
+		{
+			EventManager.OnRestartGame -= OnRestartGame;
+			base.OnDisable ();
 		}
 
 
@@ -81,9 +76,12 @@ namespace AC
 				}
 			}
 
-			if (crossfade)
+			foreach (MusicCrossfade crossfade in crossfades)
 			{
-				crossfade._Update ();
+				if (crossfade)
+				{
+					crossfade._Update ();
+				}
 			}
 
 			if (delayAudioID >= 0 && delayTime > 0f)
@@ -107,11 +105,11 @@ namespace AC
 					if (queuedSoundtrack.Count > 0)
 					{
 						MusicStorage musicStorage = GetSoundtrack (queuedSoundtrack[0].trackID);
-						if (musicStorage != null && musicStorage.audioClip != null)
+						if (musicStorage != null && musicStorage.audioClip)
 						{
 							int nextTimeSamples = (queuedSoundtrack[0].doResume) ? GetSoundtrackSample (queuedSoundtrack[0].trackID) : queuedSoundtrack[0].newTimeSamples;
 
-							SetRelativeVolume (musicStorage.relativeVolume);
+							SetupAudioSourceForSoundtrack (musicStorage);
 							Play (musicStorage.audioClip, queuedSoundtrack[0].trackLoop, nextTimeSamples);
 						}
 					}
@@ -135,12 +133,9 @@ namespace AC
 
 							if (nextSoundtrack.isCrossfade)
 							{
-								if (crossfade)
-								{
-									crossfade.FadeOut (audioSource, nextSoundtrack.fadeTime);
-								}
+								CreateNewCrossfade (nextSoundtrack.fadeTime);
 								audioSource.clip = musicStorage.audioClip;
-								SetRelativeVolume (musicStorage.relativeVolume);
+								SetupAudioSourceForSoundtrack (musicStorage);
 								HandleFadeIn (nextSoundtrack.fadeTime, nextSoundtrack.trackLoop, nextTimeSamples);
 							}
 							else
@@ -160,7 +155,7 @@ namespace AC
 
 					if (audioSource.timeSamples > thresholdSamples)
 					{
-						crossfade.FadeOut (audioSource, queuedSoundtrack[0].loopingOverlapTime);
+						CreateNewCrossfade (queuedSoundtrack[0].loopingOverlapTime);
 						HandleFadeIn (queuedSoundtrack[0].loopingOverlapTime, true, 0);
 					}
 				}
@@ -188,7 +183,7 @@ namespace AC
 		 * <param name = "fadeTime">The fade-in duration, in seconds</param>
 		 * <param name = "resumeIfPlayedBefore">If True, and the track has been both played before and stopped before it finished, the track will be resumed</param>
 		 * <param name = "newTrackTimeSamples">The timeSamples to play the new track from, if not overridden with resumeIfPlayedBefore</param>
-		 * <param name "loopingOverlapTime>The time that the track will overlap itself when looping</param>
+		 * <param name "loopingOverlapTime">The time that the track will overlap itself when looping</param>
 		 * <returns>The duration, in seconds, for the new track to begin playing and the previous track transition to end</reuturns>
 		 */
 		public float Play (int trackID, bool loop, bool isQueued, float fadeTime, bool resumeIfPlayedBefore = false, int newTrackTimeSamples = 0, float loopingOverlapTime = 0f)
@@ -205,7 +200,7 @@ namespace AC
 		 * <param name = "fadeTime">The crossfade duration, in seconds</param>
 		 * <param name = "resumeIfPlayedBefore">If True, and the track has been both played before and stopped before it finished, the track will be resumed</param>
 		 * <param name = "newTrackTimeSamples">The timeSamples to play the new track from, if not overridden with resumeIfPlayedBefore</param>
-		 * <param name "loopingOverlapTime>The time that the track will overlap itself when looping</param>
+		 * <param name "loopingOverlapTime">The time that the track will overlap itself when looping</param>
 		 * <returns>The duration, in seconds, for the new track to begin playing and the previous track transition to end</reuturns>
 		 */
 		public float Crossfade (int trackID, bool loop, bool isQueued, float fadeTime, bool resumeIfPlayedBefore = false, int newTrackTimeSamples = 0, float loopingOverlapTime = 0f)
@@ -254,8 +249,7 @@ namespace AC
 		 */
 		public float StopAll (float fadeTime, bool storeCurrentIndex = true)
 		{
-			if (queuedSoundtrack.Count == 0 && audioSource != null && !IsPlaying () &&
-				(crossfade == null || !crossfade.IsPlaying ()))
+			if (queuedSoundtrack.Count == 0 && audioSource != null && !IsPlaying () && !IsCrossfading ())
 			{
 				return 0f;
 			}
@@ -312,6 +306,26 @@ namespace AC
 
 		#region ProtectedFunctions
 
+		protected bool IsCrossfading ()
+		{
+			foreach (MusicCrossfade crossfade in crossfades)
+			{
+				if (crossfade) return true;
+			}
+			return false;
+		}
+
+
+		protected void CreateNewCrossfade (float fadeTime)
+		{
+			MusicCrossfade newCrossfade = MusicCrossfade.FadeOut (this, audioSource, fadeTime);
+			if (newCrossfade)
+			{
+				crossfades.Add (newCrossfade);
+			}
+		}
+
+
 		protected void EndOthers ()
 		{
 			if (EndsOthers ())
@@ -333,11 +347,6 @@ namespace AC
 
 		protected float HandlePlay (int trackID, bool loop, bool isQueued, float fadeTime, bool isCrossfade, bool resumeIfPlayedBefore, int newTrackTimeSamples = 0, float loopingOverlapTime = 0f)
 		{
-			if (crossfade)
-			{
-				crossfade.Stop ();
-			}
-			
 			MusicStorage musicStorage = GetSoundtrack (trackID);
 			if (musicStorage == null || musicStorage.audioClip == null)
 			{
@@ -391,12 +400,9 @@ namespace AC
 					{
 						if (isCrossfade)
 						{
-							if (crossfade)
-							{
-								crossfade.FadeOut (audioSource, fadeTime);
-							}
+							CreateNewCrossfade (fadeTime);
 
-							SetRelativeVolume (musicStorage.relativeVolume);
+							SetupAudioSourceForSoundtrack (musicStorage);
 							audioSource.clip = musicStorage.audioClip;
 							HandleFadeIn (fadeTime, loop, newTrackTimeSamples);
 
@@ -411,14 +417,14 @@ namespace AC
 					else
 					{
 						Stop ();
-						SetRelativeVolume (musicStorage.relativeVolume);
+						SetupAudioSourceForSoundtrack (musicStorage);
 						Play (musicStorage.audioClip, loop, newTrackTimeSamples);
 						return 0f;
 					}
 				}
 				else
 				{
-					SetRelativeVolume (musicStorage.relativeVolume);
+					SetupAudioSourceForSoundtrack (musicStorage);
 
 					if (fadeTime <= 0f && KickStarter.stateHandler.gameState != GameState.Paused)
 					{
@@ -444,9 +450,15 @@ namespace AC
 
 		protected float ForceStopAll (float fadeTime, bool storeCurrentIndex = true)
 		{
-			if (fadeTime <= 0f && crossfade)
+			if (fadeTime <= 0f)
 			{
-				crossfade.Stop ();
+				foreach (MusicCrossfade crossfade in crossfades)
+				{
+					if (crossfade)
+					{ 
+						crossfade.Stop ();
+					}
+				}
 			}
 
 			if (storeCurrentIndex)
@@ -520,7 +532,7 @@ namespace AC
 					int timeSamples = (delayResumeIfPlayedBefore) ? GetSoundtrackSample (delayAudioID) : delayNewTrackTimeSamples;
 
 					audioSource.clip = musicStorage.audioClip;
-					SetRelativeVolume (musicStorage.relativeVolume);
+					SetupAudioSourceForSoundtrack (musicStorage);
 					FadeIn (delayFadeTime, delayLoop, timeSamples);
 				}
 			}
@@ -534,10 +546,10 @@ namespace AC
 			if (queuedSoundtrack.Count > 0)
 			{
 				MusicStorage musicStorage = GetSoundtrack (queuedSoundtrack[0].trackID);
-				if (musicStorage != null && musicStorage.audioClip != null)
+				if (musicStorage != null && musicStorage.audioClip)
 				{
 					audioSource.clip = musicStorage.audioClip;
-					SetRelativeVolume (musicStorage.relativeVolume);
+					SetupAudioSourceForSoundtrack (musicStorage);
 					PlayAtPoint (queuedSoundtrack[0].trackLoop, _timeSamples);
 
 					if (fadeTime > 0f)
@@ -623,7 +635,7 @@ namespace AC
 
 		protected void LoadMainData (int _timeSamples, string _oldTimeSamples, int _lastTimeSamples, string _lastQueueData, string _queueData)
 		{
-			if (!crossfadeWhenLoading || loadFadeTime <= 0f)
+			if (!CrossfadeWhenLoading || LoadFadeTime <= 0f)
 			{
 				ForceStopAll (0f, false);
 			}
@@ -727,27 +739,45 @@ namespace AC
 					queuedSoundtrack.Add (new QueuedSoundtrack (_id, loopBool, _fadeTime, crossfadeBool, false, 0, loopingOverlapTime));
 				}
 
-				if (restartTrackWhenLoading)
+				if (RestartTrackWhenLoading)
 				{
 					_timeSamples = 0;
 				}
 
-				if (crossfadeWhenLoading && loadFadeTime > 0f && queuedSoundtrack.Count > 0)
+				if (CrossfadeWhenLoading && LoadFadeTime > 0f && queuedSoundtrack.Count > 0)
 				{
 					MusicStorage musicStorage = GetSoundtrack(queuedSoundtrack[0].trackID);
 					if (musicStorage != null)
 					{
-						crossfade.FadeOut (audioSource, loadFadeTime);
+						CreateNewCrossfade (LoadFadeTime);
 						audioSource.clip = musicStorage.audioClip;
-						SetRelativeVolume (musicStorage.relativeVolume);
-						HandleFadeIn (loadFadeTime, queuedSoundtrack[0].trackLoop, _timeSamples);
+						SetupAudioSourceForSoundtrack (musicStorage);
+						HandleFadeIn (LoadFadeTime, queuedSoundtrack[0].trackLoop, _timeSamples);
 					}
 				}
 				else
 				{
-					Resume (_timeSamples, loadFadeTime);
+					Resume (_timeSamples, LoadFadeTime);
 				}
 			}
+		}
+
+
+		private void SetupAudioSourceForSoundtrack (MusicStorage musicStorage)
+		{
+			if (musicStorage.overrideMixerGroup)
+			{
+				audioSource.outputAudioMixerGroup = musicStorage.overrideMixerGroup;
+			}
+			else if (soundType == SoundType.Music)
+			{
+				audioSource.outputAudioMixerGroup = KickStarter.settingsManager.musicMixerGroup;
+			}
+			else if (soundType == SoundType.SFX)
+			{
+				audioSource.outputAudioMixerGroup = KickStarter.settingsManager.sfxMixerGroup;
+			}
+			SetRelativeVolume (musicStorage.relativeVolume);
 		}
 
 
@@ -822,6 +852,19 @@ namespace AC
 		#endregion
 
 
+		#region PrivateFunctions
+
+		private void OnRestartGame ()
+		{
+			queuedSoundtrack.Clear ();
+			lastQueuedSoundtrack.Clear ();
+			oldSoundtrackSamples.Clear ();
+			crossfades.Clear ();
+		}
+
+		#endregion
+
+
 		#region GetSet
 
 		protected virtual List<MusicStorage> Storages
@@ -850,6 +893,32 @@ namespace AC
 			}
 		}
 
+
+		protected virtual float LoadFadeTime
+		{
+			get
+			{
+				return 0f;
+			}
+		}
+
+
+		protected virtual bool CrossfadeWhenLoading
+		{
+			get
+			{
+				return false;
+			}
+		}
+		
+
+		protected virtual bool RestartTrackWhenLoading
+		{
+			get
+			{
+				return false;
+			}
+		}
 
 		#endregion
 
@@ -914,4 +983,3 @@ namespace AC
 	}
 
 }
- 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuInteraction.cs"
  * 
@@ -153,7 +153,7 @@ namespace AC
 		}
 
 
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			if (fixedIcon)
 			{
@@ -167,7 +167,11 @@ namespace AC
 					#endif
 
 					uiImage = uiButton.GetComponentInChildren <Image>();
-					CreateUIEvent (uiButton, _menu, uiPointerState);
+
+					if (addEventListeners)
+					{
+						CreateUIEvent (uiButton, _menu, uiPointerState);
+					}
 				}
 			}
 			else
@@ -176,12 +180,16 @@ namespace AC
 				foreach (UISlot uiSlot in uiSlots)
 				{
 					uiSlot.LinkUIElements (canvas, linkUIGraphic);
-					if (uiSlot != null && uiSlot.uiButton != null)
+					
+					if (addEventListeners)
 					{
-						int j=i;
-						uiSlot.uiButton.onClick.AddListener (() => {
-							ProcessClickUI (_menu, j, KickStarter.playerInput.GetMouseState ());
-						});
+						if (uiSlot != null && uiSlot.uiButton)
+						{
+							int j=i;
+							uiSlot.uiButton.onClick.AddListener (() => {
+								ProcessClickUI (_menu, j, KickStarter.playerInput.GetMouseState ());
+							});
+						}
 					}
 					i++;
 				}
@@ -240,7 +248,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuInteraction)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			GetCursorGUI (apiPrefix, source);
 			displayType = (AC_DisplayType) CustomGUILayout.EnumPopup ("Display type:", displayType, apiPrefix + ".displayType", "How interactions are displayed");
@@ -259,8 +267,8 @@ namespace AC
 			}
 			else
 			{
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 
 				if (fixedIcon)
 				{
@@ -279,7 +287,7 @@ namespace AC
 				uiPointerState = (UIPointerState) CustomGUILayout.EnumPopup ("Responds to:", uiPointerState, apiPrefix + ".uiPointerState", "What pointer state registers as a 'click' for Unity UI Menus");
 				linkUIGraphic = (LinkUIGraphic) CustomGUILayout.EnumPopup ("Link graphics to:", linkUIGraphic, "", "What Image component the element's graphics should be linked to");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			base.ShowGUI (menu);
 		}
@@ -333,7 +341,7 @@ namespace AC
 			else
 			{
 				maxSlots = CustomGUILayout.IntField ("Maximum # of icons:", maxSlots, apiPrefix + ".maxSlots", "The maximum number of icons that can be shown at once");
-				if (KickStarter.cursorManager != null && maxSlots > KickStarter.cursorManager.cursorIcons.Count)
+				if (KickStarter.cursorManager && maxSlots > KickStarter.cursorManager.cursorIcons.Count)
 				{
 					maxSlots = KickStarter.cursorManager.cursorIcons.Count;
 				}
@@ -350,28 +358,28 @@ namespace AC
 				}
 			}
 		}
+		
+		#endif
 
 
 		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
 		{
 			if (fixedIcon)
 			{
-				if (uiButton != null && uiButton.gameObject == gameObject) return true;
-				if (linkedUiID == id) return true;
+				if (uiButton && uiButton.gameObject == gameObject) return true;
+				if (linkedUiID == id && id != 0) return true;
 			}
 			else
 			{
 				foreach (UISlot uiSlot in uiSlots)
 				{
-					if (uiSlot.uiButton != null && uiSlot.uiButton == gameObject) return true;
-					if (uiSlot.uiButtonID == id) return true;
+					if (uiSlot.uiButton && uiSlot.uiButton == gameObject) return true;
+					if (uiSlot.uiButtonID == id && id != 0) return true;
 				}
 			}
 
 			return false;
 		}
-		
-		#endif
 
 
 		public override void PreDisplay (int _slot, int languageNumber, bool isActive)
@@ -383,34 +391,34 @@ namespace AC
 				if (Application.isPlaying && KickStarter.stateHandler.IsInGameplay () && KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot)
 				{
 					if (KickStarter.settingsManager.allowDefaultinteractions &&
-						KickStarter.playerInteraction.GetActiveHotspot () != null &&
-						KickStarter.playerInteraction.GetActiveHotspot ().GetFirstUseIcon () == iconID)
+						parentMenu != null &&
+						parentMenu.TargetHotspot &&
+						parentMenu.TargetHotspot.GetFirstUseIcon () == iconID)
 					{
 						isActive = true;
 						isDefaultIcon = true;
 					}
 					else if (KickStarter.settingsManager.allowDefaultInventoryInteractions &&
-							 KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple &&
+							 KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple &&
 							 KickStarter.settingsManager.CanSelectItems (false) &&
-							 KickStarter.playerInteraction.GetActiveHotspot () == null &&
-							 KickStarter.runtimeInventory.hoverItem != null &&
-							 KickStarter.runtimeInventory.hoverItem.GetFirstStandardIcon () == iconID
-							 )
+							 parentMenu.TargetHotspot == null &&
+							 InvInstance.IsValid (parentMenu.TargetInvInstance) &&
+							 parentMenu.TargetInvInstance.GetFirstStandardIcon () == iconID)
 					{
 						isActive = true;
 						isDefaultIcon = true;
 					}
 				}
 
-				if (uiButton != null)
+				if (uiButton)
 				{
 					UpdateUISelectable (uiButton, uiSelectableHideStyle);
 					
-					if (displayType != AC_DisplayType.IconOnly && uiText != null)
+					if (displayType != AC_DisplayType.IconOnly && uiText)
 					{
 						uiText.text = labels[0];
 					}
-					if (displayType == AC_DisplayType.IconOnly && uiImage != null && icon != null && icon.isAnimated)
+					if (displayType == AC_DisplayType.IconOnly && uiImage && icon != null && icon.isAnimated)
 					{
 						uiImage.sprite = icon.GetAnimatedSprite (isActive);
 					}
@@ -477,7 +485,7 @@ namespace AC
 
 				if (overrideTexture)
 				{
-					if (iconID >= 0 && KickStarter.playerCursor.GetSelectedCursorID () == iconID && activeTexture != null)
+					if (iconID >= 0 && KickStarter.playerCursor.GetSelectedCursorID () == iconID && activeTexture)
 					{
 						GUI.DrawTexture (ZoomRect (relativeRect, zoom), activeTexture, ScaleMode.StretchToFill, true, 0f);
 					}
@@ -519,15 +527,14 @@ namespace AC
 
 		/**
 		 * <summary>Recalculates display for a particular inventory item.</summary>
-		 * <param name = "parentMenu">The Menu that the element is a part of</param>
-		 * <param name = "item">The InvItem to recalculate the Menus's display for</param>
+		 * <param name = "invInstance">The inventory item instance to recalculate the Menus's display for</param>
 		 */
-		public void MatchInteractions (InvItem item)
+		public void MatchInteractions (InvInstance invInstance)
 		{
 			if (!fixedIcon) return;
 
 			bool match = false;
-			foreach (InvInteraction interaction in item.interactions)
+			foreach (InvInteraction interaction in invInstance.Interactions)
 			{
 				if (interaction.icon.id == iconID)
 				{
@@ -665,7 +672,7 @@ namespace AC
 
 		public override bool IsSelectedByEventSystem (int slotIndex)
 		{
-			if (uiButton != null)
+			if (uiButton)
 			{
 				return KickStarter.playerMenus.IsEventSystemSelectingObject (uiButton.gameObject);
 			}
@@ -707,7 +714,7 @@ namespace AC
 					}
 					else if (parentMenu != null)
 					{
-						if (parentMenu.TargetHotspot != null)
+						if (parentMenu.TargetHotspot)
 						{
 							foreach (Button button in parentMenu.TargetHotspot.useButtons)
 							{
@@ -717,9 +724,9 @@ namespace AC
 								}
 							}
 						}
-						else if (parentMenu.TargetInvItem != null)
+						else if (InvInstance.IsValid (parentMenu.TargetInvInstance))
 						{
-							foreach (InvInteraction interaction in parentMenu.TargetInvItem.interactions)
+							foreach (InvInteraction interaction in parentMenu.TargetInvInstance.Interactions)
 							{
 								_iconIDs.Add (interaction.icon.id);
 							}
@@ -759,34 +766,28 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Performs what should happen when the element is clicked on.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 * <param name = "_slot">Ignored by this subclass</param>
-		 * <param name = "_mouseState">The state of the mouse button</param>
-		 */
-		public override void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public override bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			if (KickStarter.stateHandler.gameState == GameState.Cutscene)
 			{
-				return;
+				return false;
 			}
 			
-			//if (_mouseState != MouseState.SingleClick && !(!fixedIcon && _mouseState == MouseState.HeldDown))
 			if (_mouseState != MouseState.SingleClick && _menu.menuSource == MenuSource.AdventureCreator)
 			{
-				return;
+				return false;
 			}
 
 			KickStarter.playerInteraction.ClickInteractionIcon (_menu, GetIconIDAtSlot (_slot));
-			base.ProcessClick (_menu, _slot, _mouseState);
+
+			return base.ProcessClick (_menu, _slot, _mouseState);
 		}
 		
 		
 		protected override void AutoSize ()
 		{
 			CursorIcon _icon = GetIconAtSlot (0);
-			if (displayType == AC_DisplayType.IconOnly && _icon != null && _icon.texture != null)
+			if (displayType == AC_DisplayType.IconOnly && _icon != null && _icon.texture)
 			{
 				GUIContent content = new GUIContent (_icon.texture);
 				AutoSize (content);
@@ -838,7 +839,7 @@ namespace AC
 
 		public override string GetHotspotLabelOverride (int _slot, int _language)
 		{
-			if (fixedIcon && uiButton != null && !uiButton.interactable) return string.Empty;
+			if (fixedIcon && uiButton && !uiButton.interactable) return string.Empty;
 
 			#if UNITY_EDITOR
 			if (!Application.isPlaying)
@@ -858,13 +859,16 @@ namespace AC
 						return string.Empty;
 					}
 
-					if (parentMenu.TargetInvItem != null)
+					if (InvInstance.IsValid (parentMenu.TargetInvInstance))
 					{
-						return AdvGame.CombineLanguageString (
-										KickStarter.cursorManager.GetLabelFromID (slotIconID, _language),
-										parentMenu.TargetInvItem.GetLabel (_language),
-										_language
-										);
+						string prefix = KickStarter.cursorManager.GetLabelFromID (slotIconID, _language);
+						string itemName = parentMenu.TargetInvInstance.InvItem.GetLabel (_language);
+						if (parentMenu.TargetInvInstance.InvItem.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+						{
+							itemName = itemName.ToLower ();
+						}
+
+						return AdvGame.CombineLanguageString (prefix, itemName, _language);
 					}
 
 					if (KickStarter.settingsManager.SelectInteractionMethod () != SelectInteractions.ClickingMenu)
@@ -872,13 +876,16 @@ namespace AC
 						return string.Empty;
 					}
 
-					if (parentMenu.TargetHotspot != null)
+					if (parentMenu.TargetHotspot)
 					{
-						return AdvGame.CombineLanguageString (
-										KickStarter.cursorManager.GetLabelFromID (slotIconID, _language),
-										parentMenu.TargetHotspot.GetName (_language),
-										_language
-										);
+						string prefix = KickStarter.cursorManager.GetLabelFromID (slotIconID, _language);
+						string hotspotName = parentMenu.TargetHotspot.GetName (_language);
+						if (parentMenu.TargetHotspot.canBeLowerCase && !string.IsNullOrEmpty (prefix))
+						{
+							hotspotName = hotspotName.ToLower ();
+						}
+
+						return AdvGame.CombineLanguageString (prefix, hotspotName, _language);
 					}
 				}
 				else if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot)

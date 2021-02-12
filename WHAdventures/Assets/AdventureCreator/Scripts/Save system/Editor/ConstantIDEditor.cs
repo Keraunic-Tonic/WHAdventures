@@ -18,7 +18,7 @@ namespace AC
 		{
 			ConstantID _target = (ConstantID) target;
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			EditorGUILayout.LabelField ("Constant ID number", EditorStyles.boldLabel);
 
@@ -57,7 +57,7 @@ namespace AC
 				EditorGUIUtility.systemCopyBuffer = _target.constantID.ToString ();
 			}
 			EditorGUILayout.EndHorizontal ();
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (!ignoreDirty)
 			{

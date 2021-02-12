@@ -18,90 +18,113 @@ namespace AC
 		public void OnEnable ()
 		{
 			_target = (Container) target;
-
-			if (AdvGame.GetReferences () && AdvGame.GetReferences ().inventoryManager)
-			{
-				inventoryManager = AdvGame.GetReferences ().inventoryManager;
-			}
 		}
 
 
 		public override void OnInspectorGUI ()
 		{
-			if (_target == null || inventoryManager == null)
+			if (_target == null)
 			{
 				OnEnable ();
 				return;
 			}
 
+			inventoryManager = AdvGame.GetReferences ().inventoryManager;
+
 			ShowCategoriesUI (_target);
 			EditorGUILayout.Space ();
 
 			EditorGUILayout.LabelField ("Stored Inventory items", EditorStyles.boldLabel);
-			if (_target.items.Count > 0)
+			if (Application.isPlaying)
 			{
-				EditorGUILayout.BeginVertical ("Button");
-				for (int i=0; i<_target.items.Count; i++)
+				if (_target.InvCollection.InvInstances.Count > 0)
 				{
-					if (_target.items[i].IsEmpty) continue;
-
-					EditorGUILayout.BeginHorizontal ();
-					EditorGUILayout.LabelField ("Item name:", GUILayout.Width (80f));
-					if (inventoryManager.CanCarryMultiple (_target.items[i].linkedID))
+					CustomGUILayout.BeginVertical ();
+					foreach (InvInstance invInstance in _target.InvCollection.InvInstances)
 					{
-						EditorGUILayout.LabelField (inventoryManager.GetLabel (_target.items[i].linkedID), EditorStyles.boldLabel, GUILayout.Width (135f));
+						if (!InvInstance.IsValid (invInstance)) continue;
 
-						if (Application.isPlaying)
+						EditorGUILayout.BeginHorizontal ();
+
+						if (invInstance.InvItem.canCarryMultiple)
 						{
-							EditorGUILayout.LabelField ("Count: " + _target.items[i].count.ToString (), GUILayout.Width (50f));
+							EditorGUILayout.LabelField (invInstance.InvItem.label, EditorStyles.boldLabel, GUILayout.Width (235f));
+							EditorGUILayout.LabelField ("Count: " + invInstance.Count.ToString ());
 						}
 						else
 						{
-							EditorGUILayout.LabelField ("Count:", GUILayout.Width (50f));
-							_target.items[i].count = EditorGUILayout.IntField (_target.items[i].count, GUILayout.Width (44f));
-							if (_target.items[i].count <= 0) _target.items[i].count = 1;
+							EditorGUILayout.LabelField (invInstance.InvItem.label, EditorStyles.boldLabel);
 						}
-					}
-					else
-					{
-						EditorGUILayout.LabelField (inventoryManager.GetLabel (_target.items[i].linkedID), EditorStyles.boldLabel);
-						_target.items[i].count = 1;
-					}
 
-					if (!Application.isPlaying && GUILayout.Button (string.Empty, CustomStyles.IconCog))
-					{
-						SideMenu (_target.items[i]);
+						EditorGUILayout.EndHorizontal ();
+
+						CustomGUILayout.DrawUILine ();
 					}
-
-					EditorGUILayout.EndHorizontal ();
-
-					if (_target.limitToCategory && _target.categoryIDs != null && _target.categoryIDs.Count > 0)
-					{
-						InvItem listedItem = inventoryManager.GetItem (_target.items[i].linkedID);
-						if (listedItem != null && !_target.categoryIDs.Contains (listedItem.binID))
-					 	{
-							EditorGUILayout.HelpBox ("This item is not in the categories checked above and will not be displayed.", MessageType.Warning);
-						}
-					}
-
-					GUILayout.Box (string.Empty, GUILayout.ExpandWidth (true), GUILayout.Height (1));
+					CustomGUILayout.EndVertical ();
 				}
-				EditorGUILayout.EndVertical ();
+				else
+				{
+					EditorGUILayout.HelpBox ("This Container has no items", MessageType.Info);
+				}
 			}
 			else
 			{
-				EditorGUILayout.HelpBox ("This Container has no items", MessageType.Info);
+				if (_target.items.Count > 0)
+				{
+					CustomGUILayout.BeginVertical ();
+					for (int i=0; i<_target.items.Count; i++)
+					{
+						_target.items[i].ShowGUI (inventoryManager);
+
+						if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
+						{
+							SideMenu (_target.items[i]);
+						}
+
+						EditorGUILayout.EndHorizontal ();
+
+						if (_target.limitToCategory && _target.categoryIDs != null && _target.categoryIDs.Count > 0)
+						{
+							InvItem listedItem = inventoryManager.GetItem (_target.items[i].ItemID);
+							if (listedItem != null && !_target.categoryIDs.Contains (listedItem.binID))
+					 		{
+								EditorGUILayout.HelpBox ("This item is not in the categories checked above and will not be displayed.", MessageType.Warning);
+							}
+						}
+
+						CustomGUILayout.DrawUILine ();
+					}
+					CustomGUILayout.EndVertical ();
+				}
+				else
+				{
+					EditorGUILayout.HelpBox ("This Container has no items", MessageType.Info);
+				}
 			}
 
 			EditorGUILayout.Space ();
 
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField ("New item to store:", GUILayout.MaxWidth (130f));
-			itemNumber = EditorGUILayout.Popup (itemNumber, CreateItemList ());
+			bool allowEmptySlots = KickStarter.settingsManager && KickStarter.settingsManager.canReorderItems;
+			itemNumber = EditorGUILayout.Popup (itemNumber, CreateItemList (allowEmptySlots));
 			if (GUILayout.Button ("Add new item"))
 			{
-				ContainerItem newItem = new ContainerItem (CreateItemID (itemNumber), _target.GetIDArray ());
-				_target.items.Add (newItem);
+				if (allowEmptySlots)
+				{
+					if (itemNumber == 0)
+					{
+						_target.items.Add (new ContainerItem (-1, _target.items.ToArray ()));
+					}
+					else
+					{
+						_target.items.Add (new ContainerItem (CreateItemID (itemNumber-1), _target.items.ToArray ()));
+					}
+				}
+				else
+				{
+					_target.items.Add (new ContainerItem (CreateItemID (itemNumber), _target.items.ToArray ()));
+				}
 			}
 			EditorGUILayout.EndHorizontal ();
 
@@ -116,7 +139,7 @@ namespace AC
 
 		private void ShowCategoriesUI (Container _target)
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			_target.limitToCategory = CustomGUILayout.Toggle ("Limit by category?", _target.limitToCategory, "", "If True, only inventory items of a specific category will be displayed");
 			if (_target.limitToCategory)
 			{
@@ -168,12 +191,16 @@ namespace AC
 				}
 
 				_target.maxSlots = EditorGUILayout.DelayedIntField ("Max number of slots:", _target.maxSlots);
+				if (_target.maxSlots > 0)
+				{
+					_target.swapIfFull = CustomGUILayout.Toggle ("Swap items when full?", _target.swapIfFull, string.Empty, "If True, then attempting to insert an item when full will result in it being swapped with the one already in the slot.");
+				}
 			}
 			else
 			{
 				_target.maxSlots = 0;
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -234,10 +261,15 @@ namespace AC
 		}
 		
 		
-		private string[] CreateItemList ()
+		private string[] CreateItemList (bool includeEmpty)
 		{
 			List<string> itemList = new List<string>();
 			
+			if (includeEmpty)
+			{
+				itemList.Add ("(Empty slot)");
+			}
+
 			foreach (InvItem item in inventoryManager.items)
 			{
 				itemList.Add (item.label);

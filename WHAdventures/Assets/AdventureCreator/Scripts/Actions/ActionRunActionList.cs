@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionRunActionList.cs"
  * 
@@ -52,22 +52,19 @@ namespace AC
 		protected enum RunMode { RunOnly, SetParametersAndRun, SetParametersOnly };
 
 
-		public ActionRunActionList ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ActionList;
-			title = "Run";
-			description = "Runs any ActionList (either scene-based like Cutscenes, Triggers and Interactions, or ActionList assets). If the new ActionList takes parameters, this Action can be used to set them.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.ActionList; }}
+		public override string Title { get { return "Run"; }}
+		public override string Description { get { return "Runs any ActionList (either scene-based like Cutscenes, Triggers and Interactions, or ActionList assets). If the new ActionList takes parameters, this Action can be used to set them."; }}
+		
 
-
-		protected void Upgrade ()
+		public override void Upgrade ()
 		{
+			base.Upgrade ();
+
 			if (!runInParallel)
 			{
-				numSockets = 1;
 				runInParallel = true;
-				endAction = ResultAction.Stop;
+				endings[0].resultAction = ResultAction.Stop;
 			}
 
 			if (setParameters)
@@ -80,8 +77,6 @@ namespace AC
 
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
-			Upgrade ();
-
 			if (listSource == ListSource.InScene)
 			{
 				actionList = AssignFile <ActionList> (parameters, parameterID, constantID, actionList);
@@ -117,17 +112,159 @@ namespace AC
 		{
 			if (!isRunning)
 			{
-				Upgrade ();
-
 				isRunning = true;
 				runtimeActionList = null;
 
-				if (listSource == ListSource.InScene)
+				switch (listSource)
 				{
-					if (actionList != null && !actionList.actions.Contains (this))
-					{
-						KickStarter.actionListManager.EndList (actionList);
+					case ListSource.InScene:
+						if (actionList != null && !actionList.actions.Contains (this))
+						{
+							KickStarter.actionListManager.EndList (actionList);
 
+							if (actionList.source == ActionListSource.AssetFile && actionList.assetFile != null && actionList.assetFile.useParameters)
+							{
+								if (actionList.syncParamValues)
+								{
+									SendParameters (actionList.assetFile.GetParameters (), true);
+								}
+								else
+								{
+									SendParameters (actionList.parameters, false);
+								}
+								if (runMode == RunMode.SetParametersOnly)
+								{
+									isRunning = false;
+									return 0f;
+								}
+							}
+							else if (actionList.source == ActionListSource.InScene && actionList.useParameters)
+							{
+								SendParameters (actionList.parameters, false);
+								if (runMode == RunMode.SetParametersOnly)
+								{
+									isRunning = false;
+									return 0f;
+								}
+							}
+
+							if (runFromStart)
+							{
+								actionList.Interact (0, !isSkippable);
+							}
+							else
+							{
+								actionList.Interact (GetSkipIndex (actionList.actions), !isSkippable);
+							}
+						}
+						else
+						{
+							LogWarning ("Could not find ActionList to run.");
+							isRunning = false;
+							return 0f;
+						}
+						break;
+
+					case ListSource.AssetFile:
+						if (invActionList != null && !invActionList.actions.Contains (this))
+						{
+							if (invActionList.useParameters)
+							{
+								SendParameters (invActionList.GetParameters (), true);
+								if (runMode == RunMode.SetParametersOnly)
+								{
+									isRunning = false;
+									return 0f;
+								}
+							}
+
+							if (!invActionList.canRunMultipleInstances)
+							{
+								KickStarter.actionListAssetManager.EndAssetList (invActionList);
+							}
+
+							if (runFromStart)
+							{
+								runtimeActionList = AdvGame.RunActionListAsset (invActionList, 0, !isSkippable);
+							}
+							else
+							{
+								runtimeActionList = AdvGame.RunActionListAsset (invActionList, GetSkipIndex (invActionList.actions), !isSkippable);
+							}
+						}
+						else
+						{
+							LogWarning ("Could not find ActionList asset to run");
+							isRunning = false;
+							return 0f;
+						}
+						break;
+
+					default:
+						break;
+				}
+
+				if (!runInParallel || (runInParallel && willWait))
+				{
+					return defaultPauseTime;
+				}
+			}
+			else
+			{
+				switch (listSource)
+				{
+					case ListSource.InScene:
+						if (actionList)
+						{
+							if (KickStarter.actionListManager.IsListRunning (actionList))
+							{
+								return defaultPauseTime;
+							}
+							else
+							{
+								isRunning = false;
+							}
+						}
+						break;
+
+					case ListSource.AssetFile:
+						if (invActionList)
+						{
+							if (invActionList.canRunMultipleInstances)
+							{
+								if (runtimeActionList != null && KickStarter.actionListManager.IsListRunning (runtimeActionList))
+								{
+									return defaultPauseTime;
+								}
+								isRunning = false;
+							}
+							else
+							{
+								if (KickStarter.actionListAssetManager.IsListRunning (invActionList))
+								{
+									return defaultPauseTime;
+								}
+								isRunning = false;
+							}
+						}
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			return 0f;
+		}
+
+
+		public override void Skip ()
+		{
+			switch (listSource)
+			{
+				case ListSource.InScene:
+					if (actionList)
+					{
 						if (actionList.source == ActionListSource.AssetFile && actionList.assetFile != null && actionList.assetFile.useParameters)
 						{
 							if (actionList.syncParamValues)
@@ -140,8 +277,7 @@ namespace AC
 							}
 							if (runMode == RunMode.SetParametersOnly)
 							{
-								isRunning = false;
-								return 0f;
+								return;
 							}
 						}
 						else if (actionList.source == ActionListSource.InScene && actionList.useParameters)
@@ -149,167 +285,51 @@ namespace AC
 							SendParameters (actionList.parameters, false);
 							if (runMode == RunMode.SetParametersOnly)
 							{
-								isRunning = false;
-								return 0f;
+								return;
 							}
 						}
 
 						if (runFromStart)
 						{
-							actionList.Interact (0, !isSkippable);
+							actionList.Skip ();
 						}
 						else
 						{
-							actionList.Interact (GetSkipIndex (actionList.actions), !isSkippable);
+							actionList.Skip (GetSkipIndex (actionList.actions));
 						}
 					}
-					else
-					{
-						LogWarning ("Could not find ActionList to run.");
-						isRunning = false;
-						return 0f;
-					}
-				}
-				else if (listSource == ListSource.AssetFile)
-				{
-					if (invActionList != null && !invActionList.actions.Contains (this))
+					break;
+
+				case ListSource.AssetFile:
+					if (invActionList)
 					{
 						if (invActionList.useParameters)
 						{
 							SendParameters (invActionList.GetParameters (), true);
 							if (runMode == RunMode.SetParametersOnly)
 							{
-								isRunning = false;
-								return 0f;
+								return;
 							}
 						}
 
-						if (!invActionList.canRunMultipleInstances)
+						if (runtimeActionList != null && !invActionList.IsSkippable () && invActionList.canRunMultipleInstances)
 						{
-							KickStarter.actionListAssetManager.EndAssetList (invActionList);
+							KickStarter.actionListAssetManager.EndAssetList (runtimeActionList);
 						}
 
 						if (runFromStart)
 						{
-							runtimeActionList = AdvGame.RunActionListAsset (invActionList, 0, !isSkippable);
+							AdvGame.SkipActionListAsset (invActionList);
 						}
 						else
 						{
-							runtimeActionList = AdvGame.RunActionListAsset (invActionList, GetSkipIndex (invActionList.actions), !isSkippable);
+							AdvGame.SkipActionListAsset (invActionList, GetSkipIndex (invActionList.actions));
 						}
 					}
-					else
-					{
-						LogWarning ("Could not find ActionList asset to run");
-						isRunning = false;
-						return 0f;
-					}
-				}
+					break;
 
-				if (!runInParallel || (runInParallel && willWait))
-				{
-					return defaultPauseTime;
-				}
-			}
-			else
-			{
-				if (listSource == ListSource.InScene && actionList != null)
-				{
-					if (KickStarter.actionListManager.IsListRunning (actionList))
-					{
-						return defaultPauseTime;
-					}
-					else
-					{
-						isRunning = false;
-					}
-				}
-				else if (listSource == ListSource.AssetFile && invActionList != null)
-				{
-					if (invActionList.canRunMultipleInstances)
-					{
-						if (runtimeActionList != null && KickStarter.actionListManager.IsListRunning (runtimeActionList))
-						{
-							return defaultPauseTime;
-						}
-						isRunning = false;
-					}
-					else
-					{
-						if (KickStarter.actionListAssetManager.IsListRunning (invActionList))
-						{
-							return defaultPauseTime;
-						}
-						isRunning = false;
-					}
-				}
-			}
-
-			return 0f;
-		}
-
-
-		public override void Skip ()
-		{
-			if (listSource == ListSource.InScene && actionList != null)
-			{
-				if (actionList.source == ActionListSource.AssetFile && actionList.assetFile != null && actionList.assetFile.useParameters)
-				{
-					if (actionList.syncParamValues)
-					{
-						SendParameters (actionList.assetFile.GetParameters (), true);
-					}
-					else
-					{
-						SendParameters (actionList.parameters, false);
-					}
-					if (runMode == RunMode.SetParametersOnly)
-					{
-						return;
-					}
-				}
-				else if (actionList.source == ActionListSource.InScene && actionList.useParameters)
-				{
-					SendParameters (actionList.parameters, false);
-					if (runMode == RunMode.SetParametersOnly)
-					{
-						return;
-					}
-				}
-
-				if (runFromStart)
-				{
-					actionList.Skip ();
-				}
-				else
-				{
-					actionList.Skip (GetSkipIndex (actionList.actions));
-				}
-			}
-			else if (listSource == ListSource.AssetFile && invActionList != null)
-			{
-				if (invActionList.useParameters)
-				{
-					SendParameters (invActionList.GetParameters (), true);
-					if (runMode == RunMode.SetParametersOnly)
-					{
-						return;
-					}
-				}
-
-				if (runtimeActionList != null && !invActionList.IsSkippable () && invActionList.canRunMultipleInstances)
-				{
-					KickStarter.actionListAssetManager.EndAssetList (runtimeActionList);
-				}
-
-				if (runFromStart)
-				{
-					AdvGame.SkipActionListAsset (invActionList);
-				}
-				else
-				{
-					AdvGame.SkipActionListAsset (invActionList, GetSkipIndex (invActionList.actions));
-				}
+				default:
+					break;
 			}
 		}
 
@@ -317,7 +337,7 @@ namespace AC
 		protected int GetSkipIndex (List<Action> _actions)
 		{
 			int skip = jumpToAction;
-			if (jumpToActionActual && _actions.IndexOf (jumpToActionActual) > 0)
+			if (jumpToActionActual != null && _actions.IndexOf (jumpToActionActual) > 0)
 			{
 				skip = _actions.IndexOf (jumpToActionActual);
 			}
@@ -331,7 +351,6 @@ namespace AC
 			{
 				return;
 			}
-
 			SyncLists (externalParameters, localParameters);
 			SetParametersBase.BulkAssignParameterValues (externalParameters, localParameters, sendingToAsset, isAssetFile);
 		}
@@ -341,8 +360,6 @@ namespace AC
 				
 		public override void ShowGUI (List<ActionParameter> parameters)
 		{
-			Upgrade ();
-
 			listSource = (ListSource) EditorGUILayout.EnumPopup ("Source:", listSource);
 			if (listSource == ListSource.InScene)
 			{
@@ -376,7 +393,6 @@ namespace AC
 							SetParametersGUI (actionList.assetFile.DefaultParameters, parameters);
 							if (runMode == RunMode.SetParametersOnly)
 							{
-								AfterRunningOption ();
 								return;
 							}
 						}
@@ -385,7 +401,6 @@ namespace AC
 							SetParametersGUI (actionList.parameters, parameters);
 							if (runMode == RunMode.SetParametersOnly)
 							{
-								AfterRunningOption ();
 								return;
 							}
 						}
@@ -428,7 +443,6 @@ namespace AC
 						SetParametersGUI (invActionList.DefaultParameters, parameters);
 						if (runMode == RunMode.SetParametersOnly)
 						{
-							AfterRunningOption ();
 							return;
 						}
 					}
@@ -446,10 +460,7 @@ namespace AC
 				}
 			}
 
-			Upgrade ();
-
 			willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
-			AfterRunningOption ();
 		}
 
 
@@ -458,13 +469,12 @@ namespace AC
 			int tempSkipAction = jumpToAction;
 			List<string> labelList = new List<string>();
 			
-			if (jumpToActionActual)
+			if (jumpToActionActual != null)
 			{
 				bool found = false;
 				
 				for (int i = 0; i < actions.Count; i++)
 				{
-					//labelList.Add (i.ToString () + ": " + actions [i].title);
 					labelList.Add ("(" + i.ToString () + ") " + ((KickStarter.actionsManager != null) ? KickStarter.actionsManager.GetActionTypeLabel (actions[i]) : string.Empty));
 
 					if (jumpToActionActual == actions [i])
@@ -499,7 +509,7 @@ namespace AC
 		}
 
 
-		public static int ShowVarSelectorGUI (string label, List<GVar> vars, int ID)
+		public static int ShowVarSelectorGUI (string label, List<GVar> vars, int ID, string tooltip = "")
 		{
 			int variableNumber = -1;
 			
@@ -511,7 +521,7 @@ namespace AC
 			}
 			
 			variableNumber = GetVarNumber (vars, ID) + 1;
-			variableNumber = EditorGUILayout.Popup (label, variableNumber, labelList.ToArray()) - 1;
+			variableNumber = CustomGUILayout.Popup (label, variableNumber, labelList.ToArray(), string.Empty, tooltip) - 1;
 
 			if (variableNumber >= 0)
 			{
@@ -522,7 +532,7 @@ namespace AC
 		}
 
 
-		public static int ShowInvItemSelectorGUI (string label, List<InvItem> items, int ID)
+		public static int ShowInvItemSelectorGUI (string label, List<InvItem> items, int ID, string tooltip = "")
 		{
 			int invNumber = -1;
 			
@@ -534,7 +544,7 @@ namespace AC
 			}
 			
 			invNumber = GetInvNumber (items, ID) + 1;
-			invNumber = EditorGUILayout.Popup (label, invNumber, labelList.ToArray()) - 1;
+			invNumber = CustomGUILayout.Popup (label, invNumber, labelList.ToArray(), string.Empty, tooltip) - 1;
 
 			if (invNumber >= 0)
 			{
@@ -544,7 +554,7 @@ namespace AC
 		}
 
 
-		public static int ShowDocumentSelectorGUI (string label, List<Document> documents, int ID)
+		public static int ShowDocumentSelectorGUI (string label, List<Document> documents, int ID, string tooltip = "")
 		{
 			int docNumber = -1;
 			
@@ -556,7 +566,7 @@ namespace AC
 			}
 			
 			docNumber = GetDocNumber (documents, ID) + 1;
-			docNumber = EditorGUILayout.Popup (label, docNumber, labelList.ToArray()) - 1;
+			docNumber = CustomGUILayout.Popup (label, docNumber, labelList.ToArray(), string.Empty, tooltip) - 1;
 
 			if (docNumber >= 0)
 			{
@@ -645,7 +655,7 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 
@@ -735,9 +745,9 @@ namespace AC
 			if (listSource == ListSource.InScene && parameterID < 0)
 			{
 				if (actionList != null && actionList.gameObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -745,7 +755,7 @@ namespace AC
 		{
 			if (listSource == ListSource.AssetFile && invActionList == actionListAsset)
 				return true;
-			return false;
+			return base.ReferencesAsset (actionListAsset);
 		}
 
 		#endif
@@ -789,7 +799,7 @@ namespace AC
 		 */
 		public static ActionRunActionList CreateNew (ActionList actionList, int startingActionIndex = 0)
 		{
-			ActionRunActionList newAction = (ActionRunActionList) CreateInstance <ActionRunActionList>();
+			ActionRunActionList newAction = CreateNew<ActionRunActionList> ();
 			newAction.listSource = ListSource.InScene;
 			newAction.actionList = actionList;
 			newAction.runFromStart = (startingActionIndex <= 0);
@@ -806,7 +816,7 @@ namespace AC
 		 */
 		public static ActionRunActionList CreateNew (ActionListAsset actionListAsset, int startingActionIndex = 0)
 		{
-			ActionRunActionList newAction = (ActionRunActionList) CreateInstance <ActionRunActionList>();
+			ActionRunActionList newAction = CreateNew<ActionRunActionList> ();
 			newAction.listSource = ListSource.AssetFile;
 			newAction.invActionList = actionListAsset;
 			newAction.runFromStart = (startingActionIndex <= 0);

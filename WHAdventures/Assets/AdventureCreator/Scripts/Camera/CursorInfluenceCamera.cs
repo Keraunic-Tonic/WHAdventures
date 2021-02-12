@@ -38,7 +38,7 @@ namespace AC
 		{
 			if (followCursor && KickStarter.stateHandler)
 			{
-				if (KickStarter.stateHandler.IsInGameplay () && KickStarter.playerInput != null)
+				if (KickStarter.stateHandler.IsInGameplay () && KickStarter.playerInput)
 				{
 					Vector2 mousePosition = KickStarter.playerInput.GetMousePosition ();
 					Vector2 mouseOffset = new Vector2 (mousePosition.x / ( ACScreen.width / 2) - 1, mousePosition.y / ( ACScreen.height / 2) - 1);
@@ -72,7 +72,7 @@ namespace AC
 
 		public void ShowCursorInfluenceGUI ()
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Cursor influence", EditorStyles.boldLabel);
 			followCursor = CustomGUILayout.Toggle ("Follow cursor?", followCursor, "", "If True, then the camera will rotate towards the cursor's position on-screen");
 			if (followCursor)
@@ -93,12 +93,12 @@ namespace AC
 					limitCursorInfluenceY[1] = CustomGUILayout.Slider ("Maximum Y constraint:", limitCursorInfluenceY[1], 0f, 1.4f, "", "The cursor influence's upper limit in the Y-direction");
 				}
 
-				if (Application.isPlaying && KickStarter.mainCamera != null && KickStarter.mainCamera.attachedCamera == this)
+				if (Application.isPlaying && KickStarter.mainCamera && KickStarter.mainCamera.attachedCamera == this)
 				{
 					EditorGUILayout.HelpBox ("Changes made to this panel will not be felt until the MainCamera switches to this camera again.", MessageType.Info);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 		#endif

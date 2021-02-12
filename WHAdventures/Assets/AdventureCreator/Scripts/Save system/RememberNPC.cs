@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberNPC.cs"
  * 
@@ -61,7 +61,7 @@ namespace AC
 			npcData.objectID = constantID;
 			npcData.savePrevented = savePrevented;
 
-			if (OwnHotspot != null)
+			if (OwnHotspot)
 			{
 				npcData.isOn = OwnHotspot.IsOn ();
 			}
@@ -113,7 +113,7 @@ namespace AC
 					gameObject.layer = LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer);
 				}*/
 
-				if (OwnHotspot != null)
+				if (OwnHotspot)
 				{
 					if (data.isOn)
 					{

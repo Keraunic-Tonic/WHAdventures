@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionDialogOption.cs"
  * 
@@ -32,13 +32,9 @@ namespace AC
 		protected Conversation runtimeLinkedConversation;
 		
 		
-		public ActionDialogOption ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Dialogue;
-			title = "Toggle option";
-			description = "Sets the display of a dialogue option. Can hide, show, and lock options.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Dialogue; }}
+		public override string Title { get { return "Toggle option"; }}
+		public override string Description { get { return "Sets the display of a dialogue option. Can hide, show, and lock options."; }}
 
 
 		public override void AssignValues ()
@@ -87,8 +83,6 @@ namespace AC
 			{
 				switchType = (SwitchType) EditorGUILayout.EnumPopup ("Set to:", switchType);
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -165,7 +159,7 @@ namespace AC
 		{
 			if (linkedConversation != null && linkedConversation.gameObject == _gameObject) return true;
 			if (constantID == id) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -180,7 +174,7 @@ namespace AC
 		 */
 		public static ActionDialogOption CreateNew (Conversation conversationToModify, int dialogueOptionID, SwitchType optionSwitchType)
 		{
-			ActionDialogOption newAction = (ActionDialogOption) CreateInstance <ActionDialogOption>();
+			ActionDialogOption newAction = CreateNew<ActionDialogOption> ();
 			newAction.linkedConversation = conversationToModify;
 			newAction.optionNumber = dialogueOptionID-1;
 			newAction.switchType = optionSwitchType;

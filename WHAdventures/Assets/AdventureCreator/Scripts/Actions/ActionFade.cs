@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionFade.cs"
  * 
@@ -35,13 +35,9 @@ namespace AC
 		public AnimationCurve fadeCurve = new AnimationCurve (new Keyframe(0, 0, 1, 1), new Keyframe(1, 1, 1, 1));
 
 
-		public ActionFade ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Camera;
-			title = "Fade";
-			description = "Fades the camera in or out. The fade speed can be adjusted, as can the overlay texture – this is black by default.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Camera; }}
+		public override string Title { get { return "Fade"; }}
+		public override string Description { get { return "Fades the camera in or out. The fade speed can be adjusted, as can the overlay texture – this is black by default."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -148,8 +144,6 @@ namespace AC
 			}
 
 			cameraFadePauseBehaviour = (CameraFadePauseBehaviour) EditorGUILayout.EnumPopup ("Behaviour when paused:", cameraFadePauseBehaviour);
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -177,7 +171,7 @@ namespace AC
 		 */
 		public static ActionFade CreateNew (FadeType fadeType, float transitionTime = 1f, bool waitUntilFinish = true)
 		{
-			ActionFade newAction = (ActionFade) CreateInstance <ActionFade>();
+			ActionFade newAction = CreateNew<ActionFade> ();
 			newAction.fadeType = fadeType;
 			newAction.fadeSpeed = transitionTime;
 			newAction.isInstant = (transitionTime < 0f);

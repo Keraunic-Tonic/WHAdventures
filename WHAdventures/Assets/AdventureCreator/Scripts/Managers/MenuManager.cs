@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuManager.cs"
  * 
@@ -40,6 +40,8 @@ namespace AC
 		public bool scaleTextEffects = false;
 		/** If True, then Menus will be navigated directly, not with the cursor, when the game is paused (if inputMethod = InputMethod.KeyboardAndController in SettingsManager) */
 		public bool keyboardControlWhenPaused = true;
+		/** If True, then Menus will be navigated directly, not with the cursor, when the game is in a cutscene (if inputMethod = InputMethod.KeyboardAndController in SettingsManager) */
+		public bool keyboardControlWhenCutscene = false;
 		/** If True, then Menus will be navigated directly, not with the cursor, when Conversation dialogue options are shown (if inputMethod = InputMethod.KeyboardAndController in SettingsManager) */
 		public bool keyboardControlWhenDialogOptions = true;
 		/** If True, then the simulated cursor will auto-select valid Unity UI elements */
@@ -48,7 +50,7 @@ namespace AC
 		public string horizontalInputAxis = "Horizontal";
 		/** The input axis used to directly-navigate AC menus vertically */
 		public string verticalInputAxis = "Vertical";
-
+		
 		[SerializeField] private bool hasUpgraded = false;
 
 		#if UNITY_EDITOR
@@ -123,10 +125,14 @@ namespace AC
 				{
 					EditorGUILayout.Space ();
 					keyboardControlWhenPaused = CustomGUILayout.ToggleLeft ("Directly-navigate Menus when paused?", keyboardControlWhenPaused, "AC.KickStarter.menuManager.keyboardControlWhenPaused", "If True, then Menus will be navigated directly, not with the cursor, when the game is paused");
+					keyboardControlWhenCutscene = CustomGUILayout.ToggleLeft ("Directly-navigate Menus during Cutscenes?", keyboardControlWhenCutscene, "AC.KickStarter.menuManager.keyboardControlWhenCutscene", "If True, then Menus will be navigated directly, not with the cursor, when the game is in a cutscene");
 					keyboardControlWhenDialogOptions = CustomGUILayout.ToggleLeft ("Directly-navigate Menus during Conversations?", keyboardControlWhenDialogOptions, "AC.KickStarter.menuManager.keyboardControlWhenDialogOptions", "If True, then Menus will be navigated directly, not with the cursor, when Conversation dialogue options are shown");
 
-					//horizontalInputAxis = CustomGUILayout.TextField ("Horizontal input axis:", horizontalInputAxis, "AC.KickStarter.menuManager.horizontalInputAxis", "The horizontal input axis to use when directly-navigating an AC menu.");
-					//verticalInputAxis = CustomGUILayout.TextField ("Vertical input axis:", verticalInputAxis, "AC.KickStarter.menuManager.verticalInputAxis", "The vertical input axis to use when directly-navigating an AC menu.");
+					if (keyboardControlWhenPaused || keyboardControlWhenCutscene || keyboardControlWhenDialogOptions)
+					{
+						//horizontalInputAxis = CustomGUILayout.TextField ("Horizontal input axis:", horizontalInputAxis, "AC.KickStarter.menuManager.horizontalInputAxis", "The horizontal input axis to use when directly-navigating an AC menu.");
+						//verticalInputAxis = CustomGUILayout.TextField ("Vertical input axis:", verticalInputAxis, "AC.KickStarter.menuManager.verticalInputAxis", "The vertical input axis to use when directly-navigating an AC menu.");
+					}
 
 					if (AdvGame.GetReferences ().settingsManager != null && AdvGame.GetReferences ().settingsManager.inputMethod == InputMethod.KeyboardOrController)
 					{
@@ -147,7 +153,7 @@ namespace AC
 					EditorGUILayout.HelpBox ("Changes made to the menus will not be registed by the game until the game is restarted.", MessageType.Info);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			EditorGUILayout.Space ();
 
@@ -170,7 +176,7 @@ namespace AC
 				{
 					selectedMenu.ShowGUI ();
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 				
 				EditorGUILayout.Space ();
 				
@@ -180,7 +186,7 @@ namespace AC
 				{
 					CreateElementsGUI (selectedMenu);
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 				
 				if (selectedMenuElement != null && selectedMenu.elements.Contains (selectedMenuElement))
 				{
@@ -211,7 +217,7 @@ namespace AC
 					}
 					else
 					{
-						EditorGUILayout.EndVertical ();
+						CustomGUILayout.EndVertical ();
 					}
 					if (selectedMenuElement.IsVisible != oldVisibility)
 					{
@@ -249,7 +255,7 @@ namespace AC
 					{
 						menus.Remove (_menu);
 						CleanUpAsset ();
-						EditorGUILayout.EndVertical ();
+						CustomGUILayout.EndVertical ();
 						return;
 					}
 
@@ -272,7 +278,7 @@ namespace AC
 							EditorGUILayout.BeginHorizontal ();
 						
 							string buttonLabel = _menu.title;
-							if (buttonLabel == "")
+							if (string.IsNullOrEmpty (buttonLabel))
 							{
 								buttonLabel = "(Untitled)";	
 							}
@@ -337,7 +343,7 @@ namespace AC
 				GUI.enabled = true;
 				EditorGUILayout.EndHorizontal ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -731,6 +737,9 @@ namespace AC
 					menu.AddItem (new GUIContent ("Re-arrange/Move to bottom"), false, MenuCallback, "Move to bottom");
 				}
 			}
+
+			menu.AddSeparator (string.Empty);
+			menu.AddItem (new GUIContent ("Find references"), false, MenuCallback, "Find references");
 			
 			menu.ShowAsContext ();
 		}
@@ -826,6 +835,13 @@ namespace AC
 					menus[sideMenu].ResetVisibleElements ();
 					AssetDatabase.SaveAssets ();
 					break;
+
+				case "Find references":
+					FindReferences (menus[sideMenu]);
+					break;
+
+				default:
+					break;
 				}
 			}
 			
@@ -847,7 +863,7 @@ namespace AC
 				menu.AddItem (new GUIContent ("Delete"), false, ElementCallback, "Delete");
 			}
 
-			menu.AddSeparator ("");
+			menu.AddSeparator (string.Empty);
 			menu.AddItem (new GUIContent ("Copy"), false, ElementCallback, "Copy");
 			if (MenuManager.copiedElement != null)
 			{
@@ -855,7 +871,7 @@ namespace AC
 			}
 			if (sideElement > 0 || sideElement < _menu.elements.Count-1)
 			{
-				menu.AddSeparator ("");
+				menu.AddSeparator (string.Empty);
 			}
 
 			if (sideElement > 0)
@@ -868,6 +884,9 @@ namespace AC
 				menu.AddItem (new GUIContent ("Re-arrange/Move down"), false, ElementCallback, "Move down");
 				menu.AddItem (new GUIContent ("Re-arrange/Move to bottom"), false, ElementCallback, "Move to bottom");
 			}
+
+			menu.AddSeparator (string.Empty);
+			menu.AddItem (new GUIContent ("Find references"), false, ElementCallback, "Find refences");
 			
 			menu.ShowAsContext ();
 		}
@@ -926,6 +945,13 @@ namespace AC
 					menus[sideMenu].elements = MoveElementToBottom (menus[sideMenu].elements, sideElement);
 					menus[sideMenu].ResetVisibleElements ();
 					AssetDatabase.SaveAssets ();
+					break;
+
+				case "Find references":
+					FindReferences (menus[sideMenu], menus[sideMenu].elements[sideElement]);
+					break;
+
+				default:
 					break;
 				}
 			}
@@ -988,6 +1014,140 @@ namespace AC
 			list[a1] = list[a2];
 			list[a2] = tempElement;
 			return (list);
+		}
+
+
+		private void FindReferences (Menu menu)
+		{
+			if (menu == null) return;
+
+			if (string.IsNullOrEmpty (menu.title))
+			{
+				ACDebug.LogWarning ("A Menu must have a name before refences to it can be found.");
+				return;
+			}
+
+			if (EditorUtility.DisplayDialog("Search '" + menu.title + "' references?", "The Editor will search assets, and active scenes listed in the Build Settings, for references to the Menu.  The current scene will need to be saved and listed to be included in the search process. Continue?", "OK", "Cancel"))
+			{
+				if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo ())
+				{
+					int totalNumReferences = 0;
+					
+					// Search menus
+					foreach (Menu _menu in menus)
+					{
+						if (menu == _menu) continue;
+
+						foreach (MenuElement element in _menu.elements)
+						{
+							MenuButton button = element as MenuButton;
+							if (button != null)
+							{
+								if (button.buttonClickType == AC_ButtonClickType.Crossfade && button.switchMenuTitle == menu.title)
+								{
+									totalNumReferences++;
+									ACDebug.Log ("Found reference to menu '" + menu.title+ "' in Button element '" + element.title + "' in Menu '" + _menu.title + "'");
+								}
+							}
+						}
+					}
+
+					// Search scenes
+					string originalScene = UnityVersionHandler.GetCurrentSceneFilepath ();
+					string[] sceneFiles = AdvGame.GetSceneFiles ();
+					foreach (string sceneFile in sceneFiles)
+					{
+						UnityVersionHandler.OpenScene(sceneFile);
+
+						ActionList[] actionLists = FindObjectsOfType <ActionList>();
+						foreach (ActionList actionList in actionLists)
+						{
+							totalNumReferences += actionList.GetMenuReferences (menu, sceneFile);
+						}
+					}
+
+					UnityVersionHandler.OpenScene(originalScene);
+
+					// Search assets
+					if (AdvGame.GetReferences().speechManager != null)
+					{
+						ActionListAsset[] allActionListAssets = AdvGame.GetReferences ().speechManager.GetAllActionListAssets ();
+						foreach (ActionListAsset actionListAsset in allActionListAssets)
+						{
+							totalNumReferences += actionListAsset.GetMenuReferences (menu);
+						}
+					}
+
+					EditorUtility.DisplayDialog("Menu search complete", "In total, found " + totalNumReferences + " references to menu '" + menu.title + "' in the project.  Please see the Console window for full details.", "OK");
+				}
+			}
+		}
+
+
+		private void FindReferences (Menu menu, MenuElement element)
+		{
+			if (element == null) return;
+
+			if (string.IsNullOrEmpty (menu.title) || string.IsNullOrEmpty (element.title))
+			{
+				ACDebug.LogWarning ("A Menu and Element must have a name before refences to it can be found.");
+				return;
+			}
+
+			if (EditorUtility.DisplayDialog("Search '" + element.title + "' references?", "The Editor will search assets, and active scenes listed in the Build Settings, for references to the Menu Element.  The current scene will need to be saved and listed to be included in the search process. Continue?", "OK", "Cancel"))
+			{
+				if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+				{
+					int totalNumReferences = 0;
+					
+					// Search menus
+					foreach (Menu _menu in menus)
+					{
+						foreach (MenuElement _element in _menu.elements)
+						{
+							if (element == _element) continue;
+
+							MenuButton button = _element as MenuButton;
+							if (button != null)
+							{
+								if ((button.buttonClickType == AC_ButtonClickType.OffsetElementSlot || button.buttonClickType == AC_ButtonClickType.OffsetJournal) && button.inventoryBoxTitle == element.title)
+								{
+									totalNumReferences++;
+									ACDebug.Log ("Found reference to element '" + element.title + "' in Button element '" + _element.title + "' in Menu '" + _menu.title + "'");
+								}
+							}
+						}
+					}
+
+					// Search scenes
+					string originalScene = UnityVersionHandler.GetCurrentSceneFilepath ();
+					string[] sceneFiles = AdvGame.GetSceneFiles ();
+					foreach (string sceneFile in sceneFiles)
+					{
+						UnityVersionHandler.OpenScene(sceneFile);
+
+						ActionList[] actionLists = FindObjectsOfType <ActionList>();
+						foreach (ActionList actionList in actionLists)
+						{
+							totalNumReferences += actionList.GetMenuElementReferences (menu, element, sceneFile);
+						}
+					}
+
+					UnityVersionHandler.OpenScene(originalScene);
+
+					// Search assets
+					if (AdvGame.GetReferences().speechManager != null)
+					{
+						ActionListAsset[] allActionListAssets = AdvGame.GetReferences ().speechManager.GetAllActionListAssets ();
+						foreach (ActionListAsset actionListAsset in allActionListAssets)
+						{
+							totalNumReferences += actionListAsset.GetMenuElementReferences (menu, element);
+						}
+					}
+
+					EditorUtility.DisplayDialog ("Menu element search complete", "In total, found " + totalNumReferences + " references to element '" + menu.title + "' in the project.  Please see the Console window for full details.", "OK");
+				}
+			}
 		}
 		
 
@@ -1089,6 +1249,24 @@ namespace AC
 
 
 		/**
+		 * <summary>Gets a Menu by name</summary>
+		 * <param name = "title">The name of the Menu to get.</param>
+		 * <returns>The Menu with the name supplied</returns>
+		 */
+		public Menu GetMenuWithName (string title)
+		{
+			foreach (Menu menu in menus)
+			{
+				if (menu != null && menu.title == title)
+				{
+					return menu;
+				}
+			}
+			return null;
+		}
+
+
+		/**
 		 * <summary>Creates a Menu to be used as a preview for subtitles in Timeline</summary>
 		 * <param name = "previewMenuName">The name of the Menu to use</param>
 		 * <returns>The Menu to preview subtitles with.  If the Menu relies on Unity UI, this copy will be converted to use Adventure Creator</returns>
@@ -1106,7 +1284,6 @@ namespace AC
 						if (newMenu.menuSource != MenuSource.AdventureCreator)
 						{
 							newMenu.menuSource = MenuSource.AdventureCreator;
-							ACDebug.LogWarning ("Cannot preview subtitles menu ;" + newMenu.title + "' in Unity UI - switching its Source to Adventure Creator!");
 						}
 						return newMenu;
 					}

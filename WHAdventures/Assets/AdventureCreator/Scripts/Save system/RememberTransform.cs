@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberTransform.cs"
  * 
@@ -31,6 +31,11 @@ namespace AC
 		public int linkedPrefabID;
 		/** How to reference transform co-ordinates (Global, Local) */
 		public GlobalLocal transformSpace = GlobalLocal.Global;
+		
+		#if AddressableIsPresent
+		/** The name of the prefab to spawn if it needs to be added to the scene, and addressables are used when saving */
+		public string addressableName;
+		#endif
 
 		private bool savePrevented = false;
 
@@ -49,6 +54,7 @@ namespace AC
 		}
 
 
+		/** Initialises the component.  This needs to be called if the object it is attached to is generated/spawned at runtime manually through code. */
 		public void OnSpawn ()
 		{
 			if (linkedPrefabID != 0)
@@ -85,7 +91,7 @@ namespace AC
 						transformData.LocZ = transform.position.z;
 
 						Char attachedChar = transform.GetComponent<Char> ();
-						if (attachedChar != null)
+						if (attachedChar)
 						{
 							transformData.RotX = attachedChar.TransformRotation.eulerAngles.x;
 							transformData.RotY = attachedChar.TransformRotation.eulerAngles.y;
@@ -118,6 +124,9 @@ namespace AC
 			transformData.ScaleZ = transform.localScale.z;
 
 			transformData.bringBack = saveScenePresence;
+			#if AddressableIsPresent
+			transformData.addressableName = (saveScenePresence) ? addressableName : string.Empty;
+			#endif
 			transformData.linkedPrefabID = (saveScenePresence) ? linkedPrefabID : 0;
 
 			if (saveParent)
@@ -131,12 +140,12 @@ namespace AC
 					return transformData;
 				}
 
-				while (t.parent != null)
+				while (t.parent)
 				{
 					t = t.parent;
 
 					AC.Char parentCharacter = t.GetComponent <AC.Char>();
-					if (parentCharacter != null)
+					if (parentCharacter)
 					{						
 						if (parentCharacter.IsPlayer || (parentCharacter.GetComponent <ConstantID>() && parentCharacter.GetComponent <ConstantID>().constantID != 0))
 						{
@@ -218,7 +227,7 @@ namespace AC
 					}
 				}
 
-				if (player != null)
+				if (player)
 				{
 					if (data.heldHand == Hand.Left)
 					{
@@ -234,12 +243,12 @@ namespace AC
 			{
 				ConstantID parentObject = ConstantID.GetComponent <ConstantID> (data.parentID);
 
-				if (parentObject != null)
+				if (parentObject)
 				{
 					if (data.parentIsNPC)
 					{
 						Char _char = parentObject.GetComponent<NPC> ();
-						if (_char != null && !_char.IsPlayer)
+						if (_char && !_char.IsPlayer)
 						{
 							if (data.heldHand == Hand.Left)
 							{
@@ -292,6 +301,11 @@ namespace AC
 		public int objectID;
 		/** If True, saving is prevented */
 		public bool savePrevented;
+
+		#if AddressableIsPresent
+		/** The addressable of the prefab to spawn, if necessary */
+		public string addressableName;
+		#endif
 
 		/** The X position */
 		public float LocX;

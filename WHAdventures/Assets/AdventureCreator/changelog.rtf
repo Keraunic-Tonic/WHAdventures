@@ -5,7 +5,423 @@
 \paperw11900\paperh16840\margl1440\margr1440\vieww23380\viewh15000\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\fs24 \cf0 = Version 1.71.8 = \
+\f0\fs24 \cf0 Version 1.73.0:\
+\
+= Upgrade notes =\
+-For a guide to upgrading custom Actions to v1.73, see here: https://www.adventurecreator.org/tutorials/action-systems-v173-update\
+-Action.End() has been replaced with Action.GetNextOutputIndex() - use to return the output socket index, not an ActionEnd class\
+-Action constructors have been replaced with Title, Category and Description properties\
+-Action.AfterRunningOption() function is deprecated - define an Action's number of output sockets with the NumSockets property\
+-The iSaveFileHandler interface now requires a SupportsSaveThreading method\
+-The SaveFile constructor now longer has an "isAutoSave" parameter\
+-The ability to save in Json format has been removed from the Settings Manager - to do this manually, override the SaveSystem.FileFormateHandler class with FileFormatHandler_Json\
+-As inventory interactions are now possible for Container elements, the "Prevent interactions?" property must be checked for previous behaviour\
+-The MainCamera's ConvertToMenuSpace, ConvertRelativeScreenSpaceToUI, RightVector and ForwardVector functions are now static\
+-The Settings Manager's forceAspectRatio bool has been replaced with the aspectRatioEnforcement enum\
+-InventoryBox elements of type "Hotspot Based" no longer include the Inventory item it's displaying items for unless the item has a Combine Interaction with itself\
+-Changes made to Character walk and run sounds are no longer automatically recorded in save-games - use the Footstep Sounds and Remember Footstep Sounds components to do so\
+-Changes made to Character portrait textures are no longer automatically recorded in save-games - use the Remember Portrait component on the AC wiki to do so\
+-The SaveSystem script's UnloadVariablesData now takes an additional bool parameter\
+-The InvItem class's combineID and combineActionList Lists are now deprecated - access the combineInteractions List instead\
+-The InvItem class's RunDefaultInteraction, GetFirstStandardIcon, GetLabelPrefix, and GetFullLabel functions have been moved to the InvInstance class\
+\
+= Actions =\
+-Changed: Action.End() has been replaced with Action.GetNextOutputIndex() - use to return the output socket index, not an ActionEnd class\
+-Changed: Action constructors have been replaced with Title, Category and Description properties\
+-Changed: Action.AfterRunningOption() function is deprecated - define an Action's number of output sockets with the NumSockets property\
+\
+= ActionLists =\
+-Added: Reduction to ActionList asset and AC scene filesizes\
+-Added: The Actions copy buffer will now survive scene changes (Unity 2019.2 and later)\
+-Added: Ability to set the width of Action nodes in Unity's Project Settings\
+-Added: Ability to toggle the display of multiple ActionList Parameters at once in the ActionList Editor and Inspectors\
+-Added: Context menu items to scene-based ActionLists to manually backup and restore Action data (Unity 2019.2 and later)\
+-Changed: The default interface's ActionLists are now created from scratch when using the New Game Wizard\
+-Fixed: ActionList Editor window's "View/Action" menu sometimes displaying incorrect Action names\
+-Fixed: Right-click menus in the ActionList Editor window appearing when the mouse is over an Action\
+-Fixed: Component Variable parameters not being able to be set by ActionList asset files\
+\
+= Inventory =\
+-Added: Individual Standard and Combine Interactions of Inventory items can now be disabled by default\
+-Added: "Inventory: Change interaction" Action - use to toggle the state of a held Inventory item's Standard and Combine Interactions\
+-Added: Inventory item String properties now support multi-line editing\
+-Added: Ability for Label menu elements set to "Inventory property" to display an item's amount\
+-Added: Ability for Label menu elements set to "Inventory property" to reference items set through script\
+-Added: Ability to define empty slots in a Container's initial list of items if "Can re-order items in Menu?" is checked\
+-Added: "Do nothing" option to the Cursor Manager's "When inventory selected" setting\
+-Added: Ability to re-arrange an Inventory item's "Combine" interactions\
+-Changed: The InvItem class's combineID and combineActionList Lists are now deprecated - access the combineInteractions List instead\
+-Changed: The InvItem class's RunDefaultInteraction, GetFirstStandardIcon, GetLabelPrefix, and GetFullLabel functions have been moved to the InvInstance class\
+-Fixed: The "Inventory: Add or remove" Action not adding the set number of items if the amount exceeds the item's Slot Capacity\
+-Fixed: The Inventory Manager's "Pass Hotspot as GameObject parameter?" field not showing at all times\
+-Fixed: Issues with drag-and-drop inventory behaviour when using Unity UI-based Inventory menus\
+-Fixed: Incorrect "Count" values displayed when listing a Player's Inventory items in their Inspector\
+-Fixed: Occasional crash when creating Recipes if an "ActionList on create" is defined\
+-Fixed: Multiple issues related to Inventory when "Select Interactions by" is set to "Cycling Cursor And Clicking Hotspot"\
+-Fixed: Inventory items not being immediately assigned to the default category once one is created\
+-Fixed: Multiple instances of an Inventory item being able to appear even if its "Can carry multiple?" property is unchecked\
+\
+= Saving =\
+-Added: Option to use a separate CPU thread when recording save-game files\
+-Added: Ability to rely on Addressables when saving asset references in save-game files\
+-Added: Option to avoid taking save-game screenshots when Autosaving\
+-Changed: The SaveFile constructor now longer has an "isAutoSave" parameter\
+-Changed: The iSaveFileHandler interface now requires a SupportsSaveThreading method\
+-Changed: The "Take screenshot when saving?" checkbox has been replaced with a popup field\
+-Changed: The ability to save in Json format has been removed from the Settings Manager - to do this manually, override the SaveSystem.FileFormateHandler class with FileFormatHandler_Json\
+-Changed: The SaveSystem script's UnloadVariablesData now takes an additional bool parameter\
+-Fixed: Issues when loading save files from a scene's OnStart cutscene\
+-Fixed: Save components with "Retain in prefab?" checked not correctly assigning ID values to Prefab Variants\
+-Fixed: Minor issues related to loading Json save files\
+\
+= Characters =\
+-Changed: Changes made to Character walk and run sounds are no longer automatically recorded in save-games - use the Footstep Sounds and Remember Footstep Sounds components to do so\
+-Changed: Changes made to Character portrait textures are no longer automatically recorded in save-games - use the Remember Portrait component on the AC wiki to do so\
+-Fixed: Sprite-based NPCs not referrring to their initial rotation for their facing direction if "Turn root object in 3D?" is checked\
+\
+= Menus =\
+-Added: InventoryBox elements of type Custom Script now react to the setting of its OverrideContainer property\
+-Added: Ability to override the active cursor icon when hovering over Toggle, Slider and Cycle menu elements\
+-Added: Function to the Menu class to get an element associated with a Unity UI GameObject\
+-Changed: The Menu property "Ignore cursor clicks?" has been renamed to "Ignore input?" to better reflect its purpose\
+-Changed: Unity UI prefabs are now only spawned when they are requested, to reduce initial loading times\
+-Changed: As inventory interactions are now possible for Container elements, the "Prevent interactions?" property must be checked for previous behaviour\
+-Changed: InventoryBox elements of type "Hotspot Based" no longer include the Inventory item it's displaying items for unless the item has a Combine Interaction with itself\
+-Fixed: Error when subscribing to the OnEnableInteractionMenus custom event\
+-Fixed: Items displayed in Container menus disappearing when the Menu transitions off\
+-Fixed: InventoryBox elements of type Container ignoring the "Prevent interactions?" property\
+-Fixed: Position issue with Unity UI-based menus that have "Smooth movement?" enabled\
+-Fixed: Inventory item names displaying in Hotspot labels when selected items are hidden from menus\
+-Fixed: "Unity UI In Scene" Menus running click events twice per single-click\
+-Fixed: Button elements that shift other elements not being able to be set invisible if "Only show when effective?" is checked\
+-Fixed: Issue with "Per-option textures?" option for Cycle elements that are linked to PopUp variables\
+-Fixed: DialogList elements "'Already chosen' highlight colour" not being applied in Unity UI-based Menus\
+-Fixed: Menu hover sounds playing repeatedly if input is set to be ignored\
+-Fixed: Menu display issue in WebGL\
+\
+= Cameras =\
+-Added: Ability to enforce a minimum aspect ratio, preventing pillarboxing on widescreens\
+-Changed: If a GameCamera2D has no target assigned, but is constrained to a background sprite, then it will still adhere to the background's boundaries\
+-Changed: The MainCamera's ConvertToMenuSpace, ConvertRelativeScreenSpaceToUI, RightVector and ForwardVector functions are now static\
+-Changed: The Settings Manager's forceAspectRatio bool has been replaced with the aspectRatioEnforcement enum\
+-Fixed: GameCamera2D camera types not being moveable by external scripts even if its two Lock boxes are checked\
+-Fixed: Errors if an AC scene is run without the presence of an AC MainCamera\
+-Fixed: Camera snapping if mid-transition when replacing the Player character\
+\
+= Speech and text =\
+-Added: Ability to prevent the user from skipping speech text until it has completed scrolling\
+-Added: Ability for skipping speech to result in speech only being skipped until the next-found "wait" token\
+-Added: Game text referenced by objects spawned using the "Object: Add or remove" Action are now included in the Speech Manager's "Gather Text" process\
+-Added: Improved debug information in the event that a CSV import fails due to a column count mismatch\
+-Added: Prefabs assigned in the "Object: Add or remove" Action are now searched for translatable text by the Speech Maanger\
+-Added: Ability to translate default save and autosave filenames\
+-Changed: The Speech Manager's "Skipping speech first displays currently-scrolling text?" checkbox has been replaced with a "If skip while scrolling" popup\
+-Fixed: Lipsync speech files not being loaded if "Reference speech files" is set to "By Addressable"\
+-Fixed: Speech sometimes being skippable due to user input even when marked as permanent with the [hold] token\
+-Fixed: Characters not respecting [wait] and [wait:X] speech tokens when playing talking animations\
+-Fixed: ActionList assets referenced directly by the Scene Manager not being included in "Find references" and "Gather text" processes\
+\
+= Interactions =\
+-Added: Ability to examine Hotspots while an Inventory item is selected\
+-Added: Ability to determine whether a Hotspot's centre-point overrides its icon position, facing position, or both\
+-Added: The automatic closing of Interaction menus after running a background Interaction is now optional\
+-Fixed: Unhandled 'Use' Button GetFullLabel functions returning an empty string\
+-Fixed: Characters facing a Hotspot with the "Character: Face object" Action not always accounting for the Hotspot's centre-point override\
+-Fixed: "Hide Hotspots with no suitable interaction?" option causing Hotspots to be disabled when an Inventory item is selected\
+-Fixed: Issue with Player vicinity-based Hotspot detection when a nearby Hotspot is removed from the scene\
+-Fixed: "Defined interactions deselect active item?" setting having no effect when using Choose Interaction Then Hotspot mode\
+\
+= Pathfinding =\
+-Added: Ability to pre-bake NavMesh holes into 2D NavMeshes, for improved 2D scene initialisation times\
+-Fixed: Movement issues with characters that turn before walking when a non-zero "Pathfinding update time" is set\
+\
+= Cursor =\
+-Added: Ability to re-arrange Interaction icons in the Cursor Manager\
+-Added: The display of the selected item's "count" can be disabled by supplying a negative "Display count size" value\
+-Fixed: Issue with drawing item counts when using Hardware cursor rendering\
+-Fixed: Cursor Manager Interaction icons showing incorrect API references\
+\
+= Timeline =\
+-Added: Shapeable Timeline Track - use to control Shapeable group values in Timeline\
+-Fixed: "Head turn" Timeline tracks sometimes not affecting the bound character\
+\
+= Variables =\
+-Added: Ability to define Variables of the type GameObject\
+-Fixed: Option-linked Variables values being modified upon loading a save game recorded when they were previously unlinked\
+-Fixed: Issue with Local and Component Variable values when skipping ActionLists that increase their value\
+-Fixed: Variables Manager not listing all defined presets if the first is deleted\
+-Fixed: Bulk-created Variables not always saving correctly\
+-Fixed: Custom script references made to Variables becoming unlinked after loading a save file\
+\
+= Active Inputs =\
+-Added: Individual Active Inputs now support multiple game-states\
+-Fixed: Active Inputs not respecting an ActionList asset's "Can run multiple instances?" property\
+\
+= Audio =\
+-Added: Ability to assign Audio Mixer Groups to individual Music and Ambience tracks\
+-Added: Ability to play audio from a specific AudioSource when using the "Sound: Play one-shot" Action\
+-Fixed: Conflict between the "Sound: Change volume" Action and the Footstep Sounds component's "Volume variance" slider\
+-Fixed: Audio clips from the Footstep Sounds component not being able to overlap each other\
+\
+= Misc =\
+-Added: Minor performance improvements\
+-Added: Ability to filter Objectives by Title or Description\
+-Added: Ability to reference objects by Addressable name when using the "Object: Add or remove" Action to instantiate prefabs\
+-Added: Option to have the required PersistentEngine object be created from scratch, as opposed to being spawned from a Resources prefab\
+-Added: Ability to run a Conversation prefab that is not in the scene by overriding its options in the "Dialogue: Start Conversation" Action\
+-Added: The "Input: QTE" Action's "Target # of presses" field now accepts Integer parameters\
+-Added: Ability to search for references made to Objectives in the Inventory Manager\
+-Changed: The "Object: Add or remove" Action will now allow multiple instances of a prefab to be spawned, provided it has no Remember Transform component configured\
+-Fixed: Triggers parented to Draggable objects not detecting other children of the same Draggable in v1.72.0\
+-Fixed: Draggable object "Let go" ActionLists running automatically upon re-entering a scene\
+-Fixed: Issue with Music and Ambience playback if "Loop overlap time (s)" is non-zero\
+\
+\
+Version 1.72.4:\
+\
+-Added: The rendering of a Border Camera when an the aspect ratio is enforced is now optional\
+-Added: Link to an introductory tutorial upon completion of the New Game Wizard\
+-Added: Remember components placed on Unity UI-based Menu prefabs are now read and written to even if their Menus are off at the time of saving\
+-Added: Minor performance improvement to Unity UI-based Menus\
+-Fixed: Active inventory graphics not applying to inventory cursors in v1.72.0\
+-Fixed: Incorrect function names in the Manual's "Inventory scripting" chapter\
+-Fixed: Characters that use Sprites Unity Complex animation not turning if their "Facing directions" property is set to None\
+-Fixed: Display issue with the "Menu: Change state" Action when used to add a Journal page\
+-Fixed: Display issues with the Active Inputs editor window\
+-Fixed: Console error when previewing Graphic menu elements in Edit mode\
+-Fixed: Actions Manager not allowing the assigning of custom Action script folders in rare circumstances\
+\
+\
+Version 1.72.3:\
+\
+-Added: Description field to parameters - use to display a tooltip when assigning parameter values\
+-Added: Ability to drag-and-drop inventory items before opening Interaction menus if the "Minimum drag distance" is non-zero\
+-Added: The use of right-clicks to deselect inventory items when Inventory interactions set set to Multiple is now optional\
+-Added: Ability to use a 2D scene's background sprite to align Parallax2D objects to the scene's edges\
+-Added: "Clickable in cutscenes?" Menu property is now available when the "Appear type" is set to "Except When Paused"\
+-Added: Option for Timer elements of the type "Conversation" to automatically hide if the active Conversation is not timed\
+-Added: Ability for Input elements set to Numeric Only to accept decimals\
+-Added: Ability to sort Variables and Inventory items by ID or name\
+-Added: Minor performance optimisations\
+-Fixed: TimeScale not set correctly after using a curve to control it with the "Engine: Change TimeScale" Action\
+-Fixed: OnHotspotSelect event not being triggered if a Hotspot is still selected when ending a cutscene\
+-Fixed: Issue with "Straight To Cursor" movement when the "Pathfinding update time" is non-zero\
+-Fixed: Issue with the "Variable: Check" Action when comparing two Vectors\
+-Fixed: Brain2D_SpritesUnityComplex character prefab not turning\
+\
+\
+Version 1.72.2:\
+\
+-Added: Label elements now support line breaks\
+-Changed: The "Inventory: Select" Action's "Add if not held?" option has been replaced with a "Carry condition" PopUp field\
+-Fixed: Display issue with the Music and Ambience storage windows\
+-Fixed: Issue with directly-navigating Pause menus that turn on during a cutscene\
+-Fixed: Issue when setting preset values for PopUp variables that rely on Label presets\
+-Fixed: Minor display issue with Action output sockets\
+-Fixed: Inventory items sometimes disappearing when being re-ordered\
+-Fixed: Inventory items not stacking when being added in v1.72.0\
+-Fixed: "Camera: Crossfade" Action causing an instant transition in v1.72.0\
+-Fixed: PickUp objects moving incorrectly in v1.72.0\
+\
+\
+Version 1.72.1:\
+\
+-Added: Ability to assign a background sprite to set a GameCamera 2D's constraints automatically\
+-Added: Option to allow cursor-cycling when the game is paused, should the current interaction settings allow for it\
+-Added: If the direct-navigation of gameplay menus is disabled while such a menu is being navigated, that menu is now de-selected\
+-Added: Ability to configure the widths of labels in Managers and other AC Editors\
+-Changed: The Subtitle menu property "Duplicate for each line?" has been removed for the "Unity UI in Scene" Source option, as the two modes conflict\
+-Fixed: Error when switching scene with an overlay in some versions of the Unity Editor\
+-Fixed: Compilation error with legacy UFPS integration\
+-Fixed: Error when positioning Hotspot menus over Inventory items in v1.72.0\
+-Fixed: Inventory items becoming inadvertently selected when cycling cursors in v1.72.0\
+-Fixed: Characters not moving if they have an Animator that applies root motion but no Animator Controller assigned\
+-Fixed: "Head Turn" Timeline tracks not firing the OnSetHeadTurnTarget and OnClearHeadTurnTarget custom events\
+\
+\
+Version 1.72.0:\
+\
+= Upgrade notes =\
+-The Inventory system has been rewritten - coders can learn more here: https://www.adventurecreator.org/tutorials/inventory-systems-v172-update\
+-The Action class's GetVariableReferences function now has an additional optional integer parameter\
+-The "Moveable: Set track position" Action's "Movement speed" value is no longer bound by the Draggable object's "Max speed"\
+-The GetHotspotPrefixLabel function has been moved from RuntimeInventory to InventoryManager\
+-The ISaveFileHandler interface has a new function, GetSaveFile, that returns a SaveFile class\
+-RuntimeInventory's CanTransferContainerItemsToInventory parameters have been updated to reflect the new inventory system\
+-The OnContainerAdd, OnContainerRemove and OnContainerRemoveFail events now take an InvInstance parameter instead of a ContainerItem\
+-The OnInventoryDeselect event is now triggered even if the item is not present in the Player's inventory\
+-The Button class's GetFullLabel now requires an additional InvInstance parameter\
+-The appearance of the selected inventory item's "display count" is now set in the Cursor Manager, as opposed to being copied from the Inventory menu\
+-The RuntimeInventory script's Look, Use, RunInteraction and Combine functions have been moved to InvInstance - use GetInstance to access inventory instances\
+-The Settings Manager's options for examining inventory items when drag-dropping is now separated into two separate fields\
+-Options related to Music and Ambience have been moved from the MusicEngine and AmbienceEngine prefabs to the Music and Ambience storage windows\
+\
+= Inventory =\
+-Added: Overhaul to the inventory system, allowing for easier customisation through scripting - see https://www.adventurecreator.org/tutorials/inventory-systems-v172-update\
+-Added: "Slot capacity" property to Inventory items - this replaces "Use separate slots?", and can be used to limit how many of a given item can be stored in a slot\
+-Added: "Selection mode" property to inventory items that can have multiple instances - use to allow stacking when clicking multiple times\
+-Added: "_Alt" variants of all Inventory events - use to access the affected InvInstance classes, as opposed to InvItem\
+-Added: The selection of inventory items in a given InventoryBox element is now optional\
+-Changed: The appearance of the selected inventory item's "display count" is now set in the Cursor Manager, as opposed to being copied from the Inventory menu\
+-Changed: Runtime changes made to Inventory items in the Inventory Manager are now reflected in-game without a need to restart the game\
+-Changed: The OnInventoryDeselect event is now triggered even if the item is not present in the Player's inventory\
+-Changed: GetHotspotPrefixLabel has been moved from RuntimeInventory to InventoryManager\
+-Changed: Removed unnecessary alternatives to RuntimeInventory's RunInteraction function\
+-Changed: Inventory Items (InvItem) are no longer created at runtime - instead, instances are created (InvInstance) that reference them\
+-Changed: RuntimeInventory's CanTransferContainerItemsToInventory parameters have been updated to reflect the new inventory system\
+-Changed: The RuntmeInventory script's Look, Use, RunInteraction and Combine functions have been moved to the new InvInstance class\
+-Changed: The Settings Manager's options for examining inventory items when drag-dropping is now separated into two separate fields\
+-Fixed: Inventory drag-and-drop being available if inventory cursor-cycling is enabled, as the two modes are incompatible\
+-Fixed: GetNumberOfItemsCarriedInCategory not accounting for category ID when accessing an inactive Player's inventory\
+-Fixed: Issue when right-clicking over inventory items if "Reset cursor after an interaction?" is checked\
+-Fixed: OnInventoryRemove event being triggered before the item has been removed from the Inventory\
+\
+= Draggable objects =\
+-Added: Ability to manually begin and end the dragging of objects through custom script\
+-Added: Deceleration to Draggable objects that move along tracks without use of a Rigidbody\
+-Added: Warning message if a Draggable object's OnMove ActionList blocks gameplay\
+-Added: Ability to limit the interactivity of draggable objects by camera\
+-Added: The 'AC Status' box now lists the active Draggable\
+-Fixed: Draggable "Simulated mass" property not having an effect when its Track's movement is based on cursor position\
+-Fixed: Disabled Draggables sometimes being interactive if another Draggables is parented to them\
+-Fixed: Draggable and PickUp ActionList assets not being included in searches\
+-Fixed: Behaviour of Draggable object "Move" and "Collide" audio playback\
+-Fixed: PickUp and Draggable collision settings sometimes being ignored\
+-Fixed: Camera dragging being allowed if the same drag was previously affecting a Draggable object\
+\
+= Drag tracks =\
+-Added: Ability to restrict Drag object movement to only one direction along a Track\
+-Added: "Moveable: Toggle track region" - use to enable or disable a Track's region\
+-Added: Ability to apply a gravitational force to Draggables that are locked to Tracks\
+-Added: Ability to assign labels to Drag Track regions, displayed when referenced in Actions\
+-Added: Remember Track component - use to save the state of a Drag Track\
+-Added: Ability to assign an optional Track to check for in the "Moveable: Check Track position" Action\
+-Changed: The DragTrack class's AssignColliders function is now protected\
+-Changed: The "Moveable: Set track position" Action's "Movement speed" value is no longer bound by the Draggable object's "Max speed"\
+-Fixed: Improved behaviour of draggables on Hinge Tracks that move according to the cursor position\
+-Fixed: Drag Track regions not being visible in the Scene window unless snapping is enabled\
+-Fixed: Straight track lengths varying slightly when viewed in the Scene window\
+\
+= Interactions =\
+-Added: Ability to hide interaction icon labels when no item or Hotspot is selected in Choose Interaction Then Hotspot mode\
+-Added: Ability for single-interaction Hotspots to require double-clicking to use\
+-Added: Ability to limit Hotspot-based InventoryBox elements by category as well as interaction\
+-Added: Option to halt Player movement upon running Inventory item interactions\
+-Added: Ability to classify Hotspot and Inventory items as pronouns - if not, their names will be lower-cased when used inside sentences\
+-Changed: The Button class's GetFullLabel now requires an additional InvInstance parameter\
+-Fixed: Hotspot cursors from showing when in Choose Interaction Then Hotspot mode if "Change cursor based on Interaction?" is checked\
+-Fixed: Interaction menus turning off without transitioning when combining Hotspots with Inventory items\
+-Fixed: Various interaction settings missing from the Settings Manager when using Touch Screen input\
+-Fixed: Display issues with the "Hotspot: Change interaction" Action\
+-Fixed: Inventory interactions not cancelling a pending Hotspot interaction\
+\
+= Characters =\
+-Added: Ability for inactive Players to follow the active Player across scenes\
+-Added: Option for Triggers to detect inactive Players if the "Detection method" is set to "Transform Position"\
+-Added: Replacement token labels when defining character expressions\
+-Added: OnSetLookDirection event - called whenever a character updates their intended facing direction\
+-Added: OnPlayerSpawn and OnPlayerRemove events - called when Player-switching is enabled, and a Player is added to or removed from the scene\
+-Added: Offset property to Head Turn track shots\
+-Fixed: Issues with Sprites Unity-based characters that play head animations independently\
+-Fixed: Issue with inactive Player spawning when Unity's "Reload scene" is unchecked in 2019.3's experimental "Enter Play Mode Settings"\
+-Fixed: Sprites Unity Complex character animation engine "Direction integer" parameter field having an effect even when hidden\
+-Fixed: Character speech audio not being synced to subtitle menus when using Rogo LipSync for lipsyncing\
+\
+= Movement =\
+-Added: Ability to run by double-clicking when using Straight To Cursor movement\
+-Fixed: Issues with "Character evasion" when a NavMesh has multiple Polygon Collider 2D components\
+\
+= Variables =\
+-Fixed: Options-linked variables not always resetting upon switching profile\
+-Fixed: "Variable: Set" Action not supporting parameter tokens when setting a String variable's value\
+-Fixed: "Find references" operation for Variables components not searching ActionList assets\
+-Fixed: Global variables not being accessible if referenced by a Menu that is enabled when the game begins\
+\
+= Sound =\
+-Added: "Only play when moving?" option to the Footstep Sounds component\
+-Changed: Options related to Music and Ambience have been moved from the MusicEngine and AmbienceEngine prefabs to the Music and Ambience storage windows\
+-Fixed: "Sound: Play music" and "Sound: Play ambience" Actions not showing "After running" option if no music or ambience is defined\
+-Fixed: Issues related to crossfading of music and ambience tracks\
+-Fixed: Music and Ambience data not clearing when using the Restart Game command\
+-Fixed: Footstep Sounds component's "Only play when grounded?" option being hidden\
+-Fixed: Issues with music and ambience playback if "Run In Background" is unchecked in Unity's Player settings\
+\
+= Navigation =\
+-Added: Improvements to off-NavMesh click accuracy for 2D games in Unity 2019.1 or newer\
+-Fixed: Pathfinding issue when a Remember NavMesh2D component is added to a NavMesh that is not the scene's default\
+\
+= Camera =\
+-Added: Ability to use an Animation curve to the "Camera: Shake" Action to describe the intensity of the shaking effect over time\
+-Added: Option to MainCamera Timeline tracks to update the attached camera once the Timeline ends\
+-Fixed: Main Camera track not calling the OnSwitchCamera event when transitioning back to the regular camera\
+-Fixed: OnSwitchCamera event being triggered twice when beginning a scene\
+-Fixed: Issue with draggable cameras when the Camera system is disabled\
+-Fixed: "Last gameplay camera" sometimes not being properly recorded in v1.71.0\
+-Fixed: 2D cameras not responding to "Object: Teleport" Actions\
+\
+= ActionLists =\
+-Added: Ability to log Action comments in the Console even if they are hidden from view\
+-Changed: The Action class's GetVariableReferences function now has an additional optional integer parameter\
+-Fixed: ActionList asset parameter values not being able to be set in OnStart cutscenes (Editor only)\
+-Fixed: Issue when changing an ActionList's Source property to Asset File\
+-Fixed: Actions sometimes widening in the ActionList Editor\
+\
+= Editor =\
+-Changed: The Settings Manager's "Show icons in Hierarchy" option has been moved to the Player Settings\
+-Fixed: Display issue with the "Engine: Control Timeline" Action\
+-Fixed: AC Status box being drawn underneath AC Menus\
+-Fixed: Compilation error when using Unity 2020.2\
+-Fixed: Minor Editor styling issues\
+\
+= Additive scenes =\
+-Added: The 'AC Status' box now lists scenes if multiple are open simultaneously\
+-Added: Ability to add non-AC scenes additively using the "Scene: Add or remove" Action, provided it has a SubScene component configured in it\
+-Fixed: "Scene: Add or remove" Action's "Run 'Cutscene on start'?" option not firing ActionList asset-based scene cutscenes\
+-Fixed: ActionList Starter component not reacting when placed in scenes added using the "Scene: Add or remove" Action\
+\
+= Save system =\
+-Added: OptionsFileFormatHandler_SystemFile class - use to save options and profile data as files on the machine, as an alternative to PlayerPrefs\
+-Added: Ability to manually save and load save-game files with negative ID values - hidden from SavesList elements, but accessable through script\
+-Added: Option to separate save files and options data generated by the Editor from those used by Builds on the same machine\
+-Changed: The ISaveFileHandler interface has a new function, GetSaveFile, that returns a SaveFile class\
+-Fixed: Error when viewing the Save-game file Manager while save-screenshots are enabled\
+-Fixed: Remember components having an effect on an object's initial state when disabled\
+-Fixed: Remember components handling data if their component is disabled in the Inspector\
+\
+= Menus =\
+-Added: Option to directly-navigate Menus during Cutscenes\
+-Added: The "Object: Visibility" Action and "Remember Visibility" component are now compatible with UI Canvas components\
+-Added: Ability to find references made to Menus and Menu Elements\
+-Fixed: Hover sounds not playing when directly-navigating Unity UI menus\
+-Fixed: "Unity UI blocks interaction and movement?" option sometimes causing a crash if no Menu uses Unity UI\
+-Fixed: OnMouseOverMenu event not triggering when directly-navigating Unity UI menus\
+-Fixed: Issue related to the selection of Menu elements during Cutscenes\
+\
+= Crafting =\
+-Added: "Behaviour after taking" property to Crafting elements that display ingredients\
+-Added: UI improvements to the Crafting panel in the Inventory Manager\
+-Fixed: Issue when modifying the number of slots of Crafting elements\
+\
+= Containers =\
+-Added: Ability to rely on custom scripting for a Container's click behaviour\
+-Added: Ability to open a Container in a specific InventoryBox element with the "Container: Open" Action\
+-Added: Option to transfer items from one Container to another using the "Container: Add or remove" Action\
+-Added: Improved behaviour of InventoryBox menu elements when an item from a Container is selected\
+-Changed: The OnContainerAdd, OnContainerRemove and OnContainerRemoveFail events now take an InvInstance parameter instead of a ContainerItem\
+-Fixed: Prevented the "Container: Open" Action from having an effect if the Container is disabled\
+-Fixed: The "Container: Check" Action ignoring multiple instances of the same item when counting\
+\
+= Misc =\
+-Added: Ability for the "Document: Open" Action to wait until the chosen Document has been closed\
+-Added: OnTeleport event - called when an object has been teleported using the "Object: Teleport" Action\
+-Changed: Removed limits on the "Input: QTE" Action's "Duration" field\
+-Changed: The "Object: Teleport" Action no longer requires a "Teleport to" Marker if the position is relative to a fixed value or variable\
+-Changed: Re-added Conversation script's IsActive function after it was removed in v1.71.0\
+-Fixed: Issues with "Character: Animate" and "Object: Animate" Actions that wait before finishing in Unity 2019.1 or later\
+-Fixed: Minor cursor display issues\
+\
+\
+Version 1.71.8:\
 \
 -Added: Ability to set an Animation Curve to control the transitions of the "Camera: Fade" and "Camera: Crossfade" Actions\
 -Added: Ability to orientate Slider elements vertically in AC-based Menus\
@@ -29,13 +445,13 @@
 -Fixed: Display issue with save-game screenshots taken in linear colour space\
 \
 \
-= Version 1.71.7 =\
+Version 1.71.7:\
 \
 -Fixed: The "Dialogue: Start conversation" Action not running subsequent Actions if "Wait until finish?" is checked (properly this time!)\
 -Fixed: Minor errors with the ActionList Editor when framing specific Actions\
 \
 \
-= Version 1.71.6 =\
+Version 1.71.6:\
 \
 -Added: Ability to override the "Character: Change rendering" Action's Scale and Direction values with an Integer parameter\
 -Fixed: The "Dialogue: Start conversation" Action not running subsequent Actions if "Wait until finish?" is checked\
@@ -49,7 +465,7 @@
 -Fixed: Issues with direct-controlled Players when constrained to a Path\
 \
 \
-= Version 1.71.5 =\
+Version 1.71.5:\
 \
 -Added: Ability for the "Scene: Check" Action to check if inactive Players are currently, or were previously, in the active scene\
 -Added: Option to generate camera crossfade and overlay textures in Linear color space\

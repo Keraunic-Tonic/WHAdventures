@@ -25,7 +25,7 @@ namespace AC
 
 			if (settingsManager && (settingsManager.hotspotDetection == HotspotDetection.PlayerVicinity || settingsManager.playerSwitching == PlayerSwitching.Allow))
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				EditorGUILayout.LabelField ("Player settings", EditorStyles.boldLabel);
 
 				if (settingsManager.hotspotDetection == HotspotDetection.PlayerVicinity)
@@ -38,12 +38,12 @@ namespace AC
 					_target.autoSyncHotspotState = CustomGUILayout.Toggle ("Auto-sync Hotspot state?", _target.autoSyncHotspotState, "", "If True, then any attached Hotspot will be made inactive while this character is the current active Player");
 				}
 
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
 			if (Application.isPlaying && _target.gameObject.activeInHierarchy)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				EditorGUILayout.LabelField ("Current inventory", EditorStyles.boldLabel);
 
 				bool isCarrying = false;
@@ -57,7 +57,7 @@ namespace AC
 					{
 						if (KickStarter.runtimeInventory != null &&	KickStarter.runtimeInventory.localItems != null)
 						{
-							if (ListItems (KickStarter.runtimeInventory.localItems))
+							if (ListItems (KickStarter.runtimeInventory.PlayerInvCollection))
 							{
 								isCarrying = true;
 							}
@@ -98,8 +98,7 @@ namespace AC
 						PlayerData playerData = KickStarter.saveSystem.GetPlayerData (_target.ID);
 						if (playerData != null)
 						{
-							List<InvItem> items = KickStarter.saveSystem.AssignInventory (playerData.inventoryData);
-							if (ListItems (items))
+							if (ListItems (InvCollection.LoadData (playerData.inventoryData)))
 							{
 								isCarrying = true;
 							}
@@ -121,35 +120,33 @@ namespace AC
 					EditorGUILayout.HelpBox ("This Player is not carrying any items.", MessageType.Info);
 				}
 
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 			
 			UnityVersionHandler.CustomSetDirty (_target);
 		}
 
 
-		private bool ListItems (List<InvItem> items)
+		private bool ListItems (InvCollection invCollection)
 		{
 			bool isCarrying = false;
-			for (int i=0; i<items.Count; i++)
+			foreach (InvInstance invInstance in invCollection.InvInstances)
 			{
-				InvItem invItem = items[i];
-
-				if (invItem != null)
+				if (InvInstance.IsValid (invInstance))
 				{
 					isCarrying = true;
 
 					EditorGUILayout.BeginHorizontal ();
 					EditorGUILayout.LabelField ("Item:", GUILayout.Width (80f));
-					if (invItem.canCarryMultiple)
+					if (invInstance.InvItem.canCarryMultiple)
 					{
-						EditorGUILayout.LabelField (invItem.label, EditorStyles.boldLabel, GUILayout.Width (135f));
+						EditorGUILayout.LabelField (invInstance.InvItem.label, EditorStyles.boldLabel, GUILayout.Width (135f));
 						EditorGUILayout.LabelField ("Count:", GUILayout.Width (50f));
-						EditorGUILayout.LabelField (invItem.count.ToString (), GUILayout.Width (44f));
+						EditorGUILayout.LabelField (invInstance.Count.ToString (), GUILayout.Width (44f));
 					}
 					else
 					{
-						EditorGUILayout.LabelField (invItem.label, EditorStyles.boldLabel);
+						EditorGUILayout.LabelField (invInstance.InvItem.label, EditorStyles.boldLabel);
 					}
 					EditorGUILayout.EndHorizontal ();
 				}

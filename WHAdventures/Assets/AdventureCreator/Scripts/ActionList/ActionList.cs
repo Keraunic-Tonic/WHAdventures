@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionList.cs"
  * 
@@ -13,6 +13,9 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace AC
 {
@@ -24,11 +27,20 @@ namespace AC
 	 */
 	[System.Serializable]
 	[HelpURL ("https://www.adventurecreator.org/scripting-guide/class_a_c_1_1_action_list.html")]
+	#if AC_ActionListPrefabs
+	public class ActionList : MonoBehaviour, iActionListAssetReferencer, ISerializationCallbackReceiver
+	#else
 	public class ActionList : MonoBehaviour, iActionListAssetReferencer
+	#endif
 	{
 
 		/** The Actions */
+		#if AC_ActionListPrefabs
+		[HideInInspector] [SerializeReference] public List<AC.Action> actions = new List<AC.Action> ();
+		#else
 		[HideInInspector] public List<AC.Action> actions = new List<AC.Action> ();
+		#endif
+
 		/** If True, the Actions will be skipped when the user presses the 'EndCutscene' Input button */
 		[HideInInspector] public bool isSkippable = true;
 		/** The delay, in seconds, before the Actions are run when the ActionList is triggered */
@@ -62,8 +74,48 @@ namespace AC
 		private bool pauseWhenActionFinishes = false;
 		private const string parameterSeparator = "{PARAM_SEP}";
 
+		private WaitForSeconds delayWait = new WaitForSeconds (0.05f);
+		private WaitForEndOfFrame delayFrame = new WaitForEndOfFrame ();
+
 		protected bool isChangingScene = false;
 		private int skipIteractions = 0; // Used to combat StackOverflow exceptions
+
+
+		#if UNITY_EDITOR && UNITY_2019_2_OR_NEWER
+
+		[SerializeField] private JsonAction[] backupData;
+
+		[MenuItem ("CONTEXT/ActionList/Action data/Backup")]
+		public static void BackupData (MenuCommand command)
+		{
+			ActionList actionList = (ActionList) command.context;
+			actionList.BackupData ();
+		}
+
+
+		public void BackupData ()
+		{
+			backupData = JsonAction.BackupActions (actions);
+		}
+
+
+		[MenuItem ("CONTEXT/ActionList/Action data/Restore")]
+		public static void RestoreData (MenuCommand command)
+		{
+			ActionList actionList = (ActionList) command.context;
+			actionList.RestoreData ();
+		}
+
+
+		public void RestoreData ()
+		{
+			if (backupData != null && backupData.Length > 0)
+			{
+				actions = JsonAction.RestoreActions (backupData);
+			}
+		}
+
+		#endif
 
 
 		private void Awake ()
@@ -93,7 +145,7 @@ namespace AC
 			if (source == ActionListSource.AssetFile)
 			{
 				actions.Clear ();
-				if (assetFile != null && assetFile.actions.Count > 0)
+				if (assetFile && assetFile.actions.Count > 0)
 				{
 					foreach (AC.Action action in assetFile.actions)
 					{
@@ -274,7 +326,7 @@ namespace AC
 			{
 				if (action != null)
 				{
-					action.lastResult.skipAction = -10;
+					action.ResetLastResult ();
 				}
 			}
 		}
@@ -303,7 +355,7 @@ namespace AC
 
 		private IEnumerator DelayProcessAction (int i)
 		{
-			yield return new WaitForSeconds (0.05f);
+			yield return delayWait;
 			ProcessAction (i);
 		}
 
@@ -355,15 +407,14 @@ namespace AC
 				action.AssignValues (null);
 			}
 
+			action.Upgrade ();
+
 			if (isSkipping)
 			{
 				skipIteractions++;
 				action.Skip ();
 
-				if (KickStarter.settingsManager.printActionCommentsInConsole)
-				{
-					action.PrintComment (this);
-				}
+				PrintActionComment (action);
 			}
 			else
 			{
@@ -376,20 +427,15 @@ namespace AC
 				action.isRunning = false;
 				float waitTime = action.Run ();
 
-				if (KickStarter.settingsManager.printActionCommentsInConsole)
-				{
-					action.PrintComment (this);
-				}
+				PrintActionComment (action);
 
-				if (action is ActionParallel)
-				{ }
-				else if (!Mathf.Approximately (waitTime, 0f))
+				if (!Mathf.Approximately (waitTime, 0f))
 				{
 					while (action.isRunning)
 					{
 						if (isChangingScene)
 						{
-							ACDebug.Log ("Cannot continue Action while changing scene, will resume once loading is complete.", this, action);
+							ACDebug.Log ("Cannot continue ActionList " + this + " while changing scene - will resume once loading is complete.", this, action);
 							while (isChangingScene)
 							{
 								yield return null;
@@ -401,15 +447,14 @@ namespace AC
 						{
 							if (!runInRealtime && Time.timeScale <= 0f)
 							{
-								WaitForEndOfFrame delay = new WaitForEndOfFrame ();
 								while (Time.timeScale <= 0f)
 								{
-									yield return delay;
+									yield return delayFrame;
 								}
 							}
 							else
 							{
-								yield return new WaitForEndOfFrame ();
+								yield return delayFrame;
 							}
 						}
 						else if (runInRealtime)
@@ -439,10 +484,9 @@ namespace AC
 
 			if (KickStarter.actionListManager.IsListRunning (this))
 			{
-				ActionParallel actionParallel = action as ActionParallel;
-				if (actionParallel != null)
+				if (action.RunAllOutputs)
 				{
-					EndActionParallel (actionParallel);
+					EndActionParallel (action);
 				}
 				else
 				{
@@ -456,26 +500,40 @@ namespace AC
 		{
 			action.isRunning = false;
 
-			ActionEnd actionEnd = action.End (actions);
-			if (isSkipping && action.lastResult.skipAction != -10 && (action is ActionCheck || action is ActionCheckMultiple))
+			int endIndex = action.GetNextOutputIndex ();
+			ActionEnd actionEnd = (endIndex < 0 || endIndex > action.endings.Count) ? Action.GenerateStopActionEnd () : action.endings[endIndex];
+			
+			/*if (actionEnd.resultAction == ResultAction.Skip)
 			{
-				// When skipping an ActionCheck that has already run, revert to previous result
-				actionEnd = new ActionEnd (action.lastResult);
+				int skip = actionEnd.skipAction;
+				if (actionEnd.skipActionActual && actions.Contains (actionEnd.skipActionActual))
+				{
+					skip = actions.IndexOf (actionEnd.skipActionActual);
+				}
+				else if (skip == -1)
+				{
+					skip = 0;
+				}
+				actionEnd.skipAction = skip;
+			}*/
+
+			if (isSkipping && action.NumSockets > 1 && action.LastRunOutput >= 0 && action.LastRunOutput < action.endings.Count)
+			{
+				// When skipping an Action with multiple outputs that has already run, revert to previous result
+				actionEnd = action.endings[action.LastRunOutput];
 			}
 			else
 			{
-				action.SetLastResult (new ActionEnd (actionEnd));
-				ReturnLastResultToSource (actionEnd, actions.IndexOf (action));
+				int index = action.endings.IndexOf (actionEnd);
+				action.SetLastResult (index);
+				ReturnLastResultToSource (index, actions.IndexOf (action));
 			}
 
-			if (action is ActionCheck || action is ActionCheckMultiple)
+			if (actionEnd.resultAction == ResultAction.Skip && actionEnd.skipAction == actions.IndexOf (action))
 			{
-				if (actionEnd.resultAction == ResultAction.Skip && actionEnd.skipAction == actions.IndexOf (action))
-				{
-					// Looping on itself will cause a StackOverflowException, so delay slightly
-					ProcessActionEnd (actionEnd, actions.IndexOf (action), true);
-					return;
-				}
+				// Looping on itself will cause a StackOverflowException, so delay slightly
+				ProcessActionEnd (actionEnd, actions.IndexOf (action), true);
+				return;
 			}
 
 			ProcessActionEnd (actionEnd, actions.IndexOf (action));
@@ -502,91 +560,113 @@ namespace AC
 				return;
 			}
 			
-			if (actionEnd.resultAction == ResultAction.RunCutscene)
+			switch (actionEnd.resultAction)
 			{
-				if (actionEnd.linkedAsset != null)
-				{
-					if (isSkipping)
+				case ResultAction.Stop:
+					CheckEndCutscene ();
+					break;
+
+				case ResultAction.Continue:
+					ProcessAction (i + 1);
+					break;
+
+				case ResultAction.Skip:
+					if (doStackOverflowDelay)
 					{
-						AdvGame.SkipActionListAsset (actionEnd.linkedAsset);
+						StartCoroutine (DelayProcessAction (actionEnd.skipAction));
 					}
 					else
 					{
-						AdvGame.RunActionListAsset (actionEnd.linkedAsset, 0, !IsSkippable ());
+						ProcessAction (actionEnd.skipAction);
 					}
-					CheckEndCutscene ();
-				}
-				else if (actionEnd.linkedCutscene != null)
-				{
-					if (actionEnd.linkedCutscene != this)
+					break;
+
+				case ResultAction.RunCutscene:
+					if (actionEnd.linkedAsset)
 					{
 						if (isSkipping)
 						{
-							actionEnd.linkedCutscene.Skip ();
+							AdvGame.SkipActionListAsset (actionEnd.linkedAsset);
 						}
 						else
 						{
-							actionEnd.linkedCutscene.Interact (0, !IsSkippable ());
+							AdvGame.RunActionListAsset (actionEnd.linkedAsset, 0, !IsSkippable ());
 						}
 						CheckEndCutscene ();
 					}
-					else
+					else if (actionEnd.linkedCutscene)
 					{
-						if (triggerTime > 0f)
+						if (actionEnd.linkedCutscene != this)
 						{
-							Kill ();
-							StartCoroutine (PauseUntilStart (!IsSkippable ()));
+							if (isSkipping)
+							{
+								actionEnd.linkedCutscene.Skip ();
+							}
+							else
+							{
+								actionEnd.linkedCutscene.Interact (0, !IsSkippable ());
+							}
+							CheckEndCutscene ();
 						}
 						else
 						{
-							ProcessAction (0);
+							if (triggerTime > 0f)
+							{
+								Kill ();
+								StartCoroutine (PauseUntilStart (!IsSkippable ()));
+							}
+							else
+							{
+								ProcessAction (0);
+							}
 						}
 					}
-				}
-				else
-				{
-					CheckEndCutscene ();
-				}
-			}
-			else if (actionEnd.resultAction == ResultAction.Stop)
-			{
-				CheckEndCutscene ();
-			}
-			else if (actionEnd.resultAction == ResultAction.Skip)
-			{
-				if (doStackOverflowDelay)
-				{
-					StartCoroutine (DelayProcessAction (actionEnd.skipAction));
-				}
-				else
-				{
-					ProcessAction (actionEnd.skipAction);
-				}
-			}
-			else if (actionEnd.resultAction == ResultAction.Continue)
-			{
-				ProcessAction (i + 1);
+					else
+					{
+						CheckEndCutscene ();
+					}
+					break;
+
+				default:
+					break;
 			}
 
 			pauseWhenActionFinishes = false;
 		}
 
 
-		private void EndActionParallel (ActionParallel actionParallel)
+		private void EndActionParallel (Action action)
 		{
-			actionParallel.isRunning = false;
-			ActionEnd[] actionEnds = actionParallel.Ends (this.actions, isSkipping);
+			action.isRunning = false;
 
-			foreach (ActionEnd actionEnd in actionEnds)
+			foreach (ActionEnd ending in action.endings)
 			{
-				ProcessActionEnd (actionEnd, actions.IndexOf (actionParallel));
+				if (ending.resultAction == ResultAction.Skip)
+				{
+					int skip = ending.skipAction;
+					if (ending.skipActionActual != null && actions.Contains (ending.skipActionActual))
+					{
+						skip = actions.IndexOf (ending.skipActionActual);
+					}
+					else if (skip == -1)
+					{
+						skip = 0;
+					}
+
+					ending.skipAction = skip;
+				}
+			}
+
+			foreach (ActionEnd actionEnd in action.endings)
+			{
+				ProcessActionEnd (actionEnd, actions.IndexOf (action));
 			}
 		}
 
 
 		private IEnumerator EndCutscene ()
 		{
-			yield return new WaitForEndOfFrame ();
+			yield return delayFrame;
 
 			if (AreActionsRunning ())
 			{
@@ -674,8 +754,7 @@ namespace AC
 			if (AdvGame.GetReferences ().actionsManager)
 			{
 				string defaultAction = ActionsManager.GetDefaultAction ();
-				AC.Action newAction = (AC.Action)ScriptableObject.CreateInstance (defaultAction);
-				newAction.name = defaultAction;
+				Action newAction = Action.CreateNew (defaultAction);
 				return newAction;
 			}
 			else
@@ -686,7 +765,7 @@ namespace AC
 		}
 
 
-		protected void ReturnLastResultToSource (ActionEnd _lastResult, int i)
+		protected virtual void ReturnLastResultToSource (int index, int i)
 		{ }
 
 
@@ -738,7 +817,7 @@ namespace AC
 				{
 					return GetParameter (label, parameters);
 				}
-				else if (source == ActionListSource.AssetFile && assetFile != null && assetFile.useParameters)
+				else if (source == ActionListSource.AssetFile && assetFile && assetFile.useParameters)
 				{
 					if (syncParamValues)
 					{
@@ -767,7 +846,7 @@ namespace AC
 				{
 					return GetParameter (_ID, parameters);
 				}
-				else if (source == ActionListSource.AssetFile && assetFile != null && assetFile.useParameters)
+				else if (source == ActionListSource.AssetFile && assetFile && assetFile.useParameters)
 				{
 					if (syncParamValues)
 					{
@@ -834,6 +913,28 @@ namespace AC
 		}
 
 
+		protected virtual void PrintActionComment (Action action)
+		{
+			switch (KickStarter.settingsManager.actionCommentLogging)
+			{
+				case ActionCommentLogging.Always:
+					action.PrintComment (this);
+					break;
+
+				case ActionCommentLogging.OnlyIfVisible:
+					if (action.showComment)
+					{
+						action.PrintComment (this);
+					}
+					break;
+
+				default:
+					break;
+			}
+		}
+
+
+
 		/**
 		 * <summary>Resumes the ActionList.</summary>
 		 * <param name = "_startIndex">The Action index that the ActionList was originally started from.</param>
@@ -889,9 +990,9 @@ namespace AC
 								action.AssignValues (null);
 							}
 
-							if (action is ActionParallel)
+							if (action.RunAllOutputs)
 							{
-								EndActionParallel ((ActionParallel)action);
+								EndActionParallel (action);
 							}
 							else
 							{
@@ -972,7 +1073,7 @@ namespace AC
 		}
 
 
-#if UNITY_EDITOR
+		#if UNITY_EDITOR
 
 		private void OnValidate ()
 		{
@@ -985,7 +1086,7 @@ namespace AC
 			int totalNumReferences = 0;
 
 			if ((source == ActionListSource.InScene && NumParameters > 0) ||
-				(source == ActionListSource.AssetFile && assetFile != null && assetFile.NumParameters > 0 && !syncParamValues && useParameters))
+				(source == ActionListSource.AssetFile && assetFile && assetFile.NumParameters > 0 && !syncParamValues && useParameters))
 			{
 				int thisNumReferences = GetParameterReferences (parameters, item.id, ParameterType.InventoryItem);
 				if (thisNumReferences > 0)
@@ -1009,6 +1110,42 @@ namespace AC
 		}
 
 
+		public int GetMenuReferences (Menu menu, string sceneFile)
+		{
+			int totalNumReferences = 0;
+
+			foreach (Action action in actions)
+			{
+				int thisNumReferences = action.GetMenuReferences (menu.title);
+				if (thisNumReferences > 0)
+				{
+					totalNumReferences += thisNumReferences;
+					ACDebug.Log ("Found " + thisNumReferences + " references to Menu '" + menu.title + "' in Action #" + actions.IndexOf(action) + " of ActionList '" + name + "' in scene '" + sceneFile + "'", this);
+				}
+			}
+
+			return totalNumReferences;
+		}
+
+
+		public int GetMenuElementReferences (Menu menu, MenuElement element, string sceneFile)
+		{
+			int totalNumReferences = 0;
+
+			foreach (Action action in actions)
+			{
+				int thisNumReferences = action.GetMenuReferences (menu.title, element.title);
+				if (thisNumReferences > 0)
+				{
+					totalNumReferences += thisNumReferences;
+					ACDebug.Log ("Found " + thisNumReferences + " references to element '" + element.title + "' in Action #" + actions.IndexOf(action) + " of ActionList '" + name + "' in scene '" + sceneFile + "'", this);
+				}
+			}
+
+			return totalNumReferences;
+		}
+
+
 		public int GetVariableReferences (VariableLocation _location, GVar _variable, Variables _variables = null, string sceneFile = "")
 		{
 			int totalNumReferences = 0;
@@ -1016,7 +1153,7 @@ namespace AC
 			if (_variable == null)
 			{
 				if ((source == ActionListSource.InScene && NumParameters > 0) ||
-					(source == ActionListSource.AssetFile && assetFile != null && assetFile.NumParameters > 0 && !syncParamValues && useParameters))
+					(source == ActionListSource.AssetFile && assetFile && assetFile.NumParameters > 0 && !syncParamValues && useParameters))
 				{
 					ParameterType parameterType = (_location == VariableLocation.Global) ? ParameterType.GlobalVariable : ParameterType.LocalVariable;
 					int thisNumReferences = GetParameterReferences (parameters, _variable.id, parameterType);
@@ -1061,7 +1198,7 @@ namespace AC
 			int totalNumReferences = 0;
 
 			if ((source == ActionListSource.InScene && NumParameters > 0) ||
-				(source == ActionListSource.AssetFile && assetFile != null && assetFile.NumParameters > 0 && !syncParamValues && useParameters))
+				(source == ActionListSource.AssetFile && assetFile && assetFile.NumParameters > 0 && !syncParamValues && useParameters))
 			{
 				int thisNumReferences = GetParameterReferences (parameters, document.ID, ParameterType.Document);
 				if (thisNumReferences > 0)
@@ -1078,6 +1215,24 @@ namespace AC
 				{
 					totalNumReferences += thisNumReferences;
 					ACDebug.Log ("Found " + thisNumReferences + " references to document '" + document.title + "' in Action #" + actions.IndexOf (action) + " of ActionList '" + name + "' in scene '" + sceneFile + "'", this);
+				}
+			}
+
+			return totalNumReferences;
+		}
+
+
+		public int GetObjectiveReferences (Objective objective, string sceneFile)
+		{
+			int totalNumReferences = 0;
+
+			foreach (Action action in actions)
+			{
+				int thisNumReferences = action.GetObjectiveReferences (objective.ID);
+				if (thisNumReferences > 0)
+				{
+					totalNumReferences += thisNumReferences;
+					ACDebug.Log ("Found " + thisNumReferences + " references to objective '" + objective.Title + "' in Action #" + actions.IndexOf (action) + " of ActionList '" + name + "' in scene '" + sceneFile + "'", this);
 				}
 			}
 
@@ -1103,6 +1258,7 @@ namespace AC
 
 		private void CopyScriptable ()
 		{
+			#if !AC_ActionListPrefabs
 			if (Application.isPlaying)
 			{
 				return;
@@ -1125,6 +1281,7 @@ namespace AC
 				}
 			}
 			if (modified) UnityVersionHandler.CustomSetDirty (this);
+			#endif
 		}
 
 
@@ -1137,7 +1294,61 @@ namespace AC
 			return false;
 		}
 
+
+		public bool ActionModified (int index)
+		{
+			#if AC_ActionListPrefabs
+			return modifiedPrefabIndices.Contains (index);
+			#else
+			return false;
+			#endif
+		}
+
+		
 		#endif
+
+
+		#if AC_ActionListPrefabs
+
+		private List<int> modifiedPrefabIndices = new List<int> ();
+		
+		public void OnBeforeSerialize ()
+		{
+			UnityEditor.PropertyModification[] propertyModifications = UnityEditor.PrefabUtility.GetPropertyModifications (this);
+			if (propertyModifications == null) return;
+
+			modifiedPrefabIndices.Clear ();
+			for (int i = 0; i < propertyModifications.Length; i++)
+			{
+				if (propertyModifications[i].propertyPath.StartsWith ("actions.Array.data[") &&
+					!propertyModifications[i].propertyPath.Contains ("].nodeRect") &&
+					!propertyModifications[i].propertyPath.Contains ("].isDisplayed") &&
+					!propertyModifications[i].propertyPath.Contains ("].overrideColor") &&
+					!propertyModifications[i].propertyPath.Contains ("].comment") &&
+					!propertyModifications[i].propertyPath.Contains ("].showComment") &&
+					!propertyModifications[i].propertyPath.Contains ("].showOutputSockets"))
+				{
+					string pathStart = propertyModifications[i].propertyPath.Substring ("actions.Array.data[".Length);
+					int bracketIndex = pathStart.IndexOf ("]"[0]);
+					if (bracketIndex > 0)
+					{
+						string actionIndexString = pathStart.Substring (0, bracketIndex);
+						int actionIndex;
+						if (int.TryParse (actionIndexString, out actionIndex))
+						{
+							modifiedPrefabIndices.Add (actionIndex);
+						}
+					}
+				}
+			}
+		}
+
+
+		public void OnAfterDeserialize ()
+		{}
+
+		#endif
+
 
 	}
 	

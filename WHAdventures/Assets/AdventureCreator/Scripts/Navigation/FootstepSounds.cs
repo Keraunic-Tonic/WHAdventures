@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"FootstepSounds.cs"
  * 
@@ -40,7 +40,9 @@ namespace AC
 		/** The Player or NPC that this component is for */
 		public Char character;
 		/** If True, and character is assigned, sounds will only play when the character is grounded */
-		public bool doGroundedCheck;
+		public bool doGroundedCheck = false;
+		/** If True, and character is assigned, sounds will only play when the character is moving */
+		public bool doMovementCheck = true;
 
 		/** How much the audio pitch can randomly vary by */
 		public float pitchVariance = 0f;
@@ -64,7 +66,7 @@ namespace AC
 		
 		protected void Awake ()
 		{
-			if (soundToPlayFrom != null)
+			if (soundToPlayFrom)
 			{
 				audioSource = soundToPlayFrom.GetComponent <AudioSource>();
 			}
@@ -79,10 +81,7 @@ namespace AC
 			}
 			delayTime = walkSeparationTime / 2f;
 
-			if (soundToPlayFrom != null)
-			{
-				originalRelativeSound = soundToPlayFrom.relativeVolume;
-			}
+			RecordOriginalRelativeSound ();
 		}
 
 
@@ -111,20 +110,15 @@ namespace AC
 
 		#region PublicFunctions		
 
-		/**
-		 * Plays one of the footstepSounds at random on the assigned Sound object.
-		 */
+		/** Plays one of the footstepSounds at random on the assigned Sound object. */
 		public void PlayFootstep ()
 		{
-			if (audioSource != null && footstepSounds.Length > 0 &&
-			    (character == null || character.charState == CharState.Move))
+			if (audioSource && footstepSounds.Length > 0 &&
+			    (!doMovementCheck || character == null || character.charState == CharState.Move))
 			{
-				if (doGroundedCheck && character != null)
+				if (doGroundedCheck && character && !character.IsGrounded (true))
 				{
-					if (!character.IsGrounded (true))
-					{
-						return;
-					}
+					return;
 				}
 
 				bool doRun = (character.isRunning && runSounds.Length > 0) ? true : false;
@@ -136,6 +130,15 @@ namespace AC
 				{
 					PlaySound (footstepSounds, doRun);
 				}
+			}
+		}
+
+		/** Records the associated Sound component's relative volume. */
+		public void RecordOriginalRelativeSound ()
+		{
+			if (soundToPlayFrom)
+			{
+				originalRelativeSound = soundToPlayFrom.relativeVolume;
 			}
 		}
 
@@ -181,30 +184,20 @@ namespace AC
 				audioSource.pitch = randomPitch;
 			}
 
-			if (volumeVariance > 0f)
+			float localVolume = (volumeVariance > 0f) ? (1f - Random.Range (0f, volumeVariance)): 1f;
+			
+			if (soundToPlayFrom)
 			{
-				float randomVolume = 1f - Random.Range (0f, volumeVariance);
-
-				if (soundToPlayFrom != null)
+				if (soundToPlayFrom.audioSource)
 				{
-					soundToPlayFrom.ChangeRelativeVolume (randomVolume * originalRelativeSound);
+					soundToPlayFrom.audioSource.PlayOneShot (clip, localVolume);
 				}
-				else
-				{
-					audioSource.volume = randomVolume;
-				}
-			}
-
-			if (soundToPlayFrom != null)
-			{
-				soundToPlayFrom.Play (false);
-				if (KickStarter.eventManager != null) KickStarter.eventManager.Call_OnPlayFootstepSound (character, this, !isRunSound, soundToPlayFrom.audioSource, clip);
+				if (KickStarter.eventManager) KickStarter.eventManager.Call_OnPlayFootstepSound (character, this, !isRunSound, soundToPlayFrom.audioSource, clip);
 			}
 			else
 			{
-				audioSource.loop = false;
-				audioSource.Play ();
-				if (KickStarter.eventManager != null) KickStarter.eventManager.Call_OnPlayFootstepSound (character, this, !isRunSound, audioSource, clip);
+				audioSource.PlayOneShot (clip, localVolume);
+				if (KickStarter.eventManager) KickStarter.eventManager.Call_OnPlayFootstepSound (character, this, !isRunSound, audioSource, clip);
 			}
 		}
 

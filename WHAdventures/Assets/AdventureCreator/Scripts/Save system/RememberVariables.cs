@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberVariables.cs"
  * 
@@ -49,11 +49,12 @@ namespace AC
 			}
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			Variables.vars = SaveSystem.UnloadVariablesData (data.variablesData, Variables.vars);
+			Variables.vars = SaveSystem.UnloadVariablesData (data.variablesData, true, Variables.vars);
 
 			foreach (GVar var in Variables.vars)
 			{
 				var.Upload (VariableLocation.Component);
+				var.BackupValue ();
 			}
 
 			loadedData = true;

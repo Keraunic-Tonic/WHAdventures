@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Moveable_PickUp.cs"
  * 
@@ -37,6 +37,8 @@ namespace AC
 		public float pullbackDistance = 0.6f;
 		/** How far the object can be thrown */
 		public float throwForce = 400f;
+		/** If True, then Rigidbody constraints will be set automatically based on the interaction state */
+		public bool autoSetConstraints = true;
 
 		/** Where to locate interactions */
 		public ActionListSource actionListSource = ActionListSource.InScene;
@@ -81,7 +83,7 @@ namespace AC
 
 			if (_rigidbody == null)
 			{
-				ACDebug.LogWarning ("A Rigidbody component is required for " + this.name);
+				ACDebug.LogWarning ("A Rigidbody component is required for " + name, this);
 			}
 		}
 
@@ -173,11 +175,11 @@ namespace AC
 		{
 			base.UpdateMovement ();
 
-			if (moveSound && moveSoundClip && !inRotationMode)
+			if (_rigidbody && moveSound && moveSoundClip && !inRotationMode)
 			{
 				if (numCollisions > 0)
 			    {
-					PlayMoveSound (_rigidbody.velocity.magnitude, 0.5f);
+					PlayMoveSound (_rigidbody.velocity.magnitude);
 				}
 				else if (moveSound.IsPlaying ())
 				{
@@ -202,7 +204,12 @@ namespace AC
 			deltaMovement = Vector3.zero;
 
 			_rigidbody.velocity = _rigidbody.angularVelocity = Vector3.zero;
-			originalDistanceToCamera = (grabPosition - KickStarter.CameraMain.transform.position).magnitude;
+			originalDistanceToCamera = (grabPosition - KickStarter.CameraMainTransform.position).magnitude;
+
+			if (autoSetConstraints)
+			{
+				_rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+			}
 
 			base.Grab (grabPosition);
 
@@ -210,14 +217,19 @@ namespace AC
 		}
 
 
-		public override void LetGo (bool ignoreEvents = false)
+		public override void LetGo (bool ignoreInteractions = false)
 		{
 			if (inRotationMode)
 			{
 				SetRotationMode (false);
 			}
 
-			if (fixedJoint != null && fixedJoint.connectedBody)
+			if (autoSetConstraints)
+			{
+				_rigidbody.constraints = RigidbodyConstraints.None;
+			}
+
+			if (fixedJoint && fixedJoint.connectedBody)
 			{
 				fixedJoint.connectedBody = null;
 			}
@@ -229,14 +241,14 @@ namespace AC
 			{
 				_rigidbody.velocity = Vector3.zero;
 			}
-			else if (!isChargingThrow && !ignoreEvents)
+			else if (!isChargingThrow && !ignoreInteractions)
 			{
 				_rigidbody.AddForce (deltaMovement * Time.deltaTime / Time.fixedDeltaTime * 7f);
 			}
 
 			_rigidbody.useGravity = true;
 
-			base.LetGo ();
+			base.LetGo (ignoreInteractions);
 
 			RunInteraction (false);
 		}
@@ -250,7 +262,7 @@ namespace AC
 			{
 				case ActionListSource.InScene:
 					Interaction interaction = (onGrab) ? interactionOnGrab : interactionOnDrop;
-					if (interaction != null && gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer))
+					if (interaction && gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer))
 					{
 						if (!onGrab || !KickStarter.actionListManager.IsListRunning (interaction))
 						{
@@ -270,7 +282,7 @@ namespace AC
 
 				case ActionListSource.AssetFile:
 					ActionListAsset actionListAsset = (onGrab) ? actionListAssetOnGrab : actionListAssetOnDrop;
-					if (actionListAsset != null && gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer))
+					if (actionListAsset && gameObject.layer != LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer))
 					{
 						if (!onGrab || !KickStarter.actionListAssetManager.IsListRunning (actionListAsset))
 						{
@@ -324,8 +336,8 @@ namespace AC
 					force *= maxSpeed / force.magnitude;
 				}
 
-				Vector3 newRot = Vector3.Cross (force, KickStarter.CameraMain.transform.forward);
-				newRot /= Mathf.Sqrt ((grabPoint.position - transform.position).magnitude) * 2.4f * rotationFactor;
+				Vector3 newRot = Vector3.Cross (force, KickStarter.CameraMainTransform.forward);
+				newRot /= Mathf.Sqrt ((grabPoint.position - Transform.position).magnitude) * 2.4f * rotationFactor;
 				_rigidbody.AddTorque (newRot);
 			}
 			else
@@ -377,7 +389,7 @@ namespace AC
 			_rigidbody.drag = originalDrag;
 			_rigidbody.angularDrag = originalAngularDrag;
 
-			Vector3 moveVector = (transform.position - KickStarter.CameraMain.transform.position).normalized;
+			Vector3 moveVector = (Transform.position - KickStarter.CameraMainTransform.position).normalized;
 			_rigidbody.AddForce (throwForce * throwCharge * moveVector);
 		}
 		
@@ -386,6 +398,7 @@ namespace AC
 		{
 			GameObject go = new GameObject (this.name + " (Joint)");
 			go.transform.parent = transform;
+			go.transform.localPosition = Vector3.zero;
 			fixedJointRigidbody = go.AddComponent <Rigidbody>();
 			fixedJointRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
 			fixedJointRigidbody.useGravity = false;
@@ -407,11 +420,14 @@ namespace AC
 				if (on)
 				{
 					KickStarter.playerInput.forceGameplayCursor = ForceGameplayCursor.KeepUnlocked;
+
 					fixedJoint.connectedBody = null;
+					_rigidbody.constraints = RigidbodyConstraints.None;
 				}
 				else
 				{
 					KickStarter.playerInput.forceGameplayCursor = ForceGameplayCursor.None;
+					_rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
 
 					if (!KickStarter.playerInput.GetInGameCursorState ())
 					{
@@ -430,6 +446,7 @@ namespace AC
 			if (fixedJoint)
 			{
 				FixedJointPosition = fixedJointLerp.Update (FixedJointPosition, worldMousePosition - fixedJointOffset, 10f);
+				
 				if (!inRotationMode && fixedJoint.connectedBody != _rigidbody)
 				{
 					fixedJoint.connectedBody = _rigidbody;
@@ -453,35 +470,6 @@ namespace AC
 		}
 
 
-		protected void LimitCollisions ()
-		{
-			Collider[] ownColliders = GetComponentsInChildren <Collider>();
-
-			foreach (Collider _collider1 in ownColliders)
-			{
-				foreach (Collider _collider2 in ownColliders)
-				{
-					if (_collider1 == _collider2)
-					{
-						continue;
-					}
-					Physics.IgnoreCollision (_collider1, _collider2, true);
-					Physics.IgnoreCollision (_collider1, _collider2, true);
-				}
-
-				if (ignorePlayerCollider && KickStarter.player != null)
-				{
-					Collider[] playerColliders = KickStarter.player.gameObject.GetComponentsInChildren <Collider>();
-					foreach (Collider playerCollider in playerColliders)
-					{
-						Physics.IgnoreCollision (playerCollider, _collider1, true);
-					}
-				}
-			}
-
-		}
-
-
 		protected Vector3 GetWorldMousePosition ()
 		{
 			Vector3 screenMousePosition = KickStarter.playerInput.GetMousePosition ();
@@ -501,7 +489,7 @@ namespace AC
 			screenMousePosition.z = 1f;
 			Vector3 tempWorldMousePosition = KickStarter.CameraMain.ScreenToWorldPoint (screenMousePosition);
 
-			float angle = Vector3.Angle (KickStarter.CameraMain.transform.forward, tempWorldMousePosition - KickStarter.CameraMain.transform.position);
+			float angle = Vector3.Angle (KickStarter.CameraMainTransform.forward, tempWorldMousePosition - KickStarter.CameraMainTransform.position);
 
 			return originalDistanceToCamera * Mathf.Cos (angle * Mathf.Deg2Rad);
 		}
@@ -519,9 +507,10 @@ namespace AC
 			}
 			set
 			{
-				Vector3 direction = value - _rigidbody.position;
+				Vector3 origin = _rigidbody.position;
+				Vector3 direction = value - origin;
 				RaycastHit hit;
-				if (Physics.Raycast (_rigidbody.position, direction, out hit, direction.magnitude))
+				if (Physics.Raycast (origin, direction, out hit, direction.magnitude))
 				{
 					if (hit.collider.gameObject != gameObject)
 					{

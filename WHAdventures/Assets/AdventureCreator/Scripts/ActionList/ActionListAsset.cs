@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionListAsset.cs"
  * 
@@ -11,6 +11,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -32,7 +33,11 @@ namespace AC
 	{
 
 		/** The Actions within this asset file */
+		#if AC_ActionListPrefabs
+		[SerializeReference] public List<AC.Action> actions = new List<AC.Action>();
+		#else
 		public List<AC.Action> actions = new List<AC.Action>();
+		#endif
 		/** If True, the Actions will be skipped when the user presses the 'EndCutscene' Input button */
 		public bool isSkippable = true;
 		/** The effect that running the Actions has on the rest of the game (PauseGameplay, RunInBackground) */
@@ -54,11 +59,35 @@ namespace AC
 		/** The ID of the associated SpeechTag */
 		[HideInInspector] public int tagID;
 
+		#if UNITY_EDITOR && UNITY_2019_2_OR_NEWER
+		[SerializeField] private JsonAction[] backupData;
 
+		public void BackupData ()
+		{
+			backupData = JsonAction.BackupActions (actions);
+		}
+
+
+		public void RestoreData ()
+		{
+			if (backupData != null && backupData.Length > 0)
+			{
+				actions = JsonAction.RestoreActions (backupData);
+				ActionListAsset.SyncAssetObjects (this);
+			}
+		}
+
+		#endif
+		
 		#if UNITY_EDITOR
 
 		private void OnEnable ()
 		{
+			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			{
+				ResetParameters ();
+			}
+
 			EditorApplication.playModeStateChanged += OnPlayStateChange;
 		}
 
@@ -71,14 +100,13 @@ namespace AC
 
 		private void OnPlayStateChange (PlayModeStateChange state)
 		{
-			if (state == PlayModeStateChange.EnteredPlayMode)
+			switch (state)
 			{
-				ResetParameters ();
+				case PlayModeStateChange.ExitingPlayMode:
+					ResetParameters ();
+					break;
 			}
-			else if (state == PlayModeStateChange.ExitingPlayMode)
-			{
-				ResetParameters ();
-			}
+			
 		}
 
 
@@ -87,7 +115,7 @@ namespace AC
 		{
 			ActionListAsset actionListAsset = (ActionListAsset) command.context;
 			GameObject newOb = new GameObject (actionListAsset.name);
-			if (GameObject.Find ("_Cutscenes") != null && GameObject.Find ("_Cutscenes").transform.position == Vector3.zero)
+			if (GameObject.Find ("_Cutscenes") && GameObject.Find ("_Cutscenes").transform.position == Vector3.zero)
 			{
 				newOb.transform.parent = GameObject.Find ("_Cutscenes").transform;
 			}
@@ -132,6 +160,8 @@ namespace AC
 			{
 				if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo ())
 				{
+					bool foundReference = false;
+
 					// Menus
 					if (KickStarter.menuManager != null)
 					{
@@ -140,6 +170,7 @@ namespace AC
 							if (menu.ReferencesAsset (actionListAsset))
 							{
 								Debug.Log ("'" + actionListAsset.name + "' is referenced by Menu '" + menu.title + "'");
+								foundReference = true;
 							}
 
 							foreach (MenuElement element in menu.elements)
@@ -147,6 +178,7 @@ namespace AC
 								if (element != null && element.ReferencesAsset (actionListAsset))
 								{
 									Debug.Log ("'" + actionListAsset.name + "' is referenced by Menu Element '" + element.title + "' in Menu '" + menu.title + "'");
+									foundReference = true;
 								}
 							}
 						}
@@ -158,6 +190,7 @@ namespace AC
 						if (KickStarter.settingsManager.actionListOnStart == actionListAsset)
 						{
 							Debug.Log ("'" + actionListAsset.name + "' is referenced by the Settings Manager");
+							foundReference = true;
 						}
 					}
 
@@ -169,6 +202,7 @@ namespace AC
 							KickStarter.inventoryManager.unhandledHotspot == actionListAsset)
 						{
 							Debug.Log ("'" + actionListAsset.name + "' is referenced by the Inventory Manager");
+							foundReference = true;
 						}
 
 						foreach (Recipe recipe in KickStarter.inventoryManager.recipes)
@@ -177,6 +211,7 @@ namespace AC
 							   (recipe.onCreateRecipe == OnCreateRecipe.RunActionList && recipe.invActionList == actionListAsset))
 							{
 								Debug.Log ("'" + actionListAsset.name + "' is referenced by Recipe " + recipe.EditorLabel);
+								foundReference = true;
 							}
 						}
 
@@ -185,6 +220,7 @@ namespace AC
 							if (invItem.ReferencesAsset (actionListAsset))
 							{
 								Debug.Log ("'" + actionListAsset.name + "' is referenced by Inventory Item " + invItem.EditorLabel);
+								foundReference = true;
 							}
 						}
 					}
@@ -199,6 +235,7 @@ namespace AC
 								if (unhandledCursorInteraction == actionListAsset)
 								{
 									Debug.Log ("'" + actionListAsset.name + "' is referenced by the Cursor Manager");
+									foundReference = true;
 								}
 							}
 						}
@@ -220,6 +257,7 @@ namespace AC
 									{
 										string actionLabel = (KickStarter.actionsManager != null) ? (" (" + KickStarter.actionsManager.GetActionTypeLabel (action) + ")") : "";
 										Debug.Log ("'" + actionListAsset.name + "' is referenced by Action #" + asset.actions.IndexOf (action) + actionLabel + " in ActionList asset '" + asset.name + "'", asset);
+										foundReference = true;
 									}
 								}
 							}
@@ -250,6 +288,7 @@ namespace AC
 										{
 											string actionLabel = (KickStarter.actionsManager != null) ? (" (" + KickStarter.actionsManager.GetActionTypeLabel (action) + ")") : "";
 											Debug.Log ("'" + actionListAsset.name + "' is referenced by Action #" + actionList.actions.IndexOf (action) + actionLabel + " in ActionList '" + actionList.gameObject.name + "'" + suffix, actionList);
+											foundReference = true;
 										}
 									}
 								}
@@ -265,13 +304,195 @@ namespace AC
 							if (currentComponent != null && currentComponent.ReferencesAsset (actionListAsset))
 							{
 								Debug.Log ("'" + actionListAsset.name + "' is referenced by '" + currentComponent + "'" + suffix);
+								foundReference = true;
 							}
 						}
 					}
 
 					UnityVersionHandler.OpenScene (originalScene);
+
+					if (!foundReference)
+					{
+						Debug.Log ("No instances of '" + actionListAsset.name + "' were found.", actionListAsset);
+					}
 				}
 			}
+		}
+
+
+		public static void SyncAssetObjects (ActionListAsset actionListAsset)
+		{
+			#if !AC_ActionListPrefabs
+
+			bool modified = false;
+
+			// Search for assets to delete
+			Object[] assets = AssetDatabase.LoadAllAssetsAtPath (AssetDatabase.GetAssetPath (actionListAsset));
+			foreach (Object asset in assets)
+			{
+				Action actionAsset = asset as Action;
+				if (actionAsset != null)
+				{
+					bool foundMatch = false;
+
+					foreach (Action action in actionListAsset.actions)
+					{
+						if (actionAsset == action)
+						{
+							foundMatch = true;
+							break;
+						}
+					}
+
+					if (!foundMatch)
+					{
+						//Debug.LogWarning ("Found no match of asset " + actionAsset + " - deleting now");
+						Undo.DestroyObjectImmediate (actionAsset);
+						modified = true;
+					}
+				}
+			}
+
+			// Search for assets to add
+			foreach (Action action in actionListAsset.actions)
+			{
+				if (action != null)
+				{
+					bool foundMatch = false;
+
+					foreach (Object asset in assets)
+					{
+						Action actionAsset = asset as Action;
+						if (actionAsset == action)
+						{
+							foundMatch = true;
+							break;
+						}
+					}
+
+					if (!foundMatch)
+					{
+						action.hideFlags = HideFlags.HideInHierarchy;
+						AssetDatabase.AddObjectToAsset (action, actionListAsset);
+						AssetDatabase.ImportAsset (AssetDatabase.GetAssetPath (action));
+						//Debug.LogWarning ("Found no match of " + action + " '" + action.name + "' in database - adding now to " + AssetDatabase.GetAssetPath (action));
+						modified = true;
+					}
+				}
+			}
+
+			if (modified)
+			{
+				AssetDatabase.SaveAssets ();
+				AssetDatabase.Refresh ();
+			}
+
+			#endif
+		}
+
+
+		public static ActionListAsset CreateFromActions (string fileName, string filePath, List<Action> _actions)
+		{
+			ActionListAsset newAsset = CustomAssetUtility.CreateAsset<ActionListAsset> (fileName, filePath);
+			newAsset = AddActionsToAsset (newAsset, _actions, false);
+			
+			AssetDatabase.SaveAssets ();
+			
+			return newAsset;
+		}
+
+
+		private static ActionListAsset AddActionsToAsset (ActionListAsset asset, List<Action> _actions, bool doCopy)
+		{
+			#if AC_ActionListPrefabs
+
+			if (doCopy)
+			{
+				JsonAction.ToCopyBuffer (_actions);
+				asset.actions = JsonAction.CreatePasteBuffer ();
+				JsonAction.ClearCopyBuffer ();
+
+				foreach (Action action in asset.actions)
+				{
+					action.isAssetFile = true;
+					action.AssignConstantIDs ();
+					action.isMarked = false;
+					action.ClearIDs ();
+					action.parentActionListInEditor = null;
+				}
+			}
+			else
+			{
+				asset.actions = _actions;
+
+				foreach (Action action in asset.actions)
+				{
+					action.isAssetFile = true;
+				}
+			}
+
+			#else
+
+			if (doCopy)
+			{
+				asset.actions = new List<Action>();
+				asset.actions.Clear ();
+			
+				Vector2 firstPosition = new Vector2 (14f, 14f);
+				foreach (Action originalAction in _actions)
+				{
+					if (originalAction == null)
+					{
+						continue;
+					}
+				
+					Action duplicatedAction = Instantiate (originalAction) as AC.Action;
+				
+					if (_actions.IndexOf (originalAction) == 0)
+					{
+						Rect newRect = new Rect (firstPosition, duplicatedAction.NodeRect.size);
+						duplicatedAction.NodeRect = newRect;
+					}
+					else
+					{
+						Rect newRect = new Rect (originalAction.NodeRect.position, duplicatedAction.NodeRect.size);
+						duplicatedAction.NodeRect = newRect;
+					}
+
+					duplicatedAction.isAssetFile = true;
+					duplicatedAction.AssignConstantIDs ();
+					duplicatedAction.isMarked = false;
+					duplicatedAction.ClearIDs ();
+					duplicatedAction.parentActionListInEditor = null;
+
+					duplicatedAction.hideFlags = HideFlags.HideInHierarchy;
+				
+					AssetDatabase.AddObjectToAsset (duplicatedAction, asset);
+					AssetDatabase.ImportAsset (AssetDatabase.GetAssetPath (duplicatedAction));
+					AssetDatabase.SaveAssets ();
+					AssetDatabase.Refresh ();
+
+					asset.actions.Add (duplicatedAction);
+				}
+			}
+			else
+			{
+				asset.actions = _actions;
+				foreach (Action action in asset.actions)
+				{
+					action.isAssetFile = true;
+					action.hideFlags = HideFlags.HideInHierarchy;
+
+					AssetDatabase.AddObjectToAsset (action, asset);
+					AssetDatabase.ImportAsset (AssetDatabase.GetAssetPath (action));
+					AssetDatabase.SaveAssets ();
+					AssetDatabase.Refresh ();
+				}
+			}
+
+			#endif
+
+			return asset;
 		}
 
 
@@ -290,45 +511,7 @@ namespace AC
 			}
 			
 			// Actions
-			actions = new List<Action>();
-			actions.Clear ();
-			
-			Vector2 firstPosition = new Vector2 (14f, 14f);
-			foreach (Action originalAction in actionList.actions)
-			{
-				if (originalAction == null)
-				{
-					continue;
-				}
-				
-				AC.Action duplicatedAction = Object.Instantiate (originalAction) as AC.Action;
-				
-				if (actionList.actions.IndexOf (originalAction) == 0)
-				{
-					Rect newRect = new Rect (firstPosition, duplicatedAction.NodeRect.size);
-					duplicatedAction.NodeRect = newRect;
-				}
-				else
-				{
-					Rect newRect = new Rect (originalAction.NodeRect.position, duplicatedAction.NodeRect.size);
-					duplicatedAction.NodeRect = newRect;
-				}
-
-				duplicatedAction.isAssetFile = true;
-				duplicatedAction.AssignConstantIDs ();
-				duplicatedAction.isMarked = false;
-				duplicatedAction.ClearIDs ();
-				duplicatedAction.parentActionListInEditor = null;
-
-				duplicatedAction.hideFlags = HideFlags.HideInHierarchy;
-				
-				AssetDatabase.AddObjectToAsset (duplicatedAction, this);
-				AssetDatabase.ImportAsset (AssetDatabase.GetAssetPath (duplicatedAction));
-				AssetDatabase.SaveAssets ();
-				AssetDatabase.Refresh ();
-
-				actions.Add (duplicatedAction);
-			}
+			AddActionsToAsset (this, actionList.actions, true);
 		}
 
 		#endif
@@ -385,6 +568,30 @@ namespace AC
 		public RuntimeActionList Interact (int parameterID, int parameterValue)
 		{
 			return AdvGame.RunActionListAsset (this, parameterID, parameterValue);
+		}
+
+
+		/**
+		 * <summary>Gets an array of all ActionLists associated with this asset that are currently running.</summary>
+		 * <returns>All ActionLists associated with this asset that are currently running.</returns>
+		 */
+		public RuntimeActionList[] GetRuntimeInstances ()
+		{
+			ActiveList[] activeLists = KickStarter.actionListAssetManager.ActiveLists.ToArray ();
+			List<RuntimeActionList> runtimeInstances = new List<RuntimeActionList>();
+			foreach (ActiveList activeList in activeLists)
+			{
+				if (activeList.IsFor (this) && activeList.actionList)
+				{
+					RuntimeActionList runtimeActionList = activeList.actionList as RuntimeActionList;
+					if (runtimeActionList)
+					{
+						runtimeInstances.Add (runtimeActionList);
+					}
+				}
+			}
+
+			return runtimeInstances.ToArray ();
 		}
 
 
@@ -563,6 +770,42 @@ namespace AC
 		}
 
 
+		public int GetMenuReferences (Menu menu)
+		{
+			int totalNumReferences = 0;
+
+			foreach (Action action in actions)
+			{
+				int thisNumReferences = action.GetMenuReferences (menu.title);
+				if (thisNumReferences > 0)
+				{
+					totalNumReferences += thisNumReferences;
+					ACDebug.Log("Found " + thisNumReferences + " references to Menu '" + menu.title + "' in Action #" + actions.IndexOf(action) + " of ActionList asset '" + name + "'", this);
+				}
+			}
+
+			return totalNumReferences;
+		}
+
+
+		public int GetMenuElementReferences (Menu menu, MenuElement element)
+		{
+			int totalNumReferences = 0;
+
+			foreach (Action action in actions)
+			{
+				int thisNumReferences = action.GetMenuReferences (menu.title, element.title);
+				if (thisNumReferences > 0)
+				{
+					totalNumReferences += thisNumReferences;
+					ACDebug.Log("Found " + thisNumReferences + " references to element '" + element.title + "' in Action #" + actions.IndexOf(action) + " of ActionList asset '" + name + "'", this);
+				}
+			}
+
+			return totalNumReferences;
+		}
+
+
 		public int GetVariableReferences (GVar _variable)
 		{
 			int totalNumReferences = 0;
@@ -580,6 +823,34 @@ namespace AC
 			foreach (Action action in actions)
 			{
 				int thisNumReferences = action.GetVariableReferences (DefaultParameters, VariableLocation.Global, _variable.id);
+				if (thisNumReferences > 0)
+				{
+					totalNumReferences += thisNumReferences;
+					ACDebug.Log ("Found " + thisNumReferences + " references to global variable '" + _variable.label + "' in Action #" + actions.IndexOf (action) + " of ActionList asset '" + name + "'", this);
+				}
+			}
+
+			return totalNumReferences;
+		}
+
+
+		public int GetVariableReferences (GVar _variable, int variablesConstantID)
+		{
+			int totalNumReferences = 0;
+
+			if (NumParameters > 0)
+			{
+				int thisNumReferences = GetParameterReferences (parameters, _variable.id, ParameterType.ComponentVariable, variablesConstantID);
+				if (thisNumReferences > 0)
+				{
+					totalNumReferences += thisNumReferences;
+					ACDebug.Log ("Found " + thisNumReferences + " references to variable '" + _variable.label + "' in parameter values of ActionList '" + name + "'", this);
+				}
+			}
+
+			foreach (Action action in actions)
+			{
+				int thisNumReferences = action.GetVariableReferences (DefaultParameters, VariableLocation.Component, _variable.id, variablesConstantID);
 				if (thisNumReferences > 0)
 				{
 					totalNumReferences += thisNumReferences;
@@ -619,7 +890,25 @@ namespace AC
 		}
 
 
-		private int GetParameterReferences (List<ActionParameter> parameters, int _ID, ParameterType _paramType)
+		public int GetObjectiveReferences (Objective objective)
+		{
+			int totalNumReferences = 0;
+
+			foreach (Action action in actions)
+			{
+				int thisNumReferences = action.GetObjectiveReferences (objective.ID);
+				if (thisNumReferences > 0)
+				{
+					totalNumReferences += thisNumReferences;
+					ACDebug.Log ("Found " + thisNumReferences + " references to objective '" + objective.Title + "' in Action #" + actions.IndexOf (action) + " of ActionList asset '" + name + "'", this);
+				}
+			}
+
+			return totalNumReferences;
+		}
+
+
+		private int GetParameterReferences (List<ActionParameter> parameters, int _ID, ParameterType _paramType, int variablesConstantID = 0)
 		{
 			int thisCount = 0;
 
@@ -627,6 +916,22 @@ namespace AC
 			{
 				if (parameter != null && parameter.parameterType == _paramType && _ID == parameter.intValue)
 				{
+					if (_paramType == ParameterType.ComponentVariable && variablesConstantID != 0)
+					{
+						if (parameter.variables)
+						{
+							ConstantID _constantID = parameter.variables.GetComponent <ConstantID>();
+							if (!_constantID || _constantID.constantID != variablesConstantID)
+							{
+								continue;
+							}
+						}
+						else
+						{
+							continue;
+						}
+					}
+
 					thisCount++;
 				}
 			}

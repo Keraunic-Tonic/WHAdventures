@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SceneSettings.cs"
  * 
@@ -122,11 +122,11 @@ namespace AC
 		public void AssignPlayerStart ()
 		{
 			PlayerStart playerStart = GetPlayerStart (KickStarter.saveSystem.CurrentPlayerID);
-			if (playerStart != null)
+			if (playerStart)
 			{
 				playerStart.PlacePlayerAt ();
 			}
-			else if (KickStarter.player != null)
+			else if (KickStarter.player)
 			{
 				ACDebug.LogWarning ("No default PlayerStart was found.  The Player and camera may not be set up correctly until one is defined in the Scene Manager.");
 			}
@@ -138,7 +138,7 @@ namespace AC
 		 */
 		public void UpdateAllSortingMaps ()
 		{
-			if (KickStarter.stateHandler != null)
+			if (KickStarter.stateHandler)
 			{
 				foreach (FollowSortingMap followSortingMap in KickStarter.stateHandler.FollowSortingMaps)
 				{
@@ -165,7 +165,7 @@ namespace AC
 				}
 			}
 
-			if (defaultPlayerStart != null && !starters.Contains (defaultPlayerStart))
+			if (defaultPlayerStart && !starters.Contains (defaultPlayerStart))
 			{
 				starters.Add (defaultPlayerStart);
 			}
@@ -194,14 +194,14 @@ namespace AC
 		{
 			if (actionListSource == ActionListSource.InScene)
 			{
-				if (cutsceneOnLoad != null)
+				if (cutsceneOnLoad)
 				{
 					cutsceneOnLoad.Interact ();
 				}
 			}
 			else if (actionListSource == ActionListSource.AssetFile)
 			{
-				if (actionListAssetOnLoad != null)
+				if (actionListAssetOnLoad)
 				{
 					actionListAssetOnLoad.Interact ();
 				}
@@ -324,19 +324,24 @@ namespace AC
 
 			KickStarter.eventManager.Call_OnStartScene ();
 
-			if (actionListSource == ActionListSource.InScene)
+			switch (actionListSource)
 			{
-				if (cutsceneOnStart != null)
-				{
-					cutsceneOnStart.Interact ();
-				}
-			}
-			else if (actionListSource == ActionListSource.AssetFile)
-			{
-				if (actionListAssetOnStart != null)
-				{
-					actionListAssetOnStart.Interact ();
-				}
+				case ActionListSource.InScene:
+					if (cutsceneOnStart)
+					{
+						cutsceneOnStart.Interact ();
+					}
+					break;
+
+				case ActionListSource.AssetFile:
+					if (actionListAssetOnStart)
+					{
+						actionListAssetOnStart.Interact ();
+					}
+					break;
+
+				default:
+					break;
 			}
 		}
 
@@ -351,14 +356,14 @@ namespace AC
 		 */
 		public static bool ActInScreenSpace ()
 		{
-			if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.overrideCameraPerspective)
+			if (KickStarter.sceneSettings && KickStarter.sceneSettings.overrideCameraPerspective)
 			{
 				if ((KickStarter.sceneSettings.movingTurning == MovingTurning.ScreenSpace || KickStarter.sceneSettings.movingTurning == MovingTurning.Unity2D) && KickStarter.sceneSettings.cameraPerspective == CameraPerspective.TwoD)
 				{
 					return true;
 				}
 			}
-			else if (KickStarter.settingsManager != null)
+			else if (KickStarter.settingsManager)
 			{
 				if ((KickStarter.settingsManager.movingTurning == MovingTurning.ScreenSpace || KickStarter.settingsManager.movingTurning == MovingTurning.Unity2D) && KickStarter.settingsManager.cameraPerspective == CameraPerspective.TwoD)
 				{
@@ -375,14 +380,14 @@ namespace AC
 		 */
 		public static bool IsUnity2D ()
 		{
-			if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.overrideCameraPerspective)
+			if (KickStarter.sceneSettings && KickStarter.sceneSettings.overrideCameraPerspective)
 			{
 				if (KickStarter.sceneSettings.movingTurning == MovingTurning.Unity2D && KickStarter.sceneSettings.cameraPerspective == CameraPerspective.TwoD)
 				{
 					return true;
 				}
 			}
-			else if (KickStarter.settingsManager != null)
+			else if (KickStarter.settingsManager)
 			{
 				if (KickStarter.settingsManager.movingTurning == MovingTurning.Unity2D && KickStarter.settingsManager.cameraPerspective == CameraPerspective.TwoD)
 				{
@@ -399,14 +404,14 @@ namespace AC
 		 */
 		public static bool IsTopDown ()
 		{
-			if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.overrideCameraPerspective)
+			if (KickStarter.sceneSettings && KickStarter.sceneSettings.overrideCameraPerspective)
 			{
 				if (KickStarter.sceneSettings.movingTurning == MovingTurning.TopDown && KickStarter.sceneSettings.cameraPerspective == CameraPerspective.TwoD)
 				{
 					return true;
 				}
 			}
-			else if (KickStarter.settingsManager != null)
+			else if (KickStarter.settingsManager)
 			{
 				if (KickStarter.settingsManager.movingTurning == MovingTurning.TopDown && KickStarter.settingsManager.cameraPerspective == CameraPerspective.TwoD)
 				{
@@ -428,11 +433,11 @@ namespace AC
 		{
 			get
 			{
-				if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.overrideCameraPerspective)
+				if (KickStarter.sceneSettings && KickStarter.sceneSettings.overrideCameraPerspective)
 				{
 					return KickStarter.sceneSettings.cameraPerspective;
 				}
-				else if (KickStarter.settingsManager != null)
+				else if (KickStarter.settingsManager)
 				{
 					return KickStarter.settingsManager.cameraPerspective;
 				}

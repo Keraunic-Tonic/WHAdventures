@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SaveData.cs"
  * 
@@ -165,11 +165,11 @@ namespace AC
 			CustomGUILayout.MultiLineLabelGUI ("Current Player ID:", currentPlayerID.ToString ());
 			CustomGUILayout.MultiLineLabelGUI ("TimeScale:", timeScale.ToString ());
 
-			if (KickStarter.variablesManager != null)
+			if (KickStarter.variablesManager)
 			{
 				EditorGUILayout.LabelField ("Global Variables:");
 
-				List<GVar> linkedVariables = SaveSystem.UnloadVariablesData (runtimeVariablesData, KickStarter.variablesManager.vars, true);
+				List<GVar> linkedVariables = SaveSystem.UnloadVariablesData (runtimeVariablesData, false, KickStarter.variablesManager.vars, true);
 				foreach (GVar linkedVariable in linkedVariables)
 				{
 					if (linkedVariable.link != VarLink.OptionsData)

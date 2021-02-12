@@ -36,7 +36,7 @@ namespace AC
 		{
 			actionAsJson = JsonUtility.ToJson (action);
 			className = action.GetType ().ToString ();
-			label = action.category.ToString () + ": " + action.title;
+			label = action.Category.ToString () + ": " + action.Title;
 
 			if (!string.IsNullOrEmpty (className) && className.StartsWith ("AC."))
 			{
@@ -53,7 +53,7 @@ namespace AC
 				return null;
 			}
 
-			Action newAction = (Action) ScriptableObject.CreateInstance (className);
+			Action newAction = Action.CreateNew (className);
 			JsonUtility.FromJsonOverwrite (actionAsJson, newAction);
 			newAction.ClearIDs ();
 			return newAction;

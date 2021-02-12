@@ -1530,6 +1530,7 @@ MonoBehaviour:
   m_Markers:
     m_Objects: []
   callCustomEvents: 0
+  setsCameraAfterRunning: 0
 --- !u!114 &114395094723079270
 MonoBehaviour:
   m_ObjectHideFlags: 1

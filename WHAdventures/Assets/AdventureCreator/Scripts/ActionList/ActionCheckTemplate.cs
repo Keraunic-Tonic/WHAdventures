@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCheckTemplate.cs"
  * 
@@ -22,16 +22,13 @@ namespace AC
 	public class ActionCheckTemplate : ActionCheck
 	{
 		
+		// Declare properties here
+		public override ActionCategory Category { get { return ActionCategory.Custom; }}
+		public override string Title { get { return "Check template"; }}
+		public override string Description { get { return "This is a blank 'Check' Action template."; }}
+		
+		
 		// Declare variables here
-		
-		
-		public ActionCheckTemplate ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Custom;
-			title = "Check template";
-			description = "This is a blank 'Check' Action template.";
-		}
 
 
 		public override bool CheckCondition ()

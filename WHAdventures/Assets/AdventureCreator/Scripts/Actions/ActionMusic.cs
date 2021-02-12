@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMusic.cs"
  * 
@@ -42,13 +42,9 @@ namespace AC
 		public float loopingOverlapTime = 0f;
 
 		
-		public ActionMusic ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Sound;
-			title = "Play music";
-			description = "Plays or queues music clips.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Sound; }}
+		public override string Title { get { return "Play music"; }}
+		public override string Description { get { return "Plays or queues music clips."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -107,23 +103,23 @@ namespace AC
 
 		protected float Perform (float _time)
 		{
-			if (musicAction == MusicAction.Play)
+			switch (musicAction)
 			{
-				return music.Play (trackID, loop, isQueued, _time, resumeIfPlayedBefore, 0, loopingOverlapTime);
+				case MusicAction.Play:
+					return music.Play (trackID, loop, isQueued, _time, resumeIfPlayedBefore, 0, loopingOverlapTime);
+				
+				case MusicAction.Crossfade:
+					return music.Crossfade (trackID, loop, isQueued, _time, resumeIfPlayedBefore, 0, loopingOverlapTime);
+			
+				case MusicAction.Stop:
+					return music.StopAll (_time);
+	
+				case MusicAction.ResumeLastStopped:
+					return music.ResumeLastQueue (_time, resumeFromStart);
+
+				default:
+					return 0f;
 			}
-			else if (musicAction == MusicAction.Crossfade)
-			{
-				return music.Crossfade (trackID, loop, isQueued, _time, resumeIfPlayedBefore, 0, loopingOverlapTime);
-			}
-			else if (musicAction == MusicAction.Stop)
-			{
-				return music.StopAll (_time);
-			}
-			else if (musicAction == MusicAction.ResumeLastStopped)
-			{
-				return music.ResumeLastQueue (_time, resumeFromStart);
-			}
-			return 0f;
 		}
 
 
@@ -194,8 +190,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("A Settings Manager must be defined for this Action to function correctly. Please go to your Game Window and assign one.", MessageType.Warning);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -286,7 +280,7 @@ namespace AC
 		 */
 		public static ActionMusic CreateNew_Play (int trackID, bool loop = true, bool addToQueue = false, float transitionTime = 0f, bool doCrossfade = false, bool waitUntilFinish = false)
 		{
-			ActionMusic newAction = (ActionMusic) CreateInstance <ActionMusic>();
+			ActionMusic newAction = CreateNew<ActionMusic> ();
 			newAction.musicAction = doCrossfade ? MusicAction.Crossfade : MusicAction.Play;
 			newAction.trackID = trackID;
 			newAction.loop = loop;
@@ -305,7 +299,7 @@ namespace AC
 		 */
 		public static ActionMusic CreateNew_Stop (float transitionTime = 0f, bool waitUntilFinish = false)
 		{
-			ActionMusic newAction = (ActionMusic) CreateInstance <ActionMusic>();
+			ActionMusic newAction = CreateNew<ActionMusic> ();
 			newAction.musicAction = MusicAction.Stop;
 			newAction.fadeTime = transitionTime;
 			newAction.willWait = waitUntilFinish;
@@ -322,7 +316,7 @@ namespace AC
 		 */
 		public static ActionMusic CreateNew_ResumeLastTrack (float transitionTime = 0f, bool doRestart = false, bool waitUntilFinish = false)
 		{
-			ActionMusic newAction = (ActionMusic) CreateInstance <ActionMusic>();
+			ActionMusic newAction = CreateNew<ActionMusic> ();
 			newAction.musicAction = MusicAction.ResumeLastStopped;
 			newAction.fadeTime = transitionTime;
 			newAction.resumeFromStart = doRestart;

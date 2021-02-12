@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"InteractiveBoundary.cs"
  * 
@@ -36,7 +36,7 @@ namespace AC
 
 		protected void OnTriggerEnter (Collider other)
 		{
-			if (KickStarter.player != null && other.gameObject == KickStarter.player.gameObject && !playersPresent.Contains (other.gameObject))
+			if (KickStarter.player && other.gameObject == KickStarter.player.gameObject && !playersPresent.Contains (other.gameObject))
 			{
 				playersPresent.Add (other.gameObject);
 			}
@@ -45,7 +45,7 @@ namespace AC
 
 		protected void OnTriggerExit (Collider other)
 		{
-			if (KickStarter.player != null && other.gameObject == KickStarter.player.gameObject && playersPresent.Contains (other.gameObject))
+			if (KickStarter.player && other.gameObject == KickStarter.player.gameObject && playersPresent.Contains (other.gameObject))
 			{
 				playersPresent.Remove (other.gameObject);
 			}
@@ -54,7 +54,7 @@ namespace AC
 
 		protected void OnTriggerEnter2D (Collider2D other)
 		{
-			if (KickStarter.player != null && other.gameObject == KickStarter.player.gameObject && !playersPresent.Contains (other.gameObject))
+			if (KickStarter.player && other.gameObject == KickStarter.player.gameObject && !playersPresent.Contains (other.gameObject))
 			{
 				playersPresent.Add (other.gameObject);
 			}
@@ -63,7 +63,7 @@ namespace AC
 
 		protected void OnTriggerExit2D (Collider2D other)
 		{
-			if (KickStarter.player != null && other.gameObject == KickStarter.player.gameObject && playersPresent.Contains (other.gameObject))
+			if (KickStarter.player && other.gameObject == KickStarter.player.gameObject && playersPresent.Contains (other.gameObject))
 			{
 				playersPresent.Remove (other.gameObject);
 			}
@@ -83,7 +83,7 @@ namespace AC
 				{
 					return true;
 				}
-				return (KickStarter.player != null && playersPresent.Contains (KickStarter.player.gameObject));
+				return (KickStarter.player && playersPresent.Contains (KickStarter.player.gameObject));
 			}
 		}
 

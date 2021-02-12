@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionNavMesh.cs"
  * 
@@ -53,13 +53,9 @@ namespace AC
 		protected Cutscene runtimeCutscene;
 
 
-		public ActionNavMesh ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Scene;
-			title = "Change setting";
-			description = "Changes any of the following scene parameters: NavMesh, Default PlayerStart, Sorting Map, Tint Map, Cutscene On Load, and Cutscene On Start. When the NavMesh is a Polygon Collider, this Action can also be used to add or remove holes from it.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Scene; }}
+		public override string Title { get { return "Change setting"; }}
+		public override string Description { get { return "Changes any of the following scene parameters: NavMesh, Default PlayerStart, Sorting Map, Tint Map, Cutscene On Load, and Cutscene On Start. When the NavMesh is a Polygon Collider, this Action can also be used to add or remove holes from it."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -201,7 +197,7 @@ namespace AC
 						sceneSettings.tintMap = runtimeTintMap;
 				
 						// Reset all FollowSortingMap components
-						FollowTintMap[] followTintMaps = FindObjectsOfType (typeof (FollowTintMap)) as FollowTintMap[];
+						FollowTintMap[] followTintMaps = Object.FindObjectsOfType (typeof (FollowTintMap)) as FollowTintMap[];
 						foreach (FollowTintMap followTintMap in followTintMaps)
 						{
 							followTintMap.ResetTintMap ();
@@ -261,7 +257,6 @@ namespace AC
 			if (sceneSettings == null)
 			{
 				EditorGUILayout.HelpBox ("No 'Scene Settings' component found in the scene. Please add an AC GameEngine object from the Scene Manager.", MessageType.Info);
-				AfterRunningOption ();
 				return;
 			}
 
@@ -418,8 +413,6 @@ namespace AC
 					cutscene = IDToField <Cutscene> (cutscene, constantID, false);
 				}
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -523,7 +516,7 @@ namespace AC
 					if (constantID == id) return true;
 				}
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -536,7 +529,7 @@ namespace AC
 		 */
 		public static ActionNavMesh CreateNew_ChangeDefaultNavMesh (NavigationMesh newNavMesh)
 		{
-			ActionNavMesh newAction = (ActionNavMesh) CreateInstance <ActionNavMesh>();
+			ActionNavMesh newAction = CreateNew<ActionNavMesh> ();
 			newAction.sceneSetting = SceneSetting.DefaultNavMesh;
 			newAction.changeNavMeshMethod = ChangeNavMeshMethod.ChangeNavMesh;
 			newAction.newNavMesh = newNavMesh;
@@ -551,7 +544,7 @@ namespace AC
 		 */
 		public static ActionNavMesh CreateNew_AddNavMeshHole (PolygonCollider2D holeToAdd)
 		{
-			ActionNavMesh newAction = (ActionNavMesh) CreateInstance <ActionNavMesh>();
+			ActionNavMesh newAction = CreateNew<ActionNavMesh> ();
 			newAction.sceneSetting = SceneSetting.DefaultNavMesh;
 			newAction.changeNavMeshMethod = ChangeNavMeshMethod.ChangeNumberOfHoles;
 			newAction.holeAction = InvAction.Add;
@@ -567,7 +560,7 @@ namespace AC
 		 */
 		public static ActionNavMesh CreateNew_RemoveNavMeshHole (PolygonCollider2D holeToRemove)
 		{
-			ActionNavMesh newAction = (ActionNavMesh) CreateInstance <ActionNavMesh>();
+			ActionNavMesh newAction = CreateNew<ActionNavMesh> ();
 			newAction.sceneSetting = SceneSetting.DefaultNavMesh;
 			newAction.changeNavMeshMethod = ChangeNavMeshMethod.ChangeNumberOfHoles;
 			newAction.holeAction = InvAction.Remove;
@@ -583,7 +576,7 @@ namespace AC
 		 */
 		public static ActionNavMesh CreateNew_ChangeDefaultPlayerStart (PlayerStart newPlayerStart)
 		{
-			ActionNavMesh newAction = (ActionNavMesh) CreateInstance <ActionNavMesh>();
+			ActionNavMesh newAction = CreateNew<ActionNavMesh> ();
 			newAction.sceneSetting = SceneSetting.DefaultPlayerStart;
 			newAction.playerStart = newPlayerStart;
 			return newAction;
@@ -597,7 +590,7 @@ namespace AC
 		 */
 		public static ActionNavMesh CreateNew_ChangeSortingMap (SortingMap newSortingMap)
 		{
-			ActionNavMesh newAction = (ActionNavMesh) CreateInstance <ActionNavMesh>();
+			ActionNavMesh newAction = CreateNew<ActionNavMesh> ();
 			newAction.sceneSetting = SceneSetting.SortingMap;
 			newAction.sortingMap = newSortingMap;
 			return newAction;
@@ -611,7 +604,7 @@ namespace AC
 		 */
 		public static ActionNavMesh CreateNew_ChangeTintMap (TintMap newTintMap)
 		{
-			ActionNavMesh newAction = (ActionNavMesh) CreateInstance <ActionNavMesh>();
+			ActionNavMesh newAction = CreateNew<ActionNavMesh> ();
 			newAction.sceneSetting = SceneSetting.TintMap;
 			newAction.tintMap = newTintMap;
 			return newAction;
@@ -625,7 +618,7 @@ namespace AC
 		 */
 		public static ActionNavMesh CreateNew_ChangeCutsceneOnLoad (Cutscene newCutscene)
 		{
-			ActionNavMesh newAction = (ActionNavMesh) CreateInstance <ActionNavMesh>();
+			ActionNavMesh newAction = CreateNew<ActionNavMesh> ();
 			newAction.sceneSetting = SceneSetting.OnLoadCutscene;
 			newAction.cutscene = newCutscene;
 			return newAction;
@@ -639,7 +632,7 @@ namespace AC
 		 */
 		public static ActionNavMesh CreateNew_ChangeCutsceneOnStart (Cutscene newCutscene)
 		{
-			ActionNavMesh newAction = (ActionNavMesh) CreateInstance <ActionNavMesh>();
+			ActionNavMesh newAction = CreateNew<ActionNavMesh> ();
 			newAction.sceneSetting = SceneSetting.OnStartCutscene;
 			newAction.cutscene = newCutscene;
 			return newAction;

@@ -1,19 +1,51 @@
-﻿using UnityEngine;
+﻿/*
+ *
+ *	Adventure Creator
+ *	by Chris Burton, 2013-2021
+ *	
+ *	"UISlotClick.cs"
+ * 
+ *	This component acts as a click handler for Unity UI Buttons, and is added automatically by UISlot.
+ * 
+ */
+
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace AC
 {
 
-	/**
-	 * This component acts as a click handler for Unity UI Buttons, and is added automatically by UISlot.
-	 */
-	public class UISlotClick : MonoBehaviour, IPointerClickHandler
+	/** This component acts as a click handler for Unity UI Buttons, and is added automatically by UISlot. */
+	public class UISlotClick : MonoBehaviour, ISelectHandler
 	{
 
-		private AC.Menu menu;
-		private MenuElement menuElement;
-		private int slot;
+		#region Variables
 
+		protected AC.Menu menu;
+		protected MenuElement menuElement;
+		protected int slot;
+		
+		#endregion
+
+
+		#region UnityStandards
+
+		/** Implementation of ISelectHandler */
+		public void OnSelect (BaseEventData eventData)
+		{
+			if (menuElement == null) return;
+
+			if (menu.CanCurrentlyKeyboardControl (KickStarter.stateHandler.gameState))
+			{
+				KickStarter.sceneSettings.PlayDefaultSound (menuElement.hoverSound, false);
+				KickStarter.eventManager.Call_OnMouseOverMenuElement (menu, menuElement, slot);
+			}
+		}
+
+		#endregion
+
+
+		#region PublicFunctions
 
 		/**
 		 * <summary>Syncs the component to a slot within a menu.</summary>
@@ -33,32 +65,7 @@ namespace AC
 			slot = _slot;
 		}
 
-
-		private void Update ()
-		{
-			if (menuElement)
-			{
-				if (KickStarter.playerInput != null && KickStarter.playerInput.InputGetButtonDown ("InteractionB"))
-				{
-					if (KickStarter.playerMenus.IsEventSystemSelectingObject (gameObject))
-					{
-						menuElement.ProcessClick (menu, slot, MouseState.RightClick);
-					}
-				}
-			}
-		}
-
-
-		public void OnPointerClick (PointerEventData eventData)
-		{
-			if (menuElement)
-			{
-				if (eventData.button == PointerEventData.InputButton.Right)
-				{
-					menuElement.ProcessClick (menu, slot, MouseState.RightClick);
-				}
-			}
-		}
+		#endregion
 
 	}
 

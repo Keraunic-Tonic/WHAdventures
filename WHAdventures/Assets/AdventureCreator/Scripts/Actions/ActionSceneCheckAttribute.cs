@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionSceneCheckAttribute.cs"
  * 
@@ -41,13 +41,9 @@ namespace AC
 		protected SceneSettings sceneSettings;
 
 		
-		public ActionSceneCheckAttribute ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Scene;
-			title = "Check attribute";
-			description = "Queries the value of a scene attribute declared in the Scene Manager.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Scene; }}
+		public override string Title { get { return "Check attribute"; }}
+		public override string Description { get { return "Queries the value of a scene attribute declared in the Scene Manager."; }}
 
 
 		public override void AssignParentList (ActionList actionList)
@@ -61,21 +57,21 @@ namespace AC
 		}
 
 		
-		public override ActionEnd End (List<Action> actions)
+		public override int GetNextOutputIndex ()
 		{
 			if (attributeID == -1)
 			{
-				return GenerateStopActionEnd ();
+				return -1;
 			}
 
 			InvVar attribute = sceneSettings.GetAttribute (attributeID);
 			if (attribute != null)
 			{
-				return ProcessResult (CheckCondition (attribute), actions);
+				return CheckCondition (attribute) ? 0 : 1;
 			}
 
 			LogWarning ("Cannot find the scene attribute with an ID of " + attributeID);
-			return GenerateStopActionEnd ();
+			return -1;
 		
 		}
 		
@@ -97,19 +93,12 @@ namespace AC
 
 					if (boolCondition == BoolCondition.EqualTo)
 					{
-						if (fieldValue == compareValue)
-						{
-							return true;
-						}
+						return (fieldValue == compareValue);
 					}
 					else
 					{
-						if (fieldValue != compareValue)
-						{
-							return true;
-						}
+						return (fieldValue != compareValue);
 					}
-					break;
 				}
 
 				case VariableType.Integer:
@@ -120,33 +109,20 @@ namespace AC
 
 					if (intCondition == IntCondition.EqualTo)
 					{
-						if (fieldValue == compareValue)
-						{
-							return true;
-						}
+						return (fieldValue == compareValue);
 					}
 					else if (intCondition == IntCondition.NotEqualTo)
 					{
-						if (fieldValue != compareValue)
-						{
-							return true;
-						}
+						return (fieldValue != compareValue);
 					}
 					else if (intCondition == IntCondition.LessThan)
 					{
-						if (fieldValue < compareValue)
-						{
-							return true;
-						}
+						return (fieldValue < compareValue);
 					}
 					else if (intCondition == IntCondition.MoreThan)
 					{
-						if (fieldValue > compareValue)
-						{
-							return true;
-						}
+						return (fieldValue > compareValue);
 					}
-
 					break;
 				}
 
@@ -157,31 +133,19 @@ namespace AC
 
 					if (intCondition == IntCondition.EqualTo)
 					{
-						if (Mathf.Approximately (fieldValue, compareValue))
-						{
-							return true;
-						}
+						return (Mathf.Approximately (fieldValue, compareValue));
 					}
 					else if (intCondition == IntCondition.NotEqualTo)
 					{
-						if (!Mathf.Approximately (fieldValue, compareValue))
-						{
-							return true;
-						}
+						return (!Mathf.Approximately (fieldValue, compareValue));
 					}
 					else if (intCondition == IntCondition.LessThan)
 					{
-						if (fieldValue < compareValue)
-						{
-							return true;
-						}
+						return (fieldValue < compareValue);
 					}
 					else if (intCondition == IntCondition.MoreThan)
 					{
-						if (fieldValue > compareValue)
-						{
-							return true;
-						}
+						return (fieldValue > compareValue);
 					}
 
 					break;
@@ -200,20 +164,9 @@ namespace AC
 
 					if (boolCondition == BoolCondition.EqualTo)
 					{
-						if (fieldValue == compareValue)
-						{
-							return true;
-						}
+						return (fieldValue == compareValue);
 					}
-					else
-					{
-						if (fieldValue != compareValue)
-						{
-							return true;
-						}
-					}
-
-					break;
+					return (fieldValue != compareValue);
 				}
 
 				default:
@@ -399,7 +352,7 @@ namespace AC
 		 */
 		public static ActionSceneCheckAttribute CreateNew (int attributeID, bool value)
 		{
-			ActionSceneCheckAttribute newAction = (ActionSceneCheckAttribute) CreateInstance <ActionSceneCheckAttribute>();
+			ActionSceneCheckAttribute newAction = CreateNew<ActionSceneCheckAttribute> ();
 			newAction.attributeID = attributeID;
 			newAction.boolValue = (value) ? BoolValue.True : BoolValue.False;
 			return newAction;
@@ -415,7 +368,7 @@ namespace AC
 		 */
 		public static ActionSceneCheckAttribute CreateNew (int attributeID, int value, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionSceneCheckAttribute newAction = (ActionSceneCheckAttribute) CreateInstance <ActionSceneCheckAttribute>();
+			ActionSceneCheckAttribute newAction = CreateNew<ActionSceneCheckAttribute> ();
 			newAction.attributeID = attributeID;
 			newAction.intValue = value;
 			newAction.intCondition = condition;
@@ -432,7 +385,7 @@ namespace AC
 		 */
 		public static ActionSceneCheckAttribute CreateNew (int attributeID, float value, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionSceneCheckAttribute newAction = (ActionSceneCheckAttribute) CreateInstance <ActionSceneCheckAttribute>();
+			ActionSceneCheckAttribute newAction = CreateNew<ActionSceneCheckAttribute> ();
 			newAction.attributeID = attributeID;
 			newAction.floatValue = value;
 			newAction.intCondition = condition;
@@ -449,7 +402,7 @@ namespace AC
 		 */
 		public static ActionSceneCheckAttribute CreateNew (int attributeID, string value, bool isCaseSensitive = false)
 		{
-			ActionSceneCheckAttribute newAction = (ActionSceneCheckAttribute) CreateInstance <ActionSceneCheckAttribute>();
+			ActionSceneCheckAttribute newAction = CreateNew<ActionSceneCheckAttribute> ();
 			newAction.attributeID = attributeID;
 			newAction.stringValue = value;
 			newAction.checkCase = isCaseSensitive;

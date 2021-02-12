@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionInventoryCheck.cs"
  * 
@@ -49,13 +49,9 @@ namespace AC
 		#endif
 
 		
-		public ActionInventoryCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Inventory;
-			title = "Check";
-			description = "Queries whether or not the player is carrying an item. If the player can carry multiple amounts of the item, more options will show.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Inventory; }}
+		public override string Title { get { return "Check"; }}
+		public override string Description { get { return "Queries whether or not the player is carrying an item. If the player can carry multiple amounts of the item, more options will show."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -69,78 +65,68 @@ namespace AC
 		{
 			int count = 0;
 
-			if (invCheckType == InvCheckType.CarryingSpecificItem)
+			switch (invCheckType)
 			{
-				if (KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow && !KickStarter.settingsManager.shareInventory && setPlayer)
-				{
-					count = KickStarter.runtimeInventory.GetCount (invID, playerID);
-				}
-				else
-				{
-					count = KickStarter.runtimeInventory.GetCount (invID);
-				}
-			}
-			else if (invCheckType == InvCheckType.NumberOfItemsCarrying)
-			{
-				if (KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow && !KickStarter.settingsManager.shareInventory && setPlayer)
-				{
-					if (checkNumberInCategory)
+				case InvCheckType.CarryingSpecificItem:
+					if (KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow && !KickStarter.settingsManager.shareInventory && setPlayer)
 					{
-						count = KickStarter.runtimeInventory.GetNumberOfItemsCarriedInCategory (playerID, categoryIDToCheck);
+						count = KickStarter.runtimeInventory.GetCount (invID, playerID);
 					}
 					else
 					{
-						count = KickStarter.runtimeInventory.GetNumberOfItemsCarried (playerID);
+						count = KickStarter.runtimeInventory.GetCount (invID);
 					}
-				}
-				else
-				{
-					if (checkNumberInCategory)
+					break;
+
+				case InvCheckType.NumberOfItemsCarrying:
+					if (KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow && !KickStarter.settingsManager.shareInventory && setPlayer)
 					{
-						count = KickStarter.runtimeInventory.GetNumberOfItemsCarriedInCategory (categoryIDToCheck);
+						if (checkNumberInCategory)
+						{
+							count = KickStarter.runtimeInventory.GetNumberOfItemsCarriedInCategory (playerID, categoryIDToCheck);
+						}
+						else
+						{
+							count = KickStarter.runtimeInventory.GetNumberOfItemsCarried (playerID);
+						}
 					}
 					else
 					{
-						count = KickStarter.runtimeInventory.GetNumberOfItemsCarried ();
+						if (checkNumberInCategory)
+						{
+							count = KickStarter.runtimeInventory.GetNumberOfItemsCarriedInCategory (categoryIDToCheck);
+						}
+						else
+						{
+							count = KickStarter.runtimeInventory.GetNumberOfItemsCarried ();
+						}
 					}
-				}
+					break;
+
+				default:
+					break;
 			}
 			
 			if (doCount || invCheckType == InvCheckType.NumberOfItemsCarrying)
 			{
-				if (intCondition == IntCondition.EqualTo)
+				switch (intCondition)
 				{
-					if (count == intValue)
-					{
-						return true;
-					}
-				}
-				
-				else if (intCondition == IntCondition.NotEqualTo)
-				{
-					if (count != intValue)
-					{
-						return true;
-					}
-				}
-				
-				else if (intCondition == IntCondition.LessThan)
-				{
-					if (count < intValue)
-					{
-						return true;
-					}
-				}
-				
-				else if (intCondition == IntCondition.MoreThan)
-				{
-					if (count > intValue)
-					{
-						return true;
-					}
+					case IntCondition.EqualTo:
+						return (count == intValue);
+
+					case IntCondition.NotEqualTo:
+						return (count != intValue);
+
+					case IntCondition.LessThan:
+						return (count < intValue);
+
+					case IntCondition.MoreThan:
+						return (count > intValue);
+
+					default:
+						return false;
 				}
 			}
-			
 			else if (count > 0)
 			{
 				return true;
@@ -389,7 +375,7 @@ namespace AC
 		 */
 		public static ActionInventoryCheck CreateNew_CarryingSpecificItem (int itemID)
 		{
-			ActionInventoryCheck newAction = (ActionInventoryCheck) CreateInstance <ActionInventoryCheck>();
+			ActionInventoryCheck newAction = CreateNew<ActionInventoryCheck> ();
 			newAction.invCheckType = InvCheckType.CarryingSpecificItem;
 			newAction.invID = itemID;
 
@@ -405,7 +391,7 @@ namespace AC
 		 */
 		public static ActionInventoryCheck CreateNew_NumberOfItemsCarrying (int numItems, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionInventoryCheck newAction = (ActionInventoryCheck) CreateInstance <ActionInventoryCheck>();
+			ActionInventoryCheck newAction = CreateNew<ActionInventoryCheck> ();
 			newAction.invCheckType = InvCheckType.NumberOfItemsCarrying;
 			newAction.intValue = numItems;
 			newAction.intCondition = condition;

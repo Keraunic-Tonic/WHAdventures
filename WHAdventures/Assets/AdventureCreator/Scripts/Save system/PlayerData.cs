@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"PlayerData.cs"
  * 
@@ -216,6 +216,8 @@ namespace AC
 		public bool followFaceWhenIdle = false;
 		/** If True, the non-active-Players will stand a random direction from their target */
 		public bool followRandomDirection = false;
+		/** If True, and the character is an inactive Player, they can follow the active Player across scenes */
+		public bool followAcrossScenes = false;
 
 		/** Data related to the character's left hand Ik state */
 		public string leftHandIKState;
@@ -273,7 +275,7 @@ namespace AC
 						break;
 				}
 
-				if (playerStart != null)
+				if (playerStart)
 				{
 					UpdatePositionFromPlayerStart (playerStart);
 				}
@@ -374,7 +376,6 @@ namespace AC
 		}
 
 
-
 		/** Updates the Player's presence in the scene. According to the data set in this class, they will be added to or removed from the scene. */
 		public void UpdatePresenceInScene ()
 		{
@@ -401,6 +402,20 @@ namespace AC
 						playerPrefab.RemoveFromScene ();
 					}
 				}
+			}
+		}
+
+
+		public void SpawnIfFollowingActive ()
+		{
+			if (KickStarter.saveSystem.CurrentPlayerID != playerID &&
+				currentScene != SceneChanger.CurrentSceneIndex &&
+				followTargetIsPlayer &&
+				followAcrossScenes)
+			{
+				ClearPathData ();
+				UpdatePosition (SceneChanger.CurrentSceneIndex, TeleportPlayerStartMethod.BasedOnPrevious, 0);
+				UpdatePresenceInScene ();
 			}
 		}
 
@@ -434,7 +449,7 @@ namespace AC
 
 		private void UpdatePositionFromPlayerStart (PlayerStart playerStart)
 		{
-			if (playerStart != null)
+			if (playerStart)
 			{
 				tempPlayerStart = 0;
 
@@ -445,10 +460,10 @@ namespace AC
 
 				gameCamera = 0;
 
-				if (playerStart.cameraOnStart != null)
+				if (playerStart.cameraOnStart)
 				{
 					ConstantID cameraID = playerStart.cameraOnStart.GetComponent<ConstantID> ();
-					if (cameraID != null)
+					if (cameraID)
 					{
 						gameCamera = cameraID.constantID;
 					}
@@ -457,10 +472,10 @@ namespace AC
 						ACDebug.LogWarning ("Cannot set Player ID = " + playerID + "'s active camera because " + playerStart.cameraOnStart + " has no ConstantID component.", playerStart.cameraOnStart);
 					}
 				}
-				else if (KickStarter.sceneSettings.defaultPlayerStart != null && KickStarter.sceneSettings.defaultPlayerStart.cameraOnStart != null)
+				else if (KickStarter.sceneSettings.defaultPlayerStart && KickStarter.sceneSettings.defaultPlayerStart.cameraOnStart)
 				{
 					ConstantID cameraID = KickStarter.sceneSettings.defaultPlayerStart.cameraOnStart.GetComponent<ConstantID> ();
-					if (cameraID != null)
+					if (cameraID)
 					{
 						gameCamera = cameraID.constantID;
 					}
@@ -578,7 +593,8 @@ namespace AC
 					CustomGUILayout.MultiLineLabelGUI ("   Sorting map?", customSortingMapID.ToString ());
 				}
 
-				CustomGUILayout.MultiLineLabelGUI ("Inventory:", inventoryData);
+				EditorGUILayout.LabelField ("Inventory:");
+				CustomGUILayout.MultiLineLabelGUI ("   Items:", inventoryData);
 				CustomGUILayout.MultiLineLabelGUI ("   Active Document:", activeDocumentID.ToString ());
 				CustomGUILayout.MultiLineLabelGUI ("   Collected Documents:", collectedDocumentData.ToString ());
 				CustomGUILayout.MultiLineLabelGUI ("   Last-open Document pages", lastOpenDocumentPagesData.ToString ());

@@ -18,7 +18,6 @@ MonoBehaviour:
     altLabel: 
     carryOnStart: 0
     carryOnStartNotDefault: 0
-    carryOnStartID: 0
     carryOnStartIDs: 
     vars:
     - label: Property 1
@@ -27,6 +26,8 @@ MonoBehaviour:
       val: 0
       floatVal: 0
       textVal: 
+      gameObjectVal: {fileID: 0}
+      gameObjectSaveReferences: 0
       popUps: []
       vector3Val: {x: 0, y: 0, z: 0}
       link: 0
@@ -42,8 +43,9 @@ MonoBehaviour:
       categoryIDs: 
     canCarryMultiple: 0
     count: 1
-    useSeparateSlots: 0
-    selectSingle: 0
+    canBeLowerCase: 0
+    maxCount: 0
+    itemStackingMode: 0
     tex: {fileID: 2800000, guid: a01609783128744659e8933c2954ac90, type: 3}
     activeTex: {fileID: 2800000, guid: e54effe7242064987b6b9ae71576d6fc, type: 3}
     selectedTex: {fileID: 0}
@@ -68,8 +70,6 @@ MonoBehaviour:
     lineID: 62
     useIconID: 0
     binID: -1
-    recipeSlot: -1
-    lastInteractionIndex: 0
     overrideUseSyntax: 0
     hotspotPrefix1:
       label: 
@@ -80,10 +80,14 @@ MonoBehaviour:
     useActionList: {fileID: 0}
     lookActionList: {fileID: 0}
     interactions: []
+    combineInteractions: []
     combineActionList: []
     combineID: 
     unhandledActionList: {fileID: 11400000, guid: 54296a732499f4243b4013168b66ef94, type: 2}
     unhandledCombineActionList: {fileID: 0}
+    carryOnStartID: 0
+    useSeparateSlots: 0
+    selectSingle: 0
     showInFilter: 1
   bins: []
   invVars: []

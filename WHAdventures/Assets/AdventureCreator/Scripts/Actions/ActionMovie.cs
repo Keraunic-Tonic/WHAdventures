@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMovie.cs"
  * 
@@ -34,6 +34,9 @@ namespace AC
 
 		public MovieClipType movieClipType = MovieClipType.VideoPlayer;
 		public MovieMaterialMethod movieMaterialMethod = MovieMaterialMethod.PlayMovie;
+		
+		public string skipKey;
+		public bool canSkip;
 
 		#if ALLOW_VIDEO
 		public VideoPlayer videoPlayer;
@@ -54,22 +57,14 @@ namespace AC
 		#endif
 
 		#if (UNITY_IOS || UNITY_ANDROID || UNITY_WP8 || UNITY_TVOS)
-
 		public string filePath;
-
 		#endif
 
-		public string skipKey;
-		public bool canSkip;
 
+		public override ActionCategory Category { get { return ActionCategory.Engine; }}
+		public override string Title { get { return "Play movie clip"; }}
+		public override string Description { get { return "Plays movie clips either on a Texture, or full-screen on mobile devices."; }}
 
-		public ActionMovie ()
-		{
-			this.isDisplayed = true;
-			title = "Play movie clip";
-			category = ActionCategory.Engine;
-			description = "Plays movie clips either on a Texture, or full-screen on mobile devices.";
-		}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -347,7 +342,6 @@ namespace AC
 
 				#endif
 
-				AfterRunningOption ();
 				return;
 			}
 
@@ -366,8 +360,6 @@ namespace AC
 			}
 
 			#endif
-
-			AfterRunningOption ();
 		}
 
 
@@ -421,7 +413,7 @@ namespace AC
 				if (videoPlayerConstantID == id) return true;
 			}
 			#endif
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 		
 		#endif
@@ -439,7 +431,7 @@ namespace AC
 		 */
 		public static ActionMovie CreateNew_Play (VideoPlayer videoPlayer, bool waitUntilFinish = true, bool pauseWhenGameDoes = true, string inputButtonToSkip = "")
 		{
-			ActionMovie newAction = (ActionMovie) CreateInstance <ActionMovie>();
+			ActionMovie newAction = CreateNew<ActionMovie> ();
 			newAction.movieClipType = MovieClipType.VideoPlayer;
 			newAction.movieMaterialMethod = MovieMaterialMethod.PlayMovie;
 			newAction.videoPlayer = videoPlayer;
@@ -458,7 +450,7 @@ namespace AC
 		 */
 		public static ActionMovie CreateNew_Prepare (VideoPlayer videoPlayer)
 		{
-			ActionMovie newAction = (ActionMovie) CreateInstance <ActionMovie>();
+			ActionMovie newAction = CreateNew<ActionMovie> ();
 			newAction.movieClipType = MovieClipType.VideoPlayer;
 			newAction.movieMaterialMethod = MovieMaterialMethod.PlayMovie;
 			newAction.videoPlayer = videoPlayer;
@@ -475,7 +467,7 @@ namespace AC
 		 */
 		public static ActionMovie CreateNew_Stop (VideoPlayer videoPlayer, bool pauseOnly = false)
 		{
-			ActionMovie newAction = (ActionMovie) CreateInstance <ActionMovie>();
+			ActionMovie newAction = CreateNew<ActionMovie> ();
 			newAction.movieClipType = MovieClipType.VideoPlayer;
 			newAction.movieMaterialMethod = (pauseOnly) ? MovieMaterialMethod.PauseMovie : MovieMaterialMethod.StopMovie;
 			return newAction;

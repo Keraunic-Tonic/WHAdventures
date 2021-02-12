@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MousewheelScrollingUI.cs"
  * 
@@ -37,7 +37,7 @@ namespace AC
 
 		private void OnEnable ()
 		{
-			if (element == null && KickStarter.playerMenus != null)
+			if (element == null && KickStarter.playerMenus)
 			{
 				Menu menu = KickStarter.playerMenus.GetMenuWithCanvas (GetComponent <Canvas>());
 				if (menu != null && !string.IsNullOrEmpty (elementToScroll))

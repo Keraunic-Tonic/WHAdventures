@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionSceneCheck.cs"
  * 
@@ -44,13 +44,9 @@ namespace AC
 		public IntCondition intCondition;
 
 
-		public ActionSceneCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Scene;
-			title = "Check";
-			description = "Queries either the current scene, or the last one visited.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Scene; }}
+		public override string Title { get { return "Check"; }}
+		public override string Description { get { return "Queries either the current scene, or the last one visited."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -255,7 +251,7 @@ namespace AC
 		 */
 		public static ActionSceneCheck CreateNew (string sceneName, SceneToCheck sceneToCheck = SceneToCheck.Current)
 		{
-			ActionSceneCheck newAction = (ActionSceneCheck) CreateInstance <ActionSceneCheck>();
+			ActionSceneCheck newAction = CreateNew<ActionSceneCheck> ();
 			newAction.sceneToCheck = sceneToCheck;
 			newAction.chooseSceneBy = ChooseSceneBy.Name;
 			newAction.sceneName = sceneName;
@@ -271,7 +267,7 @@ namespace AC
 		 */
 		public static ActionSceneCheck CreateNew (int sceneNumber, SceneToCheck sceneToCheck = SceneToCheck.Current)
 		{
-			ActionSceneCheck newAction = (ActionSceneCheck) CreateInstance <ActionSceneCheck>();
+			ActionSceneCheck newAction = CreateNew<ActionSceneCheck> ();
 			newAction.sceneToCheck = sceneToCheck;
 			newAction.chooseSceneBy = ChooseSceneBy.Number;
 			newAction.sceneNumber = sceneNumber;

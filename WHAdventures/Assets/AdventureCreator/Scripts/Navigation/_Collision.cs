@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"_Collision.cs"
  * 
@@ -37,7 +37,7 @@ namespace AC
 		
 		private void OnDrawGizmos ()
 		{
-			if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.visibilityCollision && UnityEditor.Selection.activeGameObject != gameObject)
+			if (KickStarter.sceneSettings && KickStarter.sceneSettings.visibilityCollision && UnityEditor.Selection.activeGameObject != gameObject)
 			{
 				DrawGizmos ();
 			}
@@ -62,14 +62,14 @@ namespace AC
 		public void TurnOn ()
 		{
 			Collider _collider = GetComponent <Collider>();
-			if (_collider != null)
+			if (_collider)
 			{
 				_collider.enabled = true;
 			}
 			else
 			{
 				Collider2D _collider2D = GetComponent <Collider2D>();
-				if (_collider2D != null)
+				if (_collider2D)
 				{
 					_collider2D.enabled = true;
 				}
@@ -88,14 +88,14 @@ namespace AC
 		public void TurnOff ()
 		{
 			Collider _collider = GetComponent <Collider>();
-			if (_collider != null)
+			if (_collider)
 			{
 				_collider.enabled = false;
 			}
 			else
 			{
 				Collider2D _collider2D = GetComponent <Collider2D>();
-				if (_collider2D != null)
+				if (_collider2D)
 				{
 					_collider2D.enabled = false;
 				}

@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SceneChanger.cs"
  * 
@@ -114,7 +114,7 @@ namespace AC
 			}
 			else
 			{
-				relativePosition = KickStarter.player.transform.position - marker.Position;
+				relativePosition = KickStarter.player.Transform.position - marker.Position;
 				if (SceneSettings.IsUnity2D ())
 				{
 					relativePosition.z = 0f;
@@ -169,7 +169,7 @@ namespace AC
 
 
 		/**
-		 * <summary>Preloads a scene.  Preloaded data will be discarded if the next scene opened is the same a the one preloaded<summary>
+		 * <summary>Preloads a scene.  Preloaded data will be discarded if the next scene opened is not the same as the one preloaded<summary>
 		 * <param name = "nextSceneIndex">The build index to load</param>
 		 * </returns>
 		 */
@@ -256,7 +256,7 @@ namespace AC
 			if (_gameObject.GetComponentInChildren <ActionList>())
 			{
 				ActionList actionList = _gameObject.GetComponent <ActionList>();
-				if (actionList != null && KickStarter.actionListManager.IsListRunning (actionList))
+				if (actionList && KickStarter.actionListManager.IsListRunning (actionList))
 				{
 					actionList.Kill ();
 					ACDebug.LogWarning ("The ActionList '" + actionList.name + "' is being removed from the scene while running!  Killing it now to prevent hanging.");
@@ -321,6 +321,28 @@ namespace AC
 			ChangeScene (CurrentSceneIndex, false, true);
 		}
 
+
+		/** Displays scene-related information for the AC Status window */
+		public void DrawStatus ()
+		{
+			if (SubScenesAreOpen ())
+			{
+				string openScenes = string.Empty;
+				for (int i = 0; i < subScenes.Count; i++)
+				{
+					if (subScenes[i] == null || subScenes[i].gameObject == null) continue;
+
+					openScenes += subScenes[i].gameObject.scene.name;
+					if (i < (subScenes.Count - 1))
+					{
+						openScenes += ", ";
+					}
+				}
+				GUILayout.Label ("Active scene: " + UnityVersionHandler.GetCurrentSceneName ());
+				GUILayout.Label ("Sub-scenes: " + openScenes);
+			}
+		}
+
 		#endregion
 
 
@@ -347,10 +369,27 @@ namespace AC
 			loadingProgress = 0f;
 
 			SubScene newSceneSubScene = UnityVersionHandler.GetSceneInstance<SubScene> (newScene);
-			if (newSceneSubScene != null)
+			if (newSceneSubScene)
 			{
 				// New active scene is a sub-scene
 				newSceneSubScene.MakeMain ();
+			}
+			
+			if (!string.IsNullOrEmpty (oldScene.name))
+			{
+				SceneInfo oldSceneInfo = GetSceneInfo (oldScene.buildIndex);
+				if (oldSceneInfo != null)
+				{
+					MultiSceneChecker multiSceneChecker = MultiSceneChecker.GetSceneInstance (oldScene);
+					if (multiSceneChecker != null)
+					{
+						// Register as a subscene
+						GameObject subSceneOb = new GameObject ();
+						UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene (subSceneOb, oldScene);
+						SubScene oldSubScene = subSceneOb.AddComponent<SubScene> ();
+						oldSubScene.Initialise (multiSceneChecker);
+					}
+				}
 			}
 		}
 
@@ -376,7 +415,7 @@ namespace AC
 		protected IEnumerator ScheduleForDeletionCoroutine (GameObject _gameObject)
 		{
 			yield return new WaitForEndOfFrame ();
-			if (_gameObject != null)
+			if (_gameObject)
 			{ 
 				DestroyImmediate (_gameObject);
 			}
@@ -424,13 +463,12 @@ namespace AC
 				loadingSceneInfo.Open ();
 				yield return null;
 
-				if (KickStarter.player != null)
+				if (KickStarter.player)
 				{
-					KickStarter.player.Teleport (KickStarter.player.transform.position + new Vector3 (0f, -10000f, 0f));
+					KickStarter.player.Teleport (KickStarter.player.Transform.position + new Vector3 (0f, -10000f, 0f));
 				}
 			}
 
-			//PrepareSceneForExit (true, false);
 			if (loadAsynchronously)
 			{
 				if (KickStarter.settingsManager.loadingDelay > 0f)
@@ -456,8 +494,7 @@ namespace AC
 					}
 
 					loadingProgress = 1f;
-					//isLoading = false;
-
+					
 					if (doOverlay)
 					{
 						yield return new WaitForEndOfFrame ();
@@ -466,7 +503,7 @@ namespace AC
 
 					if (KickStarter.settingsManager.manualSceneActivation)
 					{
-						if (KickStarter.eventManager != null)
+						if (KickStarter.eventManager)
 						{
 							completeSceneActivation = false;
 							KickStarter.eventManager.Call_OnAwaitSceneActivation (nextSceneIndex);
@@ -505,8 +542,6 @@ namespace AC
 					isLoading = false;
 				}
 			}
-
-			//isLoading = false;
 		}
 
 
@@ -525,8 +560,7 @@ namespace AC
 			{
 				isLoading = true;
 				loadingProgress = 0f;
-				//PrepareSceneForExit (true, false);
-
+				
 				AsyncOperation aSync = null;
 				if (nextSceneIndex == preloadSceneIndex)
 				{
@@ -568,7 +602,7 @@ namespace AC
 
 							if (KickStarter.settingsManager.manualSceneActivation)
 							{
-								if (KickStarter.eventManager != null)
+								if (KickStarter.eventManager)
 								{
 									completeSceneActivation = false;
 									KickStarter.eventManager.Call_OnAwaitSceneActivation (nextSceneIndex);
@@ -632,7 +666,7 @@ namespace AC
 					yield return null;
 				}
 
-				if (KickStarter.eventManager != null)
+				if (KickStarter.eventManager)
 				{
 					KickStarter.eventManager.Call_OnCompleteScenePreload (nextSceneIndex);
 				}
@@ -678,7 +712,7 @@ namespace AC
 				}
 			}
 
-			if (KickStarter.dialog != null) KickStarter.dialog.KillDialog (true, true);
+			if (KickStarter.dialog) KickStarter.dialog.KillDialog (true, true);
 
 			Sound[] sounds = FindObjectsOfType (typeof (Sound)) as Sound[];
 			foreach (Sound sound in sounds)
@@ -697,12 +731,12 @@ namespace AC
 			}
 			subScenes.Clear ();
 
-			if (KickStarter.playerInput != null)
+			if (KickStarter.playerInput)
 			{
 				simulatedCursorPositionOnExit = KickStarter.playerInput.GetMousePosition ();
 			}
 
-			if (KickStarter.eventManager != null)
+			if (KickStarter.eventManager)
 			{
 				KickStarter.eventManager.Call_OnBeforeChangeScene ();
 			}
@@ -722,6 +756,7 @@ namespace AC
 		/**
 		 * <summary>Adds a new scene as a sub-scene, without affecting any other open scenes.</summary>
 		 * <param name = "subSceneIndex">The index of the new scene to open</param>
+		 * <returns>True if the scene was succesfully added</returns>
 		 */
 		public bool AddSubScene (int subSceneIndex)
 		{
@@ -743,9 +778,10 @@ namespace AC
 			if (subSceneInfo != null)
 			{
 				subSceneInfo.Add ();
+				return true;
 			}
 
-			return true;
+			return false;
 		}
 
 
@@ -755,6 +791,8 @@ namespace AC
 		 */
 		public void RegisterSubScene (SubScene subScene)
 		{
+			if (subScene == null) return;
+
 			foreach (SubScene existingSubScene in subScenes)
 			{
 				if (subScene == existingSubScene)
@@ -776,6 +814,21 @@ namespace AC
 
 				KickStarter.levelStorage.ReturnSubSceneData (subScene);
 				KickStarter.eventManager.Call_OnAddSubScene (subScene);
+			}
+		}
+
+
+		public void UnregisterSubScene (SubScene subScene)
+		{
+			if (subScene == null) return;
+
+			foreach (SubScene existingSubScene in subScenes)
+			{
+				if (subScene == existingSubScene)
+				{
+					subScenes.Remove (existingSubScene);
+					return;
+				}
 			}
 		}
 
@@ -975,6 +1028,12 @@ namespace AC
 		{
 			get
 			{
+				#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+				if (UnityEditor.EditorSettings.enterPlayModeOptions.HasFlag (UnityEditor.EnterPlayModeOptions.DisableSceneReload) && UnityEngine.SceneManagement.SceneManager.GetActiveScene ().buildIndex == -1)
+				{
+					return 0;
+				}
+				#endif
 				return UnityEngine.SceneManagement.SceneManager.GetActiveScene ().buildIndex;
 			}
 		}

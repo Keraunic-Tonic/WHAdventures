@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"BackgroundImageUI.cs"
  * 
@@ -33,7 +33,7 @@ namespace AC
 
 		protected void Start ()
 		{
-			if (rawImage != null)
+			if (rawImage)
 			{
 				rawImageRectTransform = rawImage.GetComponent <RectTransform>();
 			}
@@ -56,7 +56,7 @@ namespace AC
 			if (canvas.worldCamera == null)
 			{
 				BackgroundCamera backgroundCamera = Object.FindObjectOfType <BackgroundCamera>();
-				if (backgroundCamera != null)
+				if (backgroundCamera)
 				{
 					canvas.worldCamera = backgroundCamera.GetComponent <Camera>();
 				}
@@ -110,7 +110,7 @@ namespace AC
 			if (canvas.worldCamera == null)
 			{
 				BackgroundCamera backgroundCamera = Object.FindObjectOfType <BackgroundCamera>();
-				if (backgroundCamera != null)
+				if (backgroundCamera)
 				{
 					canvas.worldCamera = backgroundCamera.GetComponent <Camera>();
 				}
@@ -147,12 +147,12 @@ namespace AC
 			{
 				if (instance == null)
 				{ 
-					instance = (BackgroundImageUI) Object.FindObjectOfType <BackgroundImageUI>();
+					instance = FindObjectOfType <BackgroundImageUI>();
 					if (instance == null)
 					{
-						GameObject newInstanceOb = (GameObject) Instantiate (Resources.Load (Resource.backgroundImageUI));
+						GameObject newInstanceOb = Instantiate (Resource.BackgroundImageUI);
 						instance = newInstanceOb.GetComponent <BackgroundImageUI>();
-						newInstanceOb.name = Resource.backgroundImageUI;
+						newInstanceOb.name = Resource.BackgroundImageUI.name;
 					}
 				}
 				instance.CorrectLayer ();

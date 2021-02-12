@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActiveList.cs"
  * 
@@ -11,6 +11,10 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+#if AddressableIsPresent
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace AC
 {
@@ -43,9 +47,7 @@ namespace AC
 
 		#region Constructors
 
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public ActiveList ()
 		{
 			actionList = null;
@@ -343,21 +345,23 @@ namespace AC
 			}
 
 			string parameterData = string.Empty;
-			if (actionListAsset != null)
+			if (actionListAsset)
 			{
 				ID = AdvGame.PrepareStringForSaving (actionListAsset.name);
 			}
-			else if (actionList != null)
+			else if (actionList)
 			{
-				if (actionList.GetComponent <ConstantID>())
+				ConstantID actionListID = actionList.GetComponent <ConstantID>();
+
+				if (actionListID)
 				{
-					ID = actionList.GetComponent <ConstantID>().constantID.ToString ();
+					ID = actionListID.constantID.ToString ();
 
 					if (subScene == null && UnityVersionHandler.ObjectIsInActiveScene (actionList.gameObject))
 					{
 						// OK
 					}
-					else if (subScene != null && UnityVersionHandler.GetSceneIndexFromGameObject (actionList.gameObject) == subScene.SceneIndex)
+					else if (subScene && UnityVersionHandler.GetSceneIndexFromGameObject (actionList.gameObject) == subScene.SceneIndex)
 					{
 						// OK
 					}
@@ -369,7 +373,7 @@ namespace AC
 				else
 				{
 					ACDebug.LogWarning ("Data for the ActionList '" + actionList.gameObject.name + "' was not saved because it has no Constant ID.", actionList.gameObject);
-					return "";
+					return string.Empty;
 				}
 			}
 
@@ -378,18 +382,18 @@ namespace AC
 				parameterData = actionList.GetParameterData ();
 			}
 
-			if (conversationOnEnd != null && conversationOnEnd.GetComponent <ConstantID>())
+			if (conversationOnEnd && conversationOnEnd.GetComponent <ConstantID>())
 			{
 				convID = conversationOnEnd.GetComponent <ConstantID>().ToString ();
 			}
 
 			return (ID + SaveSystem.colon +
-			        ConvertIndicesToString () + SaveSystem.colon +
-			        startIndex + SaveSystem.colon +
-			        ((inSkipQueue) ? 1 : 0) + SaveSystem.colon +
-			        ((isRunning) ? 1 : 0) + SaveSystem.colon +
-			        convID + SaveSystem.colon +
-			        parameterData);
+					ConvertIndicesToString () + SaveSystem.colon +
+					startIndex + SaveSystem.colon +
+					((inSkipQueue) ? 1 : 0) + SaveSystem.colon +
+					((isRunning) ? 1 : 0) + SaveSystem.colon +
+					convID + SaveSystem.colon +
+					parameterData);
 		}
 
 
@@ -397,11 +401,10 @@ namespace AC
 		 * <summary>Restores the class's data from a saved string.</summary>
 		 * <param name = "data">The saved string to restore from</param>
 		 * <param name = "subScene">If set, only data for a given subscene will be loaded. If null, only data for the active scene will be loaded</param>
-		 * <returns>True if the data was successfully restored</returns>
 		 */
-		public bool LoadData (string dataString, SubScene subScene = null)
+		public void LoadData (string dataString, SubScene subScene = null)
 		{
-			if (string.IsNullOrEmpty (dataString)) return false;
+			if (string.IsNullOrEmpty (dataString)) return;
 
 			string[] dataArray = dataString.Split (SaveSystem.colon[0]);
 
@@ -457,39 +460,50 @@ namespace AC
 			parameterData = dataArray[6];
 
 			// ActionList
-			int ID = 0;
-			if (int.TryParse (listName, out ID))
+			if (!string.IsNullOrEmpty (listName))
 			{
-				// Scene
-				ConstantID constantID = null;
-				if (subScene != null)
+				// Asset file
+				#if AddressableIsPresent
+				if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
 				{
-					constantID = ConstantID.GetComponent (ID, subScene.gameObject.scene);
+					Addressables.LoadAssetAsync<ActionListAsset> (listName).Completed += OnCompleteLoad;
 				}
 				else
+				#endif
 				{
-					constantID = ConstantID.GetComponent (ID);
-				}
+					ActionListAsset tempAsset = ScriptableObject.CreateInstance<ActionListAsset> ();
+					actionListAsset = AssetLoader.RetrieveAsset<ActionListAsset> (tempAsset, listName);
 
-				if (constantID != null && constantID.GetComponent <ActionList>() != null)
-				{
-					actionList = constantID.GetComponent <ActionList>();
-					return true;
+					if (actionListAsset == null || actionListAsset == tempAsset)
+					{
+						ACDebug.LogWarning ("Could not restore data related to the ActionList asset '" + listName + "' - to restore it correctly, the asset must be placed in a folder named Resources.");
+					}
+					else
+					{
+						KickStarter.actionListAssetManager.AddToList (this);
+					}
 				}
 			}
 			else
 			{
-				// Asset file
-				ActionListAsset tempAsset = ScriptableObject.CreateInstance <ActionListAsset> ();
-				actionListAsset = AssetLoader.RetrieveAsset <ActionListAsset> (tempAsset, listName);
-				if (actionListAsset != null && actionListAsset != tempAsset)
+				int ID = 0;
+				if (int.TryParse (listName, out ID))
 				{
-					return true;
+					// Scene
+					ConstantID constantID = (subScene != null)
+						? ConstantID.GetComponent (ID, subScene.gameObject.scene)
+						: ConstantID.GetComponent (ID);
+				
+					if (constantID)
+					{
+						actionList = constantID.GetComponent <ActionList>();
+						if (actionList)
+						{
+							KickStarter.actionListManager.AddToList (this);
+						}
+					}
 				}
-
-				ACDebug.LogWarning ("Could not restore data related to the ActionList asset '" + listName + "' - to restore it correctly, the asset must be placed in a folder named Resources.");
 			}
-			return false;
 		}
 
 		#endregion
@@ -515,6 +529,18 @@ namespace AC
 		}
 
 		#endregion
+
+
+		#if AddressableIsPresent
+
+		private void OnCompleteLoad (AsyncOperationHandle<ActionListAsset> obj)
+		{
+			if (obj.Result == null) return;
+			actionListAsset = obj.Result;
+			KickStarter.actionListAssetManager.AddToList (this);
+		}
+		
+		#endif
 
 	}
 

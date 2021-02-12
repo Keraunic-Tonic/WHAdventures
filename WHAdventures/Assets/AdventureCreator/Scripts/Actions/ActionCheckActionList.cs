@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCheckActionList.cs"
  * 
@@ -38,13 +38,9 @@ namespace AC
 		protected bool isSkipping = false;
 
 
-		public ActionCheckActionList ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ActionList;
-			title = "Check running";
-			description = "Queries whether or not a supplied ActionList is currently running. By looping the If condition is not met field back onto itself, this will effectively “wait” until the supplied ActionList has completed before continuing.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.ActionList; }}
+		public override string Title { get { return "Check running"; }}
+		public override string Description { get { return "Queries whether or not a supplied ActionList is currently running. By looping the If condition is not met field back onto itself, this will effectively “wait” until the supplied ActionList has completed before continuing."; }}
 
 
 		public override float Run ()
@@ -166,7 +162,7 @@ namespace AC
 				if (actionList != null && actionList.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -174,22 +170,22 @@ namespace AC
 		{
 			if (listSource == ListSource.AssetFile && _actionListAsset == actionListAsset)
 				return true;
-			return false;
+			return base.ReferencesAsset (_actionListAsset);
 		}
 
 		#endif
 
 
-		public override void SetLastResult (ActionEnd _actionEnd)
+		public override void SetLastResult (int _lastRunOutput)
 		{
 			if (!IsTargetSkippable () && !checkSelfSkipping)
 			{
 				// When skipping, don't want to rely on last result if target can be skipped as well
-				base.SetLastResult (_actionEnd);
+				base.SetLastResult (_lastRunOutput);
 				return;
 			}
 
-			lastResult = new ActionEnd (-10);
+			ResetLastResult ();
 		}
 
 
@@ -213,7 +209,7 @@ namespace AC
 		 */
 		public static ActionCheckActionList CreateNew_CheckSelfIsSkipping ()
 		{
-			ActionCheckActionList newAction = (ActionCheckActionList) CreateInstance <ActionCheckActionList>();
+			ActionCheckActionList newAction = CreateNew<ActionCheckActionList> ();
 			newAction.checkSelfSkipping = true;
 			return newAction;
 		}
@@ -226,7 +222,7 @@ namespace AC
 		 */
 		public static ActionCheckActionList CreateNew_CheckOther (ActionList actionList)
 		{
-			ActionCheckActionList newAction = (ActionCheckActionList) CreateInstance <ActionCheckActionList>();
+			ActionCheckActionList newAction = CreateNew<ActionCheckActionList> ();
 			newAction.listSource = ListSource.InScene;
 			newAction.actionList = actionList;
 			return newAction;
@@ -240,7 +236,7 @@ namespace AC
 		 */
 		public static ActionCheckActionList CreateNew_CheckOther (ActionListAsset actionListAsset)
 		{
-			ActionCheckActionList newAction = (ActionCheckActionList) CreateInstance <ActionCheckActionList>();
+			ActionCheckActionList newAction = CreateNew<ActionCheckActionList> ();
 			newAction.listSource = ListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
 			return newAction;

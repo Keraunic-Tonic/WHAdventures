@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMoveableCheck.cs"
  * 
@@ -29,6 +29,11 @@ namespace AC
 		public int dragParameterID = -1;
 		protected Moveable_Drag runtimeDragObject;
 
+		public DragTrack dragTrack;
+		public int dragTrackConstantID = 0;
+		public int dragTrackParameterID = -1;
+		protected DragTrack runtimeDragTrack;
+
 		public float checkPosition;
 		public int checkPositionParameterID = -1;
 
@@ -42,19 +47,16 @@ namespace AC
 		protected enum TrackCheckMethod { PositionValue, WithinTrackRegion };
 
 
-		public ActionTrackCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Moveable;
-			title = "Check track position";
-			description = "Queries how far a Draggable object is along its track.";
-		}
-
+		public override ActionCategory Category { get { return ActionCategory.Moveable; }}
+		public override string Title { get { return "Check track position"; }}
+		public override string Description { get { return "Queries how far a Draggable object is along its track."; }}
+		
 
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			runtimeDragObject = AssignFile <Moveable_Drag> (parameters, dragParameterID, dragConstantID, dragObject);
-			
+			runtimeDragTrack = AssignFile <DragTrack> (parameters, dragTrackParameterID, dragTrackConstantID, dragTrack);
+
 			checkPosition = AssignFloat (parameters, checkPositionParameterID, checkPosition);
 			checkPosition = Mathf.Max (0f, checkPosition);
 			checkPosition = Mathf.Min (1f, checkPosition);
@@ -63,15 +65,14 @@ namespace AC
 		}
 
 			
-		public override ActionEnd End (List<AC.Action> actions)
-		{
-			return ProcessResult (CheckCondition (), actions);
-		}
-		
-		
 		public override bool CheckCondition ()
 		{
 			if (runtimeDragObject == null) return false;
+
+			if (runtimeDragTrack != null && runtimeDragObject.track != runtimeDragTrack)
+			{
+				return false;
+			}
 
 			if (method == TrackCheckMethod.PositionValue)
 			{
@@ -112,7 +113,7 @@ namespace AC
 			{
 				if (runtimeDragObject.track != null)
 				{
-					return runtimeDragObject.track.IsWithinTrackRegion(runtimeDragObject.trackValue, snapID);
+					return runtimeDragObject.track.IsWithinTrackRegion (runtimeDragObject.trackValue, snapID);
 				}
 			}
 
@@ -120,7 +121,7 @@ namespace AC
 		}
 
 
-#if UNITY_EDITOR
+		#if UNITY_EDITOR
 
 		public override void ShowGUI (List<ActionParameter> parameters)
 		{
@@ -138,6 +139,15 @@ namespace AC
 				{
 					EditorGUILayout.HelpBox ("The chosen Drag object must be in 'Lock To Track' mode", MessageType.Warning);
 				}
+			}
+
+			dragTrackParameterID = Action.ChooseParameterGUI ("Track (optional):", parameters, dragTrackParameterID, ParameterType.GameObject);
+			if (dragTrackParameterID < 0)
+			{
+				dragTrack = (DragTrack) EditorGUILayout.ObjectField ("Track (optional):", dragTrack, typeof (DragTrack), true);
+
+				dragTrackConstantID = FieldToID<DragTrack> (dragTrack, dragTrackConstantID);
+				dragTrack = IDToField<DragTrack> (dragTrack, dragTrackConstantID, false);
 			}
 
 			method = (TrackCheckMethod) EditorGUILayout.EnumPopup ("Method:", method);
@@ -160,15 +170,11 @@ namespace AC
 			{
 				if (dragObject == null)
 				{
-					EditorGUILayout.HelpBox ("A drag object must be assigned above.", MessageType.Warning);
+					EditorGUILayout.HelpBox ("A drag object must be assigned above for snap regions to display.", MessageType.Info);
 				}
-				else if (dragObject.track == null || dragObject.dragMode != DragMode.LockToTrack)
+				else if (dragObject.dragMode != DragMode.LockToTrack)
 				{
-					EditorGUILayout.HelpBox ("The chosen Drag object must have an assigned Track.", MessageType.Warning);
-				}
-				else if (dragObject.track.allTrackSnapData == null || dragObject.track.allTrackSnapData.Count == 0)
-				{
-					EditorGUILayout.HelpBox ("The chosen Drag object's Track has no snap points.", MessageType.Warning);
+					EditorGUILayout.HelpBox ("The chosen Drag object is not locked to a Track.", MessageType.Warning);
 				}
 				else
 				{
@@ -177,19 +183,27 @@ namespace AC
 					{
 						List<string> labelList = new List<string>();
 						int snapIndex = 0;
-						
-						for (int i=0; i<dragObject.track.allTrackSnapData.Count; i++)
-						{
-							labelList.Add (dragObject.track.allTrackSnapData[i].EditorLabel);
-							
-							if (dragObject.track.allTrackSnapData[i].ID == snapID)
+
+						DragTrack track = (dragTrack != null) ? dragTrack : dragObject.track;
+						if (track && track.allTrackSnapData != null && track.allTrackSnapData.Count > 0)
+						{ 
+							for (int i=0; i<track.allTrackSnapData.Count; i++)
 							{
-								snapIndex = i;
+								labelList.Add (track.allTrackSnapData[i].EditorLabel);
+							
+								if (track.allTrackSnapData[i].ID == snapID)
+								{
+									snapIndex = i;
+								}
 							}
-						}
 						
-						snapIndex = EditorGUILayout.Popup ("Region:", snapIndex, labelList.ToArray ());
-						snapID = dragObject.track.allTrackSnapData[snapIndex].ID;
+							snapIndex = EditorGUILayout.Popup ("Region:", snapIndex, labelList.ToArray ());
+							snapID = track.allTrackSnapData[snapIndex].ID;
+						}
+						else
+						{
+							EditorGUILayout.HelpBox("The chosen Drag object's Track has no Regions defined.", MessageType.Warning);
+						}
 					}
 				}
 			}
@@ -217,9 +231,9 @@ namespace AC
 			if (dragParameterID < 0)
 			{
 				if (dragObject != null && dragObject.gameObject == gameObject) return true;
-				if (dragConstantID == id) return true;
+				if (dragConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -235,7 +249,7 @@ namespace AC
 		 */
 		public static ActionTrackCheck CreateNew (Moveable_Drag dragObject, float trackPosition, IntCondition condition = IntCondition.MoreThan, float errorMargin = 0.05f)
 		{
-			ActionTrackCheck newAction = (ActionTrackCheck) CreateInstance <ActionTrackCheck>();
+			ActionTrackCheck newAction = CreateNew<ActionTrackCheck> ();
 			newAction.method = TrackCheckMethod.PositionValue;
 			newAction.dragObject = dragObject;
 			newAction.checkPosition = trackPosition;
@@ -252,7 +266,7 @@ namespace AC
 		 */
 		public static ActionTrackCheck CreateNew (Moveable_Drag dragObject, int trackRegionID)
 		{
-			ActionTrackCheck newAction = (ActionTrackCheck) CreateInstance <ActionTrackCheck>();
+			ActionTrackCheck newAction = CreateNew<ActionTrackCheck> ();
 			newAction.method = TrackCheckMethod.WithinTrackRegion;
 			newAction.dragObject = dragObject;
 			newAction.snapID = trackRegionID;

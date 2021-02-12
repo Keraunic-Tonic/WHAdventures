@@ -23,14 +23,14 @@ namespace AC
 
 		protected void NPC_GUI (NPC _target)
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("NPC settings:", EditorStyles.boldLabel);
 			_target.moveOutOfPlayersWay = CustomGUILayout.Toggle ("Keep out of Player's way?", _target.moveOutOfPlayersWay, "", "If True, the NPC will attempt to keep out of the Player's way");
 			if (_target.moveOutOfPlayersWay)
 			{
 				_target.minPlayerDistance = CustomGUILayout.FloatField ("Min. distance to keep:", _target.minPlayerDistance, "", "The minimum distance to keep from the Player");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 	}

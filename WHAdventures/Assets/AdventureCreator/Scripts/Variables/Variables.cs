@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Variables.cs"
  * 
@@ -44,11 +44,12 @@ namespace AC
 				foreach (GVar _var in vars)
 				{
 					_var.CreateRuntimeTranslations ();
+					_var.BackupValue ();
 				}
 			}
 
 			RememberVariables rememberVariables = GetComponent <RememberVariables>();
-			if (rememberVariables != null && rememberVariables.LoadedData) return;
+			if (rememberVariables && rememberVariables.LoadedData) return;
 
 			foreach (GVar var in vars)
 			{

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"PlayerQTE.cs"
  * 
@@ -400,7 +400,7 @@ namespace AC
 						}
 					}
 
-					if (animator != null)
+					if (animator)
 					{
 						if (lastPressTime <= 0f)
 						{
@@ -595,7 +595,7 @@ namespace AC
 
 		protected virtual void Win ()
 		{
-			if (animator != null)
+			if (animator)
 			{
 				animator.Play ("Win");
 			}

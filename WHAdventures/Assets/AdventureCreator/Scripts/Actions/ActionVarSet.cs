@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionVarSet.cs"
  * 
@@ -44,6 +44,7 @@ namespace AC
 		public string stringValue;
 		public string formula;
 		public Vector3 vector3Value;
+		public GameObject gameObjectValue;
 
 		private string runtimeFormula;
 
@@ -64,20 +65,18 @@ namespace AC
 
 		protected GVar runtimeVariable;
 		protected Variables runtimeVariables;
+		protected string runtimeStringValue;
+		protected GameObject runtimeGameObjectValue;
 
 		#if UNITY_EDITOR
 		[SerializeField] protected VariableType placeholderType;
 		[SerializeField] protected int placeholderPopUpLabelDataID = -1;
 		#endif
 
-			
-		public ActionVarSet ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Variable;
-			title = "Set";
-			description = "Sets the value of both Global and Local Variables, as declared in the Variables Manager. Integers can be set to absolute, incremented or assigned a random value. Strings can also be set to the value of a MenuInput element, while Integers, Booleans and Floats can also be set to the value of a Mecanim parameter. When setting Integers and Floats, you can also opt to type in a forumla (e.g. 2 + 3 *4), which can also include tokens of the form [var:ID] to denote the value of a Variable, where ID is the unique number given to a Variable in the Variables Manager.";
-		}
+
+		public override ActionCategory Category { get { return ActionCategory.Variable; }}
+		public override string Title { get { return "Set"; }}
+		public override string Description { get { return "Sets the value of both Global and Local Variables, as declared in the Variables Manager. Integers can be set to absolute, incremented or assigned a random value. Strings can also be set to the value of a MenuInput element, while Integers, Booleans and Floats can also be set to the value of a Mecanim parameter. When setting Integers and Floats, you can also opt to type in a forumla (e.g. 2 + 3 *4), which can also include tokens of the form [var:ID] to denote the value of a Variable, where ID is the unique number given to a Variable in the Variables Manager."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -86,9 +85,11 @@ namespace AC
 			boolValue = AssignBoolean (parameters, setParameterID, boolValue);
 			floatValue = AssignFloat (parameters, setParameterID, floatValue);
 			vector3Value = AssignVector3 (parameters, setParameterID, vector3Value);
-			stringValue = AssignString (parameters, setParameterID, stringValue);
+			runtimeStringValue = AssignString (parameters, setParameterID, stringValue);
+			runtimeStringValue = AdvGame.ConvertTokens (runtimeStringValue, Options.GetLanguage (), null, parameters);
 			formula = AssignString (parameters, setParameterID, formula);
 			slotNumber = AssignInteger (parameters, slotNumberParameterID, slotNumber);
+			runtimeGameObjectValue = AssignFile (parameters, setParameterID, 0, gameObjectValue);
 
 			runtimeVariable = null;
 			switch (location)
@@ -166,230 +167,236 @@ namespace AC
 			switch (var.type)
 			{
 				case VariableType.Integer:
-				{
-					int _value = 0;
-
-					if (setVarMethodIntBool == SetVarMethodIntBool.EnteredHere)
 					{
-						if (setVarMethod == SetVarMethod.Formula)
+						int _value = 0;
+
+						if (setVarMethodIntBool == SetVarMethodIntBool.EnteredHere)
 						{
-							_value = (int) AdvGame.CalculateFormula (runtimeFormula);
-						}
-						else
-						{
-							_value = intValue;
-						}
-					}
-					else if (setVarMethodIntBool == SetVarMethodIntBool.SetAsMecanimParameter)
-					{
-						if (animator && !string.IsNullOrEmpty (parameterName))
-						{
-							_value = animator.GetInteger (parameterName);
-							setVarMethod = SetVarMethod.SetValue;
-						}	
-					}
-
-					if (setVarMethod == SetVarMethod.IncreaseByValue && doSkip)
-					{
-						var.RestoreBackupValue ();
-					}
-
-					if (setVarMethod == SetVarMethod.IncreaseByValue)
-					{
-						var.IntegerValue += _value;
-					}
-					else if (setVarMethod == SetVarMethod.SetAsRandom)
-					{
-						var.IntegerValue = Random.Range (0, _value);
-					}
-					else
-					{
-						var.IntegerValue = _value;
-					}
-
-					if (doSkip)
-					{
-						var.BackupValue ();
-					}
-					break;
-				}
-
-				case VariableType.Float:
-				{
-					float _value = 0;
-					
-					if (setVarMethodIntBool == SetVarMethodIntBool.EnteredHere)
-					{
-						if (setVarMethod == SetVarMethod.Formula)
-						{
-							_value = (float) AdvGame.CalculateFormula (AdvGame.ConvertTokens (formula, Options.GetLanguage (), localVariables));
-						}
-						else
-						{
-							_value = floatValue;
-						}
-					}
-					else if (setVarMethodIntBool == SetVarMethodIntBool.SetAsMecanimParameter)
-					{
-						if (animator && !string.IsNullOrEmpty (parameterName))
-						{
-							_value = animator.GetFloat (parameterName);
-							setVarMethod = SetVarMethod.SetValue;
-						}	
-					}
-
-					if (setVarMethod == SetVarMethod.IncreaseByValue && doSkip)
-					{
-						var.RestoreBackupValue ();
-					}
-
-					if (setVarMethod == SetVarMethod.IncreaseByValue)
-					{
-						var.FloatValue += _value;
-					}
-					else if (setVarMethod == SetVarMethod.SetAsRandom)
-					{
-						var.FloatValue = Random.Range (0f, _value);
-					}
-					else
-					{
-						var.FloatValue = _value;
-					}
-					
-					if (doSkip)
-					{
-						var.BackupValue ();
-					}
-
-					break;
-				}
-
-				case VariableType.Boolean:
-				{
-					int _value = 0;
-
-					if (setVarMethodIntBool == SetVarMethodIntBool.EnteredHere)
-					{
-						_value = (int) boolValue;
-					}
-					else if (setVarMethodIntBool == SetVarMethodIntBool.SetAsMecanimParameter)
-					{
-						if (animator && !string.IsNullOrEmpty (parameterName))
-						{
-							if (animator.GetBool (parameterName))
+							if (setVarMethod == SetVarMethod.Formula)
 							{
-								_value = 1;
+								_value = (int) AdvGame.CalculateFormula (runtimeFormula);
+							}
+							else
+							{
+								_value = intValue;
 							}
 						}
+						else if (setVarMethodIntBool == SetVarMethodIntBool.SetAsMecanimParameter)
+						{
+							if (animator && !string.IsNullOrEmpty (parameterName))
+							{
+								_value = animator.GetInteger (parameterName);
+								setVarMethod = SetVarMethod.SetValue;
+							}	
+						}
+
+						if (setVarMethod == SetVarMethod.IncreaseByValue && doSkip)
+						{
+							var.RestoreBackupValue ();
+						}
+
+						if (setVarMethod == SetVarMethod.IncreaseByValue)
+						{
+							var.IntegerValue += _value;
+						}
+						else if (setVarMethod == SetVarMethod.SetAsRandom)
+						{
+							var.IntegerValue = Random.Range (0, _value);
+						}
+						else
+						{
+							var.IntegerValue = _value;
+						}
+
+						if (doSkip)
+						{
+							var.BackupValue ();
+						}
+						break;
 					}
 
-					var.BooleanValue = (_value > 0);
-					break;
-				}
+				case VariableType.Float:
+					{
+						float _value = 0;
+					
+						if (setVarMethodIntBool == SetVarMethodIntBool.EnteredHere)
+						{
+							if (setVarMethod == SetVarMethod.Formula)
+							{
+								_value = (float) AdvGame.CalculateFormula (AdvGame.ConvertTokens (formula, Options.GetLanguage (), localVariables));
+							}
+							else
+							{
+								_value = floatValue;
+							}
+						}
+						else if (setVarMethodIntBool == SetVarMethodIntBool.SetAsMecanimParameter)
+						{
+							if (animator && !string.IsNullOrEmpty (parameterName))
+							{
+								_value = animator.GetFloat (parameterName);
+								setVarMethod = SetVarMethod.SetValue;
+							}	
+						}
+
+						if (setVarMethod == SetVarMethod.IncreaseByValue && doSkip)
+						{
+							var.RestoreBackupValue ();
+						}
+
+						if (setVarMethod == SetVarMethod.IncreaseByValue)
+						{
+							var.FloatValue += _value;
+						}
+						else if (setVarMethod == SetVarMethod.SetAsRandom)
+						{
+							var.FloatValue = Random.Range (0f, _value);
+						}
+						else
+						{
+							var.FloatValue = _value;
+						}
+					
+						if (doSkip)
+						{
+							var.BackupValue ();
+						}
+
+						break;
+					}
+
+				case VariableType.Boolean:
+					{
+						int _value = 0;
+
+						if (setVarMethodIntBool == SetVarMethodIntBool.EnteredHere)
+						{
+							_value = (int) boolValue;
+						}
+						else if (setVarMethodIntBool == SetVarMethodIntBool.SetAsMecanimParameter)
+						{
+							if (animator && !string.IsNullOrEmpty (parameterName))
+							{
+								if (animator.GetBool (parameterName))
+								{
+									_value = 1;
+								}
+							}
+						}
+
+						var.BooleanValue = (_value > 0);
+						break;
+					}
 
 				case VariableType.Vector3:
-				{
-					Vector3 newValue = vector3Value;
-					if (setVarMethodVector == SetVarMethodVector.IncreaseByValue)
 					{
-						newValue += var.Vector3Value;
+						Vector3 newValue = vector3Value;
+						if (setVarMethodVector == SetVarMethodVector.IncreaseByValue)
+						{
+							newValue += var.Vector3Value;
+						}
+
+						var.Vector3Value = newValue;
+						break;
 					}
 
-					var.Vector3Value = newValue;
-					break;
-				}
+				case VariableType.GameObject:
+					{
+						var.GameObjectValue = runtimeGameObjectValue;
+						break;
+					}
 
 				case VariableType.PopUp:
-				{
-					int _value = 0;
+					{
+						int _value = 0;
 					
-					if (setVarMethod == SetVarMethod.Formula)
-					{
-						_value = (int) AdvGame.CalculateFormula (AdvGame.ConvertTokens (formula, Options.GetLanguage (), localVariables));
-					}
-					else if (setVarMethod == SetVarMethod.SetAsRandom)
-					{
-						_value = var.GetNumPopUpValues ();
-					}
-					else
-					{
-						_value = Mathf.Clamp (intValue, 0, var.GetNumPopUpValues () - 1);
-					}
+						if (setVarMethod == SetVarMethod.Formula)
+						{
+							_value = (int) AdvGame.CalculateFormula (AdvGame.ConvertTokens (formula, Options.GetLanguage (), localVariables));
+						}
+						else if (setVarMethod == SetVarMethod.SetAsRandom)
+						{
+							_value = var.GetNumPopUpValues ();
+						}
+						else
+						{
+							_value = Mathf.Clamp (intValue, 0, var.GetNumPopUpValues () - 1);
+						}
 
-					if (setVarMethod == SetVarMethod.IncreaseByValue && doSkip)
-					{
-						var.RestoreBackupValue ();
-					}
+						if (setVarMethod == SetVarMethod.IncreaseByValue && doSkip)
+						{
+							var.RestoreBackupValue ();
+						}
 
-					if (setVarMethod == SetVarMethod.IncreaseByValue)
-					{
-						var.IntegerValue += _value;
-					}
-					else if (setVarMethod == SetVarMethod.SetAsRandom)
-					{
-						var.IntegerValue = Random.Range (0, _value);
-					}
-					else
-					{
-						var.IntegerValue = _value;
-					}
+						if (setVarMethod == SetVarMethod.IncreaseByValue)
+						{
+							var.IntegerValue += _value;
+						}
+						else if (setVarMethod == SetVarMethod.SetAsRandom)
+						{
+							var.IntegerValue = Random.Range (0, _value);
+						}
+						else
+						{
+							var.IntegerValue = _value;
+						}
 										
-					if (doSkip)
-					{
-						var.BackupValue ();
+						if (doSkip)
+						{
+							var.BackupValue ();
+						}
+						break;
 					}
-					break;
-				}
 
 				case VariableType.String:
-				{
-					string _value = string.Empty;
+					{
+						string _value = string.Empty;
 
-					if (setVarMethodString == SetVarMethodString.EnteredHere)
-					{
-						_value = AdvGame.ConvertTokens (stringValue, Options.GetLanguage (), localVariables);
-					}
-					else if (setVarMethodString == SetVarMethodString.SetAsMenuElementText)
-					{
-						MenuElement menuElement = PlayerMenus.GetElementWithName (menuName, elementName);
-						if (menuElement != null)
+						if (setVarMethodString == SetVarMethodString.EnteredHere)
 						{
-							if (menuElement is MenuInput)
+							_value = AdvGame.ConvertTokens (runtimeStringValue, Options.GetLanguage (), localVariables);
+						}
+						else if (setVarMethodString == SetVarMethodString.SetAsMenuElementText)
+						{
+							MenuElement menuElement = PlayerMenus.GetElementWithName (menuName, elementName);
+							if (menuElement != null)
 							{
-								MenuInput menuInput = (MenuInput) menuElement;
-								_value = menuInput.GetContents ();
-
-								if (KickStarter.runtimeLanguages.LanguageReadsRightToLeft (Options.GetLanguage ()) && _value.Length > 0)
+								if (menuElement is MenuInput)
 								{
-									// Invert
-									char[] charArray = _value.ToCharArray ();
-									_value = string.Empty;
-									for (int i = charArray.Length-1; i >= 0; i --)
+									MenuInput menuInput = (MenuInput) menuElement;
+									_value = menuInput.GetContents ();
+
+									if (KickStarter.runtimeLanguages.LanguageReadsRightToLeft (Options.GetLanguage ()) && _value.Length > 0)
 									{
-										_value += charArray[i];
+										// Invert
+										char[] charArray = _value.ToCharArray ();
+										_value = string.Empty;
+										for (int i = charArray.Length-1; i >= 0; i --)
+										{
+											_value += charArray[i];
+										}
 									}
+								}
+								else
+								{
+									PlayerMenus.GetMenuWithName (menuName).Recalculate ();
+									menuElement.PreDisplay (slotNumber, Options.GetLanguage (), false);
+									_value = menuElement.GetLabel (slotNumber, Options.GetLanguage ());
 								}
 							}
 							else
 							{
-								PlayerMenus.GetMenuWithName (menuName).Recalculate ();
-								menuElement.PreDisplay (slotNumber, Options.GetLanguage (), false);
-								_value = menuElement.GetLabel (slotNumber, Options.GetLanguage ());
+								LogWarning ("Could not find MenuInput '" + elementName + "' in Menu '" + menuName + "'");
 							}
 						}
-						else
+						else if (setVarMethodString == SetVarMethodString.CombinedWithOtherString)
 						{
-							LogWarning ("Could not find MenuInput '" + elementName + "' in Menu '" + menuName + "'");
+							_value = var.TextValue + AdvGame.ConvertTokens (stringValue, Options.GetLanguage (), localVariables);
 						}
-					}
-					else if (setVarMethodString == SetVarMethodString.CombinedWithOtherString)
-					{
-						_value = var.TextValue + AdvGame.ConvertTokens (stringValue, Options.GetLanguage (), localVariables);
-					}
 
-					var.SetStringValue (_value, lineID);
-					break;
-				}
+						var.SetStringValue (_value, lineID);
+						break;
+					}
 
 				default:
 					break;
@@ -469,8 +476,6 @@ namespace AC
 					}
 				}
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -781,6 +786,14 @@ namespace AC
 					}
 					break;
 
+				case VariableType.GameObject:
+					setParameterID = Action.ChooseParameterGUI (label, parameters, setParameterID, ParameterType.GameObject);
+					if (setParameterID < 0)
+					{
+						gameObjectValue = (GameObject) EditorGUILayout.ObjectField (label, gameObjectValue, typeof (GameObject), location != VariableLocation.Global);
+					}
+					break;
+
 				default:
 					break;
 			}
@@ -940,6 +953,13 @@ namespace AC
 							break;
 					}
 				}
+				else if (vars[variableNumber].type == VariableType.GameObject)
+				{
+					if (gameObjectValue)
+					{
+						labelAdd += " = " + gameObjectValue;
+					}
+				}
 			}
 
 			return labelAdd;
@@ -977,13 +997,13 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 
 			if (location == _location && variableID == varID && parameterID < 0)
 			{
-				if (location != VariableLocation.Component || (variables != null && variables == _variables))
+				if (location != VariableLocation.Component || (variables && variables == _variables) || (_variablesConstantID != 0 && variablesConstantID == _variablesConstantID))
 				{
 					thisCount ++;
 				}
@@ -1032,12 +1052,17 @@ namespace AC
 
 		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
 		{
+			if (parameterID < 0 && gameObjectValue == gameObject)
+			{
+				return true;
+			}
+
 			if (parameterID < 0 && location == VariableLocation.Component)
 			{
 				if (variables != null && variables.gameObject == gameObject) return true;
-				return (variablesConstantID == id);
+				return (variablesConstantID == id && id != 0);
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -1127,7 +1152,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Global (int globalVariableID, int newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Global;
 			newAction.variableID = globalVariableID;
 			newAction.intValue = newValue;
@@ -1143,7 +1168,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Global (int globalVariableID, float newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Global;
 			newAction.variableID = globalVariableID;
 			newAction.floatValue = newValue;
@@ -1159,7 +1184,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Global (int globalVariableID, bool newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Global;
 			newAction.variableID = globalVariableID;
 			newAction.intValue = (newValue) ? 1 : 0;
@@ -1175,7 +1200,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Global (int globalVariableID, Vector3 newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Global;
 			newAction.variableID = globalVariableID;
 			newAction.vector3Value = newValue;
@@ -1191,7 +1216,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Global (int globalVariableID, string newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Global;
 			newAction.variableID = globalVariableID;
 			newAction.stringValue = newValue;
@@ -1208,7 +1233,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Local (int localVariableID, int newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Local;
 			newAction.variableID = localVariableID;
 			newAction.intValue = newValue;
@@ -1224,7 +1249,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Local (int localVariableID, float newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Local;
 			newAction.variableID = localVariableID;
 			newAction.floatValue = newValue;
@@ -1240,7 +1265,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Local (int localVariableID, bool newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Local;
 			newAction.variableID = localVariableID;
 			newAction.intValue = (newValue) ? 1 : 0;
@@ -1256,7 +1281,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Local (int localVariableID, Vector3 newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Local;
 			newAction.variableID = localVariableID;
 			newAction.vector3Value = newValue;
@@ -1272,7 +1297,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Local (int localVariableID, string newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Local;
 			newAction.variableID = localVariableID;
 			newAction.stringValue = newValue;
@@ -1290,7 +1315,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Component (Variables variables, int componentVariableID, int newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Component;
 			newAction.variables = variables;
 			newAction.variableID = componentVariableID;
@@ -1308,7 +1333,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Component (Variables variables, int componentVariableID, float newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Component;
 			newAction.variables = variables;
 			newAction.variableID = componentVariableID;
@@ -1326,7 +1351,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Component (Variables variables, int componentVariableID, bool newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Component;
 			newAction.variables = variables;
 			newAction.variableID = componentVariableID;
@@ -1344,7 +1369,7 @@ namespace AC
 		 */
 		public static ActionVarSet CreateNew_Component (Variables variables, int componentVariableID, Vector3 newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Component;
 			newAction.variables = variables;
 			newAction.variableID = componentVariableID;
@@ -1362,7 +1387,7 @@ namespace AC
 
 		public static ActionVarSet CreateNew_Component (Variables variables, int componentVariableID, string newValue)
 		{
-			ActionVarSet newAction = (ActionVarSet) CreateInstance <ActionVarSet>();
+			ActionVarSet newAction = CreateNew<ActionVarSet> ();
 			newAction.location = VariableLocation.Component;
 			newAction.variables = variables;
 			newAction.variableID = componentVariableID;

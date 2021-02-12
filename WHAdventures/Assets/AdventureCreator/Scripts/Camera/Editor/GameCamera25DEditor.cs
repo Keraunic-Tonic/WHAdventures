@@ -16,7 +16,7 @@ namespace AC
 		{
 			GameCamera25D _target = (GameCamera25D) target;
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Background image", EditorStyles.boldLabel);
 		
 			EditorGUILayout.BeginHorizontal ();
@@ -55,7 +55,7 @@ namespace AC
 				_target.perspectiveOffset.y = CustomGUILayout.Slider ("Vertical:", _target.perspectiveOffset.y, -0.05f, 0.05f, "", "The vertical offset in perspective from the camera's centre");
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (_target.isActiveEditor)
 			{

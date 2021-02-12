@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberFootstepSounds.cs"
  * 
@@ -12,6 +12,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Text;
+#if AddressableIsPresent
+using System.Collections;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace AC
 {
@@ -24,6 +29,9 @@ namespace AC
 	public class RememberFootstepSounds : Remember
 	{
 
+		private FootstepSounds footstepSounds;
+		
+
 		/**
 		 * <summary>Serialises appropriate GameObject values into a string.</summary>
 		 * <returns>The data, serialised as a string</returns>
@@ -35,11 +43,10 @@ namespace AC
 			footstepSoundData.objectID = constantID;
 			footstepSoundData.savePrevented = savePrevented;
 
-			if (GetComponent <FootstepSounds>())
+			if (FootstepSounds)
 			{
-				FootstepSounds footstepSounds = GetComponent <FootstepSounds>();
-				footstepSoundData.walkSounds = SoundsToString (footstepSounds.footstepSounds);
-				footstepSoundData.runSounds = SoundsToString (footstepSounds.runSounds);
+				footstepSoundData.walkSounds = SoundsToString (FootstepSounds.footstepSounds);
+				footstepSoundData.runSounds = SoundsToString (FootstepSounds.runSounds);
 			}
 
 			return Serializer.SaveScriptData <FootstepSoundData> (footstepSoundData);
@@ -59,21 +66,92 @@ namespace AC
 			}
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			if (GetComponent <FootstepSounds>())
+			if (FootstepSounds)
 			{
-				FootstepSounds footstepSounds = GetComponent <FootstepSounds>();
+				#if AddressableIsPresent
 
-				AudioClip[] walkSounds = StringToSounds (data.walkSounds);
-				if (walkSounds != null && walkSounds.Length > 0)
+				if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
 				{
-					footstepSounds.footstepSounds = walkSounds;
+					StopAllCoroutines ();
+					StartCoroutine (LoadDataFromAddressable (data));
+					return;
 				}
 
-				AudioClip[] runSounds = StringToSounds (data.runSounds);
-				if (runSounds != null && runSounds.Length > 0)
+				#endif
+
+				LoadDataFromResources (data);
+			}
+		}
+
+
+		#if AddressableIsPresent
+
+		private IEnumerator LoadDataFromAddressable (FootstepSoundData data)
+		{
+			if (!string.IsNullOrEmpty (data.walkSounds))
+			{
+				List<AudioClip> soundsList = new List<AudioClip> ();
+
+				string[] valuesArray = data.walkSounds.Split (SaveSystem.pipe[0]);
+				for (int i = 0; i < valuesArray.Length; i++)
 				{
-					footstepSounds.runSounds = runSounds;
+					string audioClipName = valuesArray[i];
+					if (string.IsNullOrEmpty (audioClipName)) continue;
+
+					AsyncOperationHandle<AudioClip> handle = Addressables.LoadAssetAsync<AudioClip> (audioClipName);
+					yield return handle;
+					if (handle.Status == AsyncOperationStatus.Succeeded)
+					{
+						soundsList.Add (handle.Result);
+					}
+					Addressables.Release (handle);
 				}
+				if (soundsList.Count > 0)
+				{
+					FootstepSounds.footstepSounds = soundsList.ToArray ();
+				}
+			}
+
+			if (!string.IsNullOrEmpty (data.runSounds))
+			{
+				List<AudioClip> soundsList = new List<AudioClip> ();
+
+				string[] valuesArray = data.runSounds.Split (SaveSystem.pipe[0]);
+				for (int i = 0; i < valuesArray.Length; i++)
+				{
+					string audioClipName = valuesArray[i];
+					if (string.IsNullOrEmpty (audioClipName)) continue;
+
+					AsyncOperationHandle<AudioClip> handle = Addressables.LoadAssetAsync<AudioClip> (audioClipName);
+					yield return handle;
+					if (handle.Status == AsyncOperationStatus.Succeeded)
+					{
+						soundsList.Add (handle.Result);
+					}
+					Addressables.Release (handle);
+				}
+				if (soundsList.Count > 0)
+				{
+					FootstepSounds.runSounds = soundsList.ToArray ();
+				}
+			}
+		}
+
+		#endif
+
+
+		private void LoadDataFromResources (FootstepSoundData data)
+		{
+			AudioClip[] walkSounds = StringToSounds (data.walkSounds);
+			if (walkSounds != null && walkSounds.Length > 0)
+			{
+				FootstepSounds.footstepSounds = walkSounds;
+			}
+
+			AudioClip[] runSounds = StringToSounds (data.runSounds);
+			if (runSounds != null && runSounds.Length > 0)
+			{
+				FootstepSounds.runSounds = runSounds;
 			}
 		}
 
@@ -92,7 +170,7 @@ namespace AC
 			{
 				string audioClipName = valuesArray[i];
 				AudioClip audioClip = AssetLoader.RetrieveAudioClip (audioClipName);
-				if (audioClip != null)
+				if (audioClip)
 				{
 					soundsList.Add (audioClip);
 				}
@@ -111,7 +189,7 @@ namespace AC
 				if (audioClips[i] != null)
 				{
 					soundString.Append (AssetLoader.GetAssetInstanceID (audioClips[i]));
-
+					
 					if (i < audioClips.Length-1)
 					{
 						soundString.Append (SaveSystem.pipe);
@@ -122,12 +200,23 @@ namespace AC
 			return soundString.ToString ();
 		}
 
+
+		private FootstepSounds FootstepSounds
+		{
+			get
+			{
+				if (footstepSounds == null)
+				{
+					footstepSounds = GetComponent <FootstepSounds>();
+				}
+				return footstepSounds;
+			}
+		}
+
 	}
 
 
-	/**
-	 * A data container used by the RememberFootstepSounds script.
-	 */
+	/** A data container used by the RememberFootstepSounds script. */
 	[System.Serializable]
 	public class FootstepSoundData : RememberData
 	{
@@ -135,9 +224,7 @@ namespace AC
 		public string walkSounds;
 		public string runSounds;
 
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public FootstepSoundData () { }
 
 	}

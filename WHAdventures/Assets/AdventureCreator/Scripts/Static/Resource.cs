@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Resource.cs"
  * 
@@ -23,36 +23,96 @@ namespace AC
 		private const string mainFolderPath = "AdventureCreator";
 
 		// Main Reference resource
-		public const string references = "References";
+		private const string referencesName = "References";
 
 		// Created by Kickstarter on Awake
 		public const string persistentEngine = "PersistentEngine";
 
-		// Created by AdvGame when an ActionList asset is run
-		public const string runtimeActionList = "RuntimeActionList";
-
-		// Created by StateHandler on Awake
-		public const string musicEngine = "MusicEngine";
-		public const string ambienceEngine = "AmbienceEngine";
-
 		// Created by BackgroundImageUI singleton
-		public const string backgroundImageUI = "BackgroundImageUI";
+		private const string backgroundImageUIName = "BackgroundImageUI";
 
 		// Used by DragTracks
-		public const string dragCollider = "DragCollider";
+		private const string dragColliderName = "DragCollider";
 
 		// Used by UISlot
-		public const string emptySlot = "EmptySlot";
+		private const string emptySlotName = "EmptySlot";
 
 		// External links
 		public const string manualLink = "https://www.adventurecreator.org/files/Manual.pdf";
 		public const string assetLink = "https://assetstore.unity.com/packages/templates/systems/adventure-creator-11896";
-		public const string websiteLink = "http://adventurecreator.org/";
+		public const string websiteLink = "https://adventurecreator.org/";
 		public const string tutorialsLink = "https://www.adventurecreator.org/tutorials/";
 		public const string downloadsLink = "https://www.adventurecreator.org/downloads/";
 		public const string forumLink = "https://www.adventurecreator.org/forum/";
 		public const string scriptingGuideLink = "https://www.adventurecreator.org/scripting-guide/";
 		public const string wikiLink = "http://adventure-creator.wikia.com/wiki/Adventure_Creator_Wikia";
+		public const string introTutorialLink = "https://www.adventurecreator.org/tutorials/game-editor-window";
+
+
+		private static Collider dragColliderPrefab;
+		public static Collider DragCollider
+		{
+			get
+			{
+				if (dragColliderPrefab == null)
+				{
+					dragColliderPrefab = (Collider) Resources.Load (dragColliderName, typeof (Collider));
+				}
+				return dragColliderPrefab;
+			}
+		}
+
+
+		private static Sprite emptySlotAsset;
+		public static Sprite EmptySlot
+		{
+			get
+			{
+				if (emptySlotAsset == null)
+				{
+					emptySlotAsset = (Sprite) Resources.Load (emptySlotName, typeof (Sprite));
+				}
+				return emptySlotAsset;
+			}
+		}
+
+
+		private static GameObject backgroundImageUIPrefab;
+		public static GameObject BackgroundImageUI
+		{
+			get
+			{
+				if (backgroundImageUIPrefab == null)
+				{
+					backgroundImageUIPrefab = (GameObject) Resources.Load (backgroundImageUIName, typeof (GameObject));
+				}
+				return backgroundImageUIPrefab;
+			}
+		}
+
+
+		private static References referencesAsset;
+		public static References References
+		{
+			get
+			{
+				if (referencesAsset == null)
+				{
+					referencesAsset = (References) Resources.Load (referencesName, typeof (References));
+
+					if (referencesAsset == null)
+					{
+						References[] allReferences = Resources.FindObjectsOfTypeAll (typeof (References)) as References[];
+						if (allReferences.Length > 0) referencesAsset = allReferences[0];
+					}
+				}
+				return referencesAsset;
+			}
+			set
+			{
+				referencesAsset = value;
+			}
+		}
 
 
 		#if UNITY_EDITOR

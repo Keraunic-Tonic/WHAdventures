@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuToggle.cs"
  * 
@@ -67,9 +67,6 @@ namespace AC
 		private string fullText;
 
 
-		/**
-		 * Initialises the element when it is created within MenuManager.
-		 */
 		public override void Declare ()
 		{
 			uiToggle = null;
@@ -142,11 +139,7 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObject.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			uiToggle = LinkUIElement <Toggle> (canvas);
 			if (uiToggle)
@@ -156,9 +149,14 @@ namespace AC
 				uiToggle.interactable = isClickable;
 				if (isClickable)
 				{
-					uiToggle.onValueChanged.AddListener ((isOn) => {
-					ProcessClickUI (_menu, 0, KickStarter.playerInput.GetMouseState ());
-					});
+					if (addEventListeners)
+					{
+						uiToggle.onValueChanged.AddListener ((isOn) => {
+						ProcessClickUI (_menu, 0, KickStarter.playerInput.GetMouseState ());
+						});
+					}
+
+					CreateHoverSoundHandler (uiToggle, _menu, 0);
 				}
 			}
 		}
@@ -174,11 +172,6 @@ namespace AC
 		}
 		
 
-		/**
-		 * <summary>Gets the boundary of the element.</summary>
-		 * <param name = "_slot">Ignored by this subclass</param>
-		 * <returns>The boundary Rect of the element</returns>
-		 */
 		public override RectTransform GetRectTransform (int _slot)
 		{
 			if (uiToggle)
@@ -205,14 +198,14 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuToggle)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			if (source != MenuSource.AdventureCreator)
 			{
 				uiToggle = LinkedUiGUI <Toggle> (uiToggle, "Linked Toggle:", source, "The Unity UI Toggle this is linked to");
 				uiSelectableHideStyle = (UISelectableHideStyle) CustomGUILayout.EnumPopup ("When invisible:", uiSelectableHideStyle, apiPrefix + ".uiSelectableHideStyle", "The method by which this element is hidden from view when made invisible");
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 			}
 
 			label = CustomGUILayout.TextField ("Label text:", label, apiPrefix + ".label", "The text that's displayed on-screen");
@@ -262,8 +255,9 @@ namespace AC
 					actionListOnClick = (ActionListAsset) CustomGUILayout.ObjectField <ActionListAsset> ("ActionList on click:", actionListOnClick, false, apiPrefix + ".actionListOnClick", "An ActionList asset that will run when the element is clicked on");
 				}
 				alternativeInputButton = CustomGUILayout.TextField ("Alternative input button:", alternativeInputButton, apiPrefix + ".alternativeInputButton", "The name of the input button that triggers the element when pressed");
+				ChangeCursorGUI (menu);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			base.ShowGUI (menu);
 		}
@@ -298,14 +292,6 @@ namespace AC
 		}
 
 
-		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
-		{
-			if (uiToggle != null && uiToggle.gameObject == gameObject) return true;
-			if (linkedUiID == id) return true;
-			return false;
-		}
-
-
 		public override bool ReferencesAsset (ActionListAsset actionListAsset)
 		{
 			if (isClickable && toggleType != AC_ToggleType.Subtitles && actionListOnClick == actionListAsset)
@@ -314,6 +300,14 @@ namespace AC
 		}
 
 		#endif
+
+
+		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
+		{
+			if (uiToggle && uiToggle.gameObject == gameObject) return true;
+			if (linkedUiID == id && id != 0) return true;
+			return false;
+		}
 
 
 		public override void PreDisplay (int _slot, int languageNumber, bool isActive)
@@ -382,11 +376,11 @@ namespace AC
 			}
 			
 			Rect rect = ZoomRect (relativeRect, zoom);
-			if (isOn && onTexture != null)
+			if (isOn && onTexture)
 			{
 				GUI.DrawTexture (rect, onTexture, ScaleMode.StretchToFill, true, 0f);
 			}
-			else if (!isOn && offTexture != null)
+			else if (!isOn && offTexture)
 			{
 				GUI.DrawTexture (rect, offTexture, ScaleMode.StretchToFill, true, 0f);
 			}
@@ -429,7 +423,7 @@ namespace AC
 
 		public override bool IsSelectedByEventSystem (int slotIndex)
 		{
-			if (uiToggle != null)
+			if (uiToggle)
 			{
 				return KickStarter.playerMenus.IsEventSystemSelectingObject (uiToggle.gameObject);
 			}
@@ -437,19 +431,14 @@ namespace AC
 		}
 		
 
-		/**
-		 * <summary>Recalculates the element's size.
-		 * This should be called whenever a Menu's shape is changed.</summary>
-		 * <param name = "source">How the parent Menu is displayed (AdventureCreator, UnityUiPrefab, UnityUiInScene)</param>
-		 */
-		public override void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public override bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			if (!_menu.IsClickable ())
 			{
-				return;
+				return false;
 			}
 
-			if (uiToggle != null)
+			if (uiToggle)
 			{
 				isOn = uiToggle.isOn;
 			}
@@ -465,26 +454,30 @@ namespace AC
 				}
 			}
 
-			if (toggleType == AC_ToggleType.Subtitles)
+			switch (toggleType)
 			{
-				Options.SetSubtitles (isOn);
-			}
-			else if (toggleType == AC_ToggleType.Variable)
-			{
-				if (varID >= 0)
-				{
-					GVar var = GlobalVariables.GetVariable (varID);
-					if (var.type == VariableType.Boolean)
+				case AC_ToggleType.Subtitles:
+					Options.SetSubtitles (isOn);
+					break;
+
+				case AC_ToggleType.Variable:
+					if (varID >= 0)
 					{
-						var.IntegerValue = (isOn) ? 1 : 0;
-						var.Upload (VariableLocation.Global);
+						GVar var = GlobalVariables.GetVariable (varID);
+						if (var.type == VariableType.Boolean)
+						{
+							var.IntegerValue = (isOn) ? 1 : 0;
+							var.Upload (VariableLocation.Global);
+						}
 					}
-				}
-			}
-			
-			if (toggleType == AC_ToggleType.CustomScript)
-			{
-				MenuSystem.OnElementClick (_menu, this, _slot, (int) _mouseState);
+					break;
+
+				case AC_ToggleType.CustomScript:
+					MenuSystem.OnElementClick (_menu, this, _slot, (int) _mouseState);
+					break;
+
+				default:
+					break;
 			}
 
 			if (actionListOnClick)
@@ -492,7 +485,7 @@ namespace AC
 				AdvGame.RunActionListAsset (actionListOnClick);
 			}
 
-			base.ProcessClick (_menu, _slot, _mouseState);
+			return base.ProcessClick (_menu, _slot, _mouseState);
 		}
 
 

@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionVarCopy.cs"
  * 
@@ -48,13 +48,9 @@ namespace AC
 		protected Variables newRuntimeVariables;
 
 
-		public ActionVarCopy ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Variable;
-			title = "Copy";
-			description = "Copies the value of one Variable to another. This can be between Global and Local Variables, but only of those with the same type, such as Integer or Float.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Variable; }}
+		public override string Title { get { return "Copy"; }}
+		public override string Description { get { return "Copies the value of one Variable to another. This can be between Global and Local Variables, but only of those with the same type, such as Integer or Float."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -272,8 +268,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("The chosen Variables do not share the same Type - a conversion will be attemped", MessageType.Info);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -452,13 +446,13 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 
 			if (oldLocation == _location && oldVariableID == varID)
 			{
-				if (_location != VariableLocation.Component || (_variables != null && oldVariables == _variables))
+				if (_location != VariableLocation.Component || (_variables && _variables == oldVariables) || (_variablesConstantID != 0 && _variablesConstantID == oldVariablesConstantID))
 				{
 					thisCount ++;
 				}
@@ -466,7 +460,7 @@ namespace AC
 
 			if (newLocation == _location && newVariableID == varID)
 			{
-				if (_location != VariableLocation.Component || (_variables != null && newVariables == _variables))
+				if (_location != VariableLocation.Component || (_variables && _variables == newVariables) || (_variablesConstantID != 0 && _variablesConstantID == newVariablesConstantID))
 				{
 					thisCount ++;
 				}
@@ -496,14 +490,14 @@ namespace AC
 			if (oldParameterID < 0 && oldLocation == VariableLocation.Component)
 			{
 				if (oldVariables != null && oldVariables.gameObject == gameObject) return true;
-				if (oldVariablesConstantID == id) return true;
+				if (oldVariablesConstantID == id && id != 0) return true;
 			}
 			if (newParameterID < 0 && oldLocation == VariableLocation.Component)
 			{
 				if (newVariables != null && newVariables.gameObject == gameObject) return true;
-				if (newVariablesConstantID == id) return true;
+				if (newVariablesConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -521,7 +515,7 @@ namespace AC
 		 */
 		public static ActionVarCopy CreateNew (VariableLocation fromVariableLocation, Variables fromVariables, int fromVariableID, VariableLocation toVariableLocation, Variables toVariables, int toVariableID)
 		{
-			ActionVarCopy newAction = (ActionVarCopy) CreateInstance <ActionVarCopy>();
+			ActionVarCopy newAction = CreateNew<ActionVarCopy> ();
 			newAction.oldLocation = fromVariableLocation;
 			newAction.oldVariables = fromVariables;
 			newAction.oldVariableID = fromVariableID;

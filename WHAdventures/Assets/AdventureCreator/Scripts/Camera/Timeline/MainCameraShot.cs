@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MainCameraShot.cs"
  * 
@@ -11,9 +11,9 @@
 
 #if !ACIgnoreTimeline
 
+using System;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Timeline;
 
 namespace AC
 {
@@ -28,7 +28,8 @@ namespace AC
 
 		public ExposedReference<_Camera> gameCamera;
 		public float shakeIntensity;
-		[System.NonSerialized] public bool callCustomEvents;
+		[NonSerialized] public bool callCustomEvents;
+		[NonSerialized] public bool setsCameraAfterRunning;
 
 		#endregion
 
@@ -41,6 +42,7 @@ namespace AC
 			playable.GetBehaviour ().gameCamera = gameCamera.Resolve (graph.GetResolver ());
 			playable.GetBehaviour ().shakeIntensity = shakeIntensity;
 			playable.GetBehaviour ().callCustomEvents = callCustomEvents;
+			playable.GetBehaviour ().setsCameraAfterRunning = setsCameraAfterRunning;
 			return playable;
 		}
 

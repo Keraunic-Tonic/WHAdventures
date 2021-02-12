@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ConstantID.cs"
  * 
@@ -212,7 +212,7 @@ namespace AC
 		 */
 		public static HashSet<T> GetComponents <T> (int constantIDValue) where T : Component
 		{
-			if (KickStarter.stateHandler != null)
+			if (KickStarter.stateHandler)
 			{
 				return KickStarter.stateHandler.ConstantIDManager.GetComponents <T> (constantIDValue);
 			}
@@ -288,7 +288,7 @@ namespace AC
 		 */
 		public static HashSet<T> GetComponents <T> (int constantIDValue, Scene scene) where T : Component
 		{
-			if (KickStarter.stateHandler != null)
+			if (KickStarter.stateHandler)
 			{
 				return KickStarter.stateHandler.ConstantIDManager.GetComponents <T> (constantIDValue, scene);
 			}
@@ -303,7 +303,7 @@ namespace AC
 		 */
 		public static HashSet<T> GetComponents <T> (Scene scene) where T : Component
 		{
-			if (KickStarter.stateHandler != null)
+			if (KickStarter.stateHandler)
 			{
 				return KickStarter.stateHandler.ConstantIDManager.GetComponents <T> (scene);
 			}
@@ -320,7 +320,7 @@ namespace AC
 		 */
 		public static T GetComponent <T> (int constantIDValue, Scene scene, bool sceneOnlyPrioritises = false) where T : Component
 		{
-			if (KickStarter.stateHandler != null)
+			if (KickStarter.stateHandler)
 			{
 				return KickStarter.stateHandler.ConstantIDManager.GetComponent <T> (constantIDValue, scene, sceneOnlyPrioritises);
 			}
@@ -337,7 +337,7 @@ namespace AC
 		 */
 		public static ConstantID GetComponent (int constantIDValue, Scene scene, bool sceneOnlyPrioritises = false)
 		{
-			if (KickStarter.stateHandler != null)
+			if (KickStarter.stateHandler)
 			{
 				return KickStarter.stateHandler.ConstantIDManager.GetConstantID (constantIDValue, scene, sceneOnlyPrioritises);
 			}
@@ -470,7 +470,7 @@ namespace AC
 
 			if (UnityVersionHandler.IsPrefabEditing (gameObject))
 			{
-				GameObject rootObject = (transform.root != null) ? transform.root.gameObject : gameObject;
+				GameObject rootObject = (transform.root) ? transform.root.gameObject : gameObject;
 				idScripts = rootObject.GetComponentsInChildren <ConstantID>();
 			}
 			else
@@ -485,7 +485,7 @@ namespace AC
 		public static void FindLocalReferences (MenuCommand command)
 		{
 			ConstantID _constantID = (ConstantID) command.context;
-			if (_constantID != null)
+			if (_constantID)
 			{
 				if (_constantID.constantID == 0)
 				{
@@ -502,7 +502,7 @@ namespace AC
 		public static void FindGlobalReferences (MenuCommand command)
 		{
 			ConstantID _constantID = (ConstantID) command.context;
-			if (_constantID != null)
+			if (_constantID)
 			{
 				if (_constantID.constantID == 0)
 				{
@@ -515,7 +515,7 @@ namespace AC
 					if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo ())
 					{
 						// Menus
-						if (KickStarter.menuManager != null)
+						if (KickStarter.menuManager)
 						{
 							foreach (Menu menu in KickStarter.menuManager.menus)
 							{
@@ -538,7 +538,7 @@ namespace AC
 						}
 
 						// ActionList assets
-						if (AdvGame.GetReferences ().speechManager != null)
+						if (AdvGame.GetReferences ().speechManager)
 						{
 							ActionListAsset[] allActionListAssets = AdvGame.GetReferences ().speechManager.GetAllActionListAssets ();
 							foreach (ActionListAsset actionListAsset in allActionListAssets)
@@ -584,13 +584,10 @@ namespace AC
 				{
 					foreach (Action action in actionList.actions)
 					{
-						if (action != null)
+						if (action != null && action.ReferencesObjectOrID (_constantID.gameObject, _constantID.constantID))
 						{
-							if (action.ReferencesObjectOrID (_constantID.gameObject, _constantID.constantID))
-							{
-								string actionLabel = (KickStarter.actionsManager != null) ? (" (" + KickStarter.actionsManager.GetActionTypeLabel (action) + ")") : "";
-								Debug.Log ("'" + _constantID.gameObject.name + "' is referenced by Action #" + actionList.actions.IndexOf (action) + actionLabel + " in ActionList '" + actionList.gameObject.name + "'" + suffix, actionList);
-							}
+							string actionLabel = (KickStarter.actionsManager) ? (" (" + KickStarter.actionsManager.GetActionTypeLabel (action) + ")") : "";
+							Debug.Log ("'" + _constantID.gameObject.name + "' is referenced by Action #" + actionList.actions.IndexOf (action) + actionLabel + " in ActionList '" + actionList.gameObject.name + "'" + suffix, actionList);
 						}
 					}
 				}
@@ -608,13 +605,10 @@ namespace AC
 
 			foreach (Action action in actionListAsset.actions)
 			{
-				if (action != null)
+				if (action != null && action.ReferencesObjectOrID (_constantID.gameObject, _constantID.constantID))
 				{
-					if (action.ReferencesObjectOrID (_constantID.gameObject, _constantID.constantID))
-					{
-						string actionLabel = (KickStarter.actionsManager != null) ? (" (" + KickStarter.actionsManager.GetActionTypeLabel (action) + ")") : "";
-						Debug.Log ("'" + _constantID.gameObject.name + "' is referenced by Action #" + actionListAsset.actions.IndexOf (action) + actionLabel + " in ActionList asset '" + actionListAsset.name + "'", actionListAsset);
-					}
+					string actionLabel = (KickStarter.actionsManager) ? (" (" + KickStarter.actionsManager.GetActionTypeLabel (action) + ")") : "";
+					Debug.Log ("'" + _constantID.gameObject.name + "' is referenced by Action #" + actionListAsset.actions.IndexOf (action) + actionLabel + " in ActionList asset '" + actionListAsset.name + "'", actionListAsset);
 				}
 			}
 		}

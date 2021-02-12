@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"KickStarter.cs"
  * 
@@ -84,7 +84,7 @@ namespace AC
 
 		public static void SetGameEngine (GameObject _gameEngine = null)
 		{
-			if (_gameEngine != null)
+			if (_gameEngine)
 			{
 				gameEnginePrefab = _gameEngine;
 
@@ -110,7 +110,7 @@ namespace AC
 			if (gameEnginePrefab == null)
 			{
 				SceneSettings sceneSettings = UnityVersionHandler.GetKickStarterComponent <SceneSettings>();
-				if (sceneSettings != null)
+				if (sceneSettings)
 				{
 					gameEnginePrefab = sceneSettings.gameObject;
 				}
@@ -124,7 +124,7 @@ namespace AC
 			{
 				StateHandler stateHandler = UnityVersionHandler.GetKickStarterComponent <StateHandler>();
 				
-				if (stateHandler != null)
+				if (stateHandler)
 				{
 					persistentEnginePrefab = stateHandler.gameObject;
 				}
@@ -132,17 +132,43 @@ namespace AC
 				{
 					GameObject newPersistentEngine = null;
 
-					try
+					if (settingsManager == null || settingsManager.spawnPersistentEnginePrefab)
 					{
-						newPersistentEngine = (GameObject) Instantiate (Resources.Load (Resource.persistentEngine));
-						newPersistentEngine.name = AdvGame.GetName (Resource.persistentEngine);
-					}
-					catch (System.Exception e)
-		 			{
-						ACDebug.LogWarning ("Could not create PersistentEngine - make sure " + Resource.persistentEngine + ", prefab is present in a Resources folder. Exception: " + e);
-		 			}
+						try
+						{
+							newPersistentEngine = (GameObject) Instantiate (Resources.Load (Resource.persistentEngine));
+							if (newPersistentEngine)
+							{
+								newPersistentEngine.name = Resource.persistentEngine;
+							}
+						}
+						catch
+						{}
 
-		 			if (newPersistentEngine != null)
+						if (newPersistentEngine == null)
+						{
+							ACDebug.LogWarning ("Could not locate Resources/PersistentEngine prefab - generating from scratch.");
+						}
+					}
+					
+					if (newPersistentEngine == null)
+					{
+						newPersistentEngine = new GameObject ("PersistentEngine");
+						optionsComponent = newPersistentEngine.AddComponent <Options>();
+						runtimeInventoryComponent = newPersistentEngine.AddComponent <RuntimeInventory>();
+						runtimeVariablesComponent = newPersistentEngine.AddComponent <RuntimeVariables>();
+						stateHandlerComponent = newPersistentEngine.AddComponent <StateHandler>();
+						sceneChangerComponent = newPersistentEngine.AddComponent <SceneChanger>();
+						saveSystemComponent = newPersistentEngine.AddComponent <SaveSystem>();
+						levelStorageComponent = newPersistentEngine.AddComponent <LevelStorage>();
+						playerMenusComponent = newPersistentEngine.AddComponent <PlayerMenus>();
+						runtimeLanguagesComponent = newPersistentEngine.AddComponent <RuntimeLanguages>();
+						actionListAssetManagerComponent = newPersistentEngine.AddComponent <ActionListAssetManager>();
+						runtimeDocumentsComponent = newPersistentEngine.AddComponent <RuntimeDocuments>();
+						runtimeObjectivesComponent = newPersistentEngine.AddComponent <RuntimeObjectives>();
+					}
+
+		 			if (newPersistentEngine)
 		 			{
 						#if UNITY_EDITOR
 						if (!TestPersistentEngine (newPersistentEngine))
@@ -160,7 +186,7 @@ namespace AC
 				}
 			}
 
-			if (stateHandler != null)
+			if (stateHandler)
 			{
 				stateHandler.RegisterInitialConstantIDs ();
 			}
@@ -168,8 +194,7 @@ namespace AC
 		}
 
 
-
-		protected void CheckRequiredManagerPackage (ManagerPackage requiredManagerPackage)
+		public void CheckRequiredManagerPackage (ManagerPackage requiredManagerPackage)
 		{
 			if (requiredManagerPackage == null)
 			{
@@ -178,16 +203,16 @@ namespace AC
 
 			#if UNITY_EDITOR
 
-			if ((requiredManagerPackage.sceneManager != null && requiredManagerPackage.sceneManager != KickStarter.sceneManager) ||
-				(requiredManagerPackage.settingsManager != null && requiredManagerPackage.settingsManager != KickStarter.settingsManager) ||
-				(requiredManagerPackage.actionsManager != null && requiredManagerPackage.actionsManager != KickStarter.actionsManager) ||
-				(requiredManagerPackage.variablesManager != null && requiredManagerPackage.variablesManager != KickStarter.variablesManager) ||
-				(requiredManagerPackage.inventoryManager != null && requiredManagerPackage.inventoryManager != KickStarter.inventoryManager) ||
-				(requiredManagerPackage.speechManager != null && requiredManagerPackage.speechManager != KickStarter.speechManager) ||
-				(requiredManagerPackage.cursorManager != null && requiredManagerPackage.cursorManager != KickStarter.cursorManager) ||
-				(requiredManagerPackage.menuManager != null && requiredManagerPackage.menuManager != KickStarter.menuManager))
+			if ((requiredManagerPackage.sceneManager && requiredManagerPackage.sceneManager != KickStarter.sceneManager) ||
+				(requiredManagerPackage.settingsManager && requiredManagerPackage.settingsManager != KickStarter.settingsManager) ||
+				(requiredManagerPackage.actionsManager && requiredManagerPackage.actionsManager != KickStarter.actionsManager) ||
+				(requiredManagerPackage.variablesManager && requiredManagerPackage.variablesManager != KickStarter.variablesManager) ||
+				(requiredManagerPackage.inventoryManager && requiredManagerPackage.inventoryManager != KickStarter.inventoryManager) ||
+				(requiredManagerPackage.speechManager && requiredManagerPackage.speechManager != KickStarter.speechManager) ||
+				(requiredManagerPackage.cursorManager && requiredManagerPackage.cursorManager != KickStarter.cursorManager) ||
+				(requiredManagerPackage.menuManager && requiredManagerPackage.menuManager != KickStarter.menuManager))
 			{
-				if (requiredManagerPackage.settingsManager != null)
+				if (requiredManagerPackage.settingsManager)
 				{
 					if (requiredManagerPackage.settingsManager.name == "Demo_SettingsManager" && UnityVersionHandler.GetCurrentSceneName () == "Basement")
 					{
@@ -310,7 +335,7 @@ namespace AC
 		{
 			get
 			{
-				if (sceneManagerPrefab != null) return sceneManagerPrefab;
+				if (sceneManagerPrefab) return sceneManagerPrefab;
 				else if (AdvGame.GetReferences () && AdvGame.GetReferences ().sceneManager)
 				{
 					sceneManagerPrefab = AdvGame.GetReferences ().sceneManager;
@@ -329,7 +354,7 @@ namespace AC
 		{
 			get
 			{
-				if (settingsManagerPrefab != null) return settingsManagerPrefab;
+				if (settingsManagerPrefab) return settingsManagerPrefab;
 				else if (AdvGame.GetReferences () && AdvGame.GetReferences ().settingsManager)
 				{
 					settingsManagerPrefab = AdvGame.GetReferences ().settingsManager;
@@ -348,7 +373,7 @@ namespace AC
 		{
 			get
 			{
-				if (actionsManagerPrefab != null) return actionsManagerPrefab;
+				if (actionsManagerPrefab) return actionsManagerPrefab;
 				else if (AdvGame.GetReferences () && AdvGame.GetReferences ().actionsManager)
 				{
 					actionsManagerPrefab = AdvGame.GetReferences ().actionsManager;
@@ -367,7 +392,7 @@ namespace AC
 		{
 			get
 			{
-				if (variablesManagerPrefab != null) return variablesManagerPrefab;
+				if (variablesManagerPrefab) return variablesManagerPrefab;
 				else if (AdvGame.GetReferences () && AdvGame.GetReferences ().variablesManager)
 				{
 					variablesManagerPrefab = AdvGame.GetReferences ().variablesManager;
@@ -386,7 +411,7 @@ namespace AC
 		{
 			get
 			{
-				if (inventoryManagerPrefab != null) return inventoryManagerPrefab;
+				if (inventoryManagerPrefab) return inventoryManagerPrefab;
 				else if (AdvGame.GetReferences () && AdvGame.GetReferences ().inventoryManager)
 				{
 					inventoryManagerPrefab = AdvGame.GetReferences ().inventoryManager;
@@ -405,7 +430,7 @@ namespace AC
 		{
 			get
 			{
-				if (speechManagerPrefab != null) return speechManagerPrefab;
+				if (speechManagerPrefab) return speechManagerPrefab;
 				else if (AdvGame.GetReferences () && AdvGame.GetReferences ().speechManager)
 				{
 					speechManagerPrefab = AdvGame.GetReferences ().speechManager;
@@ -424,7 +449,7 @@ namespace AC
 		{
 			get
 			{
-				if (cursorManagerPrefab != null) return cursorManagerPrefab;
+				if (cursorManagerPrefab) return cursorManagerPrefab;
 				else if (AdvGame.GetReferences () && AdvGame.GetReferences ().cursorManager)
 				{
 					cursorManagerPrefab = AdvGame.GetReferences ().cursorManager;
@@ -443,7 +468,7 @@ namespace AC
 		{
 			get
 			{
-				if (menuManagerPrefab != null) return menuManagerPrefab;
+				if (menuManagerPrefab) return menuManagerPrefab;
 				else if (AdvGame.GetReferences () && AdvGame.GetReferences ().menuManager)
 				{
 					menuManagerPrefab = AdvGame.GetReferences ().menuManager;
@@ -462,7 +487,7 @@ namespace AC
 		{
 			get
 			{
-				if (optionsComponent != null) return optionsComponent;
+				if (optionsComponent) return optionsComponent;
 				else if (persistentEnginePrefab)
 				{
 					optionsComponent = persistentEnginePrefab.GetComponent <Options>();
@@ -477,7 +502,7 @@ namespace AC
 		{
 			get
 			{
-				if (runtimeInventoryComponent != null) return runtimeInventoryComponent;
+				if (runtimeInventoryComponent) return runtimeInventoryComponent;
 				else if (persistentEnginePrefab)
 				{
 					runtimeInventoryComponent = persistentEnginePrefab.GetComponent <RuntimeInventory>();
@@ -492,7 +517,7 @@ namespace AC
 		{
 			get
 			{
-				if (runtimeVariablesComponent != null) return runtimeVariablesComponent;
+				if (runtimeVariablesComponent) return runtimeVariablesComponent;
 				else if (persistentEnginePrefab)
 				{
 					runtimeVariablesComponent = persistentEnginePrefab.GetComponent <RuntimeVariables>();
@@ -507,7 +532,7 @@ namespace AC
 		{
 			get
 			{
-				if (playerMenusComponent != null) return playerMenusComponent;
+				if (playerMenusComponent) return playerMenusComponent;
 				else if (persistentEnginePrefab)
 				{
 					playerMenusComponent = persistentEnginePrefab.GetComponent <PlayerMenus>();
@@ -522,7 +547,7 @@ namespace AC
 		{
 			get
 			{
-				if (stateHandlerComponent != null) return stateHandlerComponent;
+				if (stateHandlerComponent) return stateHandlerComponent;
 				else if (persistentEnginePrefab)
 				{
 					stateHandlerComponent = persistentEnginePrefab.GetComponent <StateHandler>();
@@ -537,7 +562,7 @@ namespace AC
 		{
 			get
 			{
-				if (sceneChangerComponent != null) return sceneChangerComponent;
+				if (sceneChangerComponent) return sceneChangerComponent;
 				else if (persistentEnginePrefab)
 				{
 					sceneChangerComponent = persistentEnginePrefab.GetComponent <SceneChanger>();
@@ -552,7 +577,7 @@ namespace AC
 		{
 			get
 			{
-				if (saveSystemComponent != null) return saveSystemComponent;
+				if (saveSystemComponent) return saveSystemComponent;
 				else if (persistentEnginePrefab)
 				{
 					saveSystemComponent = persistentEnginePrefab.GetComponent <SaveSystem>();
@@ -567,7 +592,7 @@ namespace AC
 		{
 			get
 			{
-				if (levelStorageComponent != null) return levelStorageComponent;
+				if (levelStorageComponent) return levelStorageComponent;
 				else if (persistentEnginePrefab)
 				{
 					levelStorageComponent = persistentEnginePrefab.GetComponent <LevelStorage>();
@@ -582,7 +607,7 @@ namespace AC
 		{
 			get
 			{
-				if (runtimeLanguagesComponent != null) return runtimeLanguagesComponent;
+				if (runtimeLanguagesComponent) return runtimeLanguagesComponent;
 				else if (persistentEnginePrefab)
 				{
 					runtimeLanguagesComponent = persistentEnginePrefab.GetComponent <RuntimeLanguages>();
@@ -597,7 +622,7 @@ namespace AC
 		{
 			get
 			{
-				if (runtimeDocumentsComponent != null) return runtimeDocumentsComponent;
+				if (runtimeDocumentsComponent) return runtimeDocumentsComponent;
 				else if (persistentEnginePrefab)
 				{
 					runtimeDocumentsComponent = persistentEnginePrefab.GetComponent <RuntimeDocuments>();
@@ -612,7 +637,7 @@ namespace AC
 		{
 			get
 			{
-				if (runtimeObjectivesComponent != null) return runtimeObjectivesComponent;
+				if (runtimeObjectivesComponent) return runtimeObjectivesComponent;
 				else if (persistentEnginePrefab)
 				{
 					runtimeObjectivesComponent = persistentEnginePrefab.GetComponent <RuntimeObjectives>();
@@ -627,7 +652,7 @@ namespace AC
 		{
 			get
 			{
-				if (actionListAssetManagerComponent != null) return actionListAssetManagerComponent;
+				if (actionListAssetManagerComponent) return actionListAssetManagerComponent;
 				else if (persistentEnginePrefab)
 				{
 					actionListAssetManagerComponent = persistentEnginePrefab.GetComponent <ActionListAssetManager>();
@@ -642,7 +667,7 @@ namespace AC
 		{
 			get
 			{
-				if (menuSystemComponent != null) return menuSystemComponent;
+				if (menuSystemComponent) return menuSystemComponent;
 				else
 				{
 					SetGameEngine ();
@@ -662,7 +687,7 @@ namespace AC
 		{
 			get
 			{
-				if (dialogComponent != null) return dialogComponent;
+				if (dialogComponent) return dialogComponent;
 				else
 				{
 					SetGameEngine ();
@@ -682,7 +707,7 @@ namespace AC
 		{
 			get
 			{
-				if (playerInputComponent != null) return playerInputComponent;
+				if (playerInputComponent) return playerInputComponent;
 				else
 				{
 					SetGameEngine ();
@@ -702,7 +727,7 @@ namespace AC
 		{
 			get
 			{
-				if (playerInteractionComponent != null) return playerInteractionComponent;
+				if (playerInteractionComponent) return playerInteractionComponent;
 				else
 				{
 					SetGameEngine ();
@@ -722,7 +747,7 @@ namespace AC
 		{
 			get
 			{
-				if (playerMovementComponent != null) return playerMovementComponent;
+				if (playerMovementComponent) return playerMovementComponent;
 				else
 				{
 					SetGameEngine ();
@@ -742,7 +767,7 @@ namespace AC
 		{
 			get
 			{
-				if (playerCursorComponent != null) return playerCursorComponent;
+				if (playerCursorComponent) return playerCursorComponent;
 				else
 				{
 					SetGameEngine ();
@@ -762,7 +787,7 @@ namespace AC
 		{
 			get
 			{
-				if (playerQTEComponent != null) return playerQTEComponent;
+				if (playerQTEComponent) return playerQTEComponent;
 				else
 				{
 					SetGameEngine ();
@@ -782,7 +807,7 @@ namespace AC
 		{
 			get
 			{
-				if (sceneSettingsComponent != null && Application.isPlaying) return sceneSettingsComponent;
+				if (sceneSettingsComponent && Application.isPlaying) return sceneSettingsComponent;
 				else
 				{
 					SetGameEngine ();
@@ -802,7 +827,7 @@ namespace AC
 		{
 			get
 			{
-				if (navigationManagerComponent != null) return navigationManagerComponent;
+				if (navigationManagerComponent) return navigationManagerComponent;
 				else
 				{
 					SetGameEngine ();
@@ -822,7 +847,7 @@ namespace AC
 		{
 			get
 			{
-				if (actionListManagerComponent != null) 
+				if (actionListManagerComponent) 
 				{
 					return actionListManagerComponent;
 				}
@@ -845,7 +870,7 @@ namespace AC
 		{
 			get
 			{
-				if (localVariablesComponent != null) return localVariablesComponent;
+				if (localVariablesComponent) return localVariablesComponent;
 				else
 				{
 					SetGameEngine ();
@@ -865,7 +890,7 @@ namespace AC
 		{
 			get
 			{
-				if (menuPreviewComponent != null) return menuPreviewComponent;
+				if (menuPreviewComponent) return menuPreviewComponent;
 				else
 				{
 					SetGameEngine ();
@@ -885,7 +910,7 @@ namespace AC
 		{
 			get
 			{
-				if (eventManagerComponent != null) return eventManagerComponent;
+				if (eventManagerComponent) return eventManagerComponent;
 				else
 				{
 					SetGameEngine ();
@@ -905,7 +930,7 @@ namespace AC
 		{
 			get
 			{
-				if (kickStarterComponent != null) return kickStarterComponent;
+				if (kickStarterComponent) return kickStarterComponent;
 				else
 				{
 					SetGameEngine ();
@@ -925,9 +950,9 @@ namespace AC
 		{
 			get
 			{
-				if (KickStarter.stateHandler != null)
+				if (stateHandler)
 				{
-					return KickStarter.stateHandler.GetMusicEngine ();
+					return stateHandler.GetMusicEngine ();
 				}
 				return null;
 			}
@@ -944,14 +969,14 @@ namespace AC
 			{
 				if (playerPrefab != value)
 				{
-					if (playerPrefab != null)
+					if (playerPrefab)
 					{
 						UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene (playerPrefab.gameObject, SceneChanger.CurrentScene);
 					}
 
 					playerPrefab = value;
 					
-					if (playerPrefab != null)
+					if (playerPrefab)
 					{
 						if (playerPrefab.IsLocalPlayer ())
 						{
@@ -983,8 +1008,7 @@ namespace AC
 								runtimeInventory.localItems.Clear ();
 								runtimeDocuments.ClearCollection ();
 
-								List<InvItem> newInventory = saveSystem.AssignInventory (playerData.inventoryData);
-								runtimeInventory.AssignPlayerInventory (newInventory);
+								runtimeInventory.AssignPlayerInventory (InvCollection.LoadData (playerData.inventoryData));
 								runtimeDocuments.AssignPlayerDocuments (playerData);
 								runtimeObjectives.AssignPlayerObjectives (playerData);
 
@@ -1002,7 +1026,10 @@ namespace AC
 								}
 							}
 
-							mainCamera.LoadData (playerData, false);
+							if (mainCamera)
+							{
+								mainCamera.LoadData (playerData, false);
+							}
 							
 							DontDestroyOnLoad (playerPrefab);
 						}
@@ -1020,7 +1047,7 @@ namespace AC
 
 						saveSystem.CurrentPlayerID = playerPrefab.ID;
 
-						if (eventManager != null) eventManager.Call_OnSetPlayer (playerPrefab);
+						if (eventManager) eventManager.Call_OnSetPlayer (playerPrefab);
 					}
 				}
 			}
@@ -1031,13 +1058,13 @@ namespace AC
 		{
 			get
 			{
-				if (mainCameraPrefab != null)
+				if (mainCameraPrefab)
 				{
 					return mainCameraPrefab;
 				}
 				else
 				{
-					MainCamera _mainCamera = (MainCamera) GameObject.FindObjectOfType (typeof (MainCamera));
+					MainCamera _mainCamera = (MainCamera) FindObjectOfType (typeof (MainCamera));
 					if (_mainCamera)
 					{
 						mainCameraPrefab = _mainCamera;
@@ -1047,7 +1074,7 @@ namespace AC
 			}
 			set
 			{
-				if (value != null)
+				if (value)
 				{
 					mainCameraPrefab = value;
 				}
@@ -1067,6 +1094,7 @@ namespace AC
 					if (cameraMain == null)
 					{
 						cameraMain = Camera.main;
+						_cameraMainTransform = null;
 					}
 					return cameraMain;
 				}
@@ -1074,10 +1102,25 @@ namespace AC
 			}
 			set
 			{
-				if (value != null)
+				if (value)
 				{
 					cameraMain = value;
+					_cameraMainTransform = null;
 				}
+			}
+		}
+
+
+		private static Transform _cameraMainTransform;
+		public static Transform CameraMainTransform
+		{
+			get
+			{
+				if (_cameraMainTransform == null && CameraMain)
+				{
+					_cameraMainTransform = CameraMain.transform;
+				}
+				return _cameraMainTransform;
 			}
 		}
 
@@ -1103,13 +1146,13 @@ namespace AC
 
 			PreparePlayer ();
 
-			if (mainCamera != null)
+			if (mainCamera)
 			{
 				mainCamera.OnInitGameEngine ();
 			}
 			else
 			{
-				ACDebug.LogError ("No MainCamera found - please click 'Organise room objects' in the Scene Manager to create one.");
+				ACDebug.LogWarning ("No MainCamera found - please click 'Organise room objects' in the Scene Manager to create one.");
 			}
 
 			playerInput.OnInitGameEngine ();
@@ -1171,11 +1214,13 @@ namespace AC
 				ACDebug.LogWarning ("No Player found - this can be assigned in the Settings Manager.");
 			}
 
-			if (player != null)
+			if (player)
 			{
 				player.EndPath ();
 				player.Halt (false);
 			}
+
+			KickStarter.saveSystem.SpawnFollowingPlayers ();
 		}
 
 
@@ -1184,7 +1229,7 @@ namespace AC
 		 */
 		public static void TurnOnAC ()
 		{
-			if (stateHandler != null)
+			if (stateHandler)
 			{
 				stateHandler.SetACState (true);
 				eventManager.Call_OnManuallySwitchAC (true);
@@ -1202,7 +1247,7 @@ namespace AC
 		 */
 		public static void TurnOffAC ()
 		{
-			if (stateHandler != null)
+			if (stateHandler)
 			{
 				eventManager.Call_OnManuallySwitchAC (false);
 				stateHandler.SetACState (false);

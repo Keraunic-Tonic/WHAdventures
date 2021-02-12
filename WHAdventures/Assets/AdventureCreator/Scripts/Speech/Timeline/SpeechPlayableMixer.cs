@@ -70,7 +70,7 @@ namespace AC
 			if (!Application.isPlaying)
 			{
 				#if UNITY_EDITOR
-				if (KickStarter.menuPreview != null)
+				if (KickStarter.menuPreview)
 				{
 					KickStarter.menuPreview.ClearPreviewSpeech (trackInstanceID);
 				}
@@ -78,7 +78,7 @@ namespace AC
 			}
 			else
 			{
-				if (KickStarter.dialog != null)
+				if (KickStarter.dialog)
 				{
 					KickStarter.dialog.EndSpeechByCharacter (speaker);
 				}

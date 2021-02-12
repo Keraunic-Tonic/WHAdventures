@@ -12,10 +12,10 @@ namespace AC
 		{
 			RememberCollider _target = (RememberCollider) target;
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Hotspot", EditorStyles.boldLabel);
 			_target.startState = (AC_OnOff) CustomGUILayout.EnumPopup ("Collider state on start:", _target.startState, "", "The enabled state of the Collider when the game begins");
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (_target.GetComponent <Collider>() == null)
 			{

@@ -248,7 +248,7 @@ namespace AC
 
 			public void ShowGUI (int i, string[] translations)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				GUILayout.Label ("Column # : " + header);
 
 				if (i > 0)
@@ -280,7 +280,7 @@ namespace AC
 							break;
 					}
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
 

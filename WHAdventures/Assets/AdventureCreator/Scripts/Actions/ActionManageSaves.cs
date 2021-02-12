@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionManageSaves.cs"
  * 
@@ -36,15 +36,11 @@ namespace AC
 		public string elementName = "";
 		
 		
-		public ActionManageSaves ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Save;
-			title = "Manage saves";
-			description = "Renames and deletes save game files.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Save; }}
+		public override string Title { get { return "Manage saves"; }}
+		public override string Description { get { return "Renames and deletes save game files."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			saveIndex = AssignInteger (parameters, saveIndexParameterID, saveIndex);
@@ -178,7 +174,6 @@ namespace AC
 			else if (selectSaveType == SelectSaveType.Autosave && manageSaveType == ManageSaveType.RenameSave)
 			{
 				EditorGUILayout.HelpBox ("The AutoSave cannot be renamed.", MessageType.Warning);
-				AfterRunningOption ();
 				return;
 			}
 			else if (selectSaveType == SelectSaveType.SetSaveID)
@@ -196,8 +191,6 @@ namespace AC
 				menuName = EditorGUILayout.TextField ("Menu with SavesList:", menuName);
 				elementName = EditorGUILayout.TextField ("SavesList element:", elementName);
 			}
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -218,7 +211,7 @@ namespace AC
 		 */
 		public static ActionManageSaves CreateNew_DeleteSave (string menuName, string savesListElementName, int slotIndex = -1)
 		{
-			ActionManageSaves newAction = (ActionManageSaves) CreateInstance <ActionManageSaves>();
+			ActionManageSaves newAction = CreateNew<ActionManageSaves> ();
 			newAction.manageSaveType = ManageSaveType.DeleteSave;
 			newAction.selectSaveType = (slotIndex < 0) ? SelectSaveType.Autosave : SelectSaveType.SetSlotIndex;
 			newAction.saveIndex = slotIndex;
@@ -238,7 +231,7 @@ namespace AC
 		 */
 		public static ActionManageSaves CreateNew_RenameSave (string menuName, string savesListElementName, int labelGlobalStringVariableID, int slotIndex)
 		{
-			ActionManageSaves newAction = (ActionManageSaves) CreateInstance <ActionManageSaves>();
+			ActionManageSaves newAction = CreateNew<ActionManageSaves> ();
 			newAction.manageSaveType = ManageSaveType.RenameSave;
 			newAction.selectSaveType = SelectSaveType.SetSlotIndex;
 			newAction.slotVarID = labelGlobalStringVariableID;

@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuTimer.cs"
  * 
@@ -38,6 +38,8 @@ namespace AC
 		public UISelectableHideStyle uiSelectableHideStyle = UISelectableHideStyle.DisableObject;
 		/** The amount of smoothing to apply (disabled if <= 0) */
 		public float smoothingFactor = 0f;
+		/** If True, and timerType = AC_TimerType.Conversation, then the Timer will be hidden if the current Conversation is not timed */
+		public bool autoSetVisibility = false;
 
 		private LerpUtils.FloatLerp progressSmoothing = new LerpUtils.FloatLerp ();
 		private float progress;
@@ -58,6 +60,7 @@ namespace AC
 			SetSize (new Vector2 (20f, 5f));
 			uiSelectableHideStyle = UISelectableHideStyle.DisableObject;
 			smoothingFactor = 0f;
+			autoSetVisibility = false;
 
 			base.Declare ();
 		}
@@ -88,16 +91,13 @@ namespace AC
 			timerType = _element.timerType;
 			uiSelectableHideStyle = _element.uiSelectableHideStyle;
 			smoothingFactor = _element.smoothingFactor;
-			
+			autoSetVisibility = _element.autoSetVisibility;
+
 			base.Copy (_element);
 		}
 
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObject.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			uiSlider = LinkUIElement <Slider> (canvas);
 			if (uiSlider)
@@ -133,12 +133,16 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuTimer)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			timerType = (AC_TimerType) CustomGUILayout.EnumPopup ("Timer type:", timerType, apiPrefix + ".timerType", "What the value of the timer represents");
-			if (timerType == AC_TimerType.LoadingProgress && AdvGame.GetReferences ().settingsManager != null && !AdvGame.GetReferences ().settingsManager.useAsyncLoading)
+			if (timerType == AC_TimerType.LoadingProgress && AdvGame.GetReferences ().settingsManager && !AdvGame.GetReferences ().settingsManager.useAsyncLoading)
 			{
 				EditorGUILayout.HelpBox ("Loading progress cannot be displayed unless asynchonised loading is enabled within the Settings Manager.", MessageType.Warning);
+			}
+			else if (timerType == AC_TimerType.Conversation)
+			{
+				autoSetVisibility = CustomGUILayout.Toggle ("Auto-set visibility?", autoSetVisibility, apiPrefix + ".autoSetVisibility", "If True, the Timer will be hidden if the active Conversation is not timed");
 			}
 			doInvert = CustomGUILayout.Toggle ("Invert value?", doInvert, apiPrefix + ".doInvert", "If True, then the value will be inverted, and the timer will move in the opposite direction");
 
@@ -156,29 +160,34 @@ namespace AC
 				uiSlider = LinkedUiGUI <Slider> (uiSlider, "Linked Slider:", source, "The Unity UI Slider this is linked to");
 				uiSelectableHideStyle = (UISelectableHideStyle) CustomGUILayout.EnumPopup ("When invisible:", uiSelectableHideStyle, apiPrefix + ".uiSelectableHideStyle", "The method by which this element is hidden from view when made invisible");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (source == MenuSource.AdventureCreator)
 			{
 				EndGUI (apiPrefix);
 			}
 		}
+		
+		#endif
 
 
 		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
 		{
 			if (uiSlider && uiSlider.gameObject == gameObject) return true;
-			if (linkedUiID == id) return true;
+			if (linkedUiID == id && id != 0) return true;
 			return false;
 		}
-
-		#endif
 
 
 		public override void OnMenuTurnOn (Menu menu)
 		{
 			progress = -1f;
 			progressSmoothing.Reset ();
+
+			if (timerType == AC_TimerType.Conversation && KickStarter.playerInput.activeConversation && autoSetVisibility)
+			{
+				IsVisible = KickStarter.playerInput.activeConversation.isTimed;
+			}
 
 			base.OnMenuTurnOn (menu);
 		}
@@ -242,7 +251,7 @@ namespace AC
 			switch (timerType)
 			{
 				case AC_TimerType.Conversation:
-					if (KickStarter.playerInput.activeConversation != null && KickStarter.playerInput.activeConversation.isTimed)
+					if (KickStarter.playerInput.activeConversation && KickStarter.playerInput.activeConversation.isTimed)
 					{
 						return KickStarter.playerInput.activeConversation.GetTimeRemaining ();
 					}

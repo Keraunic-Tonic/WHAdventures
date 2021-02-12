@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionContainerCheck.cs"
  * 
@@ -44,13 +44,9 @@ namespace AC
 		#endif
 
 		
-		public ActionContainerCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Container;
-			title = "Check";
-			description = "Queries the contents of a Container for a stored Item, and reacts accordingly.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Container; }}
+		public override string Title { get { return "Check"; }}
+		public override string Description { get { return "Queries the contents of a Container for a stored Item, and reacts accordingly."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -76,45 +72,26 @@ namespace AC
 			
 			if (doCount)
 			{
-				if (intCondition == IntCondition.EqualTo)
+				switch (intCondition)
 				{
-					if (count == intValue)
-					{
-						return true;
-					}
-				}
-				
-				else if (intCondition == IntCondition.NotEqualTo)
-				{
-					if (count != intValue)
-					{
-						return true;
-					}
-				}
-				
-				else if (intCondition == IntCondition.LessThan)
-				{
-					if (count < intValue)
-					{
-						return true;
-					}
-				}
-				
-				else if (intCondition == IntCondition.MoreThan)
-				{
-					if (count > intValue)
-					{
-						return true;
-					}
+					case IntCondition.EqualTo:
+						return (count == intValue);
+
+					case IntCondition.NotEqualTo:
+						return (count != intValue);
+
+					case IntCondition.LessThan:
+						return (count < intValue);
+
+					case IntCondition.MoreThan:
+						return (count > intValue);
+
+					default:
+						return false;
 				}
 			}
 			
-			else if (count > 0)
-			{
-				return true;
-			}
-			
-			return false;	
+			return (count > 0);
 		}
 		
 
@@ -260,7 +237,7 @@ namespace AC
 				if (container != null && container.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -274,7 +251,7 @@ namespace AC
 		*/
 		public static ActionContainerCheck CreateNew (Container container, int itemID)
 		{
-			ActionContainerCheck newAction = (ActionContainerCheck) CreateInstance <ActionContainerCheck>();
+			ActionContainerCheck newAction = CreateNew<ActionContainerCheck> ();
 			newAction.container = container;
 			newAction.invID = itemID;
 			return newAction;

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionPlayMaker.cs"
  * 
@@ -39,13 +39,9 @@ namespace AC
 		public int eventNameParameterID = -1;
 
 
-		public ActionPlayMaker ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ThirdParty;
-			title = "PlayMaker";
-			description = "Calls a specified Event within a PlayMaker FSM. Note that PlayMaker is a separate Unity Asset, and the 'PlayMakerIsPresent' preprocessor must be defined for this to work.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.ThirdParty; }}
+		public override string Title { get { return "PlayMaker"; }}
+		public override string Description { get { return "Calls a specified Event within a PlayMaker FSM. Note that PlayMaker is a separate Unity Asset, and the 'PlayMakerIsPresent' preprocessor must be defined for this to work."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -136,8 +132,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("The 'PlayMakerIsPresent' Scripting Define Symbol must be listed in the\nPlayer Settings. Please set it from Edit -> Project Settings -> Player", MessageType.Warning);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -155,9 +149,9 @@ namespace AC
 			if (parameterID < 0 && !isPlayer)
 			{
 				if (linkedObject != null && linkedObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -181,7 +175,7 @@ namespace AC
 		 */
 		public static ActionPlayMaker CreateNew (GameObject playmakerFSM, string eventToCall, string fsmName = "")
 		{
-			ActionPlayMaker newAction = (ActionPlayMaker) CreateInstance <ActionPlayMaker>();
+			ActionPlayMaker newAction = CreateNew<ActionPlayMaker> ();
 			newAction.linkedObject = playmakerFSM;
 			newAction.eventName = eventToCall;
 			newAction.fsmName = fsmName;

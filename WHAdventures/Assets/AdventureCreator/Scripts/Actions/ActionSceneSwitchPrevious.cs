@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionScene.cs"
  * 
@@ -35,13 +35,10 @@ namespace AC
 		public int relativeMarkerParameterID = -1;
 
 
-		public ActionSceneSwitchPrevious ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Scene;
-			title = "Switch previous";
-			description = "Moves the Player to the previously-loaded scene. By default, the screen will cut to black during the transition, but the last frame of the current scene can instead be overlayed. This allows for cinematic effects: if the next scene fades in, it will cause a crossfade effect; if the next scene doesn't fade, it will cause a straight cut.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Scene; }}
+		public override string Title { get { return "Switch previous"; }}
+		public override string Description { get { return "Moves the Player to the previously-loaded scene. By default, the screen will cut to black during the transition, but the last frame of the current scene can instead be overlayed. This allows for cinematic effects: if the next scene fades in, it will cause a crossfade effect; if the next scene doesn't fade, it will cause a straight cut."; }}
+		public override int NumSockets { get { return (onlyPreload) ? 1 : 0; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -105,16 +102,6 @@ namespace AC
 
 			return KickStarter.sceneChanger.PreviousSceneIndex;
 		}
-
-
-		public override ActionEnd End (List<Action> actions)
-		{
-			if (onlyPreload && !relativePosition)
-			{
-				return base.End (actions);
-			}
-			return GenerateStopActionEnd ();
-		}
 		
 
 		#if UNITY_EDITOR
@@ -149,7 +136,7 @@ namespace AC
 				}
 			}
 
-			if (onlyPreload && !relativePosition)
+			if (onlyPreload)
 			{
 				if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().settingsManager != null && AdvGame.GetReferences ().settingsManager.useAsyncLoading)
 				{}
@@ -157,13 +144,9 @@ namespace AC
 				{
 					EditorGUILayout.HelpBox ("To pre-load scenes, 'Load scenes asynchronously?' must be enabled in the Settings Manager.", MessageType.Warning);
 				}
-
-				numSockets = 1;
-				AfterRunningOption ();
 			}
 			else
 			{
-				numSockets = 0;
 				assignScreenOverlay = EditorGUILayout.ToggleLeft ("Overlay current screen during switch?", assignScreenOverlay);
 			}
 		}
@@ -180,9 +163,9 @@ namespace AC
 			if (relativePosition && relativeMarkerParameterID < 0)
 			{
 				if (relativeMarker != null && relativeMarker.gameObject == gameObject) return true;
-				if (relativeMarkerID == id) return true;
+				if (relativeMarkerID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 		
 		#endif
@@ -195,7 +178,7 @@ namespace AC
 		 */
 		public static ActionSceneSwitchPrevious CreateNew (bool overlayCurrentScreen)
 		{
-			ActionSceneSwitchPrevious newAction = (ActionSceneSwitchPrevious) CreateInstance <ActionSceneSwitchPrevious>();
+			ActionSceneSwitchPrevious newAction = CreateNew<ActionSceneSwitchPrevious> ();
 			newAction.assignScreenOverlay = overlayCurrentScreen;
 			return newAction;
 		}

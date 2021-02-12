@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"UnityVersionHandler.cs"
  * 
@@ -14,8 +14,6 @@
 #endif
 
 using UnityEngine;
-using UnityEngine.EventSystems;
-using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -222,6 +220,19 @@ namespace AC
 					
 			return false;
 		}
+		
+		/**
+		 * <summary>Gets the name of the active scene, if multiple scenes are being edited.</summary>
+		 * <returns>The name of the active scene, if multiple scenes are being edited. Returns nothing otherwise.</returns>
+		 */
+		public static string GetCurrentSceneName ()
+		{
+			#if UNITY_EDITOR
+			return UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene ().name;
+			#else
+			return KickStarter.sceneSettings.gameObject.scene.name;
+			#endif
+		}
 
 
 		#if UNITY_EDITOR
@@ -259,16 +270,6 @@ namespace AC
 		public static bool SaveSceneIfUserWants ()
 		{
 			return EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo ();
-		}
-
-
-		/**
-		 * <summary>Gets the name of the active scene, if multiple scenes are being edited.</summary>
-		 * <returns>The name of the active scene, if multiple scenes are being edited. Returns nothing otherwise.</returns>
-		 */
-		public static string GetCurrentSceneName ()
-		{
-			return UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene ().name;
 		}
 
 
@@ -460,9 +461,9 @@ namespace AC
 		{
 			#if NEW_PREFABS
 			bool isPartOfAnyPrefab = PrefabUtility.IsPartOfAnyPrefab (_target);
-			bool isPartOfPrefabInstance = PrefabUtility.IsPartOfPrefabInstance (_target);
+			bool isPartOfNonAssetPrefabInstance = PrefabUtility.IsPartOfNonAssetPrefabInstance (_target);
 			bool isPartOfPrefabAsset = PrefabUtility.IsPartOfPrefabAsset (_target);
-			if (isPartOfAnyPrefab && !isPartOfPrefabInstance && isPartOfPrefabAsset)
+			if (isPartOfAnyPrefab && !isPartOfNonAssetPrefabInstance && isPartOfPrefabAsset)
 			{
 				return true;
 			}
@@ -647,7 +648,7 @@ namespace AC
 			T[] instances = Object.FindObjectsOfType (typeof (T)) as T[];
 			foreach (T instance in instances)
 			{
-				if (instance != null && instance.gameObject.scene == scene)
+				if (instance && instance.gameObject.scene == scene)
 				{
 					return instance;
 				}

@@ -103,6 +103,7 @@ MonoBehaviour:
   lockVertical: 1
   limitHorizontal: 0
   limitVertical: 0
+  backgroundConstraint: {fileID: 0}
   constrainHorizontal: {x: 0, y: 0}
   constrainVertical: {x: 0, y: 0}
   freedom: {x: 0, y: 0}

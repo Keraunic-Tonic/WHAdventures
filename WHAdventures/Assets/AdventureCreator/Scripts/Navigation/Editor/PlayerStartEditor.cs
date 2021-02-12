@@ -17,7 +17,7 @@ namespace AC
 				EditorGUILayout.HelpBox ("This PlayerStart is the scene's default, and will be used if a more appropriate one is not found.", MessageType.Info);
 			}
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Previous scene activation", EditorStyles.boldLabel);
 			_target.chooseSceneBy = (ChooseSceneBy)CustomGUILayout.EnumPopup ("Choose scene by:", _target.chooseSceneBy, "", "The way in which the previous scene is identified by");
 			if (_target.chooseSceneBy == ChooseSceneBy.Name)
@@ -40,9 +40,9 @@ namespace AC
 				}
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Camera settings", EditorStyles.boldLabel);
 			_target.cameraOnStart = (_Camera) CustomGUILayout.ObjectField <_Camera> ("Camera on start:", _target.cameraOnStart, true, "", "The AC _Camera that should be made active when the Player starts the scene from this point");
 			_target.fadeInOnStart = CustomGUILayout.Toggle ("Fade in on activate?", _target.fadeInOnStart, "", "If True, then the MainCamera will fade in when the Player starts the scene from this point");
@@ -50,7 +50,7 @@ namespace AC
 			{
 				_target.fadeSpeed = CustomGUILayout.FloatField ("Fade speed:", _target.fadeSpeed, "", "The speed of the fade");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			UnityVersionHandler.CustomSetDirty (_target);
 		}
@@ -62,7 +62,7 @@ namespace AC
 
 			foreach (PlayerPrefab playerPrefab in KickStarter.settingsManager.players)
 			{
-				string playerName = "    " + playerPrefab.ID + ": " + ((playerPrefab.playerOb != null) ? playerPrefab.playerOb.GetName () : "(Unnamed)");
+				string playerName = "    " + playerPrefab.ID + ": " + ((playerPrefab.playerOb) ? playerPrefab.playerOb.GetName () : "(Unnamed)");
 				bool isActive = false;
 				foreach (int playerID in playerIDs)
 				{

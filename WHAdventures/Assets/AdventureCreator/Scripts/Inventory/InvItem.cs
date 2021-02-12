@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"InvItem.cs"
  * 
@@ -11,13 +11,16 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace AC
 {
 
 	/**
-	 * A container class for an Inventory item.
-	 * Items are defined in InventoryManager, and downloaded to the RuntimeInventory component during gameplay.
+	 * A data class for an Inventory item.
+	 * Items are stored in InventoryManager, and referenced in InvInstance classes when added to the Player's inventory at runtime.
 	 */
 	[System.Serializable]
 	public class InvItem : ITranslatable
@@ -36,8 +39,6 @@ namespace AC
 		public bool carryOnStart;
 		/** If True, then a Player prefab that is not the default carries the item when the game begins (if playerSwitching = PlayerSwitching.Allow in SettingsManager) */
 		public bool carryOnStartNotDefault;
-		/** (DEPRECATED) */
-		public int carryOnStartID;
 		/** The ID numbers of the Player prefabs that carry the item when the game begins, if carryOnStartNotDefault = True */
 		public List<int> carryOnStartIDs = new List<int>();
 
@@ -48,12 +49,15 @@ namespace AC
 		public bool canCarryMultiple;
 		/** The number of instances being carried, if canCarryMultiple = True */
 		public int count;
-		
-		//public int maxCount = 999;
-		/** If True, and canCarryMultiple = True, then multiple instances of the same item will be listed in separate MenuInventoryBox slots */
-		public bool useSeparateSlots;
-		/** If True, and canCarryMultiple = True and useSeparateSlots = False, then only one item will be selectable at a time */
-		public bool selectSingle;
+
+		/** If True, the item's label will be lower-cased when placed in the middle of a Hotspot label if it is not at the start. */
+		public bool canBeLowerCase = false;
+		/** The maximum amount that can be held in a single slot */
+		public int maxCount = 999;
+
+		/** How to select items when multiple are in a given slot */
+		public ItemStackingMode itemStackingMode = ItemStackingMode.All;
+
 		/** The item's main graphic */
 		public Texture tex;
 		/** The item's 'highlighted' graphic */
@@ -70,11 +74,7 @@ namespace AC
 		public int useIconID = 0;
 		/** The ID number of the item's InvBin category, as defined in InventoryManager */
 		public int binID;
-		/** The index number of the MenuCrafting slot that the item is placed in, when used as a Recipe ingredient */
-		public int recipeSlot = -1;
-		/** An identifier number of the last Use/Inventory interaction associated with the item */
-		public int lastInteractionIndex = 0;
-
+		
 		/** If True, then the item has its own "Use X on Y" syntax when selected */
 		public bool overrideUseSyntax = false;
 		/** The "Use" in "Use X on Y", if overrideUseSyntax = True */
@@ -86,20 +86,26 @@ namespace AC
 		public ActionListAsset useActionList;
 		/** The ActionListAsset to run when the item is examined, if multiple interactions are disallowed */
 		public ActionListAsset lookActionList;
-		/** A List of all "Use" InvInteraction objects associated with the item */
+		/** A List of all "Use" interactions associated with the item */
 		public List<InvInteraction> interactions = new List<InvInteraction>();
-		/** A List of all "Combine" InvInteraction objects associated with the item */
-		public List<ActionListAsset> combineActionList = new List<ActionListAsset>();
-		/** A List of InvItem ID numbers associated with the InvInteraction objects in combineActionList */
-		public List<int> combineID = new List<int>();
+		/** A list of all "Combine" interactions associated witht the item */
+		public List<InvCombineInteraction> combineInteractions = new List<InvCombineInteraction>();
+		[SerializeField] private List<ActionListAsset> combineActionList = new List<ActionListAsset>();
+		[SerializeField] private List<int> combineID = new List<int>();
 		/** The ActionListAsset to run when using the item on a Hotspot is unhandled */
 		public ActionListAsset unhandledActionList;
 		/** The ActionListAsset to run when using the item on another InvItem is unhandled */
 		public ActionListAsset unhandledCombineActionList;
 
-		protected bool canBeAnimated;
+		// Deprecated
+		[SerializeField] private int carryOnStartID;
+		[SerializeField] private bool useSeparateSlots;
+		[SerializeField] bool selectSingle;
+
 		#if UNITY_EDITOR
 		public bool showInFilter;
+		private int sideInteraction = -1;
+		private int sideCombineInteraction = -1;
 		#endif
 
 		#endregion
@@ -120,19 +126,15 @@ namespace AC
 			cursorIcon = new CursorIcon ();
 			id = 0;
 			binID = -1;
-			recipeSlot = -1;
-			useSeparateSlots = false;
-			//maxCount = 999;
-			selectSingle = false;
+			maxCount = 999;
 			carryOnStartNotDefault = false;
 			vars = new List<InvVar>();
-			canBeAnimated = false;
 			linkedPrefab = null;
+			canBeLowerCase = false;
+			itemStackingMode = ItemStackingMode.All;
 
 			interactions = new List<InvInteraction>();
-
-			combineActionList = new List<ActionListAsset>();
-			combineID = new List<int>();
+			combineInteractions = new List<InvCombineInteraction>();
 
 			overrideUseSyntax = false;
 			hotspotPrefix1 = new HotspotPrefix ("Use");
@@ -163,19 +165,15 @@ namespace AC
 			cursorIcon = new CursorIcon ();
 			id = _id;
 			binID = -1;
-			recipeSlot = -1;
-			useSeparateSlots = false;
-			selectSingle = false;
 			carryOnStartNotDefault = false;
 			vars = new List<InvVar>();
-			canBeAnimated = false;
 			linkedPrefab = null;
-			//maxCount = 999;
+			maxCount = 999;
+			canBeLowerCase = false;
 
+			itemStackingMode = ItemStackingMode.All;
 			interactions = new List<InvInteraction>();
-
-			combineActionList = new List<ActionListAsset>();
-			combineID = new List<int>();
+			combineInteractions = new List<InvCombineInteraction>();
 
 			overrideUseSyntax = false;
 			hotspotPrefix1 = new HotspotPrefix ("Use");
@@ -217,17 +215,17 @@ namespace AC
 			lineID = assetItem.lineID;
 			useIconID = assetItem.useIconID;
 
+			canBeLowerCase = assetItem.canBeLowerCase;
+
 			binID = assetItem.binID;
-			if (binID == -1 && KickStarter.inventoryManager != null && KickStarter.inventoryManager.bins != null && KickStarter.inventoryManager.bins.Count > 0)
+			if (binID == -1 && KickStarter.inventoryManager && KickStarter.inventoryManager.bins != null && KickStarter.inventoryManager.bins.Count > 0)
 			{
 				// Place item in first available cateogry if undefined
 				binID = KickStarter.inventoryManager.bins[0].id;
 			}
 
-			useSeparateSlots = assetItem.useSeparateSlots;
-			//maxCount = assetItem.maxCount;
-			selectSingle = assetItem.selectSingle;
-			recipeSlot = -1;
+			maxCount = assetItem.maxCount;
+			itemStackingMode = assetItem.itemStackingMode;
 
 			overrideUseSyntax = assetItem.overrideUseSyntax;
 			hotspotPrefix1 = assetItem.hotspotPrefix1;
@@ -236,13 +234,10 @@ namespace AC
 			useActionList = assetItem.useActionList;
 			lookActionList = assetItem.lookActionList;
 			interactions = assetItem.interactions;
-			combineActionList = assetItem.combineActionList;
+			combineInteractions = assetItem.combineInteractions;
 			unhandledActionList = assetItem.unhandledActionList;
 			unhandledCombineActionList = assetItem.unhandledCombineActionList;
-			combineID = assetItem.combineID;
 			linkedPrefab = assetItem.linkedPrefab;
-
-			canBeAnimated = DetermineCanBeAnimated ();
 
 			vars.Clear ();
 			foreach (InvVar invVar in assetItem.vars)
@@ -268,9 +263,533 @@ namespace AC
 
 		#if UNITY_EDITOR
 
+		public void ShowGUI (string apiPrefix, List<string> binList)
+		{
+			Upgrade ();
+
+			label = CustomGUILayout.TextField ("Name:", label, apiPrefix + ".label", "The item's Editor name");
+			altLabel = CustomGUILayout.TextField ("Label (if not name):", altLabel, apiPrefix + ".altLabel", "The item's in-game name, if not label");
+
+			bool isPronoun = !canBeLowerCase;
+			isPronoun = CustomGUILayout.Toggle ("Name is pronoun?", isPronoun, "!" + apiPrefix + ".canBeLowerCase", "If False, the name will be lower-cased when inside sentences.");
+			canBeLowerCase = !isPronoun;
+
+			EditorGUILayout.BeginHorizontal ();
+			EditorGUILayout.LabelField (new GUIContent ("Category:", "The category that the item belongs to"), GUILayout.Width (146f));
+			if (KickStarter.inventoryManager.bins.Count > 0)
+			{
+				int binNumber = KickStarter.inventoryManager.GetBinSlot (binID);
+				binNumber = CustomGUILayout.Popup (binNumber, binList.ToArray (), apiPrefix + ".binID");
+				binID = KickStarter.inventoryManager.bins[binNumber].id;
+			}
+			else
+			{
+				binID = -1;
+				EditorGUILayout.LabelField ("No categories defined!", EditorStyles.miniLabel, GUILayout.Width (146f));
+			}
+			EditorGUILayout.EndHorizontal ();
+
+			carryOnStart = CustomGUILayout.Toggle ("Carry on start?", carryOnStart, apiPrefix + ".carryOnStart", "If True, the Player carries the item when the game begins");
+			if (carryOnStart && AdvGame.GetReferences ().settingsManager && AdvGame.GetReferences ().settingsManager.playerSwitching == PlayerSwitching.Allow && !AdvGame.GetReferences ().settingsManager.shareInventory)
+			{
+				carryOnStartNotDefault = CustomGUILayout.Toggle ("Non-default Player(s)?", carryOnStartNotDefault, apiPrefix + ".carryOnStartNotDefault", "If True, then a Player prefab that is not the default carries the item when the game begins");
+				if (carryOnStartNotDefault)
+				{
+					carryOnStartIDs = ChoosePlayerGUI (carryOnStartIDs, apiPrefix + ".carryOnStartID");
+				}
+			}
+
+			canCarryMultiple = CustomGUILayout.Toggle ("Can carry multiple?", canCarryMultiple, apiPrefix + ".canCarryMultiple", "If True, then multiple instances of the item can be carried at once");
+
+			if (carryOnStart && canCarryMultiple)
+			{
+				count = CustomGUILayout.IntField ("Quantity on start:", count, apiPrefix + ".count", "The number of instances that the player is carrying when the game begins");
+			}
+			else
+			{
+				count = 1;
+			}
+
+			if (canCarryMultiple)
+			{
+				if (maxCount == 0)
+				{
+					maxCount = 999;
+				}
+				maxCount = CustomGUILayout.IntField ("Slot capacity:", maxCount, apiPrefix + ".maxCount", "The number of instances of the item that can occupy a single inventory slot");
+				if (maxCount < 1)
+				{
+					maxCount = 1;
+				}
+
+				if (maxCount > 1)
+				{
+					itemStackingMode = (ItemStackingMode) CustomGUILayout.EnumPopup ("Selection mode:", itemStackingMode, apiPrefix + ".itemStackingMode", "How to select items when multiple are in a given slot");
+				}
+			}
+
+			overrideUseSyntax = CustomGUILayout.Toggle ("Override 'Use' syntax?", overrideUseSyntax, apiPrefix + ".overrideUseSyntax", "If True, then the item has its own 'Use X on Y' syntax when selected");
+			if (overrideUseSyntax)
+			{
+				EditorGUILayout.BeginHorizontal ();
+				EditorGUILayout.LabelField ("Use syntax:", GUILayout.Width (100f));
+				hotspotPrefix1.label = EditorGUILayout.TextField (hotspotPrefix1.label, GUILayout.MaxWidth (80f));
+				EditorGUILayout.LabelField ("(item)", GUILayout.MaxWidth (40f));
+				hotspotPrefix2.label = EditorGUILayout.TextField (hotspotPrefix2.label, GUILayout.MaxWidth (80f));
+				EditorGUILayout.LabelField ("(hotspot)", GUILayout.MaxWidth (55f));
+				EditorGUILayout.EndHorizontal ();
+			}
+
+			linkedPrefab = (GameObject) CustomGUILayout.ObjectField<GameObject> ("Linked prefab:", linkedPrefab, false, apiPrefix + ".linkedPrefab", "A GameObject that can be associated with the item, for the creation of e.g. 3D inventory items (through scripting only)");
+			if (linkedPrefab != null)
+			{
+				EditorGUILayout.HelpBox ("This reference is accessible through scripting, or via Inventory parameter in the 'Object: Add or remove' Action.", MessageType.Info);
+			}
+
+			CustomGUILayout.DrawUILine ();
+
+			EditorGUILayout.BeginHorizontal ();
+			EditorGUILayout.LabelField (new GUIContent ("Main graphic:", "The item's main graphic"), GUILayout.Width (145));
+			tex = (Texture) CustomGUILayout.ObjectField<Texture> (tex, false, GUILayout.Width (70), GUILayout.Height (70), apiPrefix + ".tex");
+			EditorGUILayout.EndHorizontal ();
+
+			EditorGUILayout.BeginHorizontal ();
+			EditorGUILayout.LabelField (new GUIContent ("Active graphic:", "The item's 'highlighted' graphic"), GUILayout.Width (145));
+			activeTex = (Texture) CustomGUILayout.ObjectField<Texture> (activeTex, false, GUILayout.Width (70), GUILayout.Height (70), apiPrefix + ".activeTex");
+			EditorGUILayout.EndHorizontal ();
+
+			if (AdvGame.GetReferences ().settingsManager != null && AdvGame.GetReferences ().settingsManager.selectInventoryDisplay == SelectInventoryDisplay.ShowSelectedGraphic)
+			{
+				EditorGUILayout.BeginHorizontal ();
+				EditorGUILayout.LabelField (new GUIContent ("Selected graphic:", "The item's 'selected' graphic"), GUILayout.Width (145));
+				selectedTex = (Texture) CustomGUILayout.ObjectField<Texture> (selectedTex, false, GUILayout.Width (70), GUILayout.Height (70), apiPrefix + ".selectedTex");
+				EditorGUILayout.EndHorizontal ();
+			}
+			if (AdvGame.GetReferences ().cursorManager != null)
+			{
+				CursorManager cursorManager = AdvGame.GetReferences ().cursorManager;
+				if (cursorManager.inventoryHandling == InventoryHandling.ChangeCursor || cursorManager.inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel)
+				{
+					cursorIcon.ShowGUI (true, true, "Cursor (optional):", cursorManager.cursorRendering, apiPrefix + ".cursorIcon", "A Cursor that, if assigned, will be used in place of the 'tex' Texture when the item is selected on the cursor");
+					CustomGUILayout.DrawUILine ();
+				}
+			}
+
+			EditorGUILayout.Space ();
+			EditorGUILayout.LabelField ("Standard interactions", CustomStyles.subHeader);
+			if (KickStarter.settingsManager && KickStarter.settingsManager.interactionMethod != AC_InteractionMethod.ContextSensitive && KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple && KickStarter.cursorManager)
+			{
+				List<string> iconList = new List<string> ();
+				foreach (CursorIcon icon in KickStarter.cursorManager.cursorIcons)
+				{
+					iconList.Add (icon.id.ToString () + ": " + icon.label);
+				}
+
+				if (KickStarter.cursorManager.cursorIcons.Count > 0)
+				{
+					foreach (InvInteraction interaction in interactions)
+					{
+						int i = interactions.IndexOf (interaction);
+						EditorGUILayout.BeginHorizontal ();
+
+						EditorGUILayout.LabelField (interactions[i].ID.ToString () + ":", GUILayout.Width (15f));
+
+						bool enabledOnStart = !interaction.disabledOnStart;
+						enabledOnStart = CustomGUILayout.Toggle (enabledOnStart, GUILayout.Width (15f), apiPrefix + ".interactions[" + i + "].disabledOnStart");
+						interaction.disabledOnStart = !enabledOnStart;
+
+						int invNumber = GetIconSlot (interaction.icon.id);
+						invNumber = EditorGUILayout.Popup (invNumber, iconList.ToArray ());
+						interaction.icon = KickStarter.cursorManager.cursorIcons[invNumber];
+
+						string autoName = label + "_" + interaction.icon.label;
+						interaction.actionList = ActionListAssetMenu.AssetGUI (string.Empty, interaction.actionList, autoName, apiPrefix + ".interactions[" + i + "].actionList", "The ActionList to run when the interaction is triggered");
+
+						if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
+						{
+							SideInteractionMenu (interactions.IndexOf (interaction));
+						}
+
+						EditorGUILayout.EndHorizontal ();
+					}
+				}
+				else
+				{
+					EditorGUILayout.HelpBox ("No interaction icons defined - please use the Cursor Manager", MessageType.Warning);
+				}
+				if (GUILayout.Button ("Add interaction"))
+				{
+					Undo.RecordObject (KickStarter.inventoryManager, "Add new interaction");
+					interactions.Add (new InvInteraction (KickStarter.cursorManager.cursorIcons[0], interactions));
+				}
+			}
+			else
+			{
+				string autoName = label + "_Use";
+				useActionList = ActionListAssetMenu.AssetGUI ("Use:", useActionList, autoName, apiPrefix + ".useActionList", "The ActionList asset to run when using the item is used");
+				if (KickStarter.cursorManager && KickStarter.cursorManager.allowInteractionCursorForInventory && KickStarter.cursorManager.cursorIcons.Count > 0)
+				{
+					int useCursor_int = KickStarter.cursorManager.GetIntFromID (useIconID) + 1;
+					if (useIconID == -1) useCursor_int = 0;
+					useCursor_int = CustomGUILayout.Popup ("Use cursor icon:", useCursor_int, KickStarter.cursorManager.GetLabelsArray (true), apiPrefix + ".useIconID", "The Cursor to show when hovering over the item");
+
+					if (useCursor_int == 0)
+					{
+						useIconID = -1;
+					}
+					else if (KickStarter.cursorManager.cursorIcons.Count > (useCursor_int - 1))
+					{
+						useIconID = KickStarter.cursorManager.cursorIcons[useCursor_int - 1].id;
+					}
+				}
+				else
+				{
+					useIconID = 0;
+				}
+				autoName = label + "_Examine";
+				lookActionList = ActionListAssetMenu.AssetGUI ("Examine:", lookActionList, autoName, apiPrefix + ".lookActionList", "The ActionListAsset to run when the item is examined");
+			}
+
+			if (KickStarter.settingsManager && KickStarter.settingsManager.CanSelectItems (false))
+			{
+				EditorGUILayout.Space ();
+				EditorGUILayout.LabelField ("Unhandled interactions", CustomStyles.subHeader);
+				string autoName = label + "_Unhandled_Hotspot";
+				unhandledActionList = ActionListAssetMenu.AssetGUI ("Use on Hotspot:", unhandledActionList, autoName, apiPrefix + ".unhandledActionList", "The ActionList asset to run when using the item on a Hotspot is unhandled");
+				autoName = label + "_Unhandled_Combine";
+				unhandledCombineActionList = ActionListAssetMenu.AssetGUI ("Combine:", unhandledCombineActionList, autoName, apiPrefix + ".unhandledCombineActionList", "The ActionListAsset to run when using the item on another InvItem is unhandled");
+			}
+
+			EditorGUILayout.Space ();
+			EditorGUILayout.LabelField ("Combine interactions", CustomStyles.subHeader);
+			for (int i = 0; i < combineInteractions.Count; i++)
+			{
+				EditorGUILayout.BeginHorizontal ();
+
+				EditorGUILayout.LabelField (combineInteractions[i].ID.ToString () + ":", GUILayout.Width (15f));
+
+				bool enabledOnStart = !combineInteractions[i].disabledOnStart;
+				enabledOnStart = CustomGUILayout.Toggle (enabledOnStart, GUILayout.Width (15f), apiPrefix + ".combineInteractions[" + i + "].disabledOnStart");
+				combineInteractions[i].disabledOnStart = !enabledOnStart;
+
+				int invNumber = KickStarter.inventoryManager.GetArraySlot (combineInteractions[i].combineID);
+				invNumber = EditorGUILayout.Popup (invNumber, KickStarter.inventoryManager.GetLabelList ());
+				combineInteractions[i].combineID = KickStarter.inventoryManager.items[invNumber].id;
+
+				string autoName = label + "_Combine_" + KickStarter.inventoryManager.GetLabelList ()[invNumber];
+				combineInteractions[i].actionList = ActionListAssetMenu.AssetGUI (string.Empty, combineInteractions[i].actionList, autoName, apiPrefix + ".combineInteractions[" + i + "].actionList", "A List of all 'Combine' InvInteraction objects associated with the item");
+
+				if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
+				{
+					SideCombineInteractionMenu (i);
+				}
+
+				EditorGUILayout.EndHorizontal ();
+			}
+			if (GUILayout.Button ("Add combine event"))
+			{
+				Undo.RecordObject (KickStarter.inventoryManager, "Add new combine event");
+				combineInteractions.Add (new InvCombineInteraction (0, null, combineInteractions));
+			}
+
+			// List all "reverse" inventory combinations
+			string reverseCombinations = string.Empty;
+			foreach (InvItem otherItem in KickStarter.inventoryManager.items)
+			{
+				if (otherItem != this)
+				{
+					bool contains = false;
+					foreach (InvCombineInteraction otherItemCombineInteraction in otherItem.combineInteractions)
+					{
+						if (otherItemCombineInteraction.combineID == id)
+						{
+							contains = true;
+							break;
+						}
+					}
+
+					if (contains)
+					{
+						reverseCombinations += "- " + otherItem.label + "\n";
+						continue;
+					}
+				}
+			}
+			if (reverseCombinations.Length > 0)
+			{
+				EditorGUILayout.Space ();
+				EditorGUILayout.HelpBox ("The following inventory items have combine interactions that reference this item:\n" + reverseCombinations, MessageType.Info);
+			}
+
+			if (KickStarter.inventoryManager.invVars.Count > 0)
+			{
+				EditorGUILayout.Space ();
+				EditorGUILayout.LabelField ("Properties", CustomStyles.subHeader);
+
+				RebuildProperties ();
+
+				// UI for setting property values
+				if (vars.Count > 0)
+				{
+					foreach (InvVar invVar in vars)
+					{
+						invVar.ShowGUI (apiPrefix + ".GetProperty (" + invVar.id + ")");
+					}
+				}
+				else
+				{
+					EditorGUILayout.HelpBox ("No properties have been defined that this inventory item can use.", MessageType.Info);
+				}
+			}
+		}
+
+
+		private void SideInteractionMenu (int index)
+		{
+			GenericMenu menu = new GenericMenu ();
+			sideInteraction = index;
+			
+			menu.AddItem (new GUIContent ("Insert after"), false, InteractionCallback, "Insert after");
+			menu.AddItem (new GUIContent ("Delete"), false, InteractionCallback, "Delete");
+			
+			if (sideInteraction > 0 || sideInteraction < interactions.Count - 1)
+			{
+				menu.AddSeparator (string.Empty);
+			}
+			if (sideInteraction > 0)
+			{
+				menu.AddItem (new GUIContent ("Re-arrange/Move to top"), false, InteractionCallback, "Move to top");
+				menu.AddItem (new GUIContent ("Re-arrange/Move up"), false, InteractionCallback, "Move up");
+			}
+			if (sideInteraction < interactions.Count - 1)
+			{
+				menu.AddItem (new GUIContent ("Re-arrange/Move down"), false, InteractionCallback, "Move down");
+				menu.AddItem (new GUIContent ("Re-arrange/Move to bottom"), false, InteractionCallback, "Move to bottom");
+			}
+
+			menu.ShowAsContext ();
+		}
+
+
+		private void InteractionCallback (object obj)
+		{
+			if (sideInteraction >= 0 && sideInteraction < interactions.Count)
+			{
+				InvInteraction tempInteraction = interactions[sideInteraction];
+
+				switch (obj.ToString ())
+				{
+					case "Insert after":
+						Undo.RecordObject (KickStarter.inventoryManager, "Insert interaction");
+						InvInteraction newInteraction = new InvInteraction (KickStarter.cursorManager.cursorIcons[0], interactions);
+						interactions.Insert (sideInteraction + 1, newInteraction);
+						break;
+
+					case "Delete":
+						Undo.RecordObject (KickStarter.inventoryManager, "Delete interaction");
+						interactions.RemoveAt (sideInteraction);
+						break;
+
+					case "Move up":
+						Undo.RecordObject (KickStarter.inventoryManager, "Move interaction up");
+						interactions.RemoveAt (sideInteraction);
+						interactions.Insert (sideInteraction - 1, tempInteraction);
+						break;
+
+					case "Move down":
+						Undo.RecordObject (KickStarter.inventoryManager, "Move interaction down");
+						interactions.RemoveAt (sideInteraction);
+						interactions.Insert (sideInteraction + 1, tempInteraction);
+						break;
+
+					case "Move to top":
+						Undo.RecordObject (KickStarter.inventoryManager, "Move interaction to top");
+						interactions.RemoveAt (sideInteraction);
+						interactions.Insert (0, tempInteraction);
+						break;
+
+					case "Move to bottom":
+						Undo.RecordObject (KickStarter.inventoryManager, "Move interaction to bottom");
+						interactions.Add (tempInteraction);
+						interactions.RemoveAt (sideInteraction);
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			EditorUtility.SetDirty (KickStarter.inventoryManager);
+			AssetDatabase.SaveAssets ();
+
+			sideInteraction = -1;
+		}
+
+
+		private void SideCombineInteractionMenu (int index)
+		{
+			GenericMenu menu = new GenericMenu ();
+			sideCombineInteraction = index;
+
+			menu.AddItem (new GUIContent ("Insert after"), false, CombineInteractionCallback, "Insert after");
+			menu.AddItem (new GUIContent ("Delete"), false, CombineInteractionCallback, "Delete");
+			
+			if (sideCombineInteraction > 0 || sideCombineInteraction < combineInteractions.Count - 1)
+			{
+				menu.AddSeparator (string.Empty);
+			}
+			if (sideCombineInteraction > 0)
+			{
+				menu.AddItem (new GUIContent ("Re-arrange/Move to top"), false, CombineInteractionCallback, "Move to top");
+				menu.AddItem (new GUIContent ("Re-arrange/Move up"), false, CombineInteractionCallback, "Move up");
+			}
+			if (sideInteraction < interactions.Count - 1)
+			{
+				menu.AddItem (new GUIContent ("Re-arrange/Move down"), false, CombineInteractionCallback, "Move down");
+				menu.AddItem (new GUIContent ("Re-arrange/Move to bottom"), false, CombineInteractionCallback, "Move to bottom");
+			}
+
+			menu.ShowAsContext ();
+		}
+
+
+		private void CombineInteractionCallback (object obj)
+		{
+			if (sideCombineInteraction >= 0 && sideCombineInteraction < combineInteractions.Count)
+			{
+				InvCombineInteraction tempInteraction = combineInteractions[sideCombineInteraction];
+
+				switch (obj.ToString ())
+				{
+					case "Insert after":
+						Undo.RecordObject (KickStarter.inventoryManager, "Insert interaction");
+						InvCombineInteraction newCombineInteraction = new InvCombineInteraction (0, null, combineInteractions);
+						combineInteractions.Insert (sideCombineInteraction + 1, newCombineInteraction);
+						break;
+
+					case "Delete":
+						Undo.RecordObject (KickStarter.inventoryManager, "Delete interaction");
+						combineInteractions.RemoveAt (sideCombineInteraction);
+						break;
+
+					case "Move up":
+						Undo.RecordObject (KickStarter.inventoryManager, "Move interaction up");
+						combineInteractions.RemoveAt (sideCombineInteraction);
+						combineInteractions.Insert (sideCombineInteraction - 1, tempInteraction);
+						break;
+
+					case "Move down":
+						Undo.RecordObject (KickStarter.inventoryManager, "Move interaction down");
+						combineInteractions.RemoveAt (sideCombineInteraction);
+						combineInteractions.Insert (sideCombineInteraction + 1, tempInteraction);
+						break;
+
+					case "Move to top":
+						Undo.RecordObject (KickStarter.inventoryManager, "Move interaction to top");
+						combineInteractions.RemoveAt (sideCombineInteraction);
+						combineInteractions.Insert (0, tempInteraction);
+						break;
+
+					case "Move to bottom":
+						Undo.RecordObject (KickStarter.inventoryManager, "Move interaction to bottom");
+						combineInteractions.Add (tempInteraction);
+						combineInteractions.RemoveAt (sideCombineInteraction);
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			EditorUtility.SetDirty (KickStarter.inventoryManager);
+			AssetDatabase.SaveAssets ();
+
+			sideInteraction = -1;
+		}
+
+
+		private List<int> ChoosePlayerGUI (List<int> playerIDs, string api)
+		{
+			CustomGUILayout.LabelField ("Item is carried by:", api);
+
+			foreach (PlayerPrefab playerPrefab in KickStarter.settingsManager.players)
+			{
+				string playerName = "    " + playerPrefab.ID + ": " + ((playerPrefab.playerOb != null) ? playerPrefab.playerOb.GetName () : "(Unnamed)");
+				bool isActive = false;
+				foreach (int playerID in playerIDs)
+				{
+					if (playerID == playerPrefab.ID) isActive = true;
+				}
+
+				bool wasActive = isActive;
+				isActive = EditorGUILayout.Toggle (playerName, isActive);
+				if (isActive != wasActive)
+				{
+					if (isActive)
+					{
+						playerIDs.Add (playerPrefab.ID);
+					}
+					else
+					{
+						playerIDs.Remove (playerPrefab.ID);
+					}
+				}
+			}
+			return playerIDs;
+		}
+
+
+		public void RebuildProperties ()
+		{
+			// Which properties are available?
+			List<int> availableVarIDs = new List<int> ();
+			foreach (InvVar invVar in KickStarter.inventoryManager.invVars)
+			{
+				if (!invVar.limitToCategories || KickStarter.inventoryManager.bins.Count == 0 || invVar.categoryIDs.Contains (binID))
+				{
+					availableVarIDs.Add (invVar.id);
+				}
+			}
+
+			// Create new properties / transfer existing values
+			List<InvVar> newInvVars = new List<InvVar> ();
+			foreach (InvVar invVar in KickStarter.inventoryManager.invVars)
+			{
+				if (availableVarIDs.Contains (invVar.id))
+				{
+					InvVar newInvVar = new InvVar (invVar);
+					InvVar oldInvVar = GetProperty (invVar.id);
+					if (oldInvVar != null)
+					{
+						newInvVar.TransferValues (oldInvVar);
+					}
+					newInvVar.popUpID = invVar.popUpID;
+					newInvVars.Add (newInvVar);
+				}
+			}
+
+			vars = newInvVars;
+		}
+
+
+		private int GetIconSlot (int iconID)
+		{
+			int i = 0;
+			foreach (CursorIcon icon in AdvGame.GetReferences ().cursorManager.cursorIcons)
+			{
+				if (icon.id == iconID)
+				{
+					return i;
+				}
+				i++;
+			}
+			return 0;
+		}
+
+
 		public bool ReferencesAsset (ActionListAsset actionListAsset)
 		{
-			if (KickStarter.settingsManager && KickStarter.settingsManager.interactionMethod != AC_InteractionMethod.ContextSensitive && KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple && AdvGame.GetReferences ().cursorManager)
+			if (KickStarter.settingsManager && KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple && AdvGame.GetReferences ().cursorManager)
 			{
 				foreach (InvInteraction interaction in interactions)
 				{
@@ -283,15 +802,18 @@ namespace AC
 				if (lookActionList == actionListAsset) return true;
 			}
 
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.CanSelectItems (false))
+			if (KickStarter.settingsManager && KickStarter.settingsManager.CanSelectItems (false))
 			{
 				if (unhandledActionList == actionListAsset) return true;
 				if (unhandledCombineActionList == actionListAsset) return true;
 			}
 
-			foreach (ActionListAsset combine in combineActionList)
+			foreach (InvCombineInteraction combineInteraction in combineInteractions)
 			{
-				if (combine == actionListAsset) return true;
+				if (combineInteraction.actionList == actionListAsset)
+				{
+					return true;
+				}
 			}
 
 			return false;
@@ -314,11 +836,61 @@ namespace AC
 		/** Upgrades the item from a previous version of AC */
 		public void Upgrade ()
 		{
+			if (maxCount < 1)
+			{
+				maxCount = 999;
+			}
+			
 			if (carryOnStartID >= 0 && carryOnStartIDs.Count == 0)
 			{
 				carryOnStartIDs.Add (carryOnStartID);
 				carryOnStartID = -1;
 			}
+
+			if (canCarryMultiple && useSeparateSlots)
+			{
+				useSeparateSlots = false;
+				maxCount = 1;
+			}
+
+			if (selectSingle)
+			{
+				itemStackingMode = ItemStackingMode.Single;
+				selectSingle = false;
+			}
+
+			if (combineID != null && combineID.Count > 0)
+			{
+				combineInteractions = new List<InvCombineInteraction>();
+				for (int i=0; i<combineID.Count; i++)
+				{
+					if (i < combineActionList.Count)
+					{
+						combineInteractions.Add (new InvCombineInteraction (combineID[i], combineActionList[i], combineInteractions));
+					}
+					else
+					{
+						combineInteractions.Add (new InvCombineInteraction (combineID[i], null, combineInteractions));
+					}
+				}
+
+				combineID.Clear ();
+				combineActionList.Clear ();
+			}
+
+			#if UNITY_EDITOR
+
+			foreach (InvInteraction invInteraction in interactions)
+			{
+				invInteraction.Upgrade (interactions);
+			}
+
+			foreach (InvCombineInteraction combineInteraction in combineInteractions)
+			{
+				combineInteraction.Upgrade (combineInteractions);
+			}
+
+			#endif
 		}
 
 
@@ -331,9 +903,9 @@ namespace AC
 		{
 			if (invItem != null)
 			{
-				foreach (int invID in combineID)
+				foreach (InvCombineInteraction combineInteraction in combineInteractions)
 				{
-					if (invID == invItem.id)
+					if (combineInteraction.combineID == invItem.id)
 					{
 						return true;
 					}
@@ -372,25 +944,14 @@ namespace AC
 		 */
 		public void RunUseInteraction (int iconID = -1)
 		{
+			InvInstance newInstance = new InvInstance (this);
 			if (iconID < 0)
 			{
-				KickStarter.runtimeInventory.Use (this);
+				newInstance.Use ();
 			}
 			else
 			{
-				KickStarter.runtimeInventory.RunInteraction (iconID, this);
-			}
-		}
-
-
-		/**
-		 * <summary>Runs the item's default 'Use' interactions. This is the first defined 'Standard Interaction' in the item's properties.</summary>
-		 */
-		public void RunDefaultInteraction ()
-		{
-			if (interactions != null && interactions.Count > 0)
-			{
-				KickStarter.runtimeInventory.RunInteraction (interactions[0].icon.id);
+				newInstance.Use (iconID);
 			}
 		}
 
@@ -400,7 +961,8 @@ namespace AC
 		 */
 		public void RunExamineInteraction ()
 		{
-			KickStarter.runtimeInventory.Look (this);
+			InvInstance newInstance = new InvInstance (this);
+			newInstance.Examine ();
 		}
 
 
@@ -409,7 +971,8 @@ namespace AC
 		 */
 		public void CombineWithSelf ()
 		{
-			KickStarter.runtimeInventory.Combine (this, this, true);
+			InvInstance newInstance = new InvInstance (this);
+			newInstance.Combine (newInstance, true);
 		}
 
 
@@ -419,7 +982,8 @@ namespace AC
 		 */
 		public void CombineWithItem (int otherItemID)
 		{
-			KickStarter.runtimeInventory.Combine (this, otherItemID);
+			InvInstance newInstance = new InvInstance (this);
+			newInstance.Combine (new InvInstance (otherItemID));
 		}
 
 
@@ -429,16 +993,15 @@ namespace AC
 		 */
 		public void CombineWithItem (InvItem otherItem)
 		{
-			KickStarter.runtimeInventory.Combine (this, otherItem);
+			InvInstance newInstance = new InvInstance (this);
+			newInstance.Combine (new InvInstance (otherItem));
 		}
 
 
-		/**
-		 * <summary>Selects the item.</summary>
-		 */
+		/** Selects the item. */
 		public void Select ()
 		{
-			KickStarter.runtimeInventory.SelectItem (this);
+			KickStarter.runtimeInventory.SelectItem (new InvInstance (this));
 		}
 
 
@@ -447,7 +1010,7 @@ namespace AC
 		 */
 		public void ShowInteractionMenus ()
 		{
-			if (KickStarter.playerMenus != null)
+			if (KickStarter.playerMenus)
 			{
 				KickStarter.playerMenus.EnableInteractionMenus (this);
 			}
@@ -461,111 +1024,8 @@ namespace AC
 		 */
 		public void ShowInteractionMenu (Menu menu, bool includeInventoryItems)
 		{
-			menu.MatchInteractions (this, includeInventoryItems);
+			menu.MatchInteractions (new InvInstance (this), includeInventoryItems);
 			menu.TurnOn ();
-		}
-
-
-		/**
-		 * <summary>Gets the items's display name, with prefix.</summary>
-		 * <param name = "languageNumber">The index of the current language, as set in SpeechManager</param>
-		 * <returns>The item's display name, with prefix</returns>
-		 */
-		public string GetFullLabel (int languageNumber = 0)
-		{
-			if (KickStarter.stateHandler.gameState == GameState.DialogOptions && !KickStarter.settingsManager.allowInventoryInteractionsDuringConversations && !KickStarter.settingsManager.allowGameplayDuringConversations)
-			{
-				return string.Empty;
-			}
-
-			if (KickStarter.runtimeInventory.showHoverLabel)
-			{
-				if (KickStarter.runtimeInventory.SelectedItem == null || this != KickStarter.runtimeInventory.SelectedItem || KickStarter.settingsManager.ShowHoverInteractionInHotspotLabel ())
-				{
-					return AdvGame.CombineLanguageString (
-								KickStarter.playerInteraction.GetLabelPrefix (null, this, languageNumber),
-								GetLabel (languageNumber),
-								languageNumber);
-				}
-				else
-				{
-					return GetLabel (languageNumber);
-				}
-			}
-
-			return string.Empty;	
-		}
-
-
-		/**
-		 * <summary>Gets the index number of the next relevant use/combine interaction.</summary>
-		 * <param name = "i">The index number to start from</param>
-		 * <param name = "numInvInteractions">The number of relevant "combine" interactions</param>
-		 */
-		public int GetNextInteraction (int i, int numInvInteractions)
-		{
-			if (i < interactions.Count)
-			{
-				i ++;
-
-				if (i >= interactions.Count + numInvInteractions)
-				{
-					return 0;
-				}
-				else
-				{
-					return i;
-				}
-			}
-			else if (i == interactions.Count - 1 + numInvInteractions)
-			{
-				return 0;
-			}
-			
-			return (i+1);
-		}
-		
-
-		/**
-		 * <summary>Gets the index number of the previous relevant use/combine interaction.</summary>
-		 * <param name = "i">The index number to start from</param>
-		 * <param name = "numInvInteractions">The number of relevant "combine" interactions</param>
-		 */
-		public int GetPreviousInteraction (int i, int numInvInteractions)
-		{
-			if (i > interactions.Count && numInvInteractions > 0)
-			{
-				return (i-1);
-			}
-			else if (i == 0)
-			{
-				return GetNumInteractions (numInvInteractions) - 1;
-			}
-			else if (i <= interactions.Count)
-			{
-				i --;
-
-				if (i < 0)
-				{
-					return GetNumInteractions (numInvInteractions) - 1;
-				}
-				else
-				{
-					return i;
-				}
-			}
-			
-			return (i-1);
-		}
-
-
-		/**
-		 * <summary>Checks if the item's assigned textures are enough for animated effects to be possible.</summary>
-		 * <returns>True if the item's assigned textures are enough for animated effects to be possible.</returns>
-		 */
-		public bool CanBeAnimated ()
-		{
-			return canBeAnimated;
 		}
 
 
@@ -575,7 +1035,7 @@ namespace AC
 		 */
 		public bool HasCursorIcon ()
 		{
-			if (tex != null || (cursorIcon != null && cursorIcon.texture != null))
+			if (tex || (cursorIcon != null && cursorIcon.texture))
 			{
 				return true;
 			}
@@ -602,140 +1062,6 @@ namespace AC
 				}
 			}
 			return null;
-		}
-
-
-		public string GetPropertySaveData ()
-		{
-			string dataString = string.Empty;
-			if (vars.Count > 0)
-			{
-				foreach (InvVar invVar in vars)
-				{
-					switch (invVar.type)
-					{
-						case VariableType.Float:
-							dataString += invVar.id.ToString () + "_";
-							dataString += invVar.FloatValue.ToString ();
-							break;
-
-						case VariableType.String:
-							break;
-
-						case VariableType.Vector3:
-							dataString += invVar.id.ToString () + "_";
-							dataString += invVar.Vector3Value.x + "," + invVar.Vector3Value.y + "," + invVar.Vector3Value.z;
-							break;
-
-						default:
-							dataString += invVar.id.ToString () + "_";
-							dataString += invVar.IntegerValue.ToString ();
-							break;
-					}
-
-					dataString += "#";
-				}
-			}
-
-			if (string.IsNullOrEmpty (dataString))
-			{
-				dataString = "#";
-			}
-			else
-			{
-				dataString.Remove (dataString.Length-1, 1);
-			}
-			return dataString;
-		}
-
-
-		public void LoadPropertyData (string dataString)
-		{
-			if (string.IsNullOrEmpty (dataString)) return;
-
-			string[] dataArray = dataString.Split ("#"[0]);
-			if (dataArray.Length > 0)
-			{
-				foreach (string propertyData in dataArray)
-				{
-					string[] chunkData = propertyData.Split ("_"[0]);
-					if (chunkData.Length == 2)
-					{
-						int _id = -1;
-						int.TryParse (chunkData[0], out _id);
-
-						if (_id >= 0)
-						{
-							InvVar invVar = GetProperty (_id);
-							if (invVar != null)
-							{
-								invVar.LoadData (chunkData[1]);
-							}
-						}
-					}
-				}
-			}
-		}
-
-
-		/**
-		 * <summary>Checks if only one instance of the item can be selected, as opposed to all</summary>
-		 */
-		public bool CanSelectSingle (int _count = -1)
-		{
-			if (canCarryMultiple && !useSeparateSlots && selectSingle)
-			{
-				if (_count >= 0)
-				{
-					return (_count > 1);
-				}
-				else
-				{
-					return (count > 1);
-				}
-			}
-			return false;
-		}
-
-
-		/**
-		 * <summary>Gets the ID of the icon that represents the first-available Standard interaction.</summary>
-		 * <returns>The ID of the icon that represents the first-available Standard interaction. If no appropriate interaction is found, -1 is returned</returns>
-		 */
-		public int GetFirstStandardIcon ()
-		{
-			foreach (InvInteraction interaction in interactions)
-			{
-				if (interaction != null)
-				{
-					return interaction.icon.id;
-				}
-			}
-			return -1;
-		}
-
-		#endregion
-
-
-		#region ProtectedFunctions
-
-		protected int GetNumInteractions (int numInvInteractions)
-		{
-			return (interactions.Count + numInvInteractions);
-		}
-
-
-		protected bool DetermineCanBeAnimated ()
-		{
-			if (cursorIcon != null && cursorIcon.texture != null && cursorIcon.isAnimated)
-			{
-				return true;
-			}
-			if (activeTex != null)
-			{
-				return true;
-			}
-			return false;
 		}
 
 		#endregion

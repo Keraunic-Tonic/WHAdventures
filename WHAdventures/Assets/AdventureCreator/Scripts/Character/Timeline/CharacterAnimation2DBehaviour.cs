@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"CharacterAnimation2DBehaviour.cs"
  * 
@@ -65,13 +65,13 @@ namespace AC
 			if (character == null)
 			{
 				GameObject characterObject = playerData as GameObject;
-				if (characterObject != null)
+				if (characterObject)
 				{
 					character = characterObject.GetComponent <AC.Char>();
 				}
 			}
 
-			if (character != null)
+			if (character)
 			{
 				if (character.GetAnimEngine () == null)
 				{
@@ -99,7 +99,7 @@ namespace AC
 
 				if (lastFramePosition != Vector3.zero)
 				{
-					Vector3 deltaPosition = character.transform.position - lastFramePosition;
+					Vector3 deltaPosition = character.Transform.position - lastFramePosition;
 					deltaPosition *= Time.deltaTime * 1000f;
 					
 					if (Mathf.Approximately (deltaPosition.sqrMagnitude, 0f))
@@ -140,7 +140,7 @@ namespace AC
 					}
 				}
 
-				lastFramePosition = character.transform.position;
+				lastFramePosition = character.Transform.position;
 			}
 		}
 
@@ -151,7 +151,7 @@ namespace AC
 
 		private void SetOverrideState (bool enable)
 		{
-			if (character != null)
+			if (character)
 			{
 				if (enable)
 				{

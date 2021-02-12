@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"CSVReader.cs"
  * 
@@ -116,7 +116,14 @@ namespace AC
 							{
 								for (int x = 0; x < width-1; x++)
 								{
-									outputGrid[x, y] = contents[y][x];
+									if (x >= contents[y].Length)
+									{
+										Debug.LogWarning ("Error importing file row: " + y + ", line ID: " + contents[y][0] + " - its column count differs from the header. Skipping.");
+									}
+									else
+									{
+										outputGrid[x, y] = contents[y][x];
+									}
 								}
 							}
 							return outputGrid;

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SetInventoryInteractionParameters.cs"
  * 
@@ -40,13 +40,13 @@ namespace AC
 
 		protected void OnEnable ()
 		{
-			EventManager.OnInventoryInteract += OnInventoryInteract;
+			EventManager.OnInventoryInteract_Alt += OnInventoryInteract;
 		}
 
 
 		protected void OnDisable ()
 		{
-			EventManager.OnInventoryInteract -= OnInventoryInteract;
+			EventManager.OnInventoryInteract_Alt -= OnInventoryInteract;
 		}
 
 		#endregion
@@ -54,15 +54,15 @@ namespace AC
 
 		#region CustomEvents
 
-		protected void OnInventoryInteract (InvItem invItem, int iconID)
+		protected void OnInventoryInteract (InvInstance invInstance, int iconID)
 		{
-			if (invItem.id == itemID)
+			if (invInstance.ItemID == itemID)
 			{
 				if (KickStarter.settingsManager.interactionMethod != AC_InteractionMethod.ContextSensitive && KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple)
 				{
-					if (cursorIndex < invItem.interactions.Count && invItem.interactions[cursorIndex].icon.id == iconID)
+					if (cursorIndex < invInstance.Interactions.Length && invInstance.Interactions[cursorIndex].icon.id == iconID)
 					{
-						AssignParameterValues (invItem.interactions[cursorIndex].actionList);
+						AssignParameterValues (invInstance.Interactions[cursorIndex].actionList);
 					}
 					return;
 				}
@@ -72,14 +72,14 @@ namespace AC
 					case InteractionType.Use:
 						if (iconID == 0)
 						{
-							AssignParameterValues (invItem.useActionList);
+							AssignParameterValues (invInstance.InvItem.useActionList);
 						}
 						break;
 
 					case InteractionType.Examine:
 						if (iconID == KickStarter.cursorManager.lookCursor_ID)
 						{
-							AssignParameterValues (invItem.lookActionList);
+							AssignParameterValues (invInstance.InvItem.lookActionList);
 						}
 						break;
 
@@ -234,7 +234,7 @@ namespace AC
 
 		protected void ShowActionListReference (ActionListAsset actionListAsset)
 		{
-			if (actionListAsset != null)
+			if (actionListAsset)
 			{
 				EditorGUILayout.BeginHorizontal ();
 				EditorGUILayout.LabelField ("Asset file: " + actionListAsset);

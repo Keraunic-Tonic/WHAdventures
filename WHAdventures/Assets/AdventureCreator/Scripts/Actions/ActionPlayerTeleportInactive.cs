@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionPlayerTeleportInactive.cs"
  * 
@@ -39,13 +39,9 @@ namespace AC
 		public int newSceneIndex;
 
 
-		public ActionPlayerTeleportInactive ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Player;
-			title = "Teleport inactive";
-			description = "Moves the recorded position of an inactive Player to the current scene.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Player; }}
+		public override string Title { get { return "Teleport inactive"; }}
+		public override string Description { get { return "Moves the recorded position of an inactive Player to the current scene."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -188,8 +184,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("No Settings Manager assigned!", MessageType.Warning);
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -226,9 +220,9 @@ namespace AC
 			if (newTransformParameterID < 0)
 			{
 				if (newTransform != null && newTransform.gameObject == gameObject) return true;
-				if (newTransformConstantID == id) return true;
+				if (newTransformConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -250,7 +244,7 @@ namespace AC
 		 */
 		public static ActionPlayerTeleportInactive CreateNew (int playerID, PlayerStart newPlayerStart, _Camera newCamera = null)
 		{
-			ActionPlayerTeleportInactive newAction = (ActionPlayerTeleportInactive) CreateInstance <ActionPlayerTeleportInactive>();
+			ActionPlayerTeleportInactive newAction = CreateNew<ActionPlayerTeleportInactive> ();
 			newAction.playerID = playerID;
 			newAction.newTransform = newPlayerStart;
 			return newAction;

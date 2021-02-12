@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMoveableCheck.cs"
  * 
@@ -29,13 +29,9 @@ namespace AC
 		protected DragBase runtimeDragObject;
 
 
-		public ActionMoveableCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Moveable;
-			title = "Check held by player";
-			description = "Queries whether or not a Draggable of PickUp object is currently being manipulated.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Moveable; }}
+		public override string Title { get { return "Check held by player"; }}
+		public override string Description { get { return "Queries whether or not a Draggable of PickUp object is currently being manipulated."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -97,7 +93,7 @@ namespace AC
 				if (dragObject != null && dragObject.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -110,7 +106,7 @@ namespace AC
 		 */
 		public static ActionMoveableCheck CreateNew (DragBase dragObject)
 		{
-			ActionMoveableCheck newAction = (ActionMoveableCheck) CreateInstance <ActionMoveableCheck>();
+			ActionMoveableCheck newAction = CreateNew<ActionMoveableCheck> ();
 			newAction.dragObject = dragObject;
 			return newAction;
 		}

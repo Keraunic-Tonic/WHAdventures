@@ -22,7 +22,7 @@ namespace AC
 		{
 			SortingMap _target = (SortingMap) target;
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Properties", EditorStyles.boldLabel);
 
 			_target.mapType = (SortingMapType) CustomGUILayout.EnumPopup ("Affect sprite's:", _target.mapType);
@@ -61,17 +61,17 @@ namespace AC
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Sorting areas", EditorStyles.boldLabel);
 			foreach (SortingArea area in _target.sortingAreas)
 			{
 				int i = _target.sortingAreas.IndexOf (area);
 
-				EditorGUILayout.BeginVertical ();
+				CustomGUILayout.BeginVertical ();
 				EditorGUILayout.BeginHorizontal ();
 
 				area.color = EditorGUILayout.ColorField (area.color);
@@ -117,8 +117,8 @@ namespace AC
 					area.scale = CustomGUILayout.IntField ("End scale (%):", area.scale, "", "The factor by which characters that use FollowSortingMap will be scaled by when positioned at the bottom boundary of this region");
 				}
 
-				EditorGUILayout.EndVertical ();
-				GUILayout.Box (string.Empty, GUILayout.ExpandWidth (true), GUILayout.Height (1));
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.DrawUILine ();
 			}
 
 			if (GUILayout.Button ("Add area"))
@@ -136,7 +136,7 @@ namespace AC
 				}
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 
@@ -149,7 +149,7 @@ namespace AC
 				if (GUILayout.Button ("Face active camera"))
 				{
 					Undo.RecordObject (_target, "Face active camera");
-					Vector3 forwardVector = KickStarter.CameraMain.transform.forward;
+					Vector3 forwardVector = KickStarter.CameraMainTransform.forward;
 					_target.transform.forward = -forwardVector;
 					EditorUtility.SetDirty (_target);
 				}

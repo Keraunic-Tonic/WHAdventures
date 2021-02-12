@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionParamCheck.cs"
  * 
@@ -62,15 +62,11 @@ namespace AC
 		protected enum GameObjectCompareType { GameObject, ConstantID };
 
 
-		public ActionParamCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ActionList;
-			title = "Check parameter";
-			description = "Queries the value of parameters defined in the parent ActionList.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.ActionList; }}
+		public override string Title { get { return "Check parameter"; }}
+		public override string Description { get { return "Queries the value of parameters defined in the parent ActionList."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			_compareParameter = null;
@@ -125,55 +121,54 @@ namespace AC
 		}
 		
 		
-		public override ActionEnd End (List<Action> actions)
+		public override int GetNextOutputIndex ()
 		{
 			if (_parameter == null)
 			{
-				return GenerateStopActionEnd ();
+				return -1;
 			}
 
 			GVar compareVar = null;
 			InvItem compareItem = null;
 			Document compareDoc = null;
 
-			if (_parameter.parameterType == ParameterType.GlobalVariable ||
-				_parameter.parameterType == ParameterType.LocalVariable ||
-				_parameter.parameterType == ParameterType.ComponentVariable ||
-				_parameter.parameterType == ParameterType.InventoryItem ||
-				_parameter.parameterType == ParameterType.Document)
+			switch (_parameter.parameterType)
 			{
-				if (compareVariableID == -1)
-				{
-					return GenerateStopActionEnd ();
-				}
-				
-				if (_parameter.parameterType == ParameterType.GlobalVariable)
-				{
+				case ParameterType.GlobalVariable:
+					if (compareVariableID == -1) return -1;
 					compareVar = GlobalVariables.GetVariable (compareVariableID, true);
-				}
-				else if (_parameter.parameterType == ParameterType.LocalVariable && !isAssetFile)
-				{
-					compareVar = LocalVariables.GetVariable (compareVariableID);
-				}
-				else if (_parameter.parameterType == ParameterType.ComponentVariable)
-				{
-					runtimeCompareVariables = AssignFile <Variables> (compareObjectConstantID, compareVariables);
+					break;
+
+				case ParameterType.LocalVariable:
+					if (compareVariableID == -1) return -1;
+					if (!isAssetFile)
+					{
+						compareVar = LocalVariables.GetVariable (compareVariableID);
+					}
+					break;
+
+				case ParameterType.ComponentVariable:
+					if (compareVariableID == -1) return -1;
+					runtimeCompareVariables = AssignFile<Variables> (compareObjectConstantID, compareVariables);
 					if (runtimeCompareVariables != null)
 					{
 						compareVar = runtimeCompareVariables.GetVariable (compareVariableID);
 					}
-				}
-				else if (_parameter.parameterType == ParameterType.InventoryItem)
-				{
+					break;
+
+				case ParameterType.InventoryItem:
+					if (compareVariableID == -1) return -1;
 					compareItem = KickStarter.inventoryManager.GetItem (compareVariableID);
-				}
-				else if (_parameter.parameterType == ParameterType.Document)
-				{
+					break;
+
+				case ParameterType.Document:
+					if (compareVariableID == -1) return -1;
 					compareDoc = KickStarter.inventoryManager.GetDocument (compareVariableID);
-				}
+					break;
 			}
 
-			return ProcessResult (CheckCondition (compareItem, compareVar, compareDoc), actions);
+			bool result = CheckCondition (compareItem, compareVar, compareDoc);
+			return (result) ? 0 : 1;
 		}
 		
 		
@@ -838,7 +833,7 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 
@@ -951,7 +946,7 @@ namespace AC
 				if (compareObject != null && compareObject == _gameObject) return true;
 				if (compareObjectConstantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -959,7 +954,7 @@ namespace AC
 		{
 			if (!checkOwn && actionListSource == ActionListSource.AssetFile && _actionListAsset == actionListAsset)
 				return true;
-			return false;
+			return base.ReferencesAsset (actionListAsset);
 		}
 
 		#endif
@@ -973,7 +968,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (int parameterID, bool checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -992,7 +987,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionList actionList, int parameterID, bool checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1013,7 +1008,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionListAsset actionListAsset, int parameterID, bool checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1034,7 +1029,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (int parameterID, int checkValue, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1055,7 +1050,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionList actionList, int parameterID, int checkValue, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1078,7 +1073,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionListAsset actionListAsset, int parameterID, int checkValue, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1100,7 +1095,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (int parameterID, float checkValue, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1121,7 +1116,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionList actionList, int parameterID, float checkValue, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1144,7 +1139,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionListAsset actionListAsset, int parameterID, float checkValue, IntCondition condition = IntCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1165,7 +1160,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (int parameterID, string checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1184,7 +1179,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionList actionList, int parameterID, string checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1205,7 +1200,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionListAsset actionListAsset, int parameterID, string checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1227,7 +1222,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (int parameterID, Vector3 checkValue, VectorCondition condition = VectorCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1248,7 +1243,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionList actionList, int parameterID, Vector3 checkValue, VectorCondition condition = VectorCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1271,7 +1266,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionListAsset actionListAsset, int parameterID, Vector3 checkValue, VectorCondition condition = VectorCondition.EqualTo)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1293,7 +1288,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (int parameterID, Variables variables, int checkComponentVariableID)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1314,7 +1309,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionList actionList, int parameterID, Variables variables, int checkComponentVariableID)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1337,7 +1332,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionListAsset actionListAsset, int parameterID, Variables variables, int checkComponentVariableID)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1358,7 +1353,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (int parameterID, GameObject checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1377,7 +1372,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionList actionList, int parameterID, GameObject checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1398,7 +1393,7 @@ namespace AC
 		 */		
 		public static ActionParamCheck CreateNew (ActionListAsset actionListAsset, int parameterID, GameObject checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1418,7 +1413,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (int parameterID, Object checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1437,7 +1432,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionList actionList, int parameterID, Object checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1458,7 +1453,7 @@ namespace AC
 		 */
 		public static ActionParamCheck CreateNew (ActionListAsset actionListAsset, int parameterID, Object checkValue)
 		{
-			ActionParamCheck newAction = (ActionParamCheck) CreateInstance <ActionParamCheck>();
+			ActionParamCheck newAction = CreateNew<ActionParamCheck> ();
 			newAction.checkOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Expression.cs"
  * 
@@ -73,8 +73,9 @@ namespace AC
 		public void ShowGUI ()
 		{
 			label = EditorGUILayout.TextField ("Name:", label);
+			EditorGUILayout.LabelField ("Replacement token:", "[expression:" + label + "]");
 			portraitIcon.ShowGUI (false);
-			GUILayout.Box ("", GUILayout.ExpandWidth (true), GUILayout.Height(1));
+			GUILayout.Box (string.Empty, GUILayout.ExpandWidth (true), GUILayout.Height(1));
 		}
 
 		#endif

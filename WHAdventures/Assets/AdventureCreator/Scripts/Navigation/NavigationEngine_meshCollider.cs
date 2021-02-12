@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"NavigationEngine_meshCollider.cs"
  * 
@@ -37,7 +37,7 @@ namespace AC
 		{
 			if (!Application.isPlaying) return;
 
-			if (navMesh == null && KickStarter.settingsManager != null && KickStarter.settingsManager.movementMethod == MovementMethod.PointAndClick)
+			if (navMesh == null && KickStarter.settingsManager && KickStarter.settingsManager.movementMethod == MovementMethod.PointAndClick)
 			{
 				ACDebug.LogWarning ("Could not initialise NavMesh - was one set as the Default in the Settings Manager?");
 			}

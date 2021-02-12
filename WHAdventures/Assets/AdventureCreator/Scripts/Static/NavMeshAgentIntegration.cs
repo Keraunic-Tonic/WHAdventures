@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"NavMeshAgentIntegration.cs"
  * 
@@ -83,13 +83,13 @@ namespace AC
 				 * If this controls a Player, and the game's Movement method is not Point And Click,
 				 * we'll allow regular AC control over movement during gameplay.
 				 */
-				if (_char.IsPlayer && KickStarter.settingsManager != null && KickStarter.settingsManager.movementMethod != MovementMethod.PointAndClick)
+				if (_char.IsPlayer && KickStarter.settingsManager && KickStarter.settingsManager.movementMethod != MovementMethod.PointAndClick)
 				{
 					disableDuringGameplay = true;
 				}
 			}
 
-			if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.navigationMethod != AC_NavigationMethod.UnityNavigation)
+			if (KickStarter.sceneSettings && KickStarter.sceneSettings.navigationMethod != AC_NavigationMethod.UnityNavigation)
 			{
 				ACDebug.LogWarning ("For the NavMeshAgentIntegration script to work, your scene's pathfinding method must be set to 'Unity Navigation'");
 			}
@@ -152,7 +152,7 @@ namespace AC
 			/*
 			 * Move the character, unless they are spot-turning.
 			 */
-			if (_char != null && !_char.IsTurningBeforeWalking ())
+			if (_char && !_char.IsTurningBeforeWalking ())
 			{
 				/* 
 				 * We could just set the destination as _char.GetTargetPosition(), but this function will return the character's position if they

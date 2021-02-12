@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"PlayerCursor.cs"
  * 
@@ -50,11 +50,11 @@ namespace AC
 
 		protected void Start ()
 		{
-			if (KickStarter.cursorManager != null && KickStarter.cursorManager.cursorDisplay != CursorDisplay.Never && KickStarter.cursorManager.allowMainCursor && (KickStarter.cursorManager.pointerIcon == null || KickStarter.cursorManager.pointerIcon.texture == null))
+			if (KickStarter.cursorManager && KickStarter.cursorManager.cursorDisplay != CursorDisplay.Never && KickStarter.cursorManager.allowMainCursor && (KickStarter.cursorManager.pointerIcon == null || KickStarter.cursorManager.pointerIcon.texture == null))
 			{
 				ACDebug.LogWarning ("Main cursor has no texture - please assign one in the Cursor Manager.");
 			}
-			if (KickStarter.settingsManager != null)
+			if (KickStarter.settingsManager)
 			{
 				SelectedCursor = -1;
 			}
@@ -78,7 +78,12 @@ namespace AC
 				{
 					shouldShowCursor = false;
 				}
-				else if (KickStarter.settingsManager && KickStarter.cursorManager && (!KickStarter.cursorManager.allowMainCursor || KickStarter.cursorManager.pointerIcon.texture == null) && (KickStarter.runtimeInventory.SelectedItem == null || KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeHotspotLabel) && KickStarter.settingsManager.inputMethod == InputMethod.MouseAndKeyboard && KickStarter.stateHandler.gameState != GameState.Cutscene)
+				else if (KickStarter.settingsManager && 
+					KickStarter.cursorManager && 
+					(!KickStarter.cursorManager.allowMainCursor || KickStarter.cursorManager.pointerIcon.texture == null) && 
+					(!InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) || KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeHotspotLabel || KickStarter.cursorManager.inventoryHandling == InventoryHandling.DoNothing) && 
+					KickStarter.settingsManager.inputMethod == InputMethod.MouseAndKeyboard &&
+					KickStarter.stateHandler.gameState != GameState.Cutscene)
 				{
 					shouldShowCursor = true;
 				}
@@ -102,7 +107,7 @@ namespace AC
 				}
 				else if (KickStarter.stateHandler.gameState == GameState.Cutscene)
 				{
-					if (KickStarter.cursorManager.waitIcon.texture != null)
+					if (KickStarter.cursorManager.waitIcon.texture)
 					{
 						showCursor = true;
 					}
@@ -150,16 +155,16 @@ namespace AC
 					showCursor = true;
 				}
 
-				if (KickStarter.stateHandler.IsInGameplay ())
+				switch (KickStarter.settingsManager.interactionMethod)
 				{
-					switch (KickStarter.settingsManager.interactionMethod)
+					case AC_InteractionMethod.ContextSensitive:
 					{
-						case AC_InteractionMethod.ContextSensitive:
+						if (CanCycleContextSensitiveMode () && KickStarter.playerInput.GetMouseState () == MouseState.RightClick)
 						{
-							if (CanCycleContextSensitiveMode () && KickStarter.playerInput.GetMouseState () == MouseState.RightClick)
+							if (CanCurrentlyCycleCursor ())
 							{
 								Hotspot hotspot = KickStarter.playerInteraction.GetActiveHotspot ();
-								if (hotspot != null)
+								if (hotspot)
 								{
 									if (hotspot.HasContextUse () && hotspot.HasContextLook ())
 									{
@@ -167,19 +172,22 @@ namespace AC
 										contextCycleExamine = !contextCycleExamine;
 									}
 								}
-								else if (KickStarter.runtimeInventory.hoverItem != null && KickStarter.runtimeInventory.SelectedItem == null)
+								else if (InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance) && !InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 								{
-									if (KickStarter.runtimeInventory.hoverItem.lookActionList != null)
+									if (KickStarter.runtimeInventory.HoverInstance.InvItem.lookActionList)
 									{
 										KickStarter.playerInput.ResetMouseClick ();
 										contextCycleExamine = !contextCycleExamine;
 									}
 								}
 							}
-							break;
 						}
+						break;
+					}
 
-						case AC_InteractionMethod.ChooseInteractionThenHotspot:
+					case AC_InteractionMethod.ChooseInteractionThenHotspot:
+						if (CanCurrentlyCycleCursor ())
+						{
 							if ((KickStarter.cursorManager.cycleCursors && KickStarter.playerInput.GetMouseState () == MouseState.RightClick) || KickStarter.playerInput.InputGetButtonDown ("CycleCursors"))
 							{
 								CycleCursors ();
@@ -188,11 +196,14 @@ namespace AC
 							{
 								CycleCursorsBack ();
 							}
-							break;
+						}
+						break;
 
-						case AC_InteractionMethod.ChooseHotspotThenInteraction:
+					case AC_InteractionMethod.ChooseHotspotThenInteraction:
+					{
+						if (KickStarter.settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingCursorAndClickingHotspot)
 						{
-							if (KickStarter.settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingCursorAndClickingHotspot)
+							if (CanCurrentlyCycleCursor ())
 							{
 								if (KickStarter.playerInput.GetMouseState () == MouseState.RightClick || KickStarter.playerInput.InputGetButtonDown ("CycleCursors"))
 								{
@@ -203,12 +214,12 @@ namespace AC
 									KickStarter.playerInteraction.SetPreviousInteraction ();
 								}
 							}
-							break;
 						}
-
-						default:
-							break;
+						break;
 					}
+
+					default:
+						break;
 				}
 			}
 			
@@ -217,6 +228,24 @@ namespace AC
 				SetCursorVisibility (showCursor);
 				DrawCursor ();
 			}
+		}
+
+
+		private bool CanCurrentlyCycleCursor ()
+		{
+			if (KickStarter.stateHandler.IsInGameplay ())
+			{
+				return true;
+			}
+			if (KickStarter.cursorManager.allowCursorCyclingWhenPaused && KickStarter.stateHandler.IsPaused ())
+			{
+				if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive)
+				{
+					return true;
+				}
+				return (KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple);
+			}
+			return false;
 		}
 
 
@@ -282,7 +311,7 @@ namespace AC
 				return;
 			}
 
-			if (KickStarter.runtimeInventory.SelectedItem != null)
+			if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 			{
 				// Cursor becomes selected inventory
 				SelectedCursor = -2;
@@ -290,12 +319,12 @@ namespace AC
 			}
 			else if (KickStarter.settingsManager.interactionMethod != AC_InteractionMethod.ChooseInteractionThenHotspot)
 			{
-				if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive && KickStarter.cursorManager.allowInteractionCursorForInventory && KickStarter.runtimeInventory.hoverItem != null)
+				if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive && KickStarter.cursorManager.allowInteractionCursorForInventory && InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance))
 				{
-					ShowContextIcons (KickStarter.runtimeInventory.hoverItem);
+					ShowContextIcons (KickStarter.runtimeInventory.HoverInstance.InvItem);
 					return;
 				}
-				else if (KickStarter.playerInteraction.GetActiveHotspot () != null && KickStarter.stateHandler.IsInGameplay () && (KickStarter.playerInteraction.GetActiveHotspot ().HasContextUse () || KickStarter.playerInteraction.GetActiveHotspot ().HasContextLook ()))
+				else if (KickStarter.playerInteraction.GetActiveHotspot () && KickStarter.stateHandler.IsInGameplay () && (KickStarter.playerInteraction.GetActiveHotspot ().HasContextUse () || KickStarter.playerInteraction.GetActiveHotspot ().HasContextLook ()))
 				{
 					SelectedCursor = 0;
 					
@@ -309,7 +338,7 @@ namespace AC
 							canShowHardwareCursor = false;
 							ShowContextIcons ();
 						}
-						else if (KickStarter.cursorManager.mouseOverIcon.texture != null)
+						else if (KickStarter.cursorManager.mouseOverIcon.texture)
 						{
 							DrawIcon (KickStarter.cursorManager.mouseOverIcon, false);
 						}
@@ -326,18 +355,27 @@ namespace AC
 			}
 			else if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot)
 			{
-				if (KickStarter.stateHandler.gameState == GameState.DialogOptions || KickStarter.stateHandler.gameState == GameState.Paused)
+				if (KickStarter.stateHandler.gameState == GameState.DialogOptions)
 				{
 					SelectedCursor = -1;
 				}
-				else if (KickStarter.playerInteraction.GetActiveHotspot () != null && !KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction () && !KickStarter.cursorManager.allowInteractionCursor && KickStarter.cursorManager.mouseOverIcon.texture != null)
+				else if (KickStarter.stateHandler.gameState == GameState.Paused)
+				{
+					if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot && KickStarter.cursorManager.cycleCursors && KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple)
+					{ }
+					else
+					{
+						SelectedCursor = -1;
+					}
+				}
+				else if (KickStarter.playerInteraction.GetActiveHotspot () && !KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction () && (selectedCursor == -1 || !KickStarter.cursorManager.allowInteractionCursor) && KickStarter.cursorManager.mouseOverIcon.texture)
 				{
 					DrawIcon (KickStarter.cursorManager.mouseOverIcon, false);
 					return;
 				}
 			}
 
-			if (KickStarter.stateHandler.gameState == GameState.Cutscene && KickStarter.cursorManager.waitIcon.texture != null)
+			if (KickStarter.stateHandler.gameState == GameState.Cutscene && KickStarter.cursorManager.waitIcon.texture)
 			{
 				// Wait
 				int elementOverCursorID = KickStarter.playerMenus.GetElementOverCursorID ();
@@ -349,16 +387,16 @@ namespace AC
 
 				DrawIcon (KickStarter.cursorManager.waitIcon, false);
 			}
-			else if (selectedCursor == -2 && KickStarter.runtimeInventory.SelectedItem != null)
+			else if (selectedCursor == -2 && InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 			{
 				// Inventory
 				canShowHardwareCursor = false;
 				
 				if (KickStarter.settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingCursorAndClickingHotspot && KickStarter.settingsManager.cycleInventoryCursors)
 				{
-					if (KickStarter.playerInteraction.GetActiveHotspot () == null && KickStarter.runtimeInventory.hoverItem == null)
+					if (KickStarter.playerInteraction.GetActiveHotspot () == null && !InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance))
 					{
-						if (KickStarter.playerInteraction.GetInteractionIndex () >= 0)
+						if (KickStarter.playerInteraction.InteractionIndex >= 0)
 						{
 							// Item was selected due to cycling icons
 							KickStarter.playerInteraction.ResetInteractionIndex ();
@@ -367,16 +405,16 @@ namespace AC
 						}
 					}
 				}
-				if (KickStarter.settingsManager.InventoryDragDrop && KickStarter.playerInput.GetDragState () == DragState.PreInventory)
+				if (KickStarter.settingsManager.InventoryDragDrop && KickStarter.playerInput.GetDragState () != DragState.Inventory)
 				{
 					DrawMainCursor ();
 				}
-				else if (KickStarter.settingsManager.inventoryActiveEffect != InventoryActiveEffect.None && KickStarter.runtimeInventory.SelectedItem.CanBeAnimated () && !string.IsNullOrEmpty (KickStarter.playerMenus.GetHotspotLabel ()) &&
-				    	(KickStarter.settingsManager.activeWhenUnhandled || 
-				    	KickStarter.playerInteraction.DoesHotspotHaveInventoryInteraction () || 
-				    	(KickStarter.runtimeInventory.hoverItem != null && KickStarter.runtimeInventory.hoverItem.DoesHaveInventoryInteraction (KickStarter.runtimeInventory.SelectedItem))))
+				else if (KickStarter.settingsManager.inventoryActiveEffect != InventoryActiveEffect.None && KickStarter.runtimeInventory.SelectedInstance.CanBeAnimated && !string.IsNullOrEmpty (KickStarter.playerMenus.GetHotspotLabel ()) &&
+						(KickStarter.settingsManager.activeWhenUnhandled || 
+						KickStarter.playerInteraction.DoesHotspotHaveInventoryInteraction () || 
+						(InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance) && KickStarter.runtimeInventory.HoverInstance.InvItem.DoesHaveInventoryInteraction (KickStarter.runtimeInventory.SelectedInstance.InvItem))))
 				{
-					if (KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeHotspotLabel)
+					if (KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeHotspotLabel || KickStarter.cursorManager.inventoryHandling == InventoryHandling.DoNothing)
 					{
 						DrawMainCursor ();
 					}
@@ -387,16 +425,19 @@ namespace AC
 				}
 				else
 				{
-					if (KickStarter.cursorManager.inventoryHandling != InventoryHandling.ChangeHotspotLabel && KickStarter.runtimeInventory.SelectedItem.HasCursorIcon ())
+					if ((KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeCursor || KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel) && KickStarter.runtimeInventory.SelectedInstance.InvItem.HasCursorIcon ())
 					{
 						DrawInventoryCursor ();
 					}
 					else
 					{
-						if (KickStarter.cursorManager.inventoryHandling != InventoryHandling.ChangeHotspotLabel && !KickStarter.runtimeInventory.SelectedItem.HasCursorIcon ())
+						#if UNITY_EDITOR
+						if (!KickStarter.runtimeInventory.SelectedInstance.InvItem.HasCursorIcon () &&
+							(KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeCursor || KickStarter.cursorManager.inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel))
 						{
-							ACDebug.LogWarning ("Cannot change cursor to display the selected Inventory item because the item '" + KickStarter.runtimeInventory.SelectedItem.label + "' has no associated graphic.");
+							ACDebug.LogWarning ("Cannot change cursor to display the selected Inventory item because the item '" + KickStarter.runtimeInventory.SelectedInstance.InvItem.label + "' has no associated graphic.");
 						}
+						#endif
 
 						if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive)
 						{
@@ -409,7 +450,7 @@ namespace AC
 								canShowHardwareCursor = false;
 								ShowContextIcons ();
 							}
-							else if (KickStarter.cursorManager.mouseOverIcon.texture != null)
+							else if (KickStarter.cursorManager.mouseOverIcon.texture)
 							{
 								DrawIcon (KickStarter.cursorManager.mouseOverIcon, false);
 							}
@@ -422,7 +463,7 @@ namespace AC
 						{
 							if (KickStarter.stateHandler.gameState == GameState.DialogOptions || KickStarter.stateHandler.gameState == GameState.Paused)
 							{}
-							else if (KickStarter.playerInteraction.GetActiveHotspot () != null && !KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction () && !KickStarter.cursorManager.allowInteractionCursor && KickStarter.cursorManager.mouseOverIcon.texture != null)
+							else if (KickStarter.playerInteraction.GetActiveHotspot () && !KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction () && !KickStarter.cursorManager.allowInteractionCursor && KickStarter.cursorManager.mouseOverIcon.texture)
 							{
 								DrawIcon (KickStarter.cursorManager.mouseOverIcon, false);
 							}
@@ -441,9 +482,9 @@ namespace AC
 					}
 				}
 				
-				if (KickStarter.runtimeInventory.SelectedItem != null && KickStarter.runtimeInventory.SelectedItem.canCarryMultiple && !KickStarter.runtimeInventory.SelectedItem.CanSelectSingle ())
-				{
-					KickStarter.runtimeInventory.DrawInventoryCount (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize, KickStarter.runtimeInventory.SelectedItem.count);
+				if (KickStarter.cursorManager.cursorRendering == CursorRendering.Software)
+				{ 
+					KickStarter.runtimeInventory.DrawSelectedInventoryCount ();
 				}
 			}
 			else if (KickStarter.settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingCursorAndClickingHotspot)
@@ -457,13 +498,13 @@ namespace AC
 
 				if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction)
 				{
-					if (KickStarter.runtimeInventory.hoverItem == null && KickStarter.playerInteraction.GetActiveHotspot () != null && (!KickStarter.playerMenus.IsInteractionMenuOn () || KickStarter.settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingMenuAndClickingHotspot))
+					if (!InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance) && KickStarter.playerInteraction.GetActiveHotspot () && (!KickStarter.playerMenus.IsInteractionMenuOn () || KickStarter.settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingMenuAndClickingHotspot))
 					{
 						if (KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction ())
 						{
 							ShowContextIcons ();
 						}
-						else if (KickStarter.cursorManager.mouseOverIcon.texture != null)
+						else if (KickStarter.cursorManager.mouseOverIcon.texture)
 						{
 							DrawIcon (KickStarter.cursorManager.mouseOverIcon, false);
 						}
@@ -483,14 +524,14 @@ namespace AC
 					{
 						DrawMainCursor ();
 					}
-					else if (selectedCursor == -2 && KickStarter.runtimeInventory.SelectedItem == null)
+					else if (selectedCursor == -2 && !InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 					{
 						SelectedCursor = -1;
 					}
 				}
 				else if (KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot)
 				{
-					if (KickStarter.playerInteraction.GetActiveHotspot () != null && KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction ())
+					if (KickStarter.playerInteraction.GetActiveHotspot () && KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction ())
 					{
 						//SelectedCursor = -1;
 
@@ -498,7 +539,7 @@ namespace AC
 						{
 							ShowContextIcons ();
 						}
-						else if (KickStarter.cursorManager.mouseOverIcon.texture != null)
+						else if (KickStarter.cursorManager.mouseOverIcon.texture)
 						{
 							DrawIcon (KickStarter.cursorManager.mouseOverIcon, false);
 						}
@@ -518,7 +559,7 @@ namespace AC
 							bool canAnimate = false;
 							if (!KickStarter.cursorManager.onlyAnimateOverHotspots ||
 								 KickStarter.playerInteraction.GetActiveHotspot () != null ||
-								(KickStarter.settingsManager.inventoryInteractions == InventoryInteractions.Multiple && KickStarter.runtimeInventory.hoverItem != null))
+								(KickStarter.settingsManager.InventoryInteractions == InventoryInteractions.Multiple && InvInstance.IsValid (KickStarter.runtimeInventory.HoverInstance)))
 							{
 								canAnimate = true;
 							}
@@ -534,7 +575,7 @@ namespace AC
 					{
 						DrawMainCursor ();
 					}
-					else if (selectedCursor == -2 && KickStarter.runtimeInventory.SelectedItem == null)
+					else if (selectedCursor == -2 && !InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 					{
 						SelectedCursor = -1;
 					}
@@ -661,12 +702,12 @@ namespace AC
 		{
 			if (KickStarter.cursorManager.cursorIcons.Count > 0)
 			{
-				if (invItem.lookActionList != null && CanDisplayIconsSideBySide ())
+				if (invItem.lookActionList && CanDisplayIconsSideBySide ())
 				{
 					if (invItem.useIconID < 0)
 					{
 						// Hide use
-						if (invItem.lookActionList != null)
+						if (invItem.lookActionList)
 						{
 							CursorIcon icon = KickStarter.cursorManager.GetCursorIconFromID (KickStarter.cursorManager.lookCursor_ID);
 							DrawIcon (icon, true);
@@ -679,7 +720,7 @@ namespace AC
 						DrawIcon (new Vector2 (-icon.size * ACScreen.width / 2f, 0f), icon, false);
 					}
 				}
-				else if (CanCycleContextSensitiveMode () && contextCycleExamine && invItem.lookActionList != null)
+				else if (CanCycleContextSensitiveMode () && contextCycleExamine && invItem.lookActionList)
 				{}
 				else
 				{
@@ -687,11 +728,11 @@ namespace AC
 					return;
 				}
 				
-				if (invItem.lookActionList != null)
+				if (invItem.lookActionList)
 				{
 					CursorIcon lookIcon = KickStarter.cursorManager.GetCursorIconFromID (KickStarter.cursorManager.lookCursor_ID);
 
-					if (invItem.lookActionList != null && CanDisplayIconsSideBySide ())
+					if (invItem.lookActionList && CanDisplayIconsSideBySide ())
 					{
 						DrawIcon (new Vector2 (lookIcon.size * ACScreen.width / 2f, 0f), lookIcon, true);
 					}
@@ -713,13 +754,20 @@ namespace AC
 		
 		protected void ShowCycleCursor (int useCursorID)
 		{
-			if (KickStarter.runtimeInventory.SelectedItem != null)
+			if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 			{
 				SelectedCursor = -2;
 
-				if (KickStarter.cursorManager.inventoryHandling != InventoryHandling.ChangeHotspotLabel)
+				switch (KickStarter.cursorManager.inventoryHandling)
 				{
-					DrawActiveInventoryCursor ();
+					case InventoryHandling.ChangeCursor:
+					case InventoryHandling.ChangeCursorAndHotspotLabel:
+						DrawActiveInventoryCursor ();
+						break;
+
+					default:
+						DrawMainCursor ();
+						break;
 				}
 			}
 			else if (useCursorID >= 0)
@@ -737,27 +785,27 @@ namespace AC
 
 		protected void DrawInventoryCursor ()
 		{
-			InvItem invItem = KickStarter.runtimeInventory.SelectedItem;
-			if (invItem == null)
+			InvInstance invInstance = KickStarter.runtimeInventory.SelectedInstance;
+			if (!InvInstance.IsValid (invInstance))
 			{
 				return;
 			}
 
-			if (invItem.cursorIcon.texture != null)
+			if (invInstance.CursorIcon.texture)
 			{
 				if (KickStarter.settingsManager.inventoryActiveEffect != InventoryActiveEffect.None)
 				{
 					// Only animate when active
-					DrawIcon (invItem.cursorIcon, false, false);
+					DrawIcon (invInstance.CursorIcon, false, false);
 				}
 				else
 				{
-					DrawIcon (invItem.cursorIcon, false, true);
+					DrawIcon (invInstance.CursorIcon, false, true);
 				}
 			}
 			else
 			{
-				DrawIcon (AdvGame.GUIBox (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize), KickStarter.runtimeInventory.SelectedItem.tex);
+				DrawIcon (AdvGame.GUIBox (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize), invInstance.InvItem.tex);
 			}
 			pulseDirection = 0;
 		}
@@ -765,25 +813,25 @@ namespace AC
 		
 		protected void DrawActiveInventoryCursor ()
 		{	
-			InvItem invItem = KickStarter.runtimeInventory.SelectedItem;
-			if (invItem == null)
+			InvInstance invInstance = KickStarter.runtimeInventory.SelectedInstance;
+			if (!InvInstance.IsValid (invInstance))
 			{
 				return;
 			}
 
-			if (invItem.cursorIcon.texture != null)
+			if (invInstance.CursorIcon.texture)
 			{
-				DrawIcon (invItem.cursorIcon, false, true);
+				DrawIcon (invInstance.CursorIcon, false, true);
 			}
-			else if (invItem.activeTex == null)
+			else if (invInstance.InvItem.activeTex == null)
 			{
 				DrawInventoryCursor ();
 			}
 			else if (KickStarter.settingsManager.inventoryActiveEffect == InventoryActiveEffect.Simple)
 			{
-				DrawIcon (AdvGame.GUIBox (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize), invItem.activeTex);
+				DrawIcon (AdvGame.GUIBox (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize), invInstance.InvItem.activeTex);
 			}
-			else if (KickStarter.settingsManager.inventoryActiveEffect == InventoryActiveEffect.Pulse && invItem.tex)
+			else if (KickStarter.settingsManager.inventoryActiveEffect == InventoryActiveEffect.Pulse && invInstance.InvItem.tex)
 			{
 				if (pulseDirection == 0)
 				{
@@ -814,16 +862,16 @@ namespace AC
 				
 				tempColor.a = pulse;
 				GUI.color = tempColor;
-				DrawIcon (AdvGame.GUIBox (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize), invItem.activeTex);
+				DrawIcon (AdvGame.GUIBox (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize), invInstance.InvItem.activeTex);
 				GUI.color = backupColor;
-				DrawIcon (AdvGame.GUIBox (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize), invItem.tex);
+				DrawIcon (AdvGame.GUIBox (KickStarter.playerInput.GetMousePosition (), KickStarter.cursorManager.inventoryCursorSize), invInstance.InvItem.tex);
 			}
 		}
 		
 		
 		protected void DrawIcon (Rect _rect, Texture _tex)
 		{
-			if (_tex != null)
+			if (_tex)
 			{
 				RecordCursorTexture (_tex);
 
@@ -849,11 +897,12 @@ namespace AC
 		}
 		
 		
+		protected bool lastIconLook;
 		protected void DrawIcon (Vector2 offset, CursorIconBase icon, bool isLook, bool canAnimate = true)
 		{
 			if (icon != null)
 			{
-				bool isNew = false;
+				bool isNew = (lastIconLook != isLook);
 				if (isLook && activeLookIcon != icon)
 				{
 					activeLookIcon = icon;
@@ -866,7 +915,8 @@ namespace AC
 					isNew = true;
 					icon.Reset ();
 				}
-				
+				lastIconLook = isLook;
+
 				if (KickStarter.cursorManager.cursorRendering == CursorRendering.Hardware)
 				{
 					if (icon.isAnimated)
@@ -907,7 +957,7 @@ namespace AC
 
 		protected void RecordCursorTexture (Texture newCursorTexture)
 		{
-			if (newCursorTexture != null)
+			if (newCursorTexture)
 			{
 				if (currentCursorTexture != newCursorTexture)
 				{
@@ -935,7 +985,7 @@ namespace AC
 
 		protected void CycleCursors ()
 		{
-			if (KickStarter.playerInteraction.GetActiveHotspot () != null && KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction ())
+			if (KickStarter.playerInteraction.GetActiveHotspot () && KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction ())
 			{
 				return;
 			}
@@ -975,7 +1025,7 @@ namespace AC
 				if (KickStarter.settingsManager.cycleInventoryCursors)
 				{
 					KickStarter.runtimeInventory.ReselectLastItem ();
-					if (KickStarter.runtimeInventory.SelectedItem != null)
+					if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 					{
 						KickStarter.playerInput.ResetMouseClick ();
 						return;
@@ -989,7 +1039,7 @@ namespace AC
 
 		protected void CycleCursorsBack ()
 		{
-			if (KickStarter.playerInteraction.GetActiveHotspot () != null && KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction ())
+			if (KickStarter.playerInteraction.GetActiveHotspot () && KickStarter.playerInteraction.GetActiveHotspot ().IsSingleInteraction ())
 			{
 				return;
 			}
@@ -1003,7 +1053,7 @@ namespace AC
 				if (selectedCursor == -1 && KickStarter.settingsManager.cycleInventoryCursors)
 				{
 					KickStarter.runtimeInventory.ReselectLastItem ();
-					if (KickStarter.runtimeInventory.SelectedItem != null)
+					if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 					{
 						KickStarter.playerInput.ResetMouseClick ();
 						SelectedCursor = -2;
@@ -1048,7 +1098,7 @@ namespace AC
 		 */
 		public int GetSelectedCursorID ()
 		{
-			if (KickStarter.cursorManager && KickStarter.cursorManager.cursorIcons.Count > 0 && selectedCursor > -1)
+			if (KickStarter.cursorManager && selectedCursor >= 0 && selectedCursor < KickStarter.cursorManager.cursorIcons.Count)
 			{
 				return KickStarter.cursorManager.cursorIcons [selectedCursor].id;
 			}
@@ -1129,7 +1179,7 @@ namespace AC
 
 		protected void OnApplicationQuit ()
 		{
-			if (KickStarter.cursorManager != null)
+			if (KickStarter.cursorManager)
 			{
 				KickStarter.cursorManager.waitIcon.ClearCache ();
 				KickStarter.cursorManager.pointerIcon.ClearCache ();
@@ -1152,12 +1202,12 @@ namespace AC
 				{
 					selectedCursor = value;
 
-					if (value >= -1 && KickStarter.runtimeInventory.SelectedItem != null && KickStarter.settingsManager.CanSelectItems (false))
+					if (value >= -1 && InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) && KickStarter.settingsManager.CanSelectItems (false))
 					{
 						KickStarter.runtimeInventory.SetNull ();
 					}
 
-					if (KickStarter.eventManager != null)
+					if (KickStarter.eventManager)
 					{
 						KickStarter.eventManager.Call_OnChangeCursorMode (selectedCursor);
 					}
@@ -1187,7 +1237,7 @@ namespace AC
 		public void SetCursorVisibility (bool state)
 		{
 			#if UNITY_EDITOR
-			if (KickStarter.cursorManager != null && KickStarter.cursorManager.forceCursorInEditor)
+			if (KickStarter.cursorManager && KickStarter.cursorManager.forceCursorInEditor)
 			{
 				state = true;
 			}

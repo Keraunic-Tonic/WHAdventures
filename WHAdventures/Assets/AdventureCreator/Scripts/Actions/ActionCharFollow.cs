@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCharFollow.cs"
  * 
@@ -39,7 +39,7 @@ namespace AC
 		public int followPlayerID = -1;
 
 		public bool movePlayer;
-		public int movePlayerID = -1;
+		public int movePlayerID = 0;
 
 		public bool faceWhenIdle;
 		public float updateFrequency = 2f;
@@ -48,15 +48,12 @@ namespace AC
 		public enum FollowType { StartFollowing, StopFollowing };
 		public FollowType followType;
 		public bool randomDirection = false;
+		public bool followAcrossScenes = false;
 
 
-		public ActionCharFollow ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Character;
-			title = "NPC follow";
-			description = "Makes an NPC follow another Character, whether it be a fellow NPC or the Player. If they exceed a maximum distance from their target, they will run towards them. Note that making an NPC move via another Action will make them stop following anyone.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Character; }}
+		public override string Title { get { return "NPC follow"; }}
+		public override string Description { get { return "Makes an NPC follow another Character, whether it be a fellow NPC or the Player. If they exceed a maximum distance from their target, they will run towards them. Note that making an NPC move via another Action will make them stop following anyone."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -109,7 +106,7 @@ namespace AC
 				if (runtimeCharToFollow != null)
 				{
 					bool _followPlayer = (runtimeCharToFollow == KickStarter.player);
-					runtimeNpcToMove.FollowAssign (runtimeCharToFollow, _followPlayer, updateFrequency, followDistance, followDistanceMax, faceWhenIdle, randomDirection);
+					runtimeNpcToMove.FollowAssign (runtimeCharToFollow, _followPlayer, updateFrequency, followDistance, followDistanceMax, faceWhenIdle, randomDirection, followAcrossScenes);
 				}
 			}
 
@@ -217,10 +214,13 @@ namespace AC
 					EditorGUILayout.HelpBox ("Maximum distance must be greater than minimum distance.", MessageType.Warning);
 				}
 
-				faceWhenIdle = EditorGUILayout.Toggle ("Face character when idle?", faceWhenIdle);
+				faceWhenIdle = EditorGUILayout.Toggle ("Face when idle?", faceWhenIdle);
+
+				if (movePlayer && followPlayer && followPlayerID < 0 && charToFollowParameterID < 0)
+				{ 
+					followAcrossScenes = EditorGUILayout.Toggle ("Follow across scenes?", followAcrossScenes);
+				}
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -286,7 +286,7 @@ namespace AC
 				if (charToFollowID == id) return true;
 			}
 			if (followPlayer && _gameObject.GetComponent <Player>() != null) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -323,7 +323,7 @@ namespace AC
 		 */
 		public static ActionCharFollow CreateNew_Start (NPC npcToMove, AC.Char characterToFollow, float minimumDistance, float maximumDistance, float updateFrequency = 2f, bool randomisePosition = false, bool faceCharacterWhenIdle = false)
 		{
-			ActionCharFollow newAction = (ActionCharFollow) CreateInstance <ActionCharFollow>();
+			ActionCharFollow newAction = CreateNew<ActionCharFollow> ();
 			newAction.followType = FollowType.StartFollowing;
 			newAction.npcToMove = npcToMove;
 			newAction.charToFollow = characterToFollow;
@@ -343,7 +343,7 @@ namespace AC
 		 */
 		public static ActionCharFollow CreateNew_Stop (NPC npcToMove)
 		{
-			ActionCharFollow newAction = (ActionCharFollow) CreateInstance <ActionCharFollow>();
+			ActionCharFollow newAction = CreateNew<ActionCharFollow> ();
 			newAction.followType = FollowType.StopFollowing;
 			newAction.npcToMove = npcToMove;
 			return newAction;

@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Dialog.cs"
  * 
@@ -132,9 +132,10 @@ namespace AC
 		 * <param name = "noAnimation">True if the character should not play a talking animation</param>
 		 * <param name = "preventSkipping">True if the speech cannot be skipped regardless of subtitle settings in the Speech Manager</param>
 		 * <param name = "audioOverride">If set, then this audio will be played instead of the one assigned via the Speech Manager given the line ID and language</param>
+		 * <param name = "lipsyncOverride">If set, then this lipsync text asset will be played instead of the one assigned via the Speech Manager given the line ID and language</param>
 		 * <returns>The generated Speech line</returns>
 		 */
-		public Speech StartDialog (Char _speaker, string _text, bool isBackground = false, int lineID = -1, bool noAnimation = false, bool preventSkipping = false, AudioClip audioOverride = null)
+		public Speech StartDialog (Char _speaker, string _text, bool isBackground = false, int lineID = -1, bool noAnimation = false, bool preventSkipping = false, AudioClip audioOverride = null, TextAsset lipsyncOverride = null)
 		{
 			if (!KickStarter.runtimeLanguages.MarkLineAsSpoken (lineID))
 			{
@@ -157,7 +158,7 @@ namespace AC
 				}
 			}
 			
-			Speech speech = new Speech (_speaker, _text, lineID, isBackground, noAnimation, preventSkipping, audioOverride);
+			Speech speech = new Speech (_speaker, _text, lineID, isBackground, noAnimation, preventSkipping, audioOverride, lipsyncOverride);
 			speechList.Add (speech);
 
 			KickStarter.runtimeVariables.AddToSpeechLog (speech.log);
@@ -243,7 +244,7 @@ namespace AC
 		{
 			if (narratorAudioSource == null)
 			{
-				if (narratorSound != null)
+				if (narratorSound)
 				{
 					narratorAudioSource = narratorSound.GetComponent <AudioSource>();
 				}
@@ -278,12 +279,12 @@ namespace AC
 			{
 				textScrollClip = KickStarter.speechManager.narrationTextScrollCLip;
 			}
-			else if (_speaker.textScrollClip != null)
+			else if (_speaker.textScrollClip)
 			{
 				textScrollClip = _speaker.textScrollClip;
 			}
 
-			if (textScrollClip != null)
+			if (textScrollClip)
 			{
 				if (defaultAudioSource == null && KickStarter.sceneSettings.defaultSound)
 				{
@@ -535,10 +536,10 @@ namespace AC
 		 * <param name = "lineNumber">The speech line's ID number</param>
 		 * <param name = "_speaker">The speaking character</param>
 		 * <param name = "language">The name of the current language</param>
-		 * <param name = "_message">The speech text</param<
+		 * <param name = "_message">The speech text</param>
 		 * <returns>A List of LipSyncShape structs that contain the lipsync animation data</returns>
 		 */
-		public virtual List<LipSyncShape> GenerateLipSyncShapes (LipSyncMode _lipSyncMode, int lineID, Char _speaker, string language = "", string _message = "")
+		public virtual List<LipSyncShape> GenerateLipSyncShapes (LipSyncMode _lipSyncMode, int lineID, Char _speaker, string language = "", string _message = "", TextAsset lipsyncOverride = null)
 		{
 			List<LipSyncShape> lipSyncShapes = new List<LipSyncShape>();
 			lipSyncShapes.Add (new LipSyncShape (0, 0f, KickStarter.speechManager.lipSyncSpeed));
@@ -549,9 +550,16 @@ namespace AC
 				return lipSyncShapes;
 			}
 			
-			if (lineID > -1 && _speaker != null && KickStarter.speechManager.searchAudioFiles && KickStarter.speechManager.UseFileBasedLipSyncing ())
+			if (lineID > -1 && _speaker && KickStarter.speechManager.searchAudioFiles && KickStarter.speechManager.UseFileBasedLipSyncing ())
 			{
-				textFile = (TextAsset) KickStarter.runtimeLanguages.GetSpeechLipsyncFile <TextAsset> (lineID, _speaker);
+				if (lipsyncOverride)
+				{
+					textFile = lipsyncOverride;
+				}
+				else
+				{
+					textFile = (TextAsset) KickStarter.runtimeLanguages.GetSpeechLipsyncFile <TextAsset> (lineID, _speaker);
+				}
 			}
 
 			switch (_lipSyncMode)
@@ -589,7 +597,7 @@ namespace AC
 					break;
 
 				case LipSyncMode.ReadPamelaFile:
-					if (textFile != null)
+					if (textFile)
 					{
 						var splitFile = new string[] { "\r\n", "\r", "\n" };
 						var pamLines = textFile.text.Split (splitFile, System.StringSplitOptions.None);
@@ -646,7 +654,7 @@ namespace AC
 					break;
 
 				case LipSyncMode.ReadSapiFile:
-					if (textFile != null)
+					if (textFile)
 					{
 						var splitFile = new string[] { "\r\n", "\r", "\n" };
 						var sapiLines = textFile.text.Split (splitFile, System.StringSplitOptions.None);
@@ -690,7 +698,7 @@ namespace AC
 					break;
 
 				case LipSyncMode.ReadPapagayoFile:
-					if (textFile != null)
+					if (textFile)
 					{
 						var splitFile = new string[] { "\r\n", "\r", "\n" };
 						var papagoyoLines = textFile.text.Split (splitFile, System.StringSplitOptions.None);

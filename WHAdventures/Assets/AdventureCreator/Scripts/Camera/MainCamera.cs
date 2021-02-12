@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MainCamera.cs"
  * 
@@ -14,7 +14,7 @@
  * 
  */
 
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
+#if !UNITY_2020_2_OR_NEWER && (UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS)
 #define ALLOW_VR
 #endif
 
@@ -51,8 +51,7 @@ namespace AC
 		[SerializeField] protected Texture2D fadeTexture;
 		protected Texture2D tempFadeTexture = null;
 
-		/** The current active camera, i.e. the one that the MainCamera is attaching itself to */
-		[System.NonSerialized] public _Camera attachedCamera;
+		protected _Camera _attachedCamera;
 		/** The last active camera during gameplay */
 		[System.NonSerialized] public _Camera lastNavCamera;
 		protected _Camera lastNavCamera2;
@@ -96,6 +95,7 @@ namespace AC
 		protected float shakeIntensity;
 		protected Vector3 shakePosition;
 		protected Vector3 shakeRotation;
+		protected AnimationCurve shakeCurve;
 		
 		// Aspect ratio
 		protected Camera borderCam;
@@ -143,6 +143,7 @@ namespace AC
 		private float lastAspectRatio;
 
 		protected int overlayFrames;
+		private Transform _transform;
 
 		#if ALLOW_VR
 		/** If True, the camera's position and rotation will be restored when loading (VR only) */
@@ -163,16 +164,10 @@ namespace AC
 				ACDebug.LogWarning ("The AC MainCamera does not have the 'MainCamera' tag.  It may not be recognised as the same MainCamera by custom scripts or third-party assets.", this);
 			}
 
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.forceAspectRatio)
-			{
-				#if !UNITY_IPHONE
-				KickStarter.settingsManager.landscapeModeOnly = false;
-				#endif
-			}
 			RecalculateRects ();
 
 			AssignFadeTexture ();
-			if (KickStarter.sceneChanger != null && !KickStarter.settingsManager.useLoadingScreen)
+			if (KickStarter.sceneChanger && !KickStarter.settingsManager.useLoadingScreen)
 			{
 				SetFadeTexture (KickStarter.sceneChanger.GetAndResetTransitionTexture ());
 			}
@@ -226,13 +221,18 @@ namespace AC
 			
 			if (attachedCamera && (!(attachedCamera is GameCamera25D)))
 			{
-				if (mainCameraMode == MainCameraMode.NormalSnap)
+				switch (mainCameraMode)
 				{
-					currentFrameCameraData = new GameCameraData (attachedCamera);
-				}
-				else if (mainCameraMode == MainCameraMode.NormalTransition)
-				{
-					UpdateCameraTransition ();
+					case MainCameraMode.NormalSnap:
+						currentFrameCameraData = new GameCameraData (attachedCamera);
+						break;
+
+					case MainCameraMode.NormalTransition:
+						UpdateCameraTransition ();
+						break;
+
+					default:
+						break;
 				}
 
 				if (!timelineOverride)
@@ -243,8 +243,8 @@ namespace AC
 			
 			else if (attachedCamera && (attachedCamera is GameCamera25D))
 			{
-				transform.position = attachedCamera.CameraTransform.position;
-				transform.rotation = attachedCamera.CameraTransform.rotation;
+				Transform.position = attachedCamera.CameraTransform.position;
+				Transform.rotation = attachedCamera.CameraTransform.rotation;
 
 				perspectiveOffset = attachedCamera.GetPerspectiveOffset ();
 				if (AllowProjectionShifting (Camera))
@@ -275,9 +275,24 @@ namespace AC
 						);
 					}
 					
-					shakeIntensity = Mathf.Lerp (shakeStartIntensity, 0f, AdvGame.Interpolate (shakeStartTime, shakeDuration, MoveMethod.Linear, null));
-					transform.position += shakePosition;
-					transform.localEulerAngles += shakeRotation;
+					float lerpAmount = AdvGame.Interpolate (shakeStartTime, shakeDuration, MoveMethod.Linear, null);
+					if (lerpAmount >= 1f)
+					{
+						shakeIntensity = 0f;
+					}
+					else if (shakeCurve != null)
+					{
+						shakeIntensity = shakeStartIntensity * shakeCurve.Evaluate (lerpAmount);
+						shakeIntensity = Mathf.Max (shakeIntensity, 0.001f);
+					}
+					else
+					{
+						shakeIntensity = Mathf.Lerp (shakeStartIntensity, 0f, lerpAmount);
+						shakeIntensity = Mathf.Max (shakeIntensity, 0.001f);
+					}
+
+					Transform.position += shakePosition;
+					Transform.localEulerAngles += shakeRotation;
 				}
 				else if (shakeIntensity < 0f)
 				{
@@ -323,7 +338,7 @@ namespace AC
 		 */
 		public void SetDefaultFadeTexture (Texture2D _fadeTexture)
 		{
-			if (_fadeTexture != null)
+			if (_fadeTexture)
 			{
 				fadeTexture = _fadeTexture;
 			}
@@ -343,7 +358,7 @@ namespace AC
 			if (isSplitScreen && splitCamera)
 				splitCamera.SetSplitScreen ();
 
-			if (Application.isPlaying && KickStarter.eventManager != null)
+			if (Application.isPlaying && KickStarter.eventManager)
 				KickStarter.eventManager.Call_OnUpdatePlayableScreenArea ();
 		}
 		
@@ -354,8 +369,10 @@ namespace AC
 		 * <param name = "_duration">The duration of the effect, in sectonds</param>
 		 * <param name = "_shakeEffect">The type of shaking to make (Translate, Rotate, TranslateAndRotate)</param>
 		 */
-		public void Shake (float _shakeIntensity, float _duration, CameraShakeEffect _shakeEffect)
+		public void Shake (float _shakeIntensity, float _duration, CameraShakeEffect _shakeEffect, AnimationCurve _shakeCurve = null)
 		{
+			shakeCurve = _shakeCurve;
+
 			shakePosition = Vector3.zero;
 			shakeRotation = Vector3.zero;
 			
@@ -428,16 +445,8 @@ namespace AC
 			{
 				SetGameCamera (firstPersonCamera);
 			}
-			
-			if (attachedCamera)
-			{
-				if (lastNavCamera != attachedCamera)
-				{
-					lastNavCamera2 = lastNavCamera;
-				}
-				
-				lastNavCamera = attachedCamera;
-			}
+
+			UpdateLastGameplayCamera ();
 		}
 
 
@@ -469,7 +478,7 @@ namespace AC
 				return;
 			}
 
-			if (overlayFrames > 0 && renderFading && actualFadeTexture != null)
+			if (overlayFrames > 0 && renderFading && actualFadeTexture)
 			{
 				GUI.DrawTexture (new Rect (0, 0, ACScreen.width, ACScreen.height), actualFadeTexture);
 				return;
@@ -546,12 +555,10 @@ namespace AC
 		}
 		
 
-		/**
-		 * Resets the Camera's projection matrix.
-		 */
+		/** Resets the Camera's projection matrix. */
 		public void ResetProjection ()
 		{
-			if (Camera != null)
+			if (Camera)
 			{
 				perspectiveOffset = Vector2.zero;
 				Camera.projectionMatrix = AdvGame.SetVanishingPoint (Camera, perspectiveOffset);
@@ -560,9 +567,7 @@ namespace AC
 		}
 		
 
-		/**
-		 * Resets the transition effect when moving from one _Camera to another.
-		 */
+		/** Resets the transition effect when moving from one _Camera to another. */
 		public void ResetMoving ()
 		{
 			mainCameraMode = MainCameraMode.NormalSnap;
@@ -571,9 +576,7 @@ namespace AC
 		}
 
 
-		/**
-		 * Snaps the Camera to the attachedCamera instantly.
-		 */
+		/** Snaps the Camera to the attachedCamera instantly. */
 		public void SnapToAttached ()
 		{
 			if (attachedCamera && attachedCamera.Camera)
@@ -581,14 +584,14 @@ namespace AC
 				ResetMoving ();
 				transitionFromCamera = null;
 
-				bool changedOrientation = (previousAttachedCamera != null && previousAttachedCamera.transform.rotation != attachedCamera.transform.rotation);
+				bool changedOrientation = (previousAttachedCamera && previousAttachedCamera.Transform.rotation != attachedCamera.Transform.rotation);
 
 				currentFrameCameraData = new GameCameraData (attachedCamera);
 				ApplyCameraData (currentFrameCameraData);
 
-				if (changedOrientation && !SceneSettings.IsUnity2D () && KickStarter.stateHandler.IsInGameplay () && KickStarter.settingsManager.movementMethod == MovementMethod.Direct && KickStarter.settingsManager.directMovementType == DirectMovementType.RelativeToCamera && /*KickStarter.settingsManager.inputMethod != InputMethod.TouchScreen &&*/ KickStarter.playerInput != null)
+				if (Application.isPlaying && changedOrientation && !SceneSettings.IsUnity2D () && KickStarter.stateHandler.IsInGameplay () && KickStarter.settingsManager.movementMethod == MovementMethod.Direct && KickStarter.settingsManager.directMovementType == DirectMovementType.RelativeToCamera && /*KickStarter.settingsManager.inputMethod != InputMethod.TouchScreen &&*/ KickStarter.playerInput)
 				{
-					if (KickStarter.player != null && 
+					if (KickStarter.player && 
 						(KickStarter.player.GetPath () == null || !KickStarter.player.IsLockedToPath ()))
 					{
 						KickStarter.playerInput.cameraLockSnap = true;
@@ -638,18 +641,23 @@ namespace AC
 		public void TakeOverlayScreenshot ()
 		{
 			Texture2D screenTex = new Texture2D (ACScreen.width, ACScreen.height);
+			
+			#if UNITY_EDITOR
+			screenTex.ReadPixels (new Rect (0f, 0f, ACScreen.width-1, ACScreen.height-1), 0, 0, false);
+			#else
 			screenTex.ReadPixels (new Rect (0f, 0f, ACScreen.width, ACScreen.height), 0, 0, false);
+			#endif
 
 			if (KickStarter.settingsManager.linearColorTextures)
 			{
-			    for (int y = 0; y < screenTex.height; y++)
-			    {
-			        for (int x = 0; x < screenTex.width; x++)
-			        {
-			            Color color = screenTex.GetPixel(x, y);
-			            screenTex.SetPixel(x, y, color.linear);
-			        }
-			    }
+				for (int y = 0; y < screenTex.height; y++)
+				{
+					for (int x = 0; x < screenTex.width; x++)
+					{
+						Color color = screenTex.GetPixel(x, y);
+						screenTex.SetPixel(x, y, color.linear);
+					}
+				}
 			}
 
 			screenTex.Apply ();
@@ -682,6 +690,7 @@ namespace AC
 		 * <param name = "_moveMethod">How the Camera should move towards the new _Camera, if transitionTime > 0f (Linear, Smooth, Curved, EaseIn, EaseOut, CustomCurve)</param>
 		 * <param name = "_animationCurve">The AnimationCurve that dictates movement over time, if _moveMethod = MoveMethod.CustomCurve</param>
 		 * <param name = "_retainPreviousSpeed">If True, and transitionTime > 0, then the previous _Camera's speed will influence the transition, allowing for a smoother effect</param>
+		 * <param name = "snapCamera">If True, the new camera will snap to its target position instantly</param>
 		 */
 		public void SetGameCamera (_Camera newCamera, float transitionTime = 0f, MoveMethod _moveMethod = MoveMethod.Linear, AnimationCurve _animationCurve = null, bool _retainPreviousSpeed = false, bool snapCamera = true)
 		{
@@ -689,13 +698,13 @@ namespace AC
 			{
 				return;
 			}
-
-			if (KickStarter.eventManager != null) KickStarter.eventManager.Call_OnSwitchCamera (attachedCamera, newCamera, transitionTime);
 			
-			if (attachedCamera != null && attachedCamera is GameCamera25D)
+			if (KickStarter.eventManager) KickStarter.eventManager.Call_OnSwitchCamera (attachedCamera, newCamera, transitionTime);
+			
+			if (attachedCamera && attachedCamera is GameCamera25D)
 			{
 				transitionTime = 0f;
-
+				
 				if (newCamera is GameCamera25D)
 				{ }
 				else
@@ -725,11 +734,18 @@ namespace AC
 				transitionFromCamera = null;
 			}
 
-			attachedCamera = newCamera;
+			_attachedCamera = newCamera;
 
-			if (KickStarter.stateHandler.IsInGameplay ())
+			if (KickStarter.stateHandler)
 			{
-				UpdateLastGameplayCamera ();
+				if (KickStarter.stateHandler.IsInGameplay ())
+				{
+					UpdateLastGameplayCamera ();
+				}
+				else
+				{
+					StartCoroutine (CheckGameStateNextFrame ());
+				}
 			}
 
 			if (attachedCamera && attachedCamera.Camera)
@@ -750,14 +766,12 @@ namespace AC
 			{
 				Camera.transparencySortMode = attachedCamera.TransparencySortMode;
 			}
-
-			KickStarter.stateHandler.LimitHotspotsToCamera (attachedCamera);
 			
 			if (transitionTime > 0f)
 			{
 				SmoothChange (transitionTime, _moveMethod, _animationCurve);
 			}
-			else if (attachedCamera != null)
+			else if (attachedCamera)
 			{
 				if (snapCamera)
 				{
@@ -774,7 +788,7 @@ namespace AC
 		 */
 		public void SetFadeTexture (Texture2D tex)
 		{
-			if (tex != null)
+			if (tex)
 			{
 				tempFadeTexture = tex;
 				AssignFadeTexture ();
@@ -796,7 +810,7 @@ namespace AC
 		 */
 		public void FadeOut (float _fadeDuration, Texture2D tempTex, bool forceCompleteTransition = true, CameraFadePauseBehaviour _cameraFadePauseBehaviour = CameraFadePauseBehaviour.Cancel, AnimationCurve _fadeCurve = null)
 		{
-			if (tempTex != null)
+			if (tempTex)
 			{
 				SetFadeTexture (tempTex);
 			}
@@ -924,9 +938,13 @@ namespace AC
 		 * <summary>Gets the Camera's right vector.</summary>
 		 * <returns>The Camera's right vector</returns>
 		 */
-		public Vector3 RightVector ()
+		public static Vector3 RightVector ()
 		{
-			return (forwardDirection == MainCameraForwardDirection.CameraComponent) ? ownCamera.transform.right : transform.right;
+			if (KickStarter.mainCamera)
+			{
+				return (KickStarter.mainCamera.forwardDirection == MainCameraForwardDirection.CameraComponent) ? KickStarter.mainCamera.ownCamera.transform.right : KickStarter.mainCamera.Transform.right;
+			}
+			return Camera.main.transform.right;
 		}
 		
 
@@ -934,12 +952,20 @@ namespace AC
 		 * <summary>Gets the Camera's forward vector, not accounting for pitch.</summary>
 		 * <returns>The Camera's forward vector, not accounting for pitch</returns>
 		 */
-		public Vector3 ForwardVector ()
+		public static Vector3 ForwardVector ()
 		{
-			Vector3 camForward = (forwardDirection == MainCameraForwardDirection.CameraComponent) ? ownCamera.transform.forward : transform.forward;
-			camForward.y = 0;
-			
-			return (camForward);
+			if (KickStarter.mainCamera)
+			{
+				Vector3 camForward = (KickStarter.mainCamera.forwardDirection == MainCameraForwardDirection.CameraComponent) ? KickStarter.mainCamera.ownCamera.transform.forward : KickStarter.mainCamera.Transform.forward;
+				camForward.y = 0;
+				return (camForward);
+			}
+			else
+			{
+				Vector3 camForward = Camera.main.transform.forward;
+				camForward.y = 0;
+				return (camForward);
+			}
 		}
 
 
@@ -1019,7 +1045,7 @@ namespace AC
 		{
 			if (!Application.isPlaying)
 			{
-				if (AdvGame.GetReferences () == null || AdvGame.GetReferences ().settingsManager == null || !AdvGame.GetReferences ().settingsManager.forceAspectRatio)
+				if (AdvGame.GetReferences () == null || AdvGame.GetReferences ().settingsManager == null || AdvGame.GetReferences ().settingsManager.AspectRatioEnforcement == AspectRatioEnforcement.NoneEnforced)
 				{
 					return;
 				}
@@ -1103,7 +1129,7 @@ namespace AC
 				return position;
 			}
 
-			if (KickStarter.settingsManager.forceAspectRatio)
+			if (KickStarter.settingsManager.AspectRatioEnforcement != AspectRatioEnforcement.NoneEnforced)
 			{
 				switch (borderOrientation)
 				{
@@ -1167,7 +1193,7 @@ namespace AC
 		 */
 		public Rect LimitMenuToAspect (Rect rect)
 		{
-			if (KickStarter.settingsManager == null || !KickStarter.settingsManager.forceAspectRatio)
+			if (KickStarter.settingsManager == null || KickStarter.settingsManager.AspectRatioEnforcement == AspectRatioEnforcement.NoneEnforced)
 			{
 				return rect;
 			}
@@ -1426,7 +1452,7 @@ namespace AC
 		 */
 		public void SetCameraTag (string _tag)
 		{
-			if (Camera != null)
+			if (Camera)
 			{
 				Camera.gameObject.tag = _tag;
 			}
@@ -1452,15 +1478,15 @@ namespace AC
 		 */
 		public _Camera GetLastGameplayCamera ()
 		{
-			if (lastNavCamera != null)
+			if (lastNavCamera)
 			{
-				if (lastNavCamera2 != null && attachedCamera == lastNavCamera)
+				if (lastNavCamera2 && attachedCamera == lastNavCamera)
 				{
-					return (_Camera) lastNavCamera2;
+					return lastNavCamera2;
 				}
 				else
 				{
-					return (_Camera) lastNavCamera;
+					return lastNavCamera;
 				}
 			}
 			ACDebug.LogWarning ("Could not get the last gameplay camera - was it previously set?");
@@ -1520,23 +1546,23 @@ namespace AC
 					ACDebug.LogWarning ("Cannot save the active camera '" + attachedCamera.gameObject.name + "' as it is not in the active scene.", attachedCamera.gameObject);
 				}
 
-				playerData.mainCameraLocX = attachedCamera.transform.position.x;
-				playerData.mainCameraLocY = attachedCamera.transform.position.y;
-				playerData.mainCameraLocZ = attachedCamera.transform.position.z;
+				playerData.mainCameraLocX = attachedCamera.Transform.position.x;
+				playerData.mainCameraLocY = attachedCamera.Transform.position.y;
+				playerData.mainCameraLocZ = attachedCamera.Transform.position.z;
 
-				playerData.mainCameraRotX = attachedCamera.transform.eulerAngles.x;
-				playerData.mainCameraRotY = attachedCamera.transform.eulerAngles.y;
-				playerData.mainCameraRotZ = attachedCamera.transform.eulerAngles.z;
+				playerData.mainCameraRotX = attachedCamera.Transform.eulerAngles.x;
+				playerData.mainCameraRotY = attachedCamera.Transform.eulerAngles.y;
+				playerData.mainCameraRotZ = attachedCamera.Transform.eulerAngles.z;
 			}
 			else
 			{
-				playerData.mainCameraLocX = transform.position.x;
-				playerData.mainCameraLocY = transform.position.y;
-				playerData.mainCameraLocZ = transform.position.z;
+				playerData.mainCameraLocX = Transform.position.x;
+				playerData.mainCameraLocY = Transform.position.y;
+				playerData.mainCameraLocZ = Transform.position.z;
 
-				playerData.mainCameraRotX = transform.eulerAngles.x;
-				playerData.mainCameraRotY = transform.eulerAngles.y;
-				playerData.mainCameraRotZ = transform.eulerAngles.z;
+				playerData.mainCameraRotX = Transform.eulerAngles.x;
+				playerData.mainCameraRotY = Transform.eulerAngles.y;
+				playerData.mainCameraRotZ = Transform.eulerAngles.z;
 			}
 
 			playerData.isSplitScreen = isSplitScreen;
@@ -1599,6 +1625,8 @@ namespace AC
 		 */
 		public void LoadData (PlayerData playerData, bool snapCamera = true)
 		{
+			_Camera oldTransitionCamera = (IsInTransition ()) ? attachedCamera : null;
+
 			if (isSplitScreen)
 			{
 				RemoveSplitScreen ();
@@ -1611,7 +1639,7 @@ namespace AC
 			}
 
 			_Camera _attachedCamera = ConstantID.GetComponent <_Camera> (playerData.gameCamera);
-			if (_attachedCamera != null)
+			if (_attachedCamera)
 			{
 				if (attachedCamera != _attachedCamera)
 				{
@@ -1632,14 +1660,22 @@ namespace AC
 			{
 				SetFirstPerson ();
 			}
-			else if (attachedCamera != null)
+			else if (attachedCamera)
 			{
-				attachedCamera = null;
+				_attachedCamera = null;
 			}
 
 			lastNavCamera = ConstantID.GetComponent <_Camera> (playerData.lastNavCamera);
 			lastNavCamera2 = ConstantID.GetComponent <_Camera> (playerData.lastNavCamera2);
-			ResetMoving ();
+
+			if (KickStarter.saveSystem.loadingGame == LoadingGame.No && !snapCamera && oldTransitionCamera && oldTransitionCamera == attachedCamera)
+			{
+				// Don't snap in this situation, caused when swapping player
+			}
+			else
+			{
+				ResetMoving ();
+			}
 
 			if (KickStarter.settingsManager.playerSwitching == PlayerSwitching.DoNotAllow)
 			{
@@ -1648,15 +1684,22 @@ namespace AC
 				#if ALLOW_VR
 				if (!UnityEngine.XR.XRSettings.enabled || restoreTransformOnLoadVR) {
 				#endif
-					transform.position = new Vector3 (playerData.mainCameraLocX, playerData.mainCameraLocY, playerData.mainCameraLocZ);
-					transform.eulerAngles = new Vector3 (playerData.mainCameraRotX, playerData.mainCameraRotY, playerData.mainCameraRotZ);
+					Transform.position = new Vector3 (playerData.mainCameraLocX, playerData.mainCameraLocY, playerData.mainCameraLocZ);
+					Transform.eulerAngles = new Vector3 (playerData.mainCameraRotX, playerData.mainCameraRotY, playerData.mainCameraRotZ);
 					ResetProjection ();
 				#if ALLOW_VR
 				}
 				#endif
 			}
 
-			SnapToAttached ();
+			if (KickStarter.saveSystem.loadingGame == LoadingGame.No && !snapCamera && oldTransitionCamera && oldTransitionCamera == attachedCamera)
+			{
+				// Don't snap in this situation, caused when swapping player
+			}
+			else
+			{
+				SnapToAttached ();
+			}
 
 			isSplitScreen = playerData.isSplitScreen;
 			if (isSplitScreen)
@@ -1707,7 +1750,7 @@ namespace AC
 				{
 					GUILayout.Label ("Current camera: Set by Timeline");
 				}
-				else if (attachedCamera != null)
+				else if (attachedCamera)
 				{
 					if (GUILayout.Button ("Current camera: " + attachedCamera.gameObject.name))
 					{
@@ -1761,6 +1804,7 @@ namespace AC
 			{
 				shakeIntensity = 0f;
 			}
+			shakeCurve = null;
 
 			if (cam1 == null)
 			{
@@ -1833,7 +1877,11 @@ namespace AC
 			}
 			else
 			{
+				#if UNITY_WEBGL && !UNITY_EDITOR
+				if (playableScreenRect.width == 0 && Time.time > 0f) RecalculateRects ();
+				#else
 				if (playableScreenRect.width == 0) RecalculateRects ();
+				#endif
 			}
 			if (relativeToScreenSize)
 			{
@@ -1848,11 +1896,14 @@ namespace AC
 		 * <param name="point">The position to convert</param>
 		 * <returns>The position, converted to use the same co-ordinate system as the AC menu system.  This will be relative to the screen's actual size.</returns>
 		 */
-		public Vector2 ConvertToMenuSpace (Vector2 point)
+		public static Vector2 ConvertToMenuSpace (Vector2 point)
 		{
 			Vector2 playablePoint = point;
 
-			playablePoint -= safeScreenRectInverted.position;
+			if (KickStarter.mainCamera)
+			{
+				playablePoint -= KickStarter.mainCamera.safeScreenRectInverted.position;
+			}
 			playablePoint.x /= ACScreen.safeArea.width /  ACScreen.width;
 			playablePoint.y /= ACScreen.safeArea.height /  ACScreen.height;
 
@@ -1865,15 +1916,31 @@ namespace AC
 		 * <param name="point">The position to convert</param>
 		 * <returns>The position, converted to use the same co-ordinate system as Unity UI.</returns>
 		 */
-		public Vector2 ConvertRelativeScreenSpaceToUI (Vector2 point)
+		public static Vector2 ConvertRelativeScreenSpaceToUI (Vector2 point)
 		{
 			Vector2 uiPoint = new Vector2 (point.x, 1f - point.y);
 
-			uiPoint.x *= GetPlayableScreenArea (false).width;
-			uiPoint.y *= GetPlayableScreenArea (false).height;
-			uiPoint += GetPlayableScreenArea (false).position;
+			if (KickStarter.mainCamera)
+			{
+				uiPoint.x *= KickStarter.mainCamera.GetPlayableScreenArea (false).width;
+				uiPoint.y *= KickStarter.mainCamera.GetPlayableScreenArea (false).height;
+				uiPoint += KickStarter.mainCamera.GetPlayableScreenArea (false).position;
+			}
+			else
+			{
+				uiPoint.x *= ACScreen.safeArea.width;
+				uiPoint.y *= ACScreen.safeArea.height;
+				uiPoint += ACScreen.safeArea.position;
+			}
 
 			return uiPoint;
+		}
+
+
+		/** Checks if the camera is currently mid-transition between two GameCameras */
+		public bool IsInTransition ()
+		{
+			return (transitionTimer > 0f);
 		}
 
 		#endregion
@@ -1953,6 +2020,13 @@ namespace AC
 		}
 
 
+		protected IEnumerator CheckGameStateNextFrame ()
+		{
+			yield return null;
+			OnEnterGameState (KickStarter.stateHandler.gameState);
+		}
+
+
 		protected void UpdateLastGameplayCamera ()
 		{ 
 			if (attachedCamera)
@@ -1981,7 +2055,7 @@ namespace AC
 
 				float transitionProgress = 1f - (transitionTimer / transitionDuration);
 				
-				if (retainPreviousSpeed && previousAttachedCamera != null)
+				if (retainPreviousSpeed && previousAttachedCamera)
 				{
 					oldCameraData = new GameCameraData (previousAttachedCamera);
 				}
@@ -1996,29 +2070,30 @@ namespace AC
 		protected IEnumerator StartCrossfade (object[] parms)
 		{
 			float _transitionDuration = (float) parms[0];
+
 			_Camera _linkedCamera = (_Camera) parms[1];
 			AnimationCurve _fadeCurve = (AnimationCurve) parms[2];
-
+			
 			yield return new WaitForEndOfFrame ();
 
 			crossfadeTexture = new Texture2D (ACScreen.width, ACScreen.height);
 
 			#if UNITY_EDITOR
-			crossfadeTexture.ReadPixels(new Rect(0f, 0f, ACScreen.width-1, ACScreen.height-1), 0, 0, false);
+			crossfadeTexture.ReadPixels (new Rect(0f, 0f, ACScreen.width-1, ACScreen.height-1), 0, 0, false);
 			#else
-			crossfadeTexture.ReadPixels(new Rect(0f, 0f, ACScreen.width, ACScreen.height), 0, 0, false);
+			crossfadeTexture.ReadPixels (new Rect(0f, 0f, ACScreen.width, ACScreen.height), 0, 0, false);
 			#endif
 
 			if (KickStarter.settingsManager.linearColorTextures)
 			{
-			    for (int y = 0; y < crossfadeTexture.height; y++)
-			    {
-			        for (int x = 0; x < crossfadeTexture.width; x++)
-			        {
-			            Color color = crossfadeTexture.GetPixel(x, y);
-			            crossfadeTexture.SetPixel(x, y, color.linear);
-			        }
-			    }
+				for (int y = 0; y < crossfadeTexture.height; y++)
+				{
+					for (int x = 0; x < crossfadeTexture.width; x++)
+					{
+						Color color = crossfadeTexture.GetPixel(x, y);
+						crossfadeTexture.SetPixel (x, y, color.linear);
+					}
+				}
 			}
 
 			crossfadeTexture.Apply ();
@@ -2059,7 +2134,7 @@ namespace AC
 		
 		protected void AssignFadeTexture ()
 		{
-			if (tempFadeTexture != null)
+			if (tempFadeTexture)
 			{
 				actualFadeTexture = tempFadeTexture;
 			}
@@ -2117,18 +2192,20 @@ namespace AC
 			}
 			else
 			{
+				#if UNITY_IPHONE
 				if (safeScreenSize.y > safeScreenSize.x && KickStarter.settingsManager.landscapeModeOnly)
 				{
 					currentAspectRatio = safeScreenSize.y / safeScreenSize.x;
 				}
 				else
+				#endif
 				{
 					currentAspectRatio = safeScreenSize.x / safeScreenSize.y;
 				}
 			}
 
 			// If the current aspect ratio is already approximately equal to the desired aspect ratio, use a full-screen Rect (in case it was set to something else previously)
-			if (KickStarter.settingsManager == null || !KickStarter.settingsManager.forceAspectRatio || Mathf.Approximately (currentAspectRatio, KickStarter.settingsManager.wantedAspectRatio))
+			if (KickStarter.settingsManager == null || KickStarter.settingsManager.AspectRatioEnforcement == AspectRatioEnforcement.NoneEnforced || Mathf.Approximately (currentAspectRatio, KickStarter.settingsManager.wantedAspectRatio))
 			{
 				borderWidth = 0f;
 				borderOrientation = MenuOrientation.Horizontal;
@@ -2143,20 +2220,28 @@ namespace AC
 			if (currentAspectRatio > KickStarter.settingsManager.wantedAspectRatio)
 			{
 				// Pillarbox
-				borderWidth = 1f - KickStarter.settingsManager.wantedAspectRatio / currentAspectRatio;
+					
+				if (KickStarter.settingsManager.AspectRatioEnforcement == AspectRatioEnforcement.SetMinimum)
+				{
+					borderWidth = 0f;
+				}
+				else
+				{
+					borderWidth = 1f - KickStarter.settingsManager.wantedAspectRatio / currentAspectRatio;
+				}
+
 				borderWidth /= 2f;
 				borderOrientation = MenuOrientation.Vertical;
-
 				borderRect1 = new Rect (0, 0, borderWidth * ACScreen.safeArea.width, ACScreen.safeArea.height);
 				borderRect2 = new Rect (ACScreen.safeArea.width * (1f - borderWidth), 0f, borderWidth * ACScreen.safeArea.width, ACScreen.safeArea.height);
 			}
 			else
 			{
 				// Letterbox
+
 				borderWidth = 1f - currentAspectRatio / KickStarter.settingsManager.wantedAspectRatio;
 				borderWidth /= 2f;
 				borderOrientation = MenuOrientation.Horizontal;
-
 				borderRect1 = new Rect (0, 0, ACScreen.safeArea.width, borderWidth * ACScreen.safeArea.height);
 				borderRect2 = new Rect (0, ACScreen.safeArea.height * (1f - borderWidth), ACScreen.safeArea.width, borderWidth * ACScreen.safeArea.height);
 			}
@@ -2182,11 +2267,11 @@ namespace AC
 
 		protected void CreateBorderCamera ()
 		{
-			if (!borderCam && Application.isPlaying)
+			if (!borderCam && Application.isPlaying && KickStarter.settingsManager.renderBorderCamera)
 			{
 				// Make a new camera behind the normal camera which displays black; otherwise the unused space is undefined
 				borderCam = new GameObject ("BorderCamera", typeof (Camera)).GetComponent <Camera>();
-				borderCam.transform.parent = this.transform;
+				borderCam.transform.parent = Transform;
 				borderCam.depth = int.MinValue;
 				borderCam.clearFlags = CameraClearFlags.SolidColor;
 				borderCam.backgroundColor = Color.black;
@@ -2201,7 +2286,7 @@ namespace AC
 			{
 				if (KickStarter.playerCursor.LimitCursorToMenu.IsUnityUI ())
 				{
-					if (KickStarter.playerCursor.LimitCursorToMenu.RuntimeCanvas != null)
+					if (KickStarter.playerCursor.LimitCursorToMenu.RuntimeCanvas)
 					{
 						if (KickStarter.playerCursor.LimitCursorToMenu.RuntimeCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
 						{
@@ -2330,8 +2415,8 @@ namespace AC
 				Camera.ResetProjectionMatrix ();
 			}
 
-			transform.position = cameraData.position;
-			transform.rotation = cameraData.rotation;
+			Transform.position = cameraData.position;
+			Transform.rotation = cameraData.rotation;
 			Camera.orthographic = cameraData.isOrthographic;
 			Camera.fieldOfView = cameraData.fieldOfView;
 			Camera.orthographicSize = cameraData.orthographicSize;
@@ -2394,6 +2479,27 @@ namespace AC
 		}
 
 
+		/** A cache of the MainCamera's transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
+			}
+		}
+
+
+		/** The current active camera, i.e. the one that the MainCamera is attaching itself to */
+		public _Camera attachedCamera
+		{
+			get
+			{
+				return _attachedCamera;
+			}
+		}
+
+
 		protected AudioListener AudioListener
 		{
 			get
@@ -2402,7 +2508,7 @@ namespace AC
 				{
 					_audioListener = GetComponent <AudioListener>();
 
-					if (_audioListener == null && Camera != null)
+					if (_audioListener == null && Camera)
 					{
 						_audioListener = Camera.GetComponent <AudioListener>();
 					}
@@ -2426,6 +2532,16 @@ namespace AC
 			}
 		}
 
+
+		/** Data related to the MainCamera's currently-active camera and transition */
+		public GameCameraData CurrentFrameCameraData
+		{
+			get
+			{
+				return currentFrameCameraData;
+			}
+		}
+
 		#endregion
 
 
@@ -2433,7 +2549,7 @@ namespace AC
 
 		public void ShowGUI ()
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			fadeTexture = (Texture2D) CustomGUILayout.ObjectField <Texture2D> ("Fade texture:", fadeTexture, false, string.Empty, "The texture to display fullscreen when fading");
 			renderFading = CustomGUILayout.Toggle ("Draw fade?", renderFading, string.Empty, "If True, the fade texture will be drawn automatically.");
 			if (!renderFading)
@@ -2453,164 +2569,24 @@ namespace AC
 				forwardDirection = (MainCameraForwardDirection) EditorGUILayout.EnumPopup ("Facing direction:", forwardDirection);
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (Application.isPlaying)
 			{
-				EditorGUILayout.BeginVertical ("Button");
-				if (attachedCamera)
+				CustomGUILayout.BeginVertical ();
+				if (_attachedCamera)
 				{
-					attachedCamera = (_Camera) CustomGUILayout.ObjectField <_Camera> ("Attached camera:", attachedCamera, true, string.Empty, "The current active camera, i.e. the one that the MainCamera is attaching itself to");
+					_attachedCamera = (_Camera) CustomGUILayout.ObjectField <_Camera> ("Attached camera:", attachedCamera, true, string.Empty, "The current active camera, i.e. the one that the MainCamera is attaching itself to");
 				}
 				else
 				{
 					EditorGUILayout.LabelField ("Attached camera: None");
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 		}
 
 		#endif
-
-		#region ProtectedClasses
-
-		protected class GameCameraData
-		{
-
-			public Vector3 position { get; private set; }
-			public Quaternion rotation { get; private set; }
-			public bool isOrthographic { get; private set; }
-			public float fieldOfView { get; private set; }
-			public float orthographicSize { get; private set; }
-			public float focalDistance { get; private set; }
-
-			public bool is2D { get; private set; }
-			public Vector2 perspectiveOffset { get; private set; }
-
-			#if ALLOW_PHYSICAL_CAMERA
-			public bool usePhysicalProperties { get; private set; }
-			public Vector2 sensorSize { get; private set; }
-			public Vector2 lensShift { get; private set; }
-			#endif
-
-			public GameCameraData () {}
-
-
-			public GameCameraData (MainCamera mainCamera)
-			{
-				position = mainCamera.transform.position;
-				rotation = mainCamera.transform.rotation;
-				fieldOfView = mainCamera.Camera.fieldOfView;
-				isOrthographic = mainCamera.Camera.orthographic;
-				orthographicSize = mainCamera.Camera.orthographicSize;
-				focalDistance = mainCamera.GetFocalDistance ();
-
-				is2D = false;
-				perspectiveOffset = Vector2.zero;
-
-				#if ALLOW_PHYSICAL_CAMERA
-				usePhysicalProperties = mainCamera.Camera.usePhysicalProperties;
-				sensorSize = mainCamera.Camera.sensorSize;
-				lensShift = mainCamera.Camera.lensShift;
-				#endif
-			}
-
-
-			public GameCameraData (_Camera _camera)
-			{
-				position = _camera.CameraTransform.position;
-				rotation = _camera.CameraTransform.rotation;
-
-				is2D = _camera.Is2D ();
-				Vector2 cursorOffset = _camera.CreateRotationOffset ();
-
-				if (is2D)
-				{
-					if (_camera.Camera.orthographic)
-					{
-						position += (Vector3) cursorOffset;
-					}
-				}
-				else
-				{
-					if (_camera.Camera.orthographic)
-					{
-						position += (_camera.transform.right * cursorOffset.x) + (_camera.transform.up * cursorOffset.y);
-					}
-					else
-					{
-						rotation *= Quaternion.Euler (5f * new Vector3 (-cursorOffset.y, cursorOffset.x, 0f));
-					}
-				}
-
-				fieldOfView = _camera.Camera.fieldOfView;
-				isOrthographic = _camera.Camera.orthographic;
-				orthographicSize = _camera.Camera.orthographicSize;
-				focalDistance = _camera.focalDistance;
-
-				perspectiveOffset = (is2D)
-									? _camera.GetPerspectiveOffset ()
-									: Vector2.zero;
-
-				if (is2D && !_camera.Camera.orthographic)
-				{
-					perspectiveOffset += cursorOffset;
-				}
-
-				#if ALLOW_PHYSICAL_CAMERA
-				usePhysicalProperties = _camera.Camera.usePhysicalProperties;
-				sensorSize = _camera.Camera.sensorSize;
-				lensShift = _camera.Camera.lensShift;
-				#endif
-			}
-
-
-			public GameCameraData CreateMix (GameCameraData otherData, float otherDataWeight, bool slerpRotation = false)
-			{
-				if (otherDataWeight <= 0f)
-				{
-					return this;
-				}
-
-				if (otherDataWeight >= 1f)
-				{
-					return otherData;
-				}
-
-				GameCameraData mixData = new GameCameraData ();
-
-				mixData.is2D = otherData.is2D;
-
-				if (mixData.is2D)
-				{
-					float offsetX = AdvGame.Lerp (perspectiveOffset.x, otherData.perspectiveOffset.x, otherDataWeight);
-					float offsetY = AdvGame.Lerp (perspectiveOffset.y, otherData.perspectiveOffset.y, otherDataWeight);
-
-					mixData.perspectiveOffset = new Vector2 (offsetX, offsetY);
-				}
-
-				mixData.position = Vector3.Lerp (position, otherData.position, otherDataWeight);
-				mixData.rotation = (slerpRotation)
-									? Quaternion.Lerp (rotation, otherData.rotation, otherDataWeight)
-									: Quaternion.Slerp (rotation, otherData.rotation, otherDataWeight);
-
-				mixData.isOrthographic = otherData.isOrthographic;
-				mixData.fieldOfView = Mathf.Lerp (fieldOfView, otherData.fieldOfView, otherDataWeight);
-				mixData.orthographicSize = Mathf.Lerp (orthographicSize, otherData.orthographicSize, otherDataWeight);
-				mixData.focalDistance = Mathf.Lerp (focalDistance, otherData.focalDistance, otherDataWeight);
-
-				#if ALLOW_PHYSICAL_CAMERA
-				mixData.usePhysicalProperties = otherData.usePhysicalProperties;
-				mixData.sensorSize = Vector2.Lerp (sensorSize, otherData.sensorSize, otherDataWeight);
-				mixData.lensShift = Vector2.Lerp (lensShift, otherData.lensShift, otherDataWeight);
-				#endif
-
-				return mixData;
-			}
-
-		}
-
-		#endregion
 
 	}
 	

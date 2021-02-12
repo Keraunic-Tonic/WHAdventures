@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuLabel.cs"
  * 
@@ -59,6 +59,7 @@ namespace AC
 
 		/** The ID number of the inventory property to show, if labelType = AC_LabelType.InventoryProperty */
 		public int itemPropertyID;
+		private InvInstance overrideInventoryInstance;
 		/** If True, and labelType = AC_LabelType.InventoryProperty, then the total property value will be multipled by the count associated with the item */
 		public bool multiplyByItemCount = false;
 		/** What kind of item to retrieve properties for, if labelType = AC_LabelType.InventoryProperty (SelectedItem, ItemInInventoryBox, LastClickedItem, MouseOverItem) */
@@ -154,11 +155,7 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObject.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			#if TextMeshProIsPresent
 			uiText = LinkUIElement <TMPro.TextMeshProUGUI> (canvas);
@@ -190,7 +187,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuLabel)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			if (source != MenuSource.AdventureCreator)
 			{
@@ -200,18 +197,18 @@ namespace AC
 				uiText = LinkedUiGUI <Text> (uiText, "Linked Text:", source);
 				#endif
 
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 			}
 
 			labelType = (AC_LabelType) CustomGUILayout.EnumPopup ("Label type:", labelType, apiPrefix + ".labelType", "What kind of text the label displays");
 			if (labelType == AC_LabelType.Normal)
 			{
-				label = CustomGUILayout.TextField ("Label text:", label, apiPrefix + ".label", "The display text");
+				label = CustomGUILayout.TextArea ("Label text:", label, apiPrefix + ".label", "The display text");
 			}
 			else if (source == MenuSource.AdventureCreator)
 			{
-				label = CustomGUILayout.TextField ("Placeholder text:", label, apiPrefix + ".label");
+				label = CustomGUILayout.TextArea ("Placeholder text:", label, apiPrefix + ".label");
 			}
 
 			if (labelType == AC_LabelType.GlobalVariable)
@@ -251,25 +248,32 @@ namespace AC
 					{
 						InvVar[] invVars = AdvGame.GetReferences ().inventoryManager.invVars.ToArray ();
 						List<string> invVarNames = new List<string>();
+						invVarNames.Add ("Item amount");
 
 						int itemPropertyNumber = 0;
 						for (int i=0; i<invVars.Length; i++)
 						{
 							if (invVars[i].id == itemPropertyID)
 							{
-								itemPropertyNumber = i;
+								itemPropertyNumber = i + 1;
 							}
 							invVarNames.Add (invVars[i].id + ": " + invVars[i].label);
 						}
 
 						itemPropertyNumber = CustomGUILayout.Popup ("Inventory property:", itemPropertyNumber, invVarNames.ToArray (), apiPrefix + ".itemPropertyNumber", "The inventory property to show");
-						itemPropertyID = invVars[itemPropertyNumber].id;
+						itemPropertyID = (itemPropertyNumber > 0)
+										? invVars[itemPropertyNumber - 1].id
+										: -1;
 
-						inventoryPropertyType = (InventoryPropertyType) CustomGUILayout.EnumPopup ("Inventory item source:", inventoryPropertyType, apiPrefix + ".inventoryPropertyType", "What kind of item to display properties for");
-
-						if (invVars[itemPropertyNumber].type == VariableType.Float || invVars[itemPropertyNumber].type == VariableType.Integer)
+						if (invVars[itemPropertyNumber-1].type == VariableType.Float || invVars[itemPropertyNumber-1].type == VariableType.Integer)
 						{
 							multiplyByItemCount = CustomGUILayout.Toggle ("Multiply by item count?", multiplyByItemCount, apiPrefix + ".multiplyByItemCount", "If True, then the property's value will be multipled by the item's count.");
+						}
+
+						inventoryPropertyType = (InventoryPropertyType) CustomGUILayout.EnumPopup ("Inventory item source:", inventoryPropertyType, apiPrefix + ".inventoryPropertyType", "What kind of item to display properties for");
+						if (inventoryPropertyType == InventoryPropertyType.CustomScript)
+						{
+							EditorGUILayout.HelpBox ("The Inventory Item can be set through this element's OverrideInventoryInstance property", MessageType.Info);
 						}
 					}
 					else
@@ -283,7 +287,7 @@ namespace AC
 				}
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			base.ShowGUI (menu);
 		}
@@ -327,15 +331,15 @@ namespace AC
 			return numFound + base.GetVariableReferences (_varID);
 		}
 
+		#endif
+
 
 		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
 		{
-			if (uiText != null && uiText.gameObject == gameObject) return true;
-			if (linkedUiID == id) return true;
+			if (uiText && uiText.gameObject == gameObject) return true;
+			if (linkedUiID == id && id != 0) return true;
 			return false;
 		}
-
-		#endif
 
 
 		public override void SetSpeech (Speech _speech)
@@ -378,7 +382,7 @@ namespace AC
 			
 			newLabel = AdvGame.ConvertTokens (newLabel, languageNumber);
 
-			if (uiText != null && Application.isPlaying)
+			if (uiText && Application.isPlaying)
 			{
 				uiText.text = newLabel;
 				UpdateUIElement (uiText);
@@ -403,16 +407,16 @@ namespace AC
 					string _newLabel = string.Empty;
 
 					if (showPendingWhileMovingToHotspot &&
-						KickStarter.playerInteraction.GetHotspotMovingTo () != null && 
+						KickStarter.playerInteraction.GetHotspotMovingTo () && 
 						KickStarter.playerCursor.GetSelectedCursorID () == -1 &&
-						KickStarter.runtimeInventory.SelectedItem == null)
+						!InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 					{
 						_newLabel = KickStarter.playerInteraction.MovingToHotspotLabel;
 					}
 
 					if (parentMenu != null && parentMenu.appearType == AppearType.OnInteraction)
 					{
-						if (parentMenu.TargetHotspot != null && parentMenu.TargetHotspot != KickStarter.playerInteraction.GetActiveHotspot ())
+						if (parentMenu.TargetHotspot && parentMenu.TargetHotspot != KickStarter.playerInteraction.GetActiveHotspot ())
 						{
 							return;
 						}
@@ -446,19 +450,7 @@ namespace AC
 					break;
 
 				case AC_LabelType.InventoryProperty:
-					newLabel = string.Empty;
-					if (inventoryPropertyType == InventoryPropertyType.SelectedItem)
-					{
-						newLabel = GetPropertyDisplayValue (languageNumber, KickStarter.runtimeInventory.SelectedItem);
-					}
-					else if (inventoryPropertyType == InventoryPropertyType.LastClickedItem)
-					{
-						newLabel = GetPropertyDisplayValue (languageNumber, KickStarter.runtimeInventory.lastClickedItem);
-					}
-					else if (inventoryPropertyType == InventoryPropertyType.MouseOverItem)
-					{
-						newLabel = GetPropertyDisplayValue (languageNumber, KickStarter.runtimeInventory.hoverItem);
-					}
+					newLabel = GetPropertyDisplayValue (languageNumber);
 					break;
 
 				case AC_LabelType.DialogueLine:
@@ -562,11 +554,46 @@ namespace AC
 						newLabel = string.Empty;
 					}
 					break;
+
+				default:
+					break;
 			}
 
 			if (newLabel != _oldLabel && sizeType == AC_SizeType.Automatic && parentMenu != null && parentMenu.menuSource == MenuSource.AdventureCreator)
 			{
 				parentMenu.Recalculate ();
+			}
+		}
+
+
+		private string GetPropertyDisplayValue (int languageNumber)
+		{
+			switch (inventoryPropertyType)
+			{
+				case InventoryPropertyType.SelectedItem:
+					return GetPropertyDisplayValue (languageNumber, KickStarter.runtimeInventory.SelectedInstance);
+
+				case InventoryPropertyType.LastClickedItem:
+					return GetPropertyDisplayValue (languageNumber, KickStarter.runtimeInventory.LastClickedInstance);
+			
+				case InventoryPropertyType.MouseOverItem:
+					return GetPropertyDisplayValue (languageNumber, KickStarter.runtimeInventory.HoverInstance);
+
+				case InventoryPropertyType.CustomScript:
+					return GetPropertyDisplayValue (languageNumber, overrideInventoryInstance);
+
+				default:
+					return string.Empty;
+			}
+		}
+
+
+		/** The Inventory instance to rely on if inventoryPropertyType = InventoryPropertyType.CustomScript */
+		public InvInstance OverrideInventoryInstance
+		{
+			set
+			{
+				overrideInventoryInstance = value;
 			}
 		}
 
@@ -580,16 +607,21 @@ namespace AC
 		}
 
 
-		private string GetPropertyDisplayValue (int languageNumber, InvItem invItem)
+		private string GetPropertyDisplayValue (int languageNumber, InvInstance invInstance)
 		{
-			if (invItem != null)
+			if (InvInstance.IsValid (invInstance))
 			{
-				InvVar invVar = invItem.GetProperty (itemPropertyID);
+				if (itemPropertyID < 0)
+				{
+					return invInstance.Count.ToString ();
+				}
+
+				InvVar invVar = invInstance.GetProperty (itemPropertyID);
 				if (invVar != null)
 				{
 					if (multiplyByItemCount)
 					{
-						return invVar.GetDisplayValue (languageNumber, invItem.count);
+						return invVar.GetDisplayValue (languageNumber, invInstance.Count);
 					}
 					return invVar.GetDisplayValue (languageNumber);
 				}
@@ -749,7 +781,7 @@ namespace AC
 				GUIContent content = new GUIContent (GetLabel (0, 0));
 				AutoSize (content);
 			}
-			else if (string.IsNullOrEmpty (_newLabel) && backgroundTexture != null)
+			else if (string.IsNullOrEmpty (_newLabel) && backgroundTexture)
 			{
 				GUIContent content = new GUIContent (backgroundTexture);
 				AutoSize (content);

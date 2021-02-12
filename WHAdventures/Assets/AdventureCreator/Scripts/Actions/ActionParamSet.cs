@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionParamSet.cs"
  * 
@@ -66,15 +66,11 @@ namespace AC
 		#endif
 
 
-		public ActionParamSet ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ActionList;
-			title = "Set parameter";
-			description = "Sets the value of a parameter in an ActionList.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.ActionList; }}
+		public override string Title { get { return "Set parameter"; }}
+		public override string Description { get { return "Sets the value of a parameter in an ActionList."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{	
 			if (!changeOwn)
@@ -240,6 +236,10 @@ namespace AC
 
 						case ParameterType.String:
 							_parameter.stringValue = GlobalVariables.GetStringValue (globalVariableID, true, Options.GetLanguage ());
+							break;
+
+						case ParameterType.GameObject:
+							_parameter.SetValue (gVar.GameObjectValue);
 							break;
 
 						default:
@@ -434,8 +434,6 @@ namespace AC
 					}
 				}
 			}
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -590,6 +588,7 @@ namespace AC
 						case ParameterType.Float:
 						case ParameterType.Integer:
 						case ParameterType.String:
+						case ParameterType.GameObject:
 							globalVariableID = AdvGame.GlobalVariableGUI ("Variable:", globalVariableID);
 							break;
 
@@ -806,7 +805,7 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 			if (setParamMethod == SetParamMethod.CopiedFromGlobalVariable && location == VariableLocation.Global && globalVariableID == varID)
@@ -926,7 +925,7 @@ namespace AC
 			}
 			if (gameobjectValue != null && gameobjectValue == _gameObject) return true;
 			if (gameObjectConstantID == id) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -934,7 +933,7 @@ namespace AC
 		{
 			if (!changeOwn && actionListSource == ActionListSource.AssetFile && _actionListAsset == actionListAsset)
 				return true;
-			return false;
+			return base.ReferencesAsset (_actionListAsset);
 		}
 
 		#endif
@@ -948,7 +947,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (int parameterID, bool newBoolValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -967,7 +966,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionList actionList, int parameterID, bool newBoolValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -988,7 +987,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionListAsset actionListAsset, int parameterID, bool newBoolValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1009,7 +1008,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (int parameterID, int newIntegerValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1028,7 +1027,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionList actionList, int parameterID, int newIntegerValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1049,7 +1048,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionListAsset actionListAsset, int parameterID, int newIntegerValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1069,7 +1068,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (int parameterID, float newFloatValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1088,7 +1087,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionList actionList, int parameterID, float newFloatValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1110,7 +1109,7 @@ namespace AC
 		
 		public static ActionParamSet CreateNew (ActionListAsset actionListAsset, int parameterID, float newFloatValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1130,7 +1129,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (int parameterID, string newStringValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1150,7 +1149,7 @@ namespace AC
 		
 		public static ActionParamSet CreateNew (ActionList actionList, int parameterID, string newStringValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1171,7 +1170,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionListAsset actionListAsset, int parameterID, string newStringValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1192,7 +1191,7 @@ namespace AC
 		 */		
 		public static ActionParamSet CreateNew (int parameterID, Vector3 newVectorValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1211,7 +1210,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionList actionList, int parameterID, Vector3 newVectorValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1232,7 +1231,7 @@ namespace AC
 		 */		
 		public static ActionParamSet CreateNew (ActionListAsset actionListAsset, int parameterID, Vector3 newVectorValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1253,7 +1252,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (int parameterID, Variables variables, int newComponentVariableIDValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1274,7 +1273,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionList actionList, int parameterID, Variables variables, int newComponentVariableIDValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1297,7 +1296,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionListAsset actionListAsset, int parameterID, Variables variables, int newComponentVariableIDValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1318,7 +1317,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (int parameterID, GameObject newGameObjectValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1337,7 +1336,7 @@ namespace AC
 		 */	
 		public static ActionParamSet CreateNew (ActionList actionList, int parameterID, GameObject newGameObjectValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1358,7 +1357,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionListAsset actionListAsset, int parameterID, GameObject newGameObjectValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -1378,7 +1377,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (int parameterID, Object newObjectValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = true;
 			newAction.parameterID = parameterID;
 
@@ -1397,7 +1396,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionList actionList, int parameterID, Object newObjectValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.InScene;
 			newAction.actionList = actionList;
@@ -1418,7 +1417,7 @@ namespace AC
 		 */
 		public static ActionParamSet CreateNew (ActionListAsset actionListAsset, int parameterID, Object newObjectValue)
 		{
-			ActionParamSet newAction = (ActionParamSet) CreateInstance <ActionParamSet>();
+			ActionParamSet newAction = CreateNew<ActionParamSet> ();
 			newAction.changeOwn = false;
 			newAction.actionListSource = ActionListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;

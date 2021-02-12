@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ACInstaller.cs"
  * 
@@ -58,7 +58,8 @@ namespace AC
 
 			if (!gotMenu || !gotNavMesh || !gotBackgroundImage || !gotDistantHotspot)
 			{
-				string changesToMake = "";
+				string changesToMake = string.Empty;
+				
 				if (!gotMenu)
 				{
 					changesToMake += "'Menu' - an input used to open the Pause menu\r\n";
@@ -76,7 +77,7 @@ namespace AC
 					changesToMake += "'" + defaultDistantHotspotLayer + "' - a Layer used by Hotspots too far away\r\n";
 				}
 
-				bool canProceed = EditorUtility.DisplayDialog ("Adventure Creator installation", "Adventure Creator requires that the following be created:\r\n\r\n" + changesToMake + "\r\nAC can make the necessary changes for you, if you wish. Proceed?", "OK", "Cancel");
+				bool canProceed = EditorUtility.DisplayDialog ("Adventure Creator installation", "Adventure Creator requires that the following be created:\r\n\r\n" + changesToMake + "\r\nAC will now make the necessary changes automatically.", "OK");
 				if (canProceed)
 				{
 					DefineInputs ();
@@ -85,6 +86,15 @@ namespace AC
 					//Want to have this open, but Unity 2017.1 has a bug
 					//AboutWindow.Init ();
 				}
+			}
+		}
+
+
+		public static string DefaultReferencesPath
+		{
+			get
+			{
+				return Resource.MainFolderPathRelativeToAssets + System.IO.Path.DirectorySeparatorChar.ToString () + "Resources";
 			}
 		}
 

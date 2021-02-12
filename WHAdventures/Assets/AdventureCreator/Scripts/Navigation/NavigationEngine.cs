@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"NavigationEngine.cs"
  * 
@@ -135,10 +135,7 @@ namespace AC
 		 * Provides a space for any custom Editor GUI code that should be displayed in SceneManager.
 		 */
 		public virtual void SceneSettingsGUI ()
-		{ 
-			#if UNITY_EDITOR
-			#endif
-		}
+		{}
 
 
 		/** Returns True if the engine relies on a specific GameObject for pathfinding */

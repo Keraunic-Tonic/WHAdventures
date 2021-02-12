@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionVarProperty.cs"
  * 
@@ -51,13 +51,9 @@ namespace AC
 		protected GVar runtimeVariable;
 
 
-		public ActionInvProperty ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Inventory;
-			title = "Property to Variable";
-			description = "Sets the value of a Variable as an Inventory item property.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Inventory; }}
+		public override string Title { get { return "Property to Variable"; }}
+		public override string Description { get { return "Sets the value of a Variable as an Inventory item property."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -113,9 +109,9 @@ namespace AC
 
 			if (setVarAsPropertyMethod == SetVarAsPropertyMethod.SelectedItem)
 			{
-				if (KickStarter.runtimeInventory.SelectedItem != null)
+				if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
 				{
-					runtimeInvID = KickStarter.runtimeInventory.SelectedItem.id;
+					runtimeInvID = KickStarter.runtimeInventory.SelectedInstance.ItemID;
 				}
 			}
 			else
@@ -124,28 +120,26 @@ namespace AC
 			}
 
 			InvVar invVar = null;
-			InvItem invItem = null;
 			if (runtimeInvID >= 0)
 			{
+				InvInstance invInstance = (useLiveValues)
+											? KickStarter.runtimeInventory.GetInstance (runtimeInvID)
+											: new InvInstance (KickStarter.inventoryManager.GetItem (runtimeInvID));
 
-				if (useLiveValues)
+				if (!InvInstance.IsValid (invInstance))
 				{
-					invItem = KickStarter.runtimeInventory.GetItem (runtimeInvID);
-					if (invItem == null)
+					if (useLiveValues)
 					{
 						LogWarning ("Cannot find Inventory item with ID " + runtimeInvID + " in the Player's inventory");
-						return 0f;
 					}
-				}
-				else
-				{
-					invItem = KickStarter.inventoryManager.GetItem (runtimeInvID);
+					else
+					{
+						LogWarning ("Cannot find Inventory item with ID " + runtimeInvID);
+					}
+					return 0f;
 				}
 
-				if (invItem != null)
-				{
-					invVar = invItem.GetProperty (propertyID);
-				}
+				invVar = invInstance.GetProperty (propertyID);
 			}
 
 			if (invVar == null)
@@ -174,6 +168,10 @@ namespace AC
 
 					case VariableType.Vector3:
 						runtimeVariable.Vector3Value = invVar.Vector3Value;
+						break;
+
+					case VariableType.GameObject:
+						runtimeVariable.GameObjectValue = invVar.GameObjectValue;
 						break;
 
 					default:
@@ -266,8 +264,6 @@ namespace AC
 					EditorGUILayout.HelpBox ("The chosen Inventory Item Property and Variable must share the same Type, or the Variable must be a String.", MessageType.Warning);
 				}
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -528,7 +524,7 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 
@@ -561,7 +557,7 @@ namespace AC
 				if (variables != null && variables.gameObject == _gameObject) return true;
 				if (variablesConstantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -576,7 +572,7 @@ namespace AC
 		 */
 		public static ActionInvProperty CreateNew_ToGlobalVariable (int variableID, int propertyID, int itemID = -1)
 		{
-			ActionInvProperty newAction = (ActionInvProperty) CreateInstance <ActionInvProperty>();
+			ActionInvProperty newAction = CreateNew<ActionInvProperty> ();
 			newAction.setVarAsPropertyMethod = (itemID >= 0) ? SetVarAsPropertyMethod.SpecificItem : SetVarAsPropertyMethod.SelectedItem;
 			newAction.propertyID = propertyID;
 			newAction.varLocation = VariableLocation.Global;
@@ -594,7 +590,7 @@ namespace AC
 		 */
 		public static ActionInvProperty CreateNew_ToLocalVariable (int variableID, int propertyID, int itemID = -1)
 		{
-			ActionInvProperty newAction = (ActionInvProperty) CreateInstance <ActionInvProperty>();
+			ActionInvProperty newAction = CreateNew<ActionInvProperty> ();
 			newAction.setVarAsPropertyMethod = (itemID >= 0) ? SetVarAsPropertyMethod.SpecificItem : SetVarAsPropertyMethod.SelectedItem;
 			newAction.propertyID = propertyID;
 			newAction.varLocation = VariableLocation.Local;
@@ -613,7 +609,7 @@ namespace AC
 		 */
 		public static ActionInvProperty CreateNew_ToComponentVariable (Variables variables, int variableID, int propertyID, int itemID = -1)
 		{
-			ActionInvProperty newAction = (ActionInvProperty) CreateInstance <ActionInvProperty>();
+			ActionInvProperty newAction = CreateNew<ActionInvProperty> ();
 			newAction.setVarAsPropertyMethod = (itemID >= 0) ? SetVarAsPropertyMethod.SpecificItem : SetVarAsPropertyMethod.SelectedItem;
 			newAction.propertyID = propertyID;
 			newAction.varLocation = VariableLocation.Component;

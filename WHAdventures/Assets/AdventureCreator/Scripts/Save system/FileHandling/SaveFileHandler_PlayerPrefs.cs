@@ -9,6 +9,7 @@ using System.Collections.Generic;
 namespace AC
 {
 
+	/** A save-file handler that stores save-games as separate keys in the PlayerPrefs */
 	public class SaveFileHandler_PlayerPrefs : iSaveFileHandler
 	{
 
@@ -17,11 +18,10 @@ namespace AC
 
 		public string GetDefaultSaveLabel (int saveID)
 		{
-			string label = "Save " + saveID.ToString ();
-			if (saveID == 0)
-			{
-				label = "Autosave";
-			}
+			string label = (saveID == 0)
+							? SaveSystem.AutosaveLabel
+							: (SaveSystem.SaveLabel + " " + saveID.ToString ());
+
 			return label;
 		}
 
@@ -45,7 +45,7 @@ namespace AC
 				PlayerPrefs.DeleteKey (filename);
 				ACDebug.Log ("PlayerPrefs key deleted: " + filename);
 
-				if (KickStarter.settingsManager.takeSaveScreenshots)
+				if (KickStarter.settingsManager.saveScreenshots == SaveScreenshots.Always || (KickStarter.settingsManager.saveScreenshots == SaveScreenshots.ExceptWhenAutosaving && !saveFile.IsAutoSave))
 				{
 					if (PlayerPrefs.HasKey (filename + screenshotKey))
 					{
@@ -83,12 +83,12 @@ namespace AC
 
 	 			try
 	 			{
-			        DateTime startDate = new DateTime (2000, 1, 1, 0, 0, 0).ToUniversalTime ();
+					DateTime startDate = new DateTime (2000, 1, 1, 0, 0, 0).ToUniversalTime ();
 
 					int secs = (int) (System.DateTime.UtcNow - startDate).TotalSeconds;
-			        string timestampData = secs.ToString ();
+					string timestampData = secs.ToString ();
 
-			        PlayerPrefs.SetString (dateKey, timestampData);
+					PlayerPrefs.SetString (dateKey, timestampData);
 	 				#if UNITY_PS4 || UNITY_SWITCH
 					PlayerPrefs.Save ();
 					#endif
@@ -117,9 +117,86 @@ namespace AC
 		}
 
 
+		public bool SupportsSaveThreading ()
+		{
+			return false;
+		}
+
+
 		public List<SaveFile> GatherSaveFiles (int profileID)
 		{
-			return GatherSaveFiles (profileID, false, -1, "");
+			return GatherSaveFiles (profileID, false, -1, string.Empty);
+		}
+
+
+		public SaveFile GetSaveFile (int saveID, int profileID)
+		{
+			return GetSaveFile (saveID, profileID, false, -1, string.Empty);
+		}
+
+
+		protected SaveFile GetSaveFile (int saveID, int profileID, bool isImport, int boolID, string separateFilePrefix)
+		{
+			bool isAutoSave = (saveID == 0);
+			string filename = (isImport) ? GetImportFilename (saveID, separateFilePrefix, profileID) : GetSaveFilename (saveID, profileID);
+
+			if (PlayerPrefs.HasKey (filename))
+			{
+				string label = isAutoSave
+								? SaveSystem.AutosaveLabel
+								: SaveSystem.SaveLabel + " " + saveID.ToString ();
+
+				Texture2D screenShot = null;
+				if (KickStarter.settingsManager.saveScreenshots == SaveScreenshots.Always || (KickStarter.settingsManager.saveScreenshots == SaveScreenshots.ExceptWhenAutosaving && !isAutoSave))
+				{
+					if (PlayerPrefs.HasKey (filename + screenshotKey) && KickStarter.saveSystem)
+					{
+						try
+						{
+							string screenshotData = PlayerPrefs.GetString (filename + screenshotKey);
+							if (!string.IsNullOrEmpty (screenshotData))
+							{
+								byte[] result = Convert.FromBase64String (screenshotData);
+								if (result != null)
+								{
+									screenShot = new Texture2D (KickStarter.saveSystem.ScreenshotWidth, KickStarter.saveSystem.ScreenshotHeight, TextureFormat.RGB24, false, KickStarter.settingsManager.linearColorTextures);
+									screenShot.LoadImage (result);
+									screenShot.Apply ();
+								}
+							}
+						}
+						catch (Exception e)
+						{
+							ACDebug.LogWarning ("Could not load PlayerPrefs data from key " + filename + screenshotKey + ". Exception: " + e);
+						}
+					}
+				}
+
+				int updateTime = 0;
+				if (KickStarter.settingsManager.saveTimeDisplay != SaveTimeDisplay.None)
+				{
+					string dateKey = filename + "_timestamp";
+
+					if (PlayerPrefs.HasKey (dateKey))
+					{
+						string timestampData = PlayerPrefs.GetString (dateKey);
+						if (!string.IsNullOrEmpty (timestampData))
+						{
+							if (int.TryParse (timestampData, out updateTime) && !isAutoSave)
+							{
+								DateTime startDate = new DateTime (2000, 1, 1, 0, 0, 0).ToUniversalTime ();
+								DateTime saveDate = startDate.AddSeconds (updateTime);
+
+								label += GetTimeString (saveDate);
+							}
+						}
+					}
+				}
+
+				return new SaveFile (saveID, profileID, label, filename, screenShot, string.Empty, updateTime);
+			}
+
+			return null;
 		}
 
 
@@ -139,63 +216,10 @@ namespace AC
 
 			for (int i=0; i<50; i++)
 			{
-				bool isAutoSave = false;
-				string filename = (isImport) ? GetImportFilename (i, separateFilePrefix, profileID) : GetSaveFilename (i, profileID);
-
-				if (PlayerPrefs.HasKey (filename))
+				SaveFile saveFile = GetSaveFile (i, profileID, isImport, boolID, separateFilePrefix);
+				if (saveFile != null)
 				{
-					string label = "Save " + i.ToString ();
-					if (i == 0)
-					{
-						label = "Autosave";
-						isAutoSave = true;
-					}
-
-					Texture2D screenShot = null;
-					if (KickStarter.settingsManager.takeSaveScreenshots && PlayerPrefs.HasKey (filename + screenshotKey) && KickStarter.saveSystem != null)
-					{
-						try
-						{
-							string screenshotData = PlayerPrefs.GetString (filename + screenshotKey);
-							if (!string.IsNullOrEmpty (screenshotData))
-							{
-								byte[] result = Convert.FromBase64String (screenshotData);
-								if (result != null)
-								{
-									screenShot = new Texture2D (KickStarter.saveSystem.ScreenshotWidth, KickStarter.saveSystem.ScreenshotHeight, TextureFormat.RGB24, false, KickStarter.settingsManager.linearColorTextures);
-									screenShot.LoadImage (result);
-									screenShot.Apply ();
-								}
-							}
-						}
-						catch (Exception e)
-			 			{
-							ACDebug.LogWarning ("Could not load PlayerPrefs data from key " + filename + screenshotKey + ". Exception: " + e);
-			 			}
-					}
-
-					int updateTime = 0;
-					if (KickStarter.settingsManager.saveTimeDisplay != SaveTimeDisplay.None)
-					{
-						string dateKey = filename + "_timestamp";
-
-						if (PlayerPrefs.HasKey (dateKey))
-						{
-							string timestampData = PlayerPrefs.GetString (dateKey);
-							if (!string.IsNullOrEmpty (timestampData))
-							{
-								if (int.TryParse (timestampData, out updateTime) && !isAutoSave)
-								{
-									DateTime startDate = new DateTime (2000, 1, 1, 0, 0, 0).ToUniversalTime ();
-									DateTime saveDate = startDate.AddSeconds (updateTime);
-
-									label += GetTimeString (saveDate);
-								}
-							}
-						}
-					}
-
-					gatheredSaveFiles.Add (new SaveFile (i, profileID, label, filename, isAutoSave, screenShot, string.Empty, updateTime));
+					gatheredSaveFiles.Add (saveFile);
 				}
 			}
 
@@ -247,7 +271,7 @@ namespace AC
 		}
 
 
-		protected string GetTimeString (System.DateTime dateTime)
+		protected string GetTimeString (DateTime dateTime)
 		{
 			if (KickStarter.settingsManager.saveTimeDisplay != SaveTimeDisplay.None)
 			{

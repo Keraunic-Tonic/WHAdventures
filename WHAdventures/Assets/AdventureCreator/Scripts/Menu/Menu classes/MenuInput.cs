@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuInput.cs"
  * 
@@ -40,6 +40,8 @@ namespace AC
 		public int characterLimit = 10;
 		/** The name of the MenuButton element that is synced with the 'Return' key when this element is active */
 		public string linkedButton = "";
+		/** If True, and inputType = AC_InputType.NumericOnly, then decimal points can be entered */
+		public bool allowDecimals = false;
 		/** If True, then spaces are recognised */
 		public bool allowSpaces = false;
 		/** The method by which this element is hidden from view when made invisible (DisableObject, DisableInteractability) */
@@ -71,12 +73,13 @@ namespace AC
 			SetSize (new Vector2 (10f, 5f));
 			inputType = AC_InputType.AlphaNumeric;
 			characterLimit = 10;
-			linkedButton = "";
+			linkedButton = string.Empty;
 			textEffects = TextEffects.None;
 			outlineSize = 2f;
 			allowSpaces = false;
 			uiSelectableHideStyle = UISelectableHideStyle.DisableObject;
 			requireSelection = false;
+			allowDecimals = false;
 
 			base.Declare ();
 		}
@@ -112,22 +115,21 @@ namespace AC
 			allowSpaces = _element.allowSpaces;
 			uiSelectableHideStyle = _element.uiSelectableHideStyle;
 			requireSelection = _element.requireSelection;
+			allowDecimals = _element.allowDecimals;
 
 			base.Copy (_element);
 		}
 
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObject.</summary>
-		 * <param name = "_menu The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			#if TextMeshProIsPresent
 			uiInput = LinkUIElement <TMPro.TMP_InputField> (canvas);
 			#else
 			uiInput = LinkUIElement <InputField> (canvas);
 			#endif
+
+			CreateHoverSoundHandler (uiInput, _menu, 0);
 		}
 		
 
@@ -138,7 +140,7 @@ namespace AC
 		 */
 		public override RectTransform GetRectTransform (int _slot)
 		{
-			if (uiInput != null)
+			if (uiInput)
 			{
 				return uiInput.GetComponent <RectTransform>();
 			}
@@ -148,7 +150,7 @@ namespace AC
 
 		public override void SetUIInteractableState (bool state)
 		{
-			if (uiInput != null)
+			if (uiInput)
 			{
 				uiInput.interactable = state;
 			}
@@ -157,7 +159,7 @@ namespace AC
 
 		public override GameObject GetObjectToSelect (int slotIndex = 0)
 		{
-			if (uiInput != null)
+			if (uiInput)
 			{
 				return uiInput.gameObject;
 			}
@@ -172,7 +174,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuInput)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			if (source == MenuSource.AdventureCreator)
 			{
 				inputType = (AC_InputType) CustomGUILayout.EnumPopup ("Input type:", inputType, apiPrefix + ".inputType", "What kind of characters can be entered in by the player");
@@ -180,6 +182,10 @@ namespace AC
 				if (inputType == AC_InputType.AlphaNumeric)
 				{
 					allowSpaces = CustomGUILayout.Toggle ("Allow spaces?", allowSpaces, apiPrefix + ".allowSpace", "If True, then spaces are recognised");
+				}
+				else if (inputType == AC_InputType.NumbericOnly)
+				{
+					allowDecimals = CustomGUILayout.Toggle ("Allow decimals?", allowDecimals, apiPrefix + ".allowDecimals", "If True, then decimals are recognised");
 				}
 				characterLimit = CustomGUILayout.IntField ("Character limit:", characterLimit, apiPrefix + ".characterLimit", "The character limit on text that can be entered");
 
@@ -199,7 +205,7 @@ namespace AC
 				#endif
 				uiSelectableHideStyle = (UISelectableHideStyle) CustomGUILayout.EnumPopup ("When invisible:", uiSelectableHideStyle, apiPrefix + ".uiSelectableHideStyle", "The method by which this element is hidden from view when made invisible");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			base.ShowGUI (menu);
 		}
@@ -215,15 +221,15 @@ namespace AC
 			}
 		}
 
+		#endif
+
 
 		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
 		{
-			if (uiInput != null && uiInput.gameObject == gameObject) return true;
-			if (linkedUiID == id) return true;
+			if (uiInput && uiInput.gameObject == gameObject) return true;
+			if (linkedUiID == id && id != 0) return true;
 			return false;
 		}
-		
-		#endif
 		
 
 		/**
@@ -232,9 +238,9 @@ namespace AC
 		 */
 		public string GetContents ()
 		{
-			if (uiInput != null)
+			if (uiInput)
 			{
-				if (uiInput.textComponent != null)
+				if (uiInput.textComponent)
 				{
 					return uiInput.textComponent.text;
 				}
@@ -256,7 +262,7 @@ namespace AC
 		{
 			label = _label;
 
-			if (uiInput != null && uiInput.textComponent != null)
+			if (uiInput && uiInput.textComponent)
 			{
 				uiInput.text = _label;
 			}
@@ -265,7 +271,7 @@ namespace AC
 
 		public override void PreDisplay (int _slot, int languageNumber, bool isActive)
 		{
-			if (uiInput != null)
+			if (uiInput)
 			{
 				UpdateUISelectable (uiInput, uiSelectableHideStyle);
 			}
@@ -321,7 +327,7 @@ namespace AC
 
 		public override bool IsSelectedByEventSystem (int slotIndex)
 		{
-			if (uiInput != null)
+			if (uiInput)
 			{
 				return KickStarter.playerMenus.IsEventSystemSelectingObject (uiInput.gameObject);
 			}
@@ -350,7 +356,7 @@ namespace AC
 		 */
 		public void CheckForInput (string keycode, string character, bool shift, string menuName)
 		{
-			if (uiInput != null)
+			if (uiInput)
 			{
 				return;
 			}
@@ -391,12 +397,17 @@ namespace AC
 				ProcessReturn (input, menuName);
 			}
 			else if ((inputType == AC_InputType.AlphaNumeric && (input.Length == 1 || input.Contains ("Alpha"))) ||
-			         (inputType == AC_InputType.NumbericOnly && input.Contains ("Alpha")) ||
 			         (inputType == AC_InputType.AlphaNumeric && allowSpaces && input == "Space") ||
-			         (inputType == AC_InputType.AllowSpecialCharacters && (input.Length == 1 || input == "Space")))
+			         (inputType == AC_InputType.NumbericOnly && input.Contains ("Alpha")) ||
+					 (inputType == AC_InputType.NumbericOnly && allowDecimals && input == "Period" && !label.Contains (".")) ||
+					 (inputType == AC_InputType.NumbericOnly && allowDecimals && input == "KeypadPeriod" && !label.Contains (".")) ||
+					 (inputType == AC_InputType.AllowSpecialCharacters && (input.Length == 1 || input == "Space")))
 			{
 				input = input.Replace ("Alpha", "");
 				input = input.Replace ("Space", " ");
+
+				input = input.Replace ("KeypadPeriod", ".");
+				input = input.Replace ("Period", ".");
 
 				if (inputType != AC_InputType.AllowSpecialCharacters)
 				{
@@ -426,6 +437,7 @@ namespace AC
 					}
 				}
 			}
+			else Debug.LogWarning ("Invalid character: '" + input + "'");
 		}
 
 
@@ -454,21 +466,16 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Performs what should happen when the element is clicked on.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 * <param name = "_slot">Ignored by this subclass</param>
-		 * <param name = "_mouseState">The state of the mouse button</param>
-		 */
-		public override void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public override bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			if (!_menu.IsClickable ())
 			{
-				return;
+				return false;
 			}
 
 			KickStarter.playerMenus.SelectInputBox (this);
-			base.ProcessClick (_menu, _slot, _mouseState);
+
+			return base.ProcessClick (_menu, _slot, _mouseState);
 		}
 
 		

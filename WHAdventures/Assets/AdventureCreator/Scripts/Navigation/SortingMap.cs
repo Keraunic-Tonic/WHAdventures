@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SortingMap.cs"
  * 
@@ -41,6 +41,8 @@ namespace AC
 		/** The AnimationCurve used to define character scaling, where 0s is the smallest scale, and 1s is the largest (if sortingMapScaleType = AnimationCurve) */
 		public AnimationCurve scalingAnimationCurve;
 
+		protected Transform _transform;
+
 		#endregion
 
 
@@ -66,21 +68,21 @@ namespace AC
 
 		protected void OnDrawGizmos ()
 		{
-			Vector3 right = transform.right * 0.1f;
+			Vector3 right = Transform.right * 0.1f;
 			bool doScaling = affectScale || affectSpeed;
 
 			float scaleGizmo = (doScaling && sortingMapScaleType == SortingMapScaleType.Linear) ? (originScale / 100f) : 1f;
-			Gizmos.DrawLine (transform.position - right * scaleGizmo, transform.position + right * scaleGizmo);
+			Gizmos.DrawLine (Transform.position - right * scaleGizmo, Transform.position + right * scaleGizmo);
 
 			for (int i=0; i<sortingAreas.Count; i++)
 			{
 				scaleGizmo = (doScaling && sortingMapScaleType == SortingMapScaleType.Linear) ? (sortingAreas[i].scale / 100f) : 1f;
 
 				Gizmos.color = sortingAreas [i].color;
-				Gizmos.DrawIcon (GetAreaPosition (i), "", true);
+				Gizmos.DrawIcon (GetAreaPosition (i), string.Empty, true);
 				Gizmos.DrawLine (GetAreaPosition (i) - right * scaleGizmo, GetAreaPosition (i) + right * scaleGizmo);
 
-				Vector3 startPosition = (i == 0) ? transform.position : GetAreaPosition (i-1);
+				Vector3 startPosition = (i == 0) ? Transform.position : GetAreaPosition (i-1);
 
 				float startScaleGizmo = (doScaling && sortingMapScaleType == SortingMapScaleType.Linear) ? ((i == 0) ? (originScale / 100f) : (sortingAreas[i-1].scale / 100f)) : 1f;
 			
@@ -149,7 +151,7 @@ namespace AC
 		 */
 		public Vector3 GetAreaPosition (int i)
 		{
-			return (transform.position + (transform.forward * sortingAreas [i].z));
+			return (Transform.position + (Transform.forward * sortingAreas [i].z));
 		}
 
 
@@ -166,7 +168,7 @@ namespace AC
 			}
 			
 			// Behind first?
-			if (Vector3.Angle (transform.forward, transform.position - followPosition) < 90f)
+			if (Vector3.Angle (Transform.forward, Transform.position - followPosition) < 90f)
 			{
 				if (sortingMapScaleType == SortingMapScaleType.AnimationCurve)
 				{
@@ -177,7 +179,7 @@ namespace AC
 			}
 			
 			// In front of last?
-			if (Vector3.Angle (transform.forward, GetAreaPosition (sortingAreas.Count-1) - followPosition) > 90f)
+			if (Vector3.Angle (Transform.forward, GetAreaPosition (sortingAreas.Count-1) - followPosition) > 90f)
 			{
 				if (sortingMapScaleType == SortingMapScaleType.AnimationCurve)
 				{
@@ -191,7 +193,7 @@ namespace AC
 			if (sortingMapScaleType == SortingMapScaleType.AnimationCurve)
 			{
 				int i = sortingAreas.Count-1;
-				float angle = Vector3.Angle (transform.forward, GetAreaPosition (i) - followPosition);
+				float angle = Vector3.Angle (Transform.forward, GetAreaPosition (i) - followPosition);
 				float proportionAlong = 1 - Vector3.Distance (GetAreaPosition (i), followPosition) / sortingAreas [i].z * Mathf.Cos (Mathf.Deg2Rad * angle);
 
 				float scaleValue = scalingAnimationCurve.Evaluate (proportionAlong) * 100f;
@@ -200,7 +202,7 @@ namespace AC
 
 			for (int i=0; i<sortingAreas.Count; i++)
 			{
-				float angle = Vector3.Angle (transform.forward, GetAreaPosition (i) - followPosition);
+				float angle = Vector3.Angle (Transform.forward, GetAreaPosition (i) - followPosition);
 				if (angle < 90f)
 				{
 					float prevZ = 0;
@@ -256,6 +258,21 @@ namespace AC
 
 		#endregion
 
+
+		#region GetSet
+
+		/** A cache of the SortingMap's transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
+			}
+		}
+
+		#endregion
+
 	}
-	
+
 }

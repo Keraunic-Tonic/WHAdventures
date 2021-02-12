@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionVolume.cs"
  * 
@@ -35,15 +35,11 @@ namespace AC
 		public int changeTimeParameterID = -1;
 
 
-		public ActionVolume ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Sound;
-			title = "Change volume";
-			description = "Alters the 'relative volume' of any Sound object.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Sound; }}
+		public override string Title { get { return "Change volume"; }}
+		public override string Description { get { return "Alters the 'relative volume' of any Sound object."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			runtimeSoundObject = AssignFile <Sound> (parameters, parameterID, constantID, soundObject);
@@ -56,10 +52,10 @@ namespace AC
 		{
 			if (!isRunning)
 			{
-				if (runtimeSoundObject != null)
+				if (runtimeSoundObject)
 				{
 					runtimeSoundObject.ChangeRelativeVolume (newRelativeVolume, changeTime);
-
+					
 					if (willWait && changeTime > 0f)
 					{
 						isRunning = true;
@@ -110,8 +106,6 @@ namespace AC
 			{
 				willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -140,9 +134,9 @@ namespace AC
 			if (parameterID < 0)
 			{
 				if (soundObject != null && soundObject.gameObject == gameObject) return true;
-				return (constantID == id);
+				return (constantID == id && id != 0);
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -158,7 +152,7 @@ namespace AC
 		 */
 		public static ActionVolume CreateNew (Sound sound, float newRelativeVolume, float transitionTime = 0.5f, bool waitUntilFinish = false)
 		{
-			ActionVolume newAction = (ActionVolume) CreateInstance <ActionVolume>();
+			ActionVolume newAction = CreateNew<ActionVolume> ();
 			newAction.soundObject = sound;
 			newAction.newRelativeVolume = newRelativeVolume;
 			newAction.changeTime = transitionTime;

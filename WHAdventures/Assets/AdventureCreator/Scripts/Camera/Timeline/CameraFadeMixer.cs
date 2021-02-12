@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"CameraFadeMixer.cs"
  * 
@@ -27,7 +27,7 @@ namespace AC
 
 		public override void OnGraphStop (Playable playable)
 		{
-			if (MainCamera != null)
+			if (MainCamera)
 			{
 				MainCamera.ReleaseTimelineFadeOverride ();
 			}
@@ -72,7 +72,7 @@ namespace AC
 				}
 			}
 
-			Texture2D overlayTexture = (clipB.overlayTexture != null) ? clipB.overlayTexture : clipA.overlayTexture;
+			Texture2D overlayTexture = (clipB.overlayTexture) ? clipB.overlayTexture : clipA.overlayTexture;
 			float _weight = clipB.weight;
 
 			MainCamera.SetTimelineFadeOverride (overlayTexture, _weight);

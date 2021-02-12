@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"DragTrack_Curved.cs"
  * 
@@ -46,47 +46,15 @@ namespace AC
 		}
 
 
-		public override void AssignColliders (Moveable_Drag draggable)
-		{
-			if (!UsesEndColliders || !draggable.UsesRigidbody)
-			{
-				base.AssignColliders (draggable);
-				return;
-			}
-
-			if (draggable.maxCollider == null)
-			{
-				draggable.maxCollider = (Collider) Instantiate (Resources.Load (Resource.dragCollider, typeof (Collider)));
-			}
-			
-			if (draggable.minCollider == null)
-			{
-				draggable.minCollider = (Collider) Instantiate (Resources.Load (Resource.dragCollider, typeof (Collider)));
-			}
-
-			float offsetAngle = Mathf.Asin (draggable.ColliderWidth / radius) * Mathf.Rad2Deg;
-
-			draggable.maxCollider.transform.position = startPosition;
-			draggable.maxCollider.transform.up = -transform.up;
-			draggable.maxCollider.transform.RotateAround (transform.position, transform.forward, maxAngle + offsetAngle);
-
-			draggable.minCollider.transform.position = startPosition;
-			draggable.minCollider.transform.up = transform.up;
-			draggable.minCollider.transform.RotateAround (transform.position, transform.forward, -offsetAngle);
-
-			base.AssignColliders (draggable);
-		}
-
-
 		public override void Connect (Moveable_Drag draggable)
 		{
-			startPosition = transform.position + (radius * transform.right);
+			startPosition = Transform.position + (radius * Transform.right);
 			
 			AssignColliders (draggable);
 		}
 
 
-		public override void ApplyAutoForce (float _position, float _speed, Moveable_Drag draggable)
+		public override void ApplyAutoForce (float _position, float _speed, Moveable_Drag draggable, bool ignoreMaxSpeed)
 		{
 			if (draggable.UsesRigidbody)
 			{
@@ -94,7 +62,7 @@ namespace AC
 				deltaForce *= _speed / draggable.Rigidbody.mass;
 
 				// Limit magnitude
-				if (deltaForce.magnitude > draggable.maxSpeed)
+				if (!ignoreMaxSpeed && deltaForce.magnitude > draggable.maxSpeed)
 				{
 					deltaForce *= draggable.maxSpeed / deltaForce.magnitude;
 				}
@@ -112,7 +80,7 @@ namespace AC
 
 		public override float GetForceDotProduct (Vector3 force, Moveable_Drag draggable)
 		{
-			return Vector3.Dot (force, draggable.transform.up);
+			return Vector3.Dot (force, draggable.Transform.up);
 		}
 
 
@@ -120,10 +88,30 @@ namespace AC
 		{
 			float dotProduct = GetForceDotProduct (force, draggable);
 
+			switch (draggable.dragTrackDirection)
+			{
+				case DragTrackDirection.ForwardOnly:
+					if (dotProduct < 0f)
+					{
+						return;
+					}
+					break;
+
+				case DragTrackDirection.BackwardOnly:
+					if (dotProduct > 0f)
+					{
+						return;
+					}
+					break;
+
+				default:
+					break;
+			}
+
 			if (draggable.UsesRigidbody)
 			{
 				// Calculate the amount of force along the tangent
-				Vector3 tangentForce = draggable.transform.up * dotProduct;
+				Vector3 tangentForce = draggable.Transform.up * dotProduct;
 				draggable.Rigidbody.AddForce (tangentForce);
 			}
 			else
@@ -135,16 +123,16 @@ namespace AC
 				}
 
 				float newPosition = draggable.trackValue + (dotProduct);
-				ApplyAutoForce(newPosition, 0.01f * Time.deltaTime / draggable.simulatedMass, draggable);
+				ApplyAutoForce (newPosition, 0.01f * Time.deltaTime / draggable.simulatedMass, draggable, false);
 			}
 		}
 
 
-		public override float GetScreenPointProportionAlong (Vector2 point)
+		public override float GetScreenPointProportionAlong (Vector2 point, Vector3 grabRelativePosition, Moveable_Drag drag)
 		{
 			Vector2 screen_gizmoStartPosition = KickStarter.CameraMain.WorldToScreenPoint (GetGizmoPosition (0f));
 			Vector2 screen_gizmoEndPosition = KickStarter.CameraMain.WorldToScreenPoint (GetGizmoPosition (1f));
-			Vector2 screen_origin = KickStarter.CameraMain.WorldToScreenPoint (transform.position);
+			Vector2 screen_origin = KickStarter.CameraMain.WorldToScreenPoint (Transform.position);
 
 			Vector2 startToOrigin = screen_gizmoStartPosition - screen_origin;
 			Vector2 endToOrigin = screen_gizmoEndPosition - screen_origin;
@@ -154,7 +142,7 @@ namespace AC
 			float startToPointAngle = AdvGame.SignedAngle (startToOrigin, pointToOrigin);
 			float startToEndAngle = AdvGame.SignedAngle (startToOrigin, endToOrigin);
 
-			bool isFlipped = (Vector3.Dot (transform.forward, KickStarter.CameraMain.transform.forward) < 0f);
+			bool isFlipped = (Vector3.Dot (Transform.forward, KickStarter.CameraMainTransform.forward) < 0f);
 			if (isFlipped)
 			{
 				startToEndAngle *= -1f;
@@ -180,9 +168,9 @@ namespace AC
 		{
 			Connect (draggable);
 
-			Quaternion rotation = Quaternion.AngleAxis (proportionAlong * MaxAngle, transform.forward);
-			draggable.transform.position = RotatePointAroundPivot (startPosition, transform.position, rotation);
-			draggable.transform.rotation = Quaternion.AngleAxis (proportionAlong * MaxAngle, transform.forward) * transform.rotation;
+			Quaternion rotation = Quaternion.AngleAxis (proportionAlong * MaxAngle, Transform.forward);
+			draggable.Transform.position = RotatePointAroundPivot (startPosition, Transform.position, rotation);
+			draggable.Transform.rotation = Quaternion.AngleAxis (proportionAlong * MaxAngle, Transform.forward) * Transform.rotation;
 
 			if (UsesEndColliders)
 			{
@@ -197,10 +185,10 @@ namespace AC
 		{
 			float reversedMidAngle = 360f - (360f - MaxAngle) / 2f;
 
-			float angle = Vector3.Angle (-transform.right, draggable.transform.position - transform.position);
+			float angle = Vector3.Angle (-Transform.right, draggable.Transform.position - Transform.position);
 
 			// Sign of angle?
-			if (angle < 180f && Vector3.Dot (draggable.transform.position - transform.position, transform.up) < 0f)
+			if (angle < 180f && Vector3.Dot (draggable.Transform.position - Transform.position, Transform.up) < 0f)
 			{
 				angle *= -1f;
 			}
@@ -221,16 +209,16 @@ namespace AC
 			// Limit velocity to just along track
 			if (draggable.UsesRigidbody)
 			{
-				Vector3 localVelocity = draggable.transform.InverseTransformDirection (draggable.Rigidbody.velocity);
+				Vector3 localVelocity = draggable.Transform.InverseTransformDirection (draggable.Rigidbody.velocity);
 				localVelocity.x = 0;
 				localVelocity.z = 0;
-				draggable.Rigidbody.velocity = draggable.transform.TransformDirection (localVelocity);
+				draggable.Rigidbody.velocity = draggable.Transform.TransformDirection (localVelocity);
 			}
 
 			float proportionAlong = Mathf.Clamp01 (GetDecimalAlong (draggable));
-			draggable.transform.rotation = Quaternion.AngleAxis (proportionAlong * MaxAngle, transform.forward) * transform.rotation;
+			draggable.Transform.rotation = Quaternion.AngleAxis (proportionAlong * MaxAngle, Transform.forward) * Transform.rotation;
 
-			draggable.transform.position = transform.position + draggable.transform.right * radius;
+			draggable.Transform.position = Transform.position + draggable.Transform.right * radius;
 
 			if (onStart)
 			{
@@ -261,9 +249,9 @@ namespace AC
 
 		public override Vector3 GetGizmoPosition (float proportionAlong)
 		{
-			Quaternion rot = Quaternion.AngleAxis (proportionAlong * MaxAngle, transform.forward);
-			Vector3 startPosition = transform.position + (radius * transform.right);
-			return RotatePointAroundPivot (startPosition, transform.position, rot);	
+			Quaternion rot = Quaternion.AngleAxis (proportionAlong * MaxAngle, Transform.forward);
+			Vector3 startPosition = Transform.position + (radius * Transform.right);
+			return RotatePointAroundPivot (startPosition, Transform.position, rot);	
 		}
 
 
@@ -283,13 +271,51 @@ namespace AC
 				}
 			}
 
-			return draggable.transform.up * proportionalDifference * 1000f;
+			return draggable.Transform.up * proportionalDifference * 1000f;
+		}
+
+
+		public override float GetMoveSoundIntensity (float deltaTrackPosition)
+		{
+			return Mathf.Abs (deltaTrackPosition) * Time.deltaTime * 2500f * MaxAngle;
 		}
 
 		#endregion
 
 
 		#region ProtectedFunctions
+
+		protected override void AssignColliders (Moveable_Drag draggable)
+		{
+			if (!UsesEndColliders || !draggable.UsesRigidbody)
+			{
+				base.AssignColliders (draggable);
+				return;
+			}
+
+			if (draggable.maxCollider == null)
+			{
+				draggable.maxCollider = (Collider) Instantiate (Resource.DragCollider);
+			}
+
+			if (draggable.minCollider == null)
+			{
+				draggable.minCollider = (Collider) Instantiate (Resource.DragCollider);
+			}
+
+			float offsetAngle = Mathf.Asin (draggable.ColliderWidth / radius) * Mathf.Rad2Deg;
+
+			draggable.maxCollider.transform.position = startPosition;
+			draggable.maxCollider.transform.up = -Transform.up;
+			draggable.maxCollider.transform.RotateAround (Transform.position, Transform.forward, maxAngle + offsetAngle);
+
+			draggable.minCollider.transform.position = startPosition;
+			draggable.minCollider.transform.up = Transform.up;
+			draggable.minCollider.transform.RotateAround (Transform.position, Transform.forward, -offsetAngle);
+
+			base.AssignColliders (draggable);
+		}
+
 
 		protected void UpdateColliders (float trackValue, Moveable_Drag draggable)
 		{

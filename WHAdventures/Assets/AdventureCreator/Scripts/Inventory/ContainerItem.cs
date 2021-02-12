@@ -1,13 +1,18 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ContainerItem.cs"
  * 
  *	This script is a container class for inventory items stored in a Container.
  * 
  */
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+using UnityEngine;
 
 namespace AC
 {
@@ -21,114 +26,111 @@ namespace AC
 
 		#region Variables
 
-		/** The ID number of the associated inventory item (InvItem) being stored */
-		public int linkedID = -1;
-		/** How many instances of the item are being stored, if the InvItem's canCarryMultiple = True */
-		public int count;
-		/** A unique identifier */
-		public int id;
+		[SerializeField] private int linkedID = -1;
+		[SerializeField] private int count;
+		[SerializeField] int id;
 
 		#endregion
 
 
 		#region Constructors
 
-		public ContainerItem ()
-		{
-			IsEmpty = true;
-		}
-
-
-		public ContainerItem (ContainerItem containerItem)
-		{
-			linkedID = containerItem.linkedID;
-			count = containerItem.count;
-			id = containerItem.id;
-		}
-
-
 		/**
 		 * <summary>The default Constructor.</summary>
 		 * <param name = "_linkedID">The ID number of the associated inventory item (InvItem) being stored</param>
-		 * <param name = "idArray">An array of already-used ID numbers, so that a unique one can be generated</param>
+		 * <param name = "otherItems">An array of existing, so that a unique ID can be generated</param>
 		 */
-		public ContainerItem (int _linkedID, int[] idArray)
+		public ContainerItem (int _linkedID, ContainerItem[] otherItems)
 		{
 			count = 1;
 			linkedID = _linkedID;
 			id = 0;
 			
 			// Update id based on array
-			foreach (int _id in idArray)
+			foreach (ContainerItem otherItem in otherItems)
 			{
-				if (id == _id)
+				if (id == otherItem.id)
 					id ++;
 			}
-		}
-
-
-		/**
-		 * <summary>A Constructor.</summary>
-		 * <param name = "_linkedID">The ID number of the associated inventory item (InvItem) being stored</param>
-		 * <param name = "_count">How many instances of the item are being stored, if the InvItem's canCarryMultiple = True</param>
-		 * <param name = "idArray">An array of already-used ID numbers, so that a unique one can be generated</param>
-		 */
-		public ContainerItem (int _linkedID, int _count, int[] idArray)
-		{
-			count = _count;
-			linkedID = _linkedID;
-			id = 0;
-			
-			// Update id based on array
-			foreach (int _id in idArray)
-			{
-				if (id == _id)
-					id ++;
-			}
-		}
-
-
-		/**
-		 * <summary>A Constructor.</summary>
-		 * <param name = "_linkedID">The ID number of the associated inventory item (InvItem) being stored</param>
-		 * <param name = "_count">How many instances of the item are being stored, if the InvItem's canCarryMultiple = True</param>
-		 * <param name = "_id">A unique identifier</param>
-		 */
-		public ContainerItem (int _linkedID, int _count, int _id)
-		{
-			linkedID = _linkedID;
-			count = _count;
-			id = _id;
 		}
 
 		#endregion
 
 
-		#region PublicFunctions
+		#if UNITY_EDITOR
 
-		/**
-		 * <summary>Gets the associated Inventory Item</summary>
-		 * <returns>The associated Inventory Item</returns>
-		 */
-		public InvItem GetLinkedInventoryItem ()
+		public void ShowGUI (InventoryManager inventoryManager)
 		{
-			if (KickStarter.inventoryManager != null)
+			EditorGUILayout.BeginHorizontal ();
+			EditorGUILayout.LabelField ("Item name:", GUILayout.Width (80f));
+
+			string itemName = inventoryManager.GetLabel (linkedID);
+			if (string.IsNullOrEmpty (itemName))
 			{
-				return KickStarter.inventoryManager.GetItem (linkedID);
+				if (linkedID < 0)
+				{
+					itemName = "(Empty)";
+				}
+				else
+				{
+					itemName = "(Missing)";
+				}
 			}
-			return null;
+			else
+			{
+				itemName = "'" + itemName + "'";
+			}
+			
+			InvItem linkedItem = inventoryManager.GetItem (linkedID);
+			if (linkedItem != null && linkedItem.canCarryMultiple)
+			{
+				EditorGUILayout.LabelField (itemName, EditorStyles.boldLabel, GUILayout.Width (135f));
+
+				EditorGUILayout.LabelField ("Count:", GUILayout.Width (50f));
+				count = EditorGUILayout.IntField (count, GUILayout.Width (44f));
+				if (count <= 0) count = 1;
+			}
+			else
+			{
+				EditorGUILayout.LabelField (itemName, EditorStyles.boldLabel);
+				count = 1;
+			}
 		}
 
+		#endif
 
-		public bool IsEmpty
+
+		#region GetSet
+
+		/** The ID number of the associated inventory item (InvItem) being stored */
+		public int ItemID
 		{
 			get
 			{
-				return (linkedID < 0);
+				return linkedID;
 			}
-			set
+		}
+
+
+		/** How many instances of the item are being stored, if the InvItem's canCarryMultiple = True */
+		public int Count
+		{
+			get
 			{
-				linkedID = -1;
+				return count;
+			}
+		}
+
+
+		public InvItem InvItem
+		{
+			get
+			{
+				if (KickStarter.inventoryManager)
+				{
+					return KickStarter.inventoryManager.GetItem (linkedID);
+				}
+				return null;
 			}
 		}
 

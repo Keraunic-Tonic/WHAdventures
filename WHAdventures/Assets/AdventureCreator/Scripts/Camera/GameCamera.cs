@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"GameCamera.cs"
  * 
@@ -210,8 +210,8 @@ namespace AC
 			
 			if (!lockXLocAxis || !lockYLocAxis || !lockZLocAxis)
 			{
-				transform.position = (dampSpeed > 0f)
-										? Vector3.Lerp (transform.position, desiredPosition, Time.deltaTime * dampSpeed)
+				Transform.position = (dampSpeed > 0f)
+										? Vector3.Lerp (Transform.position, desiredPosition, Time.deltaTime * dampSpeed)
 										: desiredPosition;
 			}
 			
@@ -231,10 +231,10 @@ namespace AC
 				}
 			}
 
-			float newPitch = transform.eulerAngles.x;
+			float newPitch = Transform.eulerAngles.x;
 			if (!lockXRotAxis)
 			{
-				float t = transform.eulerAngles.x;
+				float t = Transform.eulerAngles.x;
 				if (t > 180f)
 				{
 					t -= 360f;
@@ -257,7 +257,7 @@ namespace AC
 						lookAtPos.z += targetZOffset;
 						
 						// Look at and dampen the rotation
-						Vector3 lookDir = lookAtPos - transform.position;
+						Vector3 lookDir = lookAtPos - Transform.position;
 						if (!Mathf.Approximately (directionInfluence, 0f))
 						{
 							lookDir += TargetForward * directionInfluence;
@@ -266,17 +266,17 @@ namespace AC
 						Quaternion lookRotation = Quaternion.LookRotation (lookDir);
 
 						Quaternion newRotation = (dampSpeed > 0f)
-												 ? Quaternion.Slerp (transform.rotation, lookRotation, Time.deltaTime * dampSpeed)
+												 ? Quaternion.Slerp (Transform.rotation, lookRotation, Time.deltaTime * dampSpeed)
 												 : lookRotation;
 						if (limitY)
 						{
 							Vector3 newEuler = newRotation.eulerAngles;
 							newEuler.y = ConstrainAxis (newEuler.y, constrainY);
-							transform.eulerAngles = newEuler;
+							Transform.eulerAngles = newEuler;
 						}
 						else
 						{
-							transform.rotation = newRotation;
+							Transform.rotation = newRotation;
 						}
 					}
 					else if (!targetIsPlayer)
@@ -286,7 +286,7 @@ namespace AC
 				}
 				else
 				{
-					float thisSpin = transform.eulerAngles.y;
+					float thisSpin = Transform.eulerAngles.y;
 					if (desiredSpin > (thisSpin + 180f))
 					{
 						desiredSpin -= 360f;
@@ -300,12 +300,12 @@ namespace AC
 									  ? Mathf.Lerp (thisSpin, desiredSpin, Time.deltaTime * dampSpeed)
 									  : desiredSpin;
 
-					transform.eulerAngles = new Vector3 (newPitch, newSpin, transform.eulerAngles.z);
+					Transform.eulerAngles = new Vector3 (newPitch, newSpin, Transform.eulerAngles.z);
 				}
 			}
 			else
 			{
-				transform.eulerAngles = new Vector3 (newPitch, transform.eulerAngles.y, transform.eulerAngles.z);
+				Transform.eulerAngles = new Vector3 (newPitch, Transform.eulerAngles.y, Transform.eulerAngles.z);
 			}
 
 			SetFocalPoint ();
@@ -324,7 +324,7 @@ namespace AC
 		{
 			if (targetIsPlayer && KickStarter.player)
 			{
-				target = KickStarter.player.transform;
+				target = KickStarter.player.Transform;
 			}
 
 			SetOriginalPosition ();
@@ -332,10 +332,10 @@ namespace AC
 			
 			if (!lockXLocAxis || !lockYLocAxis || !lockZLocAxis)
 			{
-				transform.position = desiredPosition;
+				Transform.position = desiredPosition;
 			}
 
-			float pitch = transform.eulerAngles.x;
+			float pitch = Transform.eulerAngles.x;
 			if (!lockXRotAxis)
 			{
 				pitch = desiredPitch;
@@ -352,28 +352,28 @@ namespace AC
 						lookAtPos.x += targetXOffset;
 						lookAtPos.z += targetZOffset;
 						
-						Quaternion rotation = Quaternion.LookRotation (lookAtPos - transform.position);
+						Quaternion rotation = Quaternion.LookRotation (lookAtPos - Transform.position);
 
 						if (limitY)
 						{
 							Vector3 newEuler = rotation.eulerAngles;
 							newEuler.y = ConstrainAxis (newEuler.y, constrainY);
-							transform.eulerAngles = newEuler;
+							Transform.eulerAngles = newEuler;
 						}
 						else
 						{
-							transform.rotation = rotation;
+							Transform.rotation = rotation;
 						}
 					}
 				}
 				else
 				{
-					transform.eulerAngles = new Vector3 (pitch, desiredSpin, transform.eulerAngles.z);
+					Transform.eulerAngles = new Vector3 (pitch, desiredSpin, Transform.eulerAngles.z);
 				}
 			}
 			else
 			{
-				transform.eulerAngles = new Vector3 (pitch, transform.eulerAngles.y, transform.eulerAngles.z);
+				Transform.eulerAngles = new Vector3 (pitch, Transform.eulerAngles.y, Transform.eulerAngles.z);
 			}
 
 			SetDesiredFOV ();
@@ -406,11 +406,11 @@ namespace AC
 
 				if (actFromDefaultPlayerStart)
 				{
-					if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.defaultPlayerStart != null)
+					if (KickStarter.sceneSettings && KickStarter.sceneSettings.defaultPlayerStart)
 					{
 						originalTargetPosition = KickStarter.sceneSettings.defaultPlayerStart.transform.position;
 					}
-					else if (target != null)
+					else if (target)
 					{
 						originalTargetPosition = target.position;
 					}
@@ -425,11 +425,11 @@ namespace AC
 		
 		protected void TrackTarget2D_X ()
 		{
-			if (target.position.x < (transform.position.x - xFreedom))
+			if (target.position.x < (Transform.position.x - xFreedom))
 			{
 				desiredPosition.x = target.position.x + xFreedom;
 			}
-			else if (target.position.x > (transform.position.x + xFreedom))
+			else if (target.position.x > (Transform.position.x + xFreedom))
 			{
 				desiredPosition.x = target.position.x - xFreedom;
 			}
@@ -440,11 +440,11 @@ namespace AC
 
 		protected void TrackTarget2D_Y ()
 		{
-			if (target.position.y < (transform.position.y - yFreedom))
+			if (target.position.y < (Transform.position.y - yFreedom))
 			{
 				desiredPosition.y = target.position.y + yFreedom;
 			}
-			else if (target.position.y > (transform.position.y + yFreedom))
+			else if (target.position.y > (Transform.position.y + yFreedom))
 			{
 				desiredPosition.y = target.position.y - yFreedom;
 			}
@@ -455,11 +455,11 @@ namespace AC
 		
 		protected void TrackTarget2D_Z ()
 		{
-			if (target.position.z < (transform.position.z - zFreedom))
+			if (target.position.z < (Transform.position.z - zFreedom))
 			{
 				desiredPosition.z = target.position.z + zFreedom;
 			}
-			else if (target.position.z > (transform.position.z + zFreedom))
+			else if (target.position.z > (Transform.position.z + zFreedom))
 			{
 				desiredPosition.z = target.position.z -zFreedom;
 			}
@@ -509,9 +509,9 @@ namespace AC
 
 		protected void SetFocalPoint ()
 		{
-			if (focalPointIsTarget && target != null)
+			if (focalPointIsTarget && target)
 			{
-				focalDistance = Vector3.Dot (transform.forward, target.position - transform.position);
+				focalDistance = Vector3.Dot (Transform.forward, target.position - Transform.position);
 				if (focalDistance < 0f)
 				{
 					focalDistance = 0f;
@@ -524,11 +524,11 @@ namespace AC
 		{	
 			if (!haveSetOriginalPosition)
 			{
-				originalPosition = transform.position;
-				originalSpin = transform.eulerAngles.y;
-				originalPitch = transform.eulerAngles.x;
+				originalPosition = Transform.position;
+				originalSpin = Transform.eulerAngles.y;
+				originalPitch = Transform.eulerAngles.x;
 
-				if (Camera != null)
+				if (Camera)
 				{
 					originalFOV = Camera.fieldOfView;
 				}
@@ -541,7 +541,7 @@ namespace AC
 		{
 			if (lockXLocAxis)
 			{
-				desiredPosition.x = transform.position.x;
+				desiredPosition.x = Transform.position.x;
 			}
 			else
 			{
@@ -565,7 +565,7 @@ namespace AC
 			
 			if (lockYLocAxis)
 			{
-				desiredPosition.y = transform.position.y;
+				desiredPosition.y = Transform.position.y;
 			}
 			else
 			{
@@ -589,7 +589,7 @@ namespace AC
 			
 			if (lockXRotAxis)
 			{
-				desiredPitch = transform.eulerAngles.x;
+				desiredPitch = Transform.eulerAngles.x;
 			}
 			else
 			{
@@ -621,7 +621,7 @@ namespace AC
 
 					if (!Mathf.Approximately (directionInfluence, 0f))
 					{
-						desiredSpin += Vector3.Dot (TargetForward, transform.right) * directionInfluence;
+						desiredSpin += Vector3.Dot (TargetForward, Transform.right) * directionInfluence;
 					}
 				}
 				
@@ -634,7 +634,7 @@ namespace AC
 			
 			if (lockZLocAxis)
 			{
-				desiredPosition.z = transform.position.z;
+				desiredPosition.z = Transform.position.z;
 			}
 			else
 			{

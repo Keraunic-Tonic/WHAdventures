@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionRandomCheck.cs"
  * 
@@ -21,9 +21,10 @@ namespace AC
 {
 
 	[System.Serializable]
-	public class ActionRandomCheck : ActionCheckMultiple
+	public class ActionRandomCheck : Action
 	{
 
+		public int numSockets = 2;
 		public bool disallowSuccessive = false;
 		public bool saveToVariable = true;
 		protected int ownVarValue = -1;
@@ -39,13 +40,11 @@ namespace AC
 		protected GVar runtimeVariable = null;
 
 
-		public ActionRandomCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Variable;
-			title = "Check random number";
-			description = "Picks a number at random between zero and a specified integer – the value of which determine which subsequent Action is run next.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Variable; }}
+		public override string Title { get { return "Check random number"; }}
+		public override string Description { get { return "Picks a number at random between zero and a specified integer – the value of which determine which subsequent Action is run next."; }}
+		public override int NumSockets { get { return numSockets; }}
+
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -97,12 +96,12 @@ namespace AC
 		}
 		
 		
-		public override ActionEnd End (List<Action> actions)
+		public override int GetNextOutputIndex ()
 		{
 			if (numSockets <= 0)
 			{
 				LogWarning ("Could not compute Random check because no values were possible!");
-				return GenerateStopActionEnd ();
+				return -1;
 			}
 
 			int randomResult = Random.Range (0, numSockets);
@@ -133,7 +132,7 @@ namespace AC
 				}
 			}
 
-			return ProcessResult (randomResult, actions);
+			return randomResult;
 		}
 		
 		
@@ -287,7 +286,7 @@ namespace AC
 		}
 
 
-		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables)
+		public override int GetVariableReferences (List<ActionParameter> parameters, VariableLocation _location, int varID, Variables _variables, int _variablesConstantID = 0)
 		{
 			int thisCount = 0;
 			if (saveToVariable && location == _location && variableID == varID && parameterID < 0)
@@ -339,9 +338,9 @@ namespace AC
 			if (disallowSuccessive && saveToVariable && location == VariableLocation.Component && parameterID < 0)
 			{
 				if (variables != null && variables.gameObject == gameObject) return true;
-				if (variablesConstantID == id) return true;
+				if (variablesConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -355,7 +354,7 @@ namespace AC
 		 */
 		public static ActionRandomCheck CreateNew (int numOutcomes, bool disallowSuccessive)
 		{
-			ActionRandomCheck newAction = (ActionRandomCheck) CreateInstance <ActionRandomCheck>();
+			ActionRandomCheck newAction = CreateNew<ActionRandomCheck> ();
 			newAction.numSockets = numOutcomes;
 			newAction.disallowSuccessive = disallowSuccessive;
 			return newAction;

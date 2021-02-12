@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Shapeable.cs"
  * 
@@ -48,7 +48,7 @@ namespace AC
 		
 		protected void Awake ()
 		{
-			if (SkinnedMeshRenderer != null)
+			if (SkinnedMeshRenderer)
 			{
 				// Set all values to zero
 				foreach (ShapeGroup shapeGroup in shapeGroups)
@@ -82,7 +82,7 @@ namespace AC
 					actualShape = targetShape;
 				}
 				
-				if (SkinnedMeshRenderer != null)
+				if (SkinnedMeshRenderer)
 				{
 					SkinnedMeshRenderer.SetBlendShapeWeight (shapeKey, actualShape);
 				}
@@ -244,7 +244,7 @@ namespace AC
 			startTime = Time.time;
 			shapeKey = _shapeKey;
 			
-			if (SkinnedMeshRenderer != null)
+			if (SkinnedMeshRenderer)
 			{
 				originalShape = SkinnedMeshRenderer.GetBlendShapeWeight (shapeKey);
 			}
@@ -294,13 +294,15 @@ namespace AC
 		public int ID = 0;
 		/** A list of ShapeKey instances - each ShapeKey representing a blendshape */
 		public List<ShapeKey> shapeKeys = new List<ShapeKey>();
-		
+
 		protected ShapeKey activeKey = null;
 		protected SkinnedMeshRenderer smr;
 		protected float startTime;
 		protected float changeTime;
 		protected AnimationCurve timeCurve;
 		protected MoveMethod moveMethod;
+
+		protected bool isTimelineOverride;
 		
 
 		/**
@@ -318,6 +320,52 @@ namespace AC
 					ID ++;
 				}
 			}
+		}
+
+
+		public void SetTimelineOverride (int keyID, int intensity)
+		{
+			isTimelineOverride = true;
+
+			for (int i=0; i<shapeKeys.Count; i++)
+			{
+				if (shapeKeys[i].ID == keyID)
+				{
+					shapeKeys[i].SetValue (intensity, smr);
+				}
+				else
+				{
+					shapeKeys[i].SetValue (0, smr);
+				}
+			}
+		}
+
+
+		public void SetTimelineOverride (int keyID_A, int intensityA, int keyID_B, int intensityB)
+		{
+			isTimelineOverride = true;
+
+			for (int i = 0; i < shapeKeys.Count; i++)
+			{
+				if (shapeKeys[i].ID == keyID_A)
+				{
+					shapeKeys[i].SetValue (intensityA, smr);
+				}
+				else if (shapeKeys[i].ID == keyID_B)
+				{
+					shapeKeys[i].SetValue (intensityB, smr);
+				}
+				else
+				{
+					shapeKeys[i].SetValue (0, smr);
+				}
+			}
+		}
+
+
+		public void ReleaseTimelineOverride ()
+		{
+			isTimelineOverride = false;
 		}
 		
 
@@ -357,17 +405,17 @@ namespace AC
 			}
 			return 0f;
 		}
-		
+
 
 		/**
 		 * <summary>Sets a blendshape as the "active" one, causing all others to be disabled.</summary>
 		 * <param name = "_ID">The unique identifier of the blendshape to affect</param>
-		 * <param name = "_value">The value to set the active blendshape</param>
+		 * <param name = "_intensity">The intensity (value) to set the active blendshape</param>
 		 * <param name = "_changeTime">The duration, in seconds, that the group's blendshapes should be affected</param>
 		 * <param name = "_moveMethod">The interpolation method by which the blendshapes are affected (Linear, Smooth, Curved, EaseIn, EaseOut, CustomCurve)</param>
 		 * <param name = "_timeCurve">If _moveMethod = MoveMethod.CustomCurve, then the transition speed will be follow the shape of the supplied AnimationCurve. This curve can exceed "1" in the Y-scale, allowing for overshoot effects.</param>
 		 */
-		public void SetActive (int _ID, float _value, float _changeTime, MoveMethod _moveMethod, AnimationCurve _timeCurve)
+		public void SetActive (int _ID, float _intensity, float _changeTime = 0f, MoveMethod _moveMethod = MoveMethod.Linear, AnimationCurve _timeCurve = null)
 		{
 			if (_changeTime < 0f)
 			{
@@ -380,7 +428,7 @@ namespace AC
 				if (shapeKey.ID == _ID)
 				{
 					activeKey = shapeKey;
-					shapeKey.targetValue = _value;
+					shapeKey.targetValue = _intensity;
 				}
 				else
 				{
@@ -400,12 +448,12 @@ namespace AC
 		/**
 		 * <summary>Sets a blendshape as the "active" one, causing all others to be disabled.</summary>
 		 * <param name = "_label">The name of the blendshape to affect</param>
-		 * <param name = "_value">The value to set the active blendshape</param>
+		 * <param name = "_intensity">The inensity (value) to set the active blendshape</param>
 		 * <param name = "_changeTime">The duration, in seconds, that the group's blendshapes should be affected</param>
 		 * <param name = "_moveMethod">The interpolation method by which the blendshapes are affected (Linear, Smooth, Curved, EaseIn, EaseOut, CustomCurve)</param>
 		 * <param name = "_timeCurve">If _moveMethod = MoveMethod.CustomCurve, then the transition speed will be follow the shape of the supplied AnimationCurve. This curve can exceed "1" in the Y-scale, allowing for overshoot effects.</param>
 		 */
-		public void SetActive (string _label, float _value, float _changeTime, MoveMethod _moveMethod, AnimationCurve _timeCurve)
+		public void SetActive (string _label, float _intensity, float _changeTime = 0f, MoveMethod _moveMethod = MoveMethod.Linear, AnimationCurve _timeCurve = null)
 		{
 			if (_changeTime < 0f)
 			{
@@ -418,7 +466,7 @@ namespace AC
 				if (shapeKey.label == _label)
 				{
 					activeKey = shapeKey;
-					shapeKey.targetValue = _value;
+					shapeKey.targetValue = _intensity;
 				}
 				else
 				{
@@ -440,7 +488,7 @@ namespace AC
 		 */
 		public void UpdateKeys ()
 		{
-			if (smr == null)
+			if (smr == null || isTimelineOverride)
 			{
 				return;
 			}

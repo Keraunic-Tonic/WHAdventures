@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"DragTrack.cs"
  * 
@@ -20,7 +20,7 @@ namespace AC
 	 * The base class for "tracks", which are used to contrain Moveable_Drag objects along a pre-determined path
 	 */
 	[HelpURL("https://www.adventurecreator.org/scripting-guide/class_a_c_1_1_drag_track.html")]
-	public class DragTrack : MonoBehaviour
+	public abstract class DragTrack : MonoBehaviour
 	{
 
 		#region Variables
@@ -45,6 +45,7 @@ namespace AC
 		public bool preventEndToEndJumping = false;
 		/** Where to locate interactions */
 		public ActionListSource actionListSource = ActionListSource.InScene;
+		private Transform _transform;
 
 		#endregion
 
@@ -55,34 +56,6 @@ namespace AC
 		public virtual bool TypeSupportsSnapConnections ()
 		{
 			return false;
-		}
-
-
-		/**
-		 * <summary>Initialises two end colliders for an object that prevent it from moving beyond the track.</summary>
-		 * <param name = "draggable">The Moveable_Drag object to create colliders for</param>
-		 */
-		public virtual void AssignColliders (Moveable_Drag draggable)
-		{
-			if (UsesEndColliders && draggable.minCollider != null && draggable.maxCollider != null)
-			{
-				draggable.maxCollider.transform.rotation = Quaternion.AngleAxis (90f, draggable.maxCollider.transform.right) * draggable.maxCollider.transform.rotation;
-				draggable.minCollider.transform.rotation = Quaternion.AngleAxis (90f, draggable.minCollider.transform.right) * draggable.minCollider.transform.rotation;
-
-				if (colliderMaterial)
-				{
-					draggable.maxCollider.material = colliderMaterial;
-					draggable.minCollider.material = colliderMaterial;
-				}
-
-				draggable.maxCollider.transform.parent = this.transform;
-				draggable.minCollider.transform.parent = this.transform;
-
-				draggable.maxCollider.name = draggable.name + "_UpperLimit";
-				draggable.minCollider.name = draggable.name + "_LowerLimit";
-			}
-
-			LimitCollisions (draggable);
 		}
 
 
@@ -122,12 +95,12 @@ namespace AC
 		 */
 		public void OnDisconnect (Moveable_Drag draggable)
 		{
-			if (draggable.maxCollider != null)
+			if (draggable.maxCollider)
 			{
 				Destroy (draggable.maxCollider.gameObject);
 			}
 
-			if (draggable.minCollider != null)
+			if (draggable.minCollider)
 			{
 				Destroy (draggable.minCollider.gameObject);
 			}
@@ -146,9 +119,11 @@ namespace AC
 		/**
 		 * <summary>Gets the proportion along the track closest to a given position in screen-space</summary>
 		 * <param name = "point">The position in screen-space</param>
+		 * <param name = "grabRelativePosition">The grab position relative to the draggable's centre</param>
+		 * <param name = "dragm">The object being dragged</param>
 		 * <returns>The proportion along the track closest to a given position in screen-space</returns>
 		 */
-		public virtual float GetScreenPointProportionAlong (Vector2 point)
+		public virtual float GetScreenPointProportionAlong (Vector2 point, Vector3 grabRelativePosition, Moveable_Drag drag)
 		{
 			return 0f;
 		}
@@ -161,7 +136,7 @@ namespace AC
 		 */
 		public float GetMinDistanceToScreenPoint (Vector2 point)
 		{
-			float proportionAlong = GetScreenPointProportionAlong(point);
+			float proportionAlong = GetScreenPointProportionAlong (point, Vector3.zero, null);
 			Vector3 trackPointWorldPosition = GetGizmoPosition(proportionAlong);
 			Vector2 trackPointScreenPosition = KickStarter.CameraMain.WorldToScreenPoint(trackPointWorldPosition);
 
@@ -174,8 +149,9 @@ namespace AC
 		 * <param name = "_position">The proportion along which to place the Moveable_Drag object (0 to 1)</param>
 		 * <param name = "_speed">The speed to move by</param>
 		 * <param name = "draggable">The draggable object to move</param>
+		 * <param name = "ignoreMaxSpeed">If False, the object's maxSpeed will limit the speed</param>
 		 */
-		public virtual void ApplyAutoForce (float _position, float _speed, Moveable_Drag draggable)
+		public virtual void ApplyAutoForce (float _position, float _speed, Moveable_Drag draggable, bool ignoreMaxSpeed)
 		{}
 
 
@@ -232,7 +208,7 @@ namespace AC
 		 */
 		public virtual Vector3 GetGizmoPosition (float proportionAlong)
 		{
-			return transform.position;
+			return Transform.position;
 		}
 
 
@@ -251,12 +227,12 @@ namespace AC
 
 		/*
 		 * <summary>Gets the current intensity of a draggable object's movement sound</summary>
-		 * <param name = "draggable">The draggable object</param>
+		 * <param name = "deltaTrackPosition">The change in the draggable object's track position in the last frame</param>
 		 * <returns>The current intensity of a draggable object's movement sound</summary>
 		 */
-		public virtual float GetMoveSoundIntensity (Moveable_Drag draggable)
+		public virtual float GetMoveSoundIntensity (float deltaTrackPosition)
 		{
-			return draggable.Rigidbody.velocity.magnitude;
+			return 0f;
 		}
 
 
@@ -330,6 +306,30 @@ namespace AC
 
 		#region ProtectedFunctions
 
+		protected virtual void AssignColliders (Moveable_Drag draggable)
+		{
+			if (UsesEndColliders && draggable.minCollider && draggable.maxCollider)
+			{
+				draggable.maxCollider.transform.rotation = Quaternion.AngleAxis (90f, draggable.maxCollider.transform.right) * draggable.maxCollider.transform.rotation;
+				draggable.minCollider.transform.rotation = Quaternion.AngleAxis (90f, draggable.minCollider.transform.right) * draggable.minCollider.transform.rotation;
+
+				if (colliderMaterial)
+				{
+					draggable.maxCollider.material = colliderMaterial;
+					draggable.minCollider.material = colliderMaterial;
+				}
+
+				draggable.maxCollider.transform.parent = Transform;
+				draggable.minCollider.transform.parent = Transform;
+
+				draggable.maxCollider.name = draggable.name + "_UpperLimit";
+				draggable.minCollider.name = draggable.name + "_LowerLimit";
+			}
+
+			LimitCollisions (draggable);
+		}
+
+
 		protected void DoSnapCheck (Moveable_Drag draggable)
 		{
 			if (doSnapping && (!draggable.UsesRigidbody || !draggable.IsAutoMoving ()) && !draggable.IsHeld)
@@ -351,7 +351,7 @@ namespace AC
 				float dist = trackSnapData.GetDistanceFrom (draggable.GetPositionAlong ());
 				if (Mathf.Abs (dist) < 0.01f)
 				{
-					trackSnapData.EvaluateConnectionPoints (this, draggable, KickStarter.playerInput.DragForce);
+					trackSnapData.EvaluateConnectionPoints (this, draggable, KickStarter.playerInput.GetDragForce (draggable));
 				}
 			}
 		}
@@ -385,7 +385,7 @@ namespace AC
 			Collider[] dragColliders = draggable.GetComponentsInChildren <Collider>();
 
 			// Disable all collisions on max/min colliders
-			if (draggable.minCollider != null && draggable.maxCollider != null)
+			if (draggable.minCollider && draggable.maxCollider)
 			{
 				foreach (Collider _collider in allColliders)
 				{
@@ -406,7 +406,7 @@ namespace AC
 			// Set collisions on draggable's colliders
 			foreach (Collider _collider in allColliders)
 			{
-				if (_collider.GetComponent <AC_Trigger>() != null) continue;
+				if (_collider.GetComponent <AC_Trigger>()) continue;
 
 				foreach (Collider dragCollider in dragColliders)
 				{
@@ -417,11 +417,11 @@ namespace AC
 
 					bool result = true;
 
-					if ((draggable.minCollider != null && draggable.minCollider == _collider) || (draggable.maxCollider != null && draggable.maxCollider == _collider))
+					if ((draggable.minCollider && draggable.minCollider == _collider) || (draggable.maxCollider && draggable.maxCollider == _collider))
 					{
 						result = false;
 					}
-					else if (KickStarter.player != null && _collider.gameObject == KickStarter.player.gameObject)
+					else if (KickStarter.player && _collider.gameObject == KickStarter.player.gameObject)
 					{
 						result = draggable.ignorePlayerCollider;
 					}
@@ -445,7 +445,7 @@ namespace AC
 			}
 
 			// Enable collisions between max/min collisions and draggable's colliders
-			if (draggable.minCollider != null && draggable.maxCollider != null)
+			if (draggable.minCollider && draggable.maxCollider)
 			{
 				foreach (Collider _collider in dragColliders)
 				{
@@ -490,6 +490,17 @@ namespace AC
 			get
 			{
 				return false;
+			}
+		}
+
+
+		/** A cache of the tracks's transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
 			}
 		}
 

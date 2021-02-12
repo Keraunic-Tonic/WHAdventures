@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"CustomInteractionSystemExample.cs"
  * 
@@ -142,7 +142,7 @@ namespace AC
 
 				if (selectedHotspot != null && GUILayout.Button ("Use on selected Hotspot"))
 				{
-					selectedHotspot.RunInventoryInteraction (KickStarter.runtimeInventory.SelectedItem);
+					selectedHotspot.RunInventoryInteraction (KickStarter.runtimeInventory.SelectedInstance);
 				}
 
 				GUILayout.EndHorizontal ();
@@ -187,8 +187,8 @@ namespace AC
 					inventoryItemIndex = 0;
 				}
 
-				InvItem selectedInventoryItem = KickStarter.runtimeInventory.localItems[inventoryItemIndex];
-				KickStarter.runtimeInventory.SelectItem (selectedInventoryItem);
+				InvItem invItem = KickStarter.runtimeInventory.localItems[inventoryItemIndex];
+				KickStarter.runtimeInventory.SelectItem (new InvInstance (invItem));
 			}
 		}
 								

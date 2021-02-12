@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Invisible.cs"
  * 
@@ -46,7 +46,7 @@ namespace AC
 
 			foreach (Renderer _renderer in allRenderers)
 			{
-				if (_renderer != null && _renderer == ownRenderer && !affectOwnGameObject)
+				if (_renderer && _renderer == ownRenderer && !affectOwnGameObject)
 				{
 					continue;
 				}

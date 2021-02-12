@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Ludiq.PeekCore.ReflectionMagic;
 using UnityEditor;
-using UnityEditor.Experimental.AssetImporters;
+
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
@@ -128,7 +128,7 @@ namespace Ludiq.Peek
 			{
 				var importerEditor = Editor.CreateEditor(importer);
 
-				if (importerEditor is AssetImporterEditor)
+				if (importerEditor is UnityEditor.AssetImporters.AssetImporterEditor)
 				{
 					var importerEditorDynamic = importerEditor.AsDynamic();
 					importerEditorDynamic.InternalSetAssetImporterTargetEditor(editor);

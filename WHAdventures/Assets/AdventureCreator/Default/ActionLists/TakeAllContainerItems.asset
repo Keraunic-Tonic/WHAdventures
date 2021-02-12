@@ -24,6 +24,7 @@ MonoBehaviour:
   revertToDefaultParametersAfterRunning: 0
   parameters: []
   tagID: 0
+  backupData: []
 --- !u!114 &11400006
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -37,19 +38,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  category: 3
-  title: 'Container: Add or remove'
-  description: Adds or removes Inventory items from a Container.
   isDisplayed: 1
   showComment: 0
   comment: 
-  numSockets: 1
   willWait: 0
   endAction: 0
   skipAction: -1
   skipActionActual: {fileID: 0}
   linkedCutscene: {fileID: 0}
   linkedAsset: {fileID: 0}
+  endings: []
   isEnabled: 1
   isAssetFile: 1
   isBreakPoint: 0
@@ -63,6 +61,10 @@ MonoBehaviour:
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
   containerAction: 2
+  containerTransfer: 0
+  transferContainer: {fileID: 0}
+  transferContainerConstantID: 0
+  transferContainerParameterID: -1
   invParameterID: -1
   invID: 0
   useActive: 1
@@ -87,19 +89,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  category: 9
-  title: 'Menu: Change state'
-  description: Provides various options to show and hide both menus and menu elements.
   isDisplayed: 1
   showComment: 0
   comment: 
-  numSockets: 1
   willWait: 0
   endAction: 0
   skipAction: -1
   skipActionActual: {fileID: 0}
   linkedCutscene: {fileID: 0}
   linkedAsset: {fileID: 0}
+  endings: []
   isEnabled: 1
   isAssetFile: 1
   isBreakPoint: 0

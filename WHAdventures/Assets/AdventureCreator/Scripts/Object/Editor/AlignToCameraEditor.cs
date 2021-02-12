@@ -21,7 +21,7 @@ namespace AC
 		{
 			_target.cameraToAlignTo = (_Camera) CustomGUILayout.ObjectField <_Camera> ("Camera to align to:", _target.cameraToAlignTo, true, "", "The AC _Camera that this GameObject should align itself to");
 
-			if (_target.cameraToAlignTo != null)
+			if (_target.cameraToAlignTo)
 			{
 				_target.alignType = (AlignType) CustomGUILayout.EnumPopup ("Align type:", _target.alignType, "", "The way in which this GameObject is aligned to " + _target.cameraToAlignTo.name);
 				_target.lockDistance = CustomGUILayout.Toggle ("Lock distance?", _target.lockDistance, "", "If True, the distance from the camera will be fixed (though adjustable in the Inspector)");

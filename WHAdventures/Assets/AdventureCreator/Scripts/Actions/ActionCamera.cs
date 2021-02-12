@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCamera.cs"
  * 
@@ -28,7 +28,8 @@ namespace AC
 		public int parameterID = -1;
 		public _Camera linkedCamera;
 		protected _Camera runtimeLinkedCamera;
-		
+		protected GameCameraAnimated runtimeLinkedCameraAnimated;
+
 		public float transitionTime;
 		public int transitionTimeParameterID = -1;
 
@@ -38,15 +39,11 @@ namespace AC
         public bool retainPreviousSpeed = false;
 
 
-		public ActionCamera ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Camera;
-			title = "Switch";
-			description = "Moves the MainCamera to the position, rotation and field of view of a specified GameCamera. Can be instantaneous or transition over time.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Camera; }}
+		public override string Title { get { return "Switch"; }}
+		public override string Description { get { return "Moves the MainCamera to the position, rotation and field of view of a specified GameCamera. Can be instantaneous or transition over time."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			runtimeLinkedCamera = AssignFile <_Camera> (parameters, parameterID, constantID, linkedCamera);
@@ -94,16 +91,20 @@ namespace AC
 							else
 							{
 								mainCam.SetGameCamera (cam, transitionTime, moveMethod, timeCurve, retainPreviousSpeed);
-
+								
 								if (willWait)
 								{
 									if (transitionTime > 0f)
 									{
-										return (transitionTime);
+										return defaultPauseTime;
 									}
-									else if (runtimeLinkedCamera is GameCameraAnimated)
+									else
 									{
-										return (defaultPauseTime);
+										runtimeLinkedCameraAnimated = runtimeLinkedCamera as GameCameraAnimated;
+										if (runtimeLinkedCameraAnimated)
+										{
+											return defaultPauseTime;
+										}
 									}
 								}
 							}
@@ -113,10 +114,9 @@ namespace AC
 			}
 			else
 			{
-				if (runtimeLinkedCamera is GameCameraAnimated && willWait)
+				if (runtimeLinkedCameraAnimated)
 				{
-					GameCameraAnimated animatedCamera = (GameCameraAnimated) runtimeLinkedCamera;
-					if (animatedCamera.isPlaying ())
+					if (runtimeLinkedCameraAnimated.isPlaying ())
 					{
 						return defaultPauseTime;
 					}
@@ -128,8 +128,15 @@ namespace AC
 				}
 				else
 				{
-					isRunning = false;
-					return 0f;
+					if (KickStarter.mainCamera.IsInTransition () && KickStarter.mainCamera.attachedCamera == runtimeLinkedCamera)
+					{
+						return defaultPauseTime;
+					}
+					else
+					{
+						isRunning = false;
+						return 0f;
+					}
 				}
 			}
 			
@@ -209,7 +216,7 @@ namespace AC
 					transitionTime = EditorGUILayout.FloatField ("Transition time (s):", transitionTime);
 				}
 				
-				if (transitionTime > 0f)
+				if (transitionTime > 0f || transitionTimeParameterID >= 0)
 				{
 					moveMethod = (MoveMethod) EditorGUILayout.EnumPopup ("Move method:", moveMethod);
 					showWaitOption = true;
@@ -226,8 +233,6 @@ namespace AC
 			{
 				willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -255,10 +260,10 @@ namespace AC
 		{
 			if (parameterID < 0)
 			{
-				if (linkedCamera != null && linkedCamera.gameObject == _gameObject) return true;
+				if (linkedCamera && linkedCamera.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 		
 		#endif
@@ -274,7 +279,7 @@ namespace AC
 		 */
 		public static ActionCamera CreateNew (_Camera newCamera, float duration = 0f, bool waitUntilFinish = true, MoveMethod moveMethod = MoveMethod.Smooth)
 		{
-			ActionCamera newAction = (ActionCamera) CreateInstance <ActionCamera>();
+			ActionCamera newAction = CreateNew<ActionCamera> ();
 			newAction.linkedCamera = newCamera;
 			newAction.transitionTime = duration;
 			newAction.moveMethod = moveMethod;

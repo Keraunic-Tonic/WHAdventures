@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCharMove.cs"
  * 
@@ -48,13 +48,9 @@ namespace AC
 		protected Char runtimeChar;
 
 		
-		public ActionCharMove ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Character;
-			title = "Move along path";
-			description = "Moves the Character along a pre-determined path. Will adhere to the speed setting selected in the relevant Paths object. Can also be used to stop a character from moving, or resume moving along a path if it was previously stopped.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Character; }}
+		public override string Title { get { return "Move along path"; }}
+		public override string Description { get { return "Moves the Character along a pre-determined path. Will adhere to the speed setting selected in the relevant Paths object. Can also be used to stop a character from moving, or resume moving along a path if it was previously stopped."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -92,58 +88,63 @@ namespace AC
 						npcToMove.StopFollowing ();
 					}
 
-					if (movePathMethod == MovePathMethod.StopMoving)
+					switch (movePathMethod)
 					{
-						runtimeChar.EndPath ();
-						if (runtimeChar.IsPlayer && KickStarter.playerInteraction.GetHotspotMovingTo () != null)
-						{
-							KickStarter.playerInteraction.StopMovingToHotspot ();
-						}
-
-						if (stopInstantly)
-						{
-							runtimeChar.Halt ();
-						}
-					}
-					else if (movePathMethod == MovePathMethod.MoveOnNewPath)
-					{
-						if (runtimeMovePath)
-						{
-							int randomIndex = -1;
-							if (runtimeMovePath.pathType == AC_PathType.IsRandom && startRandom)
+						case MovePathMethod.StopMoving:
+							runtimeChar.EndPath ();
+							if (runtimeChar.IsPlayer && KickStarter.playerInteraction.GetHotspotMovingTo () != null)
 							{
-								if (runtimeMovePath.nodes.Count > 1)
+								KickStarter.playerInteraction.StopMovingToHotspot ();
+							}
+
+							if (stopInstantly)
+							{
+								runtimeChar.Halt ();
+							}
+							break;
+
+						case MovePathMethod.MoveOnNewPath:
+							if (runtimeMovePath)
+							{
+								int randomIndex = -1;
+								if (runtimeMovePath.pathType == AC_PathType.IsRandom && startRandom)
 								{
-									randomIndex = Random.Range (0, runtimeMovePath.nodes.Count);
+									if (runtimeMovePath.nodes.Count > 1)
+									{
+										randomIndex = Random.Range (0, runtimeMovePath.nodes.Count);
+									}
+								}
+
+								PrepareCharacter (randomIndex);
+
+								if (willWait && runtimeMovePath.pathType != AC_PathType.ForwardOnly && runtimeMovePath.pathType != AC_PathType.ReverseOnly)
+								{
+									willWait = false;
+									LogWarning ("Cannot pause while character moves along a linear path, as this will create an indefinite cutscene.");
+								}
+
+								if (randomIndex >= 0)
+								{
+									runtimeChar.SetPath (runtimeMovePath, randomIndex, 0);
+								}
+								else
+								{
+									runtimeChar.SetPath (runtimeMovePath);
+								}
+
+								if (willWait)
+								{
+									return defaultPauseTime;
 								}
 							}
+							break;
 
-							PrepareCharacter (randomIndex);
+						case MovePathMethod.ResumeLastSetPath:
+							runtimeChar.ResumeLastPath ();
+							break;
 
-							if (willWait && runtimeMovePath.pathType != AC_PathType.ForwardOnly && runtimeMovePath.pathType != AC_PathType.ReverseOnly)
-							{
-								willWait = false;
-								LogWarning ("Cannot pause while character moves along a linear path, as this will create an indefinite cutscene.");
-							}
-
-							if (randomIndex >= 0)
-							{
-								runtimeChar.SetPath (runtimeMovePath, randomIndex, 0);
-							}
-							else
-							{
-								runtimeChar.SetPath (runtimeMovePath);
-							}
-						
-							if (willWait)
-							{
-								return defaultPauseTime;
-							}
-						}
-					}
-					else if (movePathMethod == MovePathMethod.ResumeLastSetPath)
-					{
-						runtimeChar.ResumeLastPath ();
+						default:
+							break;
 					}
 				}
 
@@ -190,33 +191,40 @@ namespace AC
 				{
 					int randomIndex = -1;
 
-					if (runtimeMovePath.pathType == AC_PathType.ForwardOnly)
+					switch (runtimeMovePath.pathType)
 					{
-						// Place at end
-						int i = runtimeMovePath.nodes.Count-1;
-						runtimeChar.Teleport (runtimeMovePath.nodes[i]);
-						if (i>0)
-						{
-							runtimeChar.SetLookDirection (runtimeMovePath.nodes[i] - runtimeMovePath.nodes[i-1], true);
-						}
-						return;
-					}
-					else if (runtimeMovePath.pathType == AC_PathType.ReverseOnly)
-					{
-						// Place at start
-						runtimeChar.Teleport (runtimeMovePath.transform.position);
-						if (runtimeMovePath.nodes.Count > 1)
-						{
-							runtimeChar.SetLookDirection (runtimeMovePath.nodes[0] - runtimeMovePath.nodes[1], true);
-						}
-						return;
-					}
-					else if (runtimeMovePath.pathType == AC_PathType.IsRandom && startRandom)
-					{
-						if (runtimeMovePath.nodes.Count > 1)
-						{
-							randomIndex = Random.Range (0, runtimeMovePath.nodes.Count);
-						}
+						case AC_PathType.ForwardOnly:
+							{
+								// Place at end
+								int i = runtimeMovePath.nodes.Count - 1;
+								runtimeChar.Teleport (runtimeMovePath.nodes[i]);
+								if (i > 0)
+								{
+									runtimeChar.SetLookDirection (runtimeMovePath.nodes[i] - runtimeMovePath.nodes[i - 1], true);
+								}
+								return;
+							}
+
+						case AC_PathType.ReverseOnly:
+							{
+								// Place at start
+								runtimeChar.Teleport (runtimeMovePath.transform.position);
+								if (runtimeMovePath.nodes.Count > 1)
+								{
+									runtimeChar.SetLookDirection (runtimeMovePath.nodes[0] - runtimeMovePath.nodes[1], true);
+								}
+								return;
+							}
+
+						case AC_PathType.IsRandom:
+							if (startRandom && runtimeMovePath.nodes.Count > 1)
+							{
+								randomIndex = Random.Range (0, runtimeMovePath.nodes.Count);
+							}
+							break;
+
+						default:
+							break;
 					}
 
 					PrepareCharacter (randomIndex);
@@ -307,52 +315,54 @@ namespace AC
 			}
 
 			movePathMethod = (MovePathMethod) EditorGUILayout.EnumPopup ("Method:", movePathMethod);
-			if (movePathMethod == MovePathMethod.MoveOnNewPath)
+
+			switch (movePathMethod)
 			{
-				movePathParameterID = Action.ChooseParameterGUI ("Path to follow:", parameters, movePathParameterID, ParameterType.GameObject);
-				if (movePathParameterID >= 0)
+				case MovePathMethod.MoveOnNewPath:
 				{
-					movePathID = 0;
-					movePath = null;
-				}
-				else
-				{
-					movePath = (Paths) EditorGUILayout.ObjectField ("Path to follow:", movePath, typeof(Paths), true);
+					movePathParameterID = Action.ChooseParameterGUI ("Path to follow:", parameters, movePathParameterID, ParameterType.GameObject);
+					if (movePathParameterID >= 0)
+					{
+						movePathID = 0;
+						movePath = null;
+					}
+					else
+					{
+						movePath = (Paths) EditorGUILayout.ObjectField ("Path to follow:", movePath, typeof(Paths), true);
 					
-					movePathID = FieldToID <Paths> (movePath, movePathID);
-					movePath = IDToField <Paths> (movePath, movePathID, false);
+						movePathID = FieldToID <Paths> (movePath, movePathID);
+						movePath = IDToField <Paths> (movePath, movePathID, false);
+					}
+
+					if (movePath != null && movePath.pathType == AC_PathType.IsRandom)
+					{
+						startRandom = EditorGUILayout.Toggle ("Start at random node?", startRandom);
+					}
+
+					doTeleport = EditorGUILayout.Toggle ("Teleport to start?", doTeleport);
+					if (movePath != null && movePath.pathType != AC_PathType.ForwardOnly && movePath.pathType != AC_PathType.ReverseOnly)
+					{
+						willWait = false;
+					}
+					else
+					{
+						willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
+					}
+
+					if (movePath != null && movePath.GetComponent <Char>())
+					{
+						EditorGUILayout.HelpBox ("Can't follow a Path attached to a Character!", MessageType.Warning);
+					}
+					break;
 				}
 
-				if (movePath != null && movePath.pathType == AC_PathType.IsRandom)
-				{
-					startRandom = EditorGUILayout.Toggle ("Start at random node?", startRandom);
-				}
+				case MovePathMethod.StopMoving:
+					stopInstantly = EditorGUILayout.Toggle ("Stop instantly?", stopInstantly);
+					break;
 
-				doTeleport = EditorGUILayout.Toggle ("Teleport to start?", doTeleport);
-				if (movePath != null && movePath.pathType != AC_PathType.ForwardOnly && movePath.pathType != AC_PathType.ReverseOnly)
-				{
-					willWait = false;
-				}
-				else
-				{
-					willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
-				}
-
-				if (movePath != null && movePath.GetComponent <Char>())
-				{
-					EditorGUILayout.HelpBox ("Can't follow a Path attached to a Character!", MessageType.Warning);
-				}
+				default:
+					break;
 			}
-			else if (movePathMethod == MovePathMethod.StopMoving)
-			{
-				stopInstantly = EditorGUILayout.Toggle ("Stop instantly?", stopInstantly);
-			}
-			else if (movePathMethod == MovePathMethod.ResumeLastSetPath)
-			{
-				//
-			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -405,7 +415,7 @@ namespace AC
 				if (movePath != null && movePath.gameObject == _gameObject) return true;
 				if (movePathID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -429,7 +439,7 @@ namespace AC
 		 */
 		public static ActionCharMove CreateNew_NewPath (AC.Char characterToMove, Paths pathToFollow, bool teleportToStart = false)
 		{
-			ActionCharMove newAction = (ActionCharMove) CreateInstance <ActionCharMove>();
+			ActionCharMove newAction = CreateNew<ActionCharMove> ();
 			newAction.movePathMethod = MovePathMethod.MoveOnNewPath;
 			newAction.charToMove = characterToMove;
 			newAction.movePath = pathToFollow;
@@ -445,7 +455,7 @@ namespace AC
 		 */
 		public static ActionCharMove CreateNew_ResumeLastPath (AC.Char characterToMove)
 		{
-			ActionCharMove newAction = (ActionCharMove) CreateInstance <ActionCharMove>();
+			ActionCharMove newAction = CreateNew<ActionCharMove> ();
 			newAction.movePathMethod = MovePathMethod.ResumeLastSetPath;
 			newAction.charToMove = characterToMove;
 			return newAction;
@@ -460,7 +470,7 @@ namespace AC
 		 */
 		public static ActionCharMove CreateNew_StopMoving (AC.Char characterToStop, bool stopInstantly = false)
 		{
-			ActionCharMove newAction = (ActionCharMove) CreateInstance <ActionCharMove>();
+			ActionCharMove newAction = CreateNew<ActionCharMove> ();
 			newAction.movePathMethod = MovePathMethod.StopMoving;
 			newAction.charToMove = characterToStop;
 			newAction.stopInstantly = stopInstantly;

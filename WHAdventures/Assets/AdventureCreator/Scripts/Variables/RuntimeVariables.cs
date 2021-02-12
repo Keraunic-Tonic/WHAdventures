@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RuntimeVariables.cs"
  * 
@@ -37,16 +37,31 @@ namespace AC
 
 		#region PublicFunctions
 
-		/**
-		 * Downloads variables from the Global Manager to the scene.
-		 * This is public because it is also called when the game is restarted.
-		 */
+		/** Links all variables to their linked counterpart. */
 		public void OnInitPersistentEngine ()
 		{
-			TransferFromManager ();
-			AssignOptionsLinkedVariabes ();
+			AssignOptionsLinkedVariables ();
 			LinkAllValues ();
 		}
+
+
+		/** Downloads variables from the Global Manager to the scene. */
+		public void TransferFromManager ()
+		{
+			if (AdvGame.GetReferences() && AdvGame.GetReferences().variablesManager)
+			{
+				VariablesManager variablesManager = AdvGame.GetReferences ().variablesManager;
+
+				globalVars.Clear();
+				foreach (GVar assetVar in variablesManager.vars)
+				{
+					GVar newVar = new GVar (assetVar);
+					newVar.CreateRuntimeTranslations();
+					globalVars.Add(newVar);
+				}
+			}
+		}
+
 
 
 		/**
@@ -173,7 +188,7 @@ namespace AC
 		/**
 		 * <summary>Transfers the values of all option-linked global variables from the options data into the variables.
 		 */
-		public void AssignOptionsLinkedVariabes ()
+		public void AssignOptionsLinkedVariables ()
 		{
 			if (AdvGame.GetReferences () && AdvGame.GetReferences ().variablesManager)
 			{
@@ -218,6 +233,7 @@ namespace AC
 							globalVar.FloatValue = presetValue.floatVal;
 							globalVar.TextValue = presetValue.textVal;
 							globalVar.Vector3Value = presetValue.vector3Val;
+							globalVar.GameObjectValue = presetValue.gameObjectVal;
 
 							globalVar.Upload (VariableLocation.Global);
 						}
@@ -300,23 +316,6 @@ namespace AC
 				return customTokenString.ToString ();		
 			}
 			return string.Empty;
-		}
-
-
-		protected void TransferFromManager ()
-		{
-			if (AdvGame.GetReferences () && AdvGame.GetReferences ().variablesManager)
-			{
-				VariablesManager variablesManager = AdvGame.GetReferences ().variablesManager;
-				
-				globalVars.Clear ();
-				foreach (GVar assetVar in variablesManager.vars)
-				{
-					GVar newVar = new GVar (assetVar);
-					newVar.CreateRuntimeTranslations ();
-					globalVars.Add (newVar);
-				}
-			}
 		}
 
 

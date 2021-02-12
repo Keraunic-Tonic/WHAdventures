@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RuntimeLanguage.cs"
  * 
@@ -236,7 +236,7 @@ namespace AC
 
 				case ReferenceSpeechFiles.ByDirectReference:
 					{
-						UnityEngine.Object _object = KickStarter.runtimeLanguages.GetLineCustomLipsyncFile (lineID, voiceLanguage);
+						Object _object = KickStarter.runtimeLanguages.GetLineCustomLipsyncFile (lineID, voiceLanguage);
 
 						if (_object == null && KickStarter.speechManager.fallbackAudio && voiceLanguage > 0)
 						{
@@ -248,6 +248,9 @@ namespace AC
 							return (T) KickStarter.runtimeLanguages.GetLineCustomLipsyncFile (lineID, voiceLanguage);
 						}
 					}
+					break;
+
+				default:
 					break;
 			}
 
@@ -827,7 +830,7 @@ namespace AC
 			}
 			set
 			{
-				if (currentAudioAssetBundle != null && currentAudioAssetBundle != value)
+				if (currentAudioAssetBundle && currentAudioAssetBundle != value)
 				{
 					currentAudioAssetBundle.Unload (true);
 				}
@@ -846,7 +849,7 @@ namespace AC
 			}
 			set
 			{
-				if (currentLipsyncAssetBundle != null && currentLipsyncAssetBundle != value)
+				if (currentLipsyncAssetBundle && currentLipsyncAssetBundle != value)
 				{
 					currentLipsyncAssetBundle.Unload (true);
 				}

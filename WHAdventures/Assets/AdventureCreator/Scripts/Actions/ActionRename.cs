@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionRename.cs"
  * 
@@ -33,16 +33,11 @@ namespace AC
 		public int lineID = -1;
 
 
-		public ActionRename ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Hotspot;
-			title = "Rename";
-			lineID = -1;
-			description = "Renames a Hotspot, or an NPC with a Hotspot component.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Hotspot; }}
+		public override string Title { get { return "Rename"; }}
+		public override string Description { get { return "Renames a Hotspot, or an NPC with a Hotspot component."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			runtimeHotspot = AssignFile <Hotspot> (parameters, parameterID, constantID, hotspot);
@@ -79,8 +74,6 @@ namespace AC
 			}
 			
 			newName = EditorGUILayout.TextField ("New label:", newName);
-			
-			AfterRunningOption ();
 		}
 
 
@@ -110,9 +103,9 @@ namespace AC
 			if (parameterID < 0)
 			{
 				if (hotspot != null && hotspot.gameObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 		
 		#endif
@@ -195,7 +188,7 @@ namespace AC
 		 */
 		public static ActionRename CreateNew (Hotspot hotspotToRename, string newName, int translationID = -1)
 		{
-			ActionRename newAction = (ActionRename) CreateInstance <ActionRename>();
+			ActionRename newAction = CreateNew<ActionRename> ();
 			newAction.hotspot = hotspotToRename;
 			newAction.newName = newName;
 			newAction.lineID = translationID;

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCinemaDirector.cs"
  * 
@@ -31,15 +31,11 @@ namespace AC
 		#endif
 
 
-		public ActionCinemaDirector ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ThirdParty;
-			title = "Cinema Director";
-			description = "Runs a Cutscene built with Cinema Director. Note that Cinema Director is a separate Unity Asset, and the 'CinemaDirectorIsPresent' preprocessor must be defined for this to work.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.ThirdParty; }}
+		public override string Title { get { return "Cinema Director"; }}
+		public override string Description { get { return "Runs a Cutscene built with Cinema Director. Note that Cinema Director is a separate Unity Asset, and the 'CinemaDirectorIsPresent' preprocessor must be defined for this to work."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			#if CinemaDirectorIsPresent
@@ -129,8 +125,6 @@ namespace AC
 			#if !CinemaDirectorIsPresent
 			EditorGUILayout.HelpBox ("The 'CinemaDirectorIsPresent' Scripting Define Symbol must be listed in the\nPlayer Settings. Please set it from Edit -> Project Settings -> Player", MessageType.Warning);
 			#endif
-
-			AfterRunningOption ();
 		}
 
 
@@ -163,7 +157,7 @@ namespace AC
 				#endif
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -178,7 +172,7 @@ namespace AC
 		*/
 		public static ActionCinemaDirector CreateNew_ResumeLastTrack (CinemaDirector.Cutscene cutsceneToPlay, bool waitUntilFinish = true)
 		{
-			ActionCinemaDirector newAction = (ActionCinemaDirector) CreateInstance <ActionCinemaDirector>();
+			ActionCinemaDirector newAction = CreateNew<ActionCinemaDirector> ();
 			newAction.cdCutscene = cutsceneToPlay;
 			newAction.willWait = waitUntilFinish;
 		}

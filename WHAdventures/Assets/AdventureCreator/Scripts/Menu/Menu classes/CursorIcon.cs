@@ -5,7 +5,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"CursorIcon.cs"
  * 
@@ -39,9 +39,7 @@ namespace AC
 		public int id;
 
 
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public CursorIcon ()
 		{
 			dontCycle = false;
@@ -55,8 +53,30 @@ namespace AC
 			
 			label = "Icon " + (id + 1).ToString ();
 		}
-		
-		
+
+
+		public CursorIcon (CursorIcon cursorIcon)
+		{
+			dontCycle = cursorIcon.dontCycle;
+			label = cursorIcon.label;
+			lineID = cursorIcon.lineID;
+			id = cursorIcon.id;
+
+			texture = cursorIcon.texture;
+			isAnimated = cursorIcon.isAnimated;
+			numFrames = cursorIcon.numFrames;
+			numRows = cursorIcon.numRows;
+			numCols = cursorIcon.numCols;
+			size = cursorIcon.size;
+			animSpeed = cursorIcon.animSpeed;
+			endAnimOnLastFrame = cursorIcon.endAnimOnLastFrame;
+			skipFirstFrameWhenLooping = cursorIcon.skipFirstFrameWhenLooping;
+			clickOffset = cursorIcon.clickOffset;
+			frameSpeeds = cursorIcon.frameSpeeds;
+			alwaysAnimate = cursorIcon.alwaysAnimate;
+		}
+
+
 		/**
 		 * <summary>A Constructor that generates a unique id number.</summary>
 		 * <param name = "idArray">An array of previously-assigned id numbers</param>
@@ -96,8 +116,23 @@ namespace AC
 			}
 			return "Icon_" + id.ToString ();
 		}
-		
-		
+
+
+		/**
+		 * <summary>Gets the icon's display name.</summary>
+		 * <param name = "languageNumber">The index of the current language, as set in SpeechManager</param>
+		 * <returns>The icon's display name</returns>
+		 */
+		public string GetLabel (int languageNumber)
+		{
+			if (languageNumber > 0)
+			{
+				return AdvGame.ConvertTokens (KickStarter.runtimeLanguages.GetTranslation (label, lineID, languageNumber, GetTranslationType (0)));
+			}
+			return AdvGame.ConvertTokens (label);
+		}
+
+
 		/**
 		 * <summary>Copies the values from another CursorIcon.</summary>
 		 * <param name = "_cursorIcon">The CursorIcon to copy from</param>
@@ -674,10 +709,11 @@ namespace AC
 				}
 			}
 			
-			if (texture != null)
+			if (texture)
 			{
 				uniqueIdentifier = texture.name + frameInRow.ToString () + currentRow.ToString ();
 			}
+
 			return new Rect (frameWidth * (frameInRow-1), frameHeight * (numRows - currentRow), frameWidth, frameHeight);
 		}
 		
@@ -712,7 +748,6 @@ namespace AC
 				frameInRow = 1;
 				currentRow = 1;
 			}
-			
 			return new Rect (frameWidth * (frameInRow-1), frameHeight * (numRows - currentRow), frameWidth, frameHeight);
 		}
 		
@@ -808,7 +843,7 @@ namespace AC
 
 							frameSpeeds[i] = EditorGUILayout.Slider ("Frame #" + (i+1).ToString () + " relative speed:", frameSpeeds[i], 0.01f, 1f);
 						}
-						EditorGUILayout.EndVertical ();
+						CustomGUILayout.EndVertical ();
 					}
 				}
 			}
@@ -821,7 +856,7 @@ namespace AC
 		{
 			get
 			{
-				if (texture2D == null && texture != null && texture is Texture2D)
+				if (texture2D == null && texture && texture is Texture2D)
 				{
 					texture2D = (Texture2D) texture;
 				}

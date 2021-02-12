@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"FollowTintMap.cs"
  * 
@@ -180,7 +180,7 @@ namespace AC
 			visibilityData.tintIntensity = targetIntensity;
 
 			visibilityData.tintMapID = 0;
-			if (!useDefaultTintMap && tintMap != null && tintMap.gameObject != null)
+			if (!useDefaultTintMap && tintMap && tintMap.gameObject)
 			{
 				visibilityData.tintMapID = Serializer.GetConstantID (tintMap.gameObject);
 			}

@@ -101,7 +101,7 @@ namespace AC
 			EditorGUILayout.Space ();
 			for (int i=0; i<exportColumns.Count; i++)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 
 				EditorGUILayout.BeginHorizontal ();
 				exportColumns[i].ShowFieldSelector (i);
@@ -116,7 +116,7 @@ namespace AC
 					replaceForwardSlashes = EditorGUILayout.Toggle ("Replace '/' with '.'?", replaceForwardSlashes);
 				}
 
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
 			EditorGUILayout.Space ();

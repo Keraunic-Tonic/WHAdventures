@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SetTriggerParameters.cs"
  * 
@@ -67,7 +67,7 @@ namespace AC
 				return;
 			}
 
-			if (trigger != ownTrigger && ownTrigger.assetFile != null && trigger.assetFile.NumParameters != ownTrigger.assetFile.NumParameters)
+			if (trigger != ownTrigger && ownTrigger.assetFile && trigger.assetFile.NumParameters != ownTrigger.assetFile.NumParameters)
 			{
 				return;
 			}
@@ -97,7 +97,7 @@ namespace AC
 				EditorGUILayout.HelpBox ("This component requires that the Trigger's Source field is set to Asset File", MessageType.Warning);
 				return;
 			}
-			else if (trigger.source == ActionListSource.AssetFile && trigger.assetFile != null && trigger.assetFile.NumParameters > 0)
+			else if (trigger.source == ActionListSource.AssetFile && trigger.assetFile && trigger.assetFile.NumParameters > 0)
 			{
 				ShowParametersGUI (trigger.assetFile.DefaultParameters, trigger.syncParamValues);
 			}

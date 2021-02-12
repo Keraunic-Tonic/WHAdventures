@@ -2,7 +2,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"InvVar.cs"
  * 
@@ -53,6 +53,7 @@ namespace AC
 			popUpsLineID = -1;
 			vector3Val = Vector3.zero;
 			popUpID = 0;
+			gameObjectVal = null;
 
 			// Update id based on array
 			foreach (int _id in idArray)
@@ -135,6 +136,7 @@ namespace AC
 			vector3Val = invVar.vector3Val;
 			popUpsLineID = invVar.popUpsLineID;
 			popUpID = invVar.popUpID;
+			gameObjectVal = invVar.gameObjectVal;
 		}
 
 
@@ -167,6 +169,13 @@ namespace AC
 						return KickStarter.runtimeLanguages.GetTranslation (textVal, textValLineID, languageNumber, GetTranslationType (0));
 					}
 					return textVal;
+
+				case VariableType.GameObject:
+					if (gameObjectVal)
+					{
+						return gameObjectVal.name;
+					}
+					return string.Empty;
 
 				case VariableType.Vector3:
 					return "(" + vector3Val.x.ToString () + ", " + vector3Val.y.ToString () + ", " + vector3Val.z.ToString () + ")";
@@ -297,7 +306,7 @@ namespace AC
 					break;
 
 				case VariableType.String:
-					textVal = CustomGUILayout.TextField (_label, textVal, apiPrefix + ".TextValue", "The property's value for this item");
+					textVal = CustomGUILayout.TextArea (_label, textVal, apiPrefix + ".TextValue", "The property's value for this item");
 					break;
 
 				case VariableType.Float:
@@ -306,6 +315,10 @@ namespace AC
 
 				case VariableType.Vector3:
 					vector3Val = CustomGUILayout.Vector3Field (_label, vector3Val, apiPrefix + ".Vector3Value", "The property's value for this item");
+					break;
+
+				case VariableType.GameObject:
+					gameObjectVal = (GameObject) CustomGUILayout.ObjectField <GameObject> (_label, gameObjectVal, false, apiPrefix + ".GameObjectValue", "The property's value for this item");
 					break;
 			}
 		}

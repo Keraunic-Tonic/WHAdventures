@@ -107,5 +107,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeTexture: {fileID: 2800000, guid: 2de7d16b4ac4b402182d4f2ca40e0b2d, type: 3}
   renderFading: 1
-  restoreTransformOnLoadVR: 0
   forwardDirection: 0

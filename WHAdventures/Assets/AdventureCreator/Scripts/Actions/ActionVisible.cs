@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionVisible.cs"
  * 
@@ -30,16 +30,12 @@ namespace AC
 
 		public bool affectChildren;
 		public VisState visState = 0;
-		
-		
-		public ActionVisible ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Visibility";
-			description = "Hides or shows a GameObject. Can optionally affect the GameObject's children.";
-		}
 
+
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Visibility"; }}
+		public override string Description { get { return "Hides or shows a GameObject. Can optionally affect the GameObject's children."; }}
+		
 
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
@@ -57,13 +53,26 @@ namespace AC
 			
 			if (runtimeObToAffect != null)
 			{
-				if (runtimeObToAffect.GetComponent <LimitVisibility>())
+				LimitVisibility limitVisibility = runtimeObToAffect.GetComponent <LimitVisibility>();
+				if (limitVisibility)
 				{
-					runtimeObToAffect.GetComponent <LimitVisibility>().isLockedOff = !state;
+					limitVisibility.isLockedOff = !state;
 				}
-				else if (runtimeObToAffect.GetComponent <Renderer>())
+				else
 				{
-					runtimeObToAffect.GetComponent <Renderer>().enabled = state;
+					Renderer renderer = runtimeObToAffect.GetComponent <Renderer>();
+					if (renderer)
+					{
+						renderer.enabled = state;
+					}
+					else
+					{
+						Canvas canvas = runtimeObToAffect.GetComponent <Canvas>();
+						if (canvas)
+						{
+							canvas.enabled = state;
+						}
+					}
 				}
 
 				if (affectChildren)
@@ -100,8 +109,6 @@ namespace AC
 
 			visState = (VisState) EditorGUILayout.EnumPopup ("Visibility:", visState);
 			affectChildren = EditorGUILayout.Toggle ("Affect children?", affectChildren);
-			
-			AfterRunningOption ();
 		}
 
 
@@ -130,9 +137,9 @@ namespace AC
 			if (parameterID < 0)
 			{
 				if (obToAffect != null && obToAffect == gameObject) return true;
-				return (constantID == id);
+				return (constantID == id && id != 0);
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -147,7 +154,7 @@ namespace AC
 		 */
 		public static ActionVisible CreateNew (GameObject objectToAffect, VisState newVisiblityState, bool affectChildren = false)
 		{
-			ActionVisible newAction = (ActionVisible) CreateInstance <ActionVisible>();
+			ActionVisible newAction = CreateNew<ActionVisible> ();
 			newAction.obToAffect = objectToAffect;
 			newAction.visState = newVisiblityState;
 			newAction.affectChildren = affectChildren;

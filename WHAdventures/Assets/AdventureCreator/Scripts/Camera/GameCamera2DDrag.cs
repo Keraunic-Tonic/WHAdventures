@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"GameCamera2DDrag.cs"
  * 
@@ -261,7 +261,7 @@ namespace AC
 
 		protected virtual Vector2 GetInputVector ()
 		{
-			if (KickStarter.mainCamera != null && KickStarter.mainCamera.attachedCamera != this)
+			if (KickStarter.mainCamera && KickStarter.mainCamera.attachedCamera != this)
 			{
 				return noInput;
 			}
@@ -289,14 +289,14 @@ namespace AC
 			}
 			else
 			{
-				transform.position = new Vector3 (originalPosition.x + perspectiveOffset.x, originalPosition.y + perspectiveOffset.y, originalPosition.z);
+				Transform.position = new Vector3 (originalPosition.x + perspectiveOffset.x, originalPosition.y + perspectiveOffset.y, originalPosition.z);
 			}
 		}
 
 
 		protected void SetOriginalPosition ()
 		{
-			originalPosition = transform.position;
+			originalPosition = Transform.position;
 		}
 
 		#endregion

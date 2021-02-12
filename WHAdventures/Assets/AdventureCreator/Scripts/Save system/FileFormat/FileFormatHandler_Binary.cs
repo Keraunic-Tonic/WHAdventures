@@ -13,6 +13,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace AC
 {
 
+	/** A format handler that serializes data into binary format */
 	public class FileFormatHandler_Binary : iFileFormatHandler
 	{
 
@@ -36,7 +37,7 @@ namespace AC
 			binaryFormatter.Serialize (memoryStream, dataObject);
 			return (Convert.ToBase64String (memoryStream.GetBuffer ()));
 			#else
-			return "";
+			return string.Empty;
 			#endif
 		}
 

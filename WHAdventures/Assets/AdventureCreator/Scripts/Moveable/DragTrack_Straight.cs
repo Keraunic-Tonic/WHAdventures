@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"DragTrack_Linear.cs"
  * 
@@ -46,34 +46,6 @@ namespace AC
 		}
 
 
-		public override void AssignColliders (Moveable_Drag draggable)
-		{
-			if (!UsesEndColliders || !draggable.UsesRigidbody)
-			{
-				base.AssignColliders (draggable);
-				return;
-			}
-			
-			if (draggable.maxCollider == null)
-			{
-				draggable.maxCollider = (Collider) Instantiate (Resources.Load (Resource.dragCollider, typeof (Collider)));
-			}
-			
-			if (draggable.minCollider == null)
-			{
-				draggable.minCollider = (Collider) Instantiate (Resources.Load (Resource.dragCollider, typeof (Collider)));
-			}
-
-			draggable.maxCollider.transform.position = transform.position + (transform.up * maxDistance) + (transform.up * draggable.ColliderWidth);
-			draggable.minCollider.transform.position = transform.position - (transform.up * draggable.ColliderWidth);
-			
-			draggable.minCollider.transform.up = transform.up;
-			draggable.maxCollider.transform.up = -transform.up;
-
-			base.AssignColliders (draggable);
-		}
-
-
 		public override void Connect (Moveable_Drag draggable)
 		{
 			AssignColliders (draggable);
@@ -82,13 +54,13 @@ namespace AC
 
 		public override float GetDecimalAlong (Moveable_Drag draggable)
 		{
-			return (draggable.transform.position - transform.position).magnitude / maxDistance;
+			return (draggable.Transform.position - Transform.position).magnitude / maxDistance;
 		}
 
 
 		public override void SetPositionAlong (float proportionAlong, Moveable_Drag draggable)
 		{
-			draggable.transform.position = transform.position + (transform.up * proportionAlong * maxDistance);
+			draggable.Transform.position = Transform.position + (Transform.up * proportionAlong * maxDistance);
 			if (rotationType != DragRotationType.None)
 			{
 				SetRotation (draggable, proportionAlong);
@@ -100,8 +72,8 @@ namespace AC
 
 		public override void SnapToTrack (Moveable_Drag draggable, bool onStart)
 		{
-			Vector3 vec = draggable.transform.position - transform.position;
-			float proportionAlong = Vector3.Dot (vec, transform.up) / maxDistance;
+			Vector3 vec = draggable.Transform.position - Transform.position;
+			float proportionAlong = Vector3.Dot (vec, Transform.up) / maxDistance;
 			proportionAlong = Mathf.Clamp01 (proportionAlong);
 			
 			if (onStart)
@@ -117,28 +89,28 @@ namespace AC
 				}
 			}
 
-			draggable.transform.position = transform.position + transform.up * proportionAlong * maxDistance;
+			draggable.Transform.position = Transform.position + Transform.up * proportionAlong * maxDistance;
 
 			// Limit velocity to just along track
 			if (draggable.UsesRigidbody)
 			{
-				Vector3 localVelocity = transform.InverseTransformDirection(draggable.Rigidbody.velocity);
+				Vector3 localVelocity = Transform.InverseTransformDirection (draggable.Rigidbody.velocity);
 				localVelocity.x = 0;
 				localVelocity.z = 0;
-				draggable.Rigidbody.velocity = transform.TransformDirection (localVelocity);
+				draggable.Rigidbody.velocity = Transform.TransformDirection (localVelocity);
 			}
 		}
 
 
-		public override void ApplyAutoForce (float _position, float _speed, Moveable_Drag draggable)
+		public override void ApplyAutoForce (float _position, float _speed, Moveable_Drag draggable, bool ignoreMaxSpeed)
 		{
 			if (draggable.UsesRigidbody)
 			{
-				Vector3 deltaForce = GetForceToPosition(draggable, _position);
+				Vector3 deltaForce = GetForceToPosition (draggable, _position);
 				deltaForce *= _speed / draggable.Rigidbody.mass;
 
 				// Limit magnitude
-				if (deltaForce.magnitude > draggable.maxSpeed)
+				if (!ignoreMaxSpeed && deltaForce.magnitude > draggable.maxSpeed)
 				{
 					deltaForce *= draggable.maxSpeed / deltaForce.magnitude;
 				}
@@ -167,11 +139,11 @@ namespace AC
 					draggable.UpdateScrewVector();
 					dotProduct = Vector3.Dot (force, draggable._dragVector);
 				}
-				else dotProduct = Vector3.Dot (force, transform.up);
+				else dotProduct = Vector3.Dot (force, Transform.up);
 			}
 			else
 			{
-				dotProduct = Vector3.Dot (force, transform.up);
+				dotProduct = Vector3.Dot (force, Transform.up);
 			}
 
 			return dotProduct;
@@ -182,16 +154,36 @@ namespace AC
 		{
 			float dotProduct = GetForceDotProduct (force, draggable);
 
+			switch (draggable.dragTrackDirection)
+			{
+				case DragTrackDirection.ForwardOnly:
+					if (dotProduct < 0f)
+					{
+						return;
+					}
+					break;
+
+				case DragTrackDirection.BackwardOnly:
+					if (dotProduct > 0f)
+					{
+						return;
+					}
+					break;
+
+				default:
+					break;
+			}
+
 			// Calculate the amount of force along the tangent
-			Vector3 tangentForce = transform.up * dotProduct;
+			Vector3 tangentForce = Transform.up * dotProduct;
 
 			if (rotationType == DragRotationType.Screw)
 			{
 				if (dragMustScrew)
 				{
 					// Take radius into account
-					tangentForce = (transform.up * dotProduct).normalized * force.magnitude;
-					tangentForce /= Mathf.Sqrt ((draggable.GetGrabPosition () - draggable.transform.position).magnitude) / 0.4f;
+					tangentForce = (Transform.up * dotProduct).normalized * force.magnitude;
+					tangentForce /= Mathf.Sqrt ((draggable.GetGrabPosition () - draggable.Transform.position).magnitude) / 0.4f;
 				}
 				tangentForce /= Mathf.Sqrt (screwThread);
 			}
@@ -209,16 +201,16 @@ namespace AC
 				}
 
 				float newPosition = draggable.trackValue + (dotProduct);
-				ApplyAutoForce (newPosition, 0.01f * Time.deltaTime / draggable.simulatedMass, draggable);
+				ApplyAutoForce (newPosition, 0.01f * Time.deltaTime / draggable.simulatedMass, draggable, false);
 			}
 		}
 
 
-		public override float GetScreenPointProportionAlong (Vector2 point)
+		public override float GetScreenPointProportionAlong (Vector2 point, Vector3 grabRelativePosition, Moveable_Drag drag)
 		{
-			Vector3 endPosition = transform.position + (transform.up * maxDistance);
+			Vector3 endPosition = Transform.position + (Transform.up * maxDistance);
 
-			Vector2 screen_startPosition = KickStarter.CameraMain.WorldToScreenPoint (transform.position);
+			Vector2 screen_startPosition = KickStarter.CameraMain.WorldToScreenPoint (Transform.position);
 			Vector2 screen_endPosition = KickStarter.CameraMain.WorldToScreenPoint (endPosition);
 
 			Vector2 startToEnd = screen_startPosition - screen_endPosition;
@@ -266,20 +258,54 @@ namespace AC
 
 		public override Vector3 GetGizmoPosition (float proportionAlong)
 		{
-			return transform.position + (transform.up * proportionAlong * maxDistance);
+			return Transform.position + (Transform.up * proportionAlong * maxDistance);
 		}
 
 
 		public override Vector3 GetForceToPosition (Moveable_Drag draggable, float targetProportionAlong)
 		{
 			float proportionalDifference = Mathf.Clamp01 (targetProportionAlong) - draggable.trackValue;
-			return transform.up * proportionalDifference * 1000f;
+			return Transform.up * proportionalDifference * 1000f;
+		}
+
+
+		public override float GetMoveSoundIntensity (float deltaTrackPosition)
+		{
+			return Mathf.Abs (deltaTrackPosition) * Time.deltaTime * 250000f * maxDistance;
 		}
 
 		#endregion
 
 
 		#region ProtectedFunctions
+
+		protected override void AssignColliders (Moveable_Drag draggable)
+		{
+			if (!UsesEndColliders || !draggable.UsesRigidbody)
+			{
+				base.AssignColliders (draggable);
+				return;
+			}
+
+			if (draggable.maxCollider == null)
+			{
+				draggable.maxCollider = (Collider) Instantiate (Resource.DragCollider);
+			}
+
+			if (draggable.minCollider == null)
+			{
+				draggable.minCollider = (Collider) Instantiate (Resource.DragCollider);
+			}
+
+			draggable.maxCollider.transform.position = Transform.position + (Transform.up * maxDistance) + (Transform.up * draggable.ColliderWidth);
+			draggable.minCollider.transform.position = Transform.position - (Transform.up * draggable.ColliderWidth);
+
+			draggable.minCollider.transform.up = Transform.up;
+			draggable.maxCollider.transform.up = -Transform.up;
+
+			base.AssignColliders (draggable);
+		}
+
 
 		protected void SetRotation (Moveable_Drag draggable, float proportionAlong)
 		{
@@ -289,22 +315,22 @@ namespace AC
 			{
 				if (draggable.UsesRigidbody)
 				{
-					draggable.Rigidbody.rotation = Quaternion.AngleAxis (angle, transform.forward) * transform.rotation;
+					draggable.Rigidbody.rotation = Quaternion.AngleAxis (angle, Transform.forward) * Transform.rotation;
 				}
 				else
 				{
-					draggable.transform.rotation = Quaternion.AngleAxis(angle, transform.forward) * transform.rotation;
+					draggable.Transform.rotation = Quaternion.AngleAxis(angle, Transform.forward) * Transform.rotation;
 				}
 			}
 			else if (rotationType == DragRotationType.Screw)
 			{
 				if (draggable.UsesRigidbody)
 				{
-					draggable.Rigidbody.rotation = Quaternion.AngleAxis (angle * screwThread, transform.up) * transform.rotation;
+					draggable.Rigidbody.rotation = Quaternion.AngleAxis (angle * screwThread, Transform.up) * Transform.rotation;
 				}
 				else
 				{
-					draggable.transform.rotation = Quaternion.AngleAxis(angle * screwThread, transform.up) * transform.rotation;
+					draggable.Transform.rotation = Quaternion.AngleAxis(angle * screwThread, Transform.up) * Transform.rotation;
 				}
 			}
 		}

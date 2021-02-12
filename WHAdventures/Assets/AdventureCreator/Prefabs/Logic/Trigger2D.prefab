@@ -84,6 +84,7 @@ MonoBehaviour:
   parameters: []
   tagID: 0
   syncParamValues: 1
+  backupData: []
   detects: 0
   obToDetect: {fileID: 0}
   detectComponent: 
@@ -92,5 +93,6 @@ MonoBehaviour:
   triggerReacts: 0
   detectionMethod: 0
   detectsPlayer: 1
+  detectsAllPlayers: 0
   obsToDetect: []
   gameObjectParameterID: -1

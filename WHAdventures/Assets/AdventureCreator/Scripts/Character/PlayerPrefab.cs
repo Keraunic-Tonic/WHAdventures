@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"PlayerPrefab.cs"
  * 
@@ -100,7 +100,7 @@ namespace AC
 				}
 			}
 
-			if (spawnIfNotPresent && playerOb != null)
+			if (spawnIfNotPresent && playerOb)
 			{
 				return playerOb.SpawnFromPrefab (ID);
 			}
@@ -115,7 +115,7 @@ namespace AC
 		 */
 		public void SpawnInScene (bool makeActivePlayer)
 		{
-			if (playerOb != null)
+			if (playerOb)
 			{
 				Player sceneInstance = GetSceneInstance (true);
 
@@ -139,7 +139,7 @@ namespace AC
 		 */
 		public void SpawnInScene (Scene scene)
 		{
-			if (playerOb != null)
+			if (playerOb)
 			{
 				Player sceneInstance = GetSceneInstance (true);
 
@@ -164,10 +164,10 @@ namespace AC
 		/** Removes any runtime instance of the Player from the scene */
 		public void RemoveFromScene ()
 		{
-			if (playerOb != null)
+			if (playerOb)
 			{
 				Player sceneInstance = GetSceneInstance ();
-				if (sceneInstance != null)
+				if (sceneInstance)
 				{
 					sceneInstance.RemoveFromScene ();
 				}
@@ -183,7 +183,7 @@ namespace AC
 		{
 			get
 			{
-				if (KickStarter.settingsManager != null && KickStarter.settingsManager.GetDefaultPlayerPrefab () == this)
+				if (KickStarter.settingsManager && KickStarter.settingsManager.GetDefaultPlayerPrefab () == this)
 				{
 					return -1;
 				}
@@ -225,7 +225,7 @@ namespace AC
 
 		public void ShowStartDataGUI (string apiPrefix)
 		{
-			GUILayout.Label ("Starting point data for Player " + ID.ToString () + ": " + ((playerOb != null) ? playerOb.name : "(EMPTY)"), EditorStyles.boldLabel);
+			GUILayout.Label ("Starting point data for Player " + ID.ToString () + ": " + ((playerOb) ? playerOb.name : "(EMPTY)"), EditorStyles.boldLabel);
 
 			chooseSceneBy = (ChooseSceneBy)CustomGUILayout.EnumPopup ("Choose scene by:", chooseSceneBy);
 			switch (chooseSceneBy)
@@ -248,9 +248,9 @@ namespace AC
 
 				if (startingPlayerStartID != 0)
 				{
-					EditorGUILayout.BeginVertical ("Button");
+					CustomGUILayout.BeginVertical ();
 					EditorGUILayout.LabelField ("Recorded ConstantID: " + startingPlayerStartID.ToString (), EditorStyles.miniLabel);
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 			}
 		}
@@ -263,7 +263,7 @@ namespace AC
 				return _constantID;
 			}
 
-			if (field.GetComponent<ConstantID> () != null)
+			if (field.GetComponent<ConstantID> ())
 			{
 				if (!field.gameObject.activeInHierarchy && field.GetComponent<ConstantID> ().constantID == 0)
 				{
@@ -280,7 +280,6 @@ namespace AC
 
 			return _constantID;
 		}
-
 
 
 		private static int sidePlayerPrefab = -1;

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActiveInput.cs"
  * 
@@ -11,16 +11,11 @@
 
 using UnityEngine;
 using System.Collections.Generic;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace AC
 {
 
-	/**
-	 * A data container for active inputs, which map ActionListAssets to input buttons.
-	 */
+	/** A data container for active inputs, which map ActionListAssets to input buttons. */
 	[System.Serializable]
 	public class ActiveInput
 	{
@@ -35,8 +30,10 @@ namespace AC
 		public string inputName;
 		/** If True, the active input is enabled when the game begins */
 		public bool enabledOnStart = true;
-		/** What state the game must be in for the actionListAsset to run (Normal, Cutscene, Paused, DialogOptions) */
-		public GameState gameState;
+		/** Deprecated */
+		[SerializeField] private GameState gameState = GameState.Normal;
+		/** What GameStates this active input will be available for */
+		public FlagsGameState gameStateFlags = FlagsGameState.Normal;
 		/** The ActionListAsset to run when the input button is pressed */
 		public ActionListAsset actionListAsset;
 		/** What type of input is expected (Button, Axis) */
@@ -49,24 +46,24 @@ namespace AC
 
 		protected bool isEnabled;
 
+		[SerializeField] private bool hasUpgraded = false;
+		
 		#endregion
 
 
 		#region Constructors
 
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public ActiveInput (int[] idArray)
 		{
 			inputName = string.Empty;
-			gameState = GameState.Normal;
 			actionListAsset = null;
 			enabledOnStart = true;
 			ID = 1;
 			inputType = SimulateInputType.Button;
 			buttonType = ActiveInputButtonType.OnButtonDown;
 			axisThreshold = 0.2f;
+			gameStateFlags = FlagsGameState.Normal;
 
 			// Update id based on array
 			foreach (int _id in idArray)
@@ -84,14 +81,14 @@ namespace AC
 		public ActiveInput (int _ID)
 		{
 			inputName = string.Empty;
-			gameState = GameState.Normal;
 			actionListAsset = null;
 			enabledOnStart = true;
 			ID = _ID;
 			inputType = SimulateInputType.Button;
 			buttonType = ActiveInputButtonType.OnButtonDown;
 			axisThreshold = 0.2f;
-		}
+			gameStateFlags = FlagsGameState.Normal;
+	}
 
 		#endregion
 
@@ -152,12 +149,25 @@ namespace AC
 
 		protected bool TriggerIfStateMatches ()
 		{
-			if (KickStarter.stateHandler.gameState == gameState && actionListAsset != null && !KickStarter.actionListAssetManager.IsListRunning (actionListAsset))
+			if (IsGameStateValid (KickStarter.stateHandler.gameState) && actionListAsset && (actionListAsset.canRunMultipleInstances || !KickStarter.actionListAssetManager.IsListRunning (actionListAsset)))
 			{
 				AdvGame.RunActionListAsset (actionListAsset);
 				return true;
 			}
 			return false;
+		}
+
+
+		private bool IsGameStateValid (GameState _gameState)
+		{
+			#if UNITY_EDITOR
+			Upgrade ();
+			#endif
+
+			int s1 = (int) _gameState;
+			int s1_modified = (int) Mathf.Pow (2f, (float) s1);
+			int s2 = (int) gameStateFlags;
+			return (s1_modified & s2) != 0;
 		}
 
 		#endregion
@@ -211,20 +221,29 @@ namespace AC
 
 		#region StaticFunctions
 
-		/**
-		 * Upgrades all active inputs from pre-v1.58
-		 */
+		/** Upgrades all active inputs from previous releases */
 		public static void Upgrade ()
 		{
-			// Set IDs as index + 1 (because default is 0 when not upgraded)
-			if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().settingsManager != null && AdvGame.GetReferences ().settingsManager.activeInputs != null)
+			if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().settingsManager && AdvGame.GetReferences ().settingsManager.activeInputs != null)
 			{
-				if (AdvGame.GetReferences ().settingsManager.activeInputs.Count > 0 && AdvGame.GetReferences ().settingsManager.activeInputs[0].ID == 0)
+				if (AdvGame.GetReferences ().settingsManager.activeInputs.Count > 0)
 				{
 					for (int i=0; i<AdvGame.GetReferences ().settingsManager.activeInputs.Count; i++)
 					{
-						AdvGame.GetReferences ().settingsManager.activeInputs[i].ID = i+1;
-						AdvGame.GetReferences ().settingsManager.activeInputs[i].enabledOnStart = true;
+						// Upgrade from pre-1.58
+						if (AdvGame.GetReferences ().settingsManager.activeInputs[0].ID == 0)
+						{
+							// Set IDs as index + 1 (because default is 0 when not upgraded)
+							AdvGame.GetReferences ().settingsManager.activeInputs[i].ID = i+1;
+							AdvGame.GetReferences ().settingsManager.activeInputs[i].enabledOnStart = true;
+						}
+
+						// Upgrade from pre-1.73
+						if (!AdvGame.GetReferences ().settingsManager.activeInputs[i].hasUpgraded)
+						{
+							AdvGame.GetReferences ().settingsManager.activeInputs[i].gameStateFlags = (FlagsGameState) (1 << (int) AdvGame.GetReferences ().settingsManager.activeInputs[i].gameState);
+							AdvGame.GetReferences ().settingsManager.activeInputs[i].hasUpgraded = true;
+						}
 					}
 				}
 			}
@@ -311,8 +330,10 @@ namespace AC
 				buttonType = (ActiveInputButtonType) CustomGUILayout.EnumPopup ("Responds to:", buttonType, string.Empty, "What type of button press this responds to");
 			}
 			enabledOnStart = CustomGUILayout.Toggle ("Enabled by default?", enabledOnStart, string.Empty, "If True, the active input is enabled when the game begins");
-			gameState = (GameState) CustomGUILayout.EnumPopup ("Available when game is:", gameState, string.Empty, "What state the game must be in for the actionListAsset to run");
-			actionListAsset = ActionListAssetMenu.AssetGUI ("ActionList when triggered:", actionListAsset, defaultName, string.Empty, "The ActionListAsset to run when the input button is pressed");
+
+			gameStateFlags = (FlagsGameState) CustomGUILayout.EnumFlagsField ("Available when game is:", gameStateFlags);
+
+			actionListAsset = ActionListAssetMenu.AssetGUI ("ActionList when trigger:", actionListAsset, defaultName, string.Empty, "The ActionListAsset to run when the input button is pressed");
 		}
 
 		#endif

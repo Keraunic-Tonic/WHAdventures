@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"NavigationMesh.cs"
  * 
@@ -12,6 +12,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 namespace AC
 {
@@ -40,6 +41,8 @@ namespace AC
 
 		protected Vector3 upDirection = new Vector3 (0f, 1f, 0f);
 		protected PolygonCollider2D[] polygonCollider2Ds;
+
+		protected int originalPathCount = -1;
 		
 		#endregion
 
@@ -55,7 +58,7 @@ namespace AC
 
 		protected void OnDrawGizmos ()
 		{
-			if (KickStarter.sceneSettings != null && UnityEditor.Selection.activeGameObject != gameObject)
+			if (KickStarter.sceneSettings && UnityEditor.Selection.activeGameObject != gameObject)
 			{
 				DrawGizmos ();
 			}
@@ -112,9 +115,7 @@ namespace AC
 		}
 
 
-		/**
-		 * Enables the GameObject so that it can be used in pathfinding.
-		 */
+		/** Enables the GameObject so that it can be used in pathfinding. */
 		public void TurnOn ()
 		{
 			if (KickStarter.navigationManager.navigationEngine)
@@ -125,12 +126,10 @@ namespace AC
 		}
 		
 
-		/**
-		 * Disables the GameObject from being used in pathfinding.
-		 */
+		/** Disables the GameObject from being used in pathfinding. */
 		public void TurnOff ()
 		{
-			if (KickStarter.settingsManager != null)
+			if (KickStarter.settingsManager)
 			{
 				gameObject.layer = LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer);
 			}
@@ -150,7 +149,7 @@ namespace AC
 
 		protected void DrawGizmos ()
 		{
-			if (KickStarter.navigationManager != null)
+			if (KickStarter.navigationManager)
 			{
 				if (KickStarter.navigationManager.navigationEngine == null) KickStarter.navigationManager.ResetEngine ();
 				if (KickStarter.navigationManager.navigationEngine != null && KickStarter.sceneSettings.visibilityNavMesh)
@@ -161,7 +160,7 @@ namespace AC
 
 			if (Application.isPlaying) return;
 			Renderer _renderer = GetComponent<Renderer> ();
-			if (_renderer != null)
+			if (_renderer)
 			{
 				_renderer.enabled = KickStarter.sceneSettings.visibilityNavMesh;
 			}
@@ -197,6 +196,22 @@ namespace AC
 			set
 			{
 				upDirection = value;
+			}
+		}
+
+
+		/** The number of paths baked into the first-attached PolygonCollider component */
+		public int OriginalPathCount
+		{
+			get
+			{
+				if (originalPathCount < 0)
+				{
+					originalPathCount = (PolygonCollider2Ds.Length > 0)
+										? PolygonCollider2Ds[0].pathCount
+										: 1;
+				}
+				return originalPathCount;
 			}
 		}
 

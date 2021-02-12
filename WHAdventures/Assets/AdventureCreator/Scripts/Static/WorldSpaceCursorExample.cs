@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"WorldSpaceCursorExample.cs"
  * 
@@ -103,10 +103,10 @@ namespace AC
 			 * This function positions the GameObject as close to a target as it can within the boundaries we've defined.
 			 */
 
-			float distanceFromCamera = (targetPosition - KickStarter.CameraMain.transform.position).magnitude;
+			float distanceFromCamera = (targetPosition - KickStarter.CameraMainTransform.position).magnitude;
 			distanceFromCamera = Mathf.Clamp (distanceFromCamera, minDistance, maxDistance);
 			
-			transform.position = KickStarter.CameraMain.transform.position + (ray.direction.normalized * distanceFromCamera);
+			transform.position = KickStarter.CameraMainTransform.position + (ray.direction.normalized * distanceFromCamera);
 		}
 
 	}

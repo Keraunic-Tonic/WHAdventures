@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"FollowSortingMap.cs"
  * 
@@ -59,6 +59,8 @@ namespace AC
 		protected int sharedDepth = 0;
 		protected bool depthSet = false;
 
+		private Transform _transform;
+
 		#endregion
 
 
@@ -66,7 +68,7 @@ namespace AC
 		
 		protected void Awake ()
 		{
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.IsInLoadingScene ())
+			if (KickStarter.settingsManager && KickStarter.settingsManager.IsInLoadingScene ())
 			{
 				return;
 			}
@@ -84,7 +86,7 @@ namespace AC
 				}
 			}
 
-			if (GetComponent <Char>() != null && Application.isPlaying)
+			if (GetComponent <Char>() && Application.isPlaying)
 			{
 				ACDebug.LogWarning ("The 'Follow Sorting Map' component attached to the character '" + gameObject.name + " is on the character's root - it should instead be placed on their sprite child.  To prevent movement locking, the Follow Sorting Map has been disabled.", this);
 				enabled = false;
@@ -110,7 +112,7 @@ namespace AC
 		
 		protected void Start ()
 		{
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.IsInLoadingScene ())
+			if (KickStarter.settingsManager && KickStarter.settingsManager.IsInLoadingScene ())
 			{
 				return;
 			}
@@ -119,9 +121,9 @@ namespace AC
 
 			SetOriginalOffsets ();
 
-			if (followSortingMap && KickStarter.sceneSettings != null && KickStarter.sceneSettings.sortingMap != null)
+			if (followSortingMap && KickStarter.sceneSettings && KickStarter.sceneSettings.sortingMap)
 			{}
-			else if (!followSortingMap && customSortingMap != null)
+			else if (!followSortingMap && customSortingMap)
 			{}
 			else if (livePreview || Application.isPlaying)
 			{
@@ -151,24 +153,24 @@ namespace AC
 
 			if (depthAxis == DepthAxis.Y)
 			{
-				if (transform.parent)
+				if (Transform.parent)
 				{
-					transform.position = transform.parent.position + originalDepth + (Vector3.down * trueDepth);
+					Transform.position = Transform.parent.position + originalDepth + (Vector3.down * trueDepth);
 				}
 				else
 				{
-					transform.position = originalDepth + (Vector3.down * trueDepth);
+					Transform.position = originalDepth + (Vector3.down * trueDepth);
 				}
 			}
 			else
 			{
-				if (transform.parent)
+				if (Transform.parent)
 				{
-					transform.position = transform.parent.position + originalDepth + (Vector3.forward * trueDepth);
+					Transform.position = Transform.parent.position + originalDepth + (Vector3.forward * trueDepth);
 				}
 				else
 				{
-					transform.position = originalDepth + (Vector3.forward * trueDepth);
+					Transform.position = originalDepth + (Vector3.forward * trueDepth);
 				}
 			}
 		}
@@ -181,7 +183,7 @@ namespace AC
 		{
 			if (followSortingMap)
 			{
-				if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.sortingMap != null)
+				if (KickStarter.sceneSettings && KickStarter.sceneSettings.sortingMap)
 				{
 					if (KickStarter.sceneSettings.sortingMap != sortingMap)
 					{
@@ -192,7 +194,7 @@ namespace AC
 			}
 			else
 			{
-				if (customSortingMap != null)
+				if (customSortingMap)
 				{
 					if (sortingMap != customSortingMap)
 					{
@@ -210,7 +212,7 @@ namespace AC
 		 */
 		public SortingMap GetSortingMap ()
 		{
-			if (!followSortingMap && customSortingMap != null)
+			if (!followSortingMap && customSortingMap)
 			{
 				return customSortingMap;
 			}
@@ -252,7 +254,7 @@ namespace AC
 			
 			lockSorting = true;
 
-			if (sortingGroup != null)
+			if (sortingGroup)
 			{
 				sortingGroup.sortingOrder = order;
 				return;
@@ -281,7 +283,7 @@ namespace AC
 			
 			lockSorting = true;
 
-			if (sortingGroup != null)
+			if (sortingGroup)
 			{
 				sortingGroup.sortingLayerName = layer;
 			}
@@ -305,9 +307,9 @@ namespace AC
 		 */
 		public float GetLocalScale ()
 		{
-			if (sortingMap != null && sortingMap.affectScale)
+			if (sortingMap && sortingMap.affectScale)
 			{
-				return (sortingMap.GetScale (transform.position) / 100f);
+				return (sortingMap.GetScale (Transform.position) / 100f);
 			}
 			return 0f;
 		}
@@ -319,9 +321,9 @@ namespace AC
 		 */
 		public float GetLocalSpeed ()
 		{
-			if (sortingMap != null && sortingMap.affectSpeed)
+			if (sortingMap && sortingMap.affectSpeed)
 			{
-				return (sortingMap.GetScale (transform.position) / 100f);
+				return (sortingMap.GetScale (Transform.position) / 100f);
 			}
 			
 			return 1f;
@@ -341,7 +343,7 @@ namespace AC
 		
 		protected void SetOriginalOffsets ()
 		{
-			if (offsets.Count > 0 || sortingGroup != null)
+			if (offsets.Count > 0 || sortingGroup)
 			{
 				return;
 			}
@@ -357,7 +359,7 @@ namespace AC
 						offsets.Add (childRenderer.sortingOrder);
 					}
 				}
-				else if (_renderer != null)
+				else if (_renderer)
 				{
 					offsets.Add (_renderer.sortingOrder);
 				}
@@ -381,13 +383,13 @@ namespace AC
 				depthAxis = DepthAxis.Z;
 			}
 
-			if (transform.parent)
+			if (Transform.parent)
 			{
-				originalDepth = transform.position - transform.parent.position;
+				originalDepth = Transform.position - Transform.parent.position;
 			}
 			else
 			{
-				originalDepth = transform.position;
+				originalDepth = Transform.position;
 			}
 
 			depthSet = true;
@@ -441,7 +443,7 @@ namespace AC
 				for (int i=0; i<sortingMap.sortingAreas.Count; i++)
 				{
 					// Determine angle between SortingMap's normal and relative position - if <90, must be "behind" the plane
-					if (Vector3.Angle (sortingMap.transform.forward, sortingMap.GetAreaPosition (i) - transform.position) < 90f)
+					if (Vector3.Angle (sortingMap.Transform.forward, sortingMap.GetAreaPosition (i) - Transform.position) < 90f)
 					{
 						if (sortingMap.mapType == SortingMapType.OrderInLayer)
 						{
@@ -458,12 +460,12 @@ namespace AC
 
 			#if UNITY_EDITOR
 			Char _char = GetComponentInParent<Char>();
-			if (!Application.isPlaying && livePreview && _char != null && _char.spriteChild != null && sortingMap != null)
+			if (!Application.isPlaying && livePreview && _char && _char.spriteChild && sortingMap)
 			{
 				float localScale = GetLocalScale ();
 				if (!Mathf.Approximately (localScale, 0f))
 				{
-					_char.transform.localScale = Vector3.one * localScale;
+					_char.Transform.localScale = Vector3.one * localScale;
 				}
 			}
 
@@ -475,7 +477,7 @@ namespace AC
 			if (sortingGroup == null) sortingGroup = GetComponentInChildren <SortingGroup>();
 			#endif
 
-			if (sortingGroup != null)
+			if (sortingGroup)
 			{
 				switch (sortingMap.mapType)
 				{
@@ -593,7 +595,18 @@ namespace AC
 				return sharedDepth;
 			}
 		}
-		
+
+
+		/** A cache of the FollowSortingMap's transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
+			}
+		}
+
 		#endregion
 
 	}

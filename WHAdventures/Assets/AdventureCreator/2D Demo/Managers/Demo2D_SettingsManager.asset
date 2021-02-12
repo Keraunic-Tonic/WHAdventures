@@ -12,16 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b776810ebfa374d7ba8f0fb5ed6e3265, type: 3}
   m_Name: Demo2D_SettingsManager
   m_EditorClassIdentifier: 
+  separateEditorSaveFiles: 0
   saveFileName: AdventureCreator_Demo2D
   saveTimeDisplay: 0
   customSaveFormat: MMMM dd, yyyy
   takeSaveScreenshots: 0
+  saveScreenshots: 0
   screenshotResolutionFactor: 1
   useProfiles: 0
   maxSaves: 8
   orderSavesByUpdateTime: 0
   reloadSceneWhenLoading: 0
-  useJsonSerialization: 0
+  saveWithThreading: 0
+  saveAssetReferencesWithAddressables: 0
+  saveLabels:
+    defaultSaveLabel: Save
+    saveLabelID: -1
+    defaultImportLabel: Import
+    importLabelID: -1
+    defaultAutosaveLabel: Autosave
+    autosaveLabelID: -1
   sceneAttributes: []
   actionListOnStart: {fileID: 0}
   blackOutWhenSkipping: 0
@@ -42,6 +52,7 @@ MonoBehaviour:
   autoCycleWhenInteract: 0
   showHoverInteractionInHotspotLabel: 0
   allowDefaultinteractions: 0
+  alwaysCloseInteractionMenus: 1
   whenReselectHotspot: 0
   lockCursorOnStart: 0
   hideLockedCursor: 0
@@ -55,11 +66,13 @@ MonoBehaviour:
   dragDropThreshold: 0
   allowInventoryInteractionsDuringConversations: 0
   inventoryDropLook: 0
+  inventoryDropLookNoDrag: 0
   inventoryInteractions: 1
   inventoryDisableLeft: 1
   allowDefaultInventoryInteractions: 0
   inventoryDisableUnhandled: 1
   inventoryDisableDefined: 1
+  inventoryInteractionsHaltPlayer: 0
   activeWhenHover: 0
   inventoryActiveEffect: 1
   inventoryPulseSpeed: 1
@@ -115,7 +128,9 @@ MonoBehaviour:
   directTouchScreen: 0
   touchUpWhenPaused: 0
   forceAspectRatio: 1
+  aspectRatioEnforcement: 0
   wantedAspectRatio: 1.5
+  renderBorderCamera: 1
   landscapeModeOnly: 0
   cameraPerspective: 0
   cacheCameraMain: 0
@@ -153,10 +168,18 @@ MonoBehaviour:
   useAsyncLoading: 0
   loadingDelay: 0
   blackOutWhenInitialising: 1
+  spawnPersistentEnginePrefab: 1
   playMusicWhilePaused: 0
   playAmbienceWhilePaused: 0
   musicStorages: []
   ambienceStorages: []
+  loadAmbienceFadeTime: 0
+  crossfadeAmbienceWhenLoading: 0
+  restartAmbienceTrackWhenLoading: 0
+  loadMusicFadeTime: 0
+  crossfadeMusicWhenLoading: 0
+  restartMusicTrackWhenLoading: 0
+  autoEndOtherMusicWhenPlayed: 1
   volumeControl: 0
   musicMixerGroup: {fileID: 0}
   sfxMixerGroup: {fileID: 0}
@@ -172,5 +195,5 @@ MonoBehaviour:
   defaultSpeechVolume: 1
   showDebugLogs: 0
   printActionCommentsInConsole: 0
+  actionCommentLogging: 0
   showActiveActionLists: 0
-  showHierarchyIcons: 1

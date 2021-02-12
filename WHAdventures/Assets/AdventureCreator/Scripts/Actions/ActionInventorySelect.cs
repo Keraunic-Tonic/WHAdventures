@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionInventorySelect.cs"
  * 
@@ -27,6 +27,10 @@ namespace AC
 		public InventorySelectType selectType = InventorySelectType.SelectItem;
 		public SelectItemMode selectItemMode = SelectItemMode.Use;
 
+		public CarryCondition carryCondition = CarryCondition.OnlyIfCarrying;
+		public enum CarryCondition { OnlyIfCarrying, AddIfNotCarrying, IgnoreCurrentInventory };
+
+		/** Deprecated */
 		public bool giveToPlayer = false;
 
 		public int parameterID = -1;
@@ -39,13 +43,9 @@ namespace AC
 		#endif
 
 
-		public ActionInventorySelect ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Inventory;
-			title = "Select";
-			description = "Selects a chosen inventory item, as though the player clicked on it in the Inventory menu. Will optionally add the specified item to the inventory if it is not currently held.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Inventory; }}
+		public override string Title { get { return "Select"; }}
+		public override string Description { get { return "Selects a chosen inventory item, as though the player clicked on it in the Inventory menu. Will optionally add the specified item to the inventory if it is not currently held."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -53,28 +53,61 @@ namespace AC
 			invID = AssignInvItemID (parameters, parameterID, invID);
 		}
 		
+
+		public override void Upgrade ()
+		{
+			if (giveToPlayer)
+			{
+				giveToPlayer = false;
+				carryCondition = CarryCondition.AddIfNotCarrying;
+			}
+
+			base.Upgrade ();
+		}
+
 		
 		public override float Run ()
 		{
-			if (KickStarter.runtimeInventory)
+			if (KickStarter.runtimeInventory == null)
 			{
-				if (selectType == InventorySelectType.DeselectActive)
+				return 0f;
+			}
+
+			if (selectType == InventorySelectType.DeselectActive)
+			{
+				KickStarter.runtimeInventory.SetNull ();
+			}
+			else
+			{
+				if (!KickStarter.settingsManager.CanSelectItems (true))
 				{
-					KickStarter.runtimeInventory.SetNull ();
+					return 0f;
 				}
-				else
+
+				switch (carryCondition)
 				{
-					if (!KickStarter.settingsManager.CanSelectItems (true))
-					{
-						return 0f;
-					}
+					case CarryCondition.OnlyIfCarrying:
+						if (KickStarter.runtimeInventory.PlayerInvCollection.Contains (invID))
+						{
+							KickStarter.runtimeInventory.SelectItemByID (invID, selectItemMode);
+						}
+						break;
 
-					if (giveToPlayer)
-					{
-						KickStarter.runtimeInventory.Add (invID, 1, false, -1);
-					}
+					case CarryCondition.AddIfNotCarrying:
+						if (!KickStarter.runtimeInventory.PlayerInvCollection.Contains (invID))
+						{
+							InvInstance newInstance = KickStarter.runtimeInventory.PlayerInvCollection.AddToEnd (new InvInstance (invID, 1));
+							KickStarter.runtimeInventory.SelectItem (newInstance);
+						}
+						else
+						{
+							KickStarter.runtimeInventory.SelectItemByID (invID, selectItemMode);
+						}
+						break;
 
-					KickStarter.runtimeInventory.SelectItemByID (invID, selectItemMode);
+					case CarryCondition.IgnoreCurrentInventory:
+						KickStarter.runtimeInventory.SelectItemByID (invID, selectItemMode, true);
+						break;
 				}
 			}
 			
@@ -89,18 +122,11 @@ namespace AC
 			selectType = (InventorySelectType) EditorGUILayout.EnumPopup ("Select type:", selectType);
 			if (selectType == InventorySelectType.DeselectActive)
 			{
-				AfterRunningOption ();
 				return;
 			}
 
-			if (!inventoryManager)
-			{
-				inventoryManager = AdvGame.GetReferences ().inventoryManager;
-			}
-			if (!settingsManager)
-			{
-				settingsManager = AdvGame.GetReferences ().settingsManager;
-			}
+			inventoryManager = AdvGame.GetReferences ().inventoryManager;
+			settingsManager = AdvGame.GetReferences ().settingsManager;
 			
 			if (inventoryManager)
 			{
@@ -147,7 +173,8 @@ namespace AC
 						invID = inventoryManager.items[invNumber].id;
 					}
 
-					giveToPlayer = EditorGUILayout.Toggle ("Add if not held?", giveToPlayer);
+					//giveToPlayer = EditorGUILayout.Toggle ("Add if not held?", giveToPlayer);
+					carryCondition = (CarryCondition) EditorGUILayout.EnumPopup ("Carry condition:", carryCondition);
 
 					if (settingsManager && settingsManager.CanGiveItems ())
 					{
@@ -162,7 +189,10 @@ namespace AC
 					invNumber = -1;
 				}
 			}
-			AfterRunningOption ();
+			else
+			{
+				EditorGUILayout.HelpBox ("An Inventory Manager must be assigned in the AC Game Editor window!", MessageType.Warning);
+			}
 		}
 		
 		
@@ -183,7 +213,7 @@ namespace AC
 
 		public override int GetInventoryReferences (List<ActionParameter> parameters, int _invID)
 		{
-			if (selectType == InventorySelectType.SelectItem && invID == _invID)
+			if (selectType == InventorySelectType.SelectItem && parameterID < 0 && invID == _invID)
 			{
 				return 1;
 			}
@@ -202,7 +232,7 @@ namespace AC
 		 */
 		public static ActionInventorySelect CreateNew_Select (int itemID, bool addIfNotCarrying = false, SelectItemMode selectItemMode = SelectItemMode.Use)
 		{
-			ActionInventorySelect newAction = (ActionInventorySelect) CreateInstance <ActionInventorySelect>();
+			ActionInventorySelect newAction = CreateNew<ActionInventorySelect> ();
 			newAction.selectType = InventorySelectType.SelectItem;
 			newAction.invID = itemID;
 			newAction.giveToPlayer = addIfNotCarrying;
@@ -217,7 +247,7 @@ namespace AC
 		 */
 		public static ActionInventorySelect CreateNew_DeselectActive ()
 		{
-			ActionInventorySelect newAction = (ActionInventorySelect) CreateInstance <ActionInventorySelect>();
+			ActionInventorySelect newAction = CreateNew<ActionInventorySelect> ();
 			newAction.selectType = InventorySelectType.DeselectActive;
 			return newAction;
 		}

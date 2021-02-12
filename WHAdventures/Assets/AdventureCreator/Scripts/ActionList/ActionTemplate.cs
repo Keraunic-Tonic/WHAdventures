@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionTemplate.cs"
  * 
@@ -22,16 +22,13 @@ namespace AC
 	public class ActionTemplate : Action
 	{
 		
+		// Declare properties here
+		public override ActionCategory Category { get { return ActionCategory.Custom; }}
+		public override string Title { get { return "Template"; }}
+		public override string Description { get { return "This is a blank Action template."; }}
+
+
 		// Declare variables here
-		
-		
-		public ActionTemplate ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Custom;
-			title = "Template";
-			description = "This is a blank Action template.";
-		}
 		
 		
 		public override float Run ()
@@ -86,8 +83,6 @@ namespace AC
 		public override void ShowGUI ()
 		{
 			// Action-specific Inspector GUI code here
-			
-			AfterRunningOption ();
 		}
 		
 

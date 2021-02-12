@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 namespace AC
 {
 
+	/** A format handler that serializes data into XML format */
 	public class FileFormatHandler_Xml : iFileFormatHandler
 	{
 

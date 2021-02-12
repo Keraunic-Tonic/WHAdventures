@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionInventorySet.cs"
  * 
@@ -48,13 +48,9 @@ namespace AC
 		#endif
 
 
-		public ActionInventorySet ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Inventory;
-			title = "Add or remove";
-			description = "Adds or removes an item from the Player's inventory. Items are defined in the Inventory Manager. If the player can carry multiple amounts of the item, more options will show.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Inventory; }}
+		public override string Title { get { return "Add or remove"; }}
+		public override string Description { get { return "Adds or removes an item from the Player's inventory. Items are defined in the Inventory Manager. If the player can carry multiple amounts of the item, more options will show."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -81,60 +77,105 @@ namespace AC
 					_playerID = playerID;
 				}
 
-				if (invAction == InvAction.Add)
+				switch (invAction)
 				{
-					KickStarter.runtimeInventory.Add (invID, amount, false, _playerID, addToFront);
-				}
-				else if (invAction == InvAction.Remove)
-				{
-					if (removeLast)
-					{
-						KickStarter.runtimeInventory.SetNull ();
-						KickStarter.runtimeInventory.Remove (KickStarter.runtimeInventory.LastSelectedItem);
-					}
-					else
-					{
-						if (KickStarter.runtimeInventory.SelectedItem != null && KickStarter.runtimeInventory.SelectedItem.id == invID)
-						{
-							KickStarter.runtimeInventory.SetNull ();
-						}
+					case InvAction.Add:
+						InvItem linkedItem = KickStarter.inventoryManager.GetItem (invID);
+						if (linkedItem == null) return 0f;
 
-						if (_playerID >= 0)
+						int maxAmount = (linkedItem.canCarryMultiple) ? linkedItem.maxCount : -1;
+						if (setAmount && maxAmount > 0 && amount > maxAmount)
 						{
-							if (setAmount)
+							int localAmount = amount;
+							while (localAmount > maxAmount)
 							{
-								KickStarter.runtimeInventory.RemoveFromOtherPlayer (invID, amount, _playerID);
+								AddItem (_playerID, maxAmount);
+								localAmount -= maxAmount;
 							}
-							else
+							if (localAmount > 0)
 							{
-								KickStarter.runtimeInventory.RemoveFromOtherPlayer (invID, _playerID);
+								AddItem (_playerID, localAmount);
 							}
+						}
+						else if (linkedItem.canCarryMultiple && setAmount)
+						{
+							AddItem (_playerID, amount);
 						}
 						else
 						{
-							if (setAmount)
+							AddItem (_playerID, 1);
+						}
+						break;
+
+					case InvAction.Remove:
+						if (removeLast)
+						{
+							KickStarter.runtimeInventory.SetNull ();
+							KickStarter.runtimeInventory.PlayerInvCollection.Delete (KickStarter.runtimeInventory.LastSelectedInstance);
+						}
+						else
+						{
+							if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) && KickStarter.runtimeInventory.SelectedInstance.ItemID == invID)
 							{
-								KickStarter.runtimeInventory.Remove (invID, amount);
+								KickStarter.runtimeInventory.SetNull ();
+							}
+
+							if (_playerID >= 0)
+							{
+								if (setAmount)
+								{
+									KickStarter.runtimeInventory.RemoveFromOtherPlayer (invID, amount, _playerID);
+								}
+								else
+								{
+									KickStarter.runtimeInventory.RemoveFromOtherPlayer (invID, _playerID);
+								}
 							}
 							else
 							{
-								KickStarter.runtimeInventory.Remove (invID);
+								if (setAmount)
+								{
+									KickStarter.runtimeInventory.PlayerInvCollection.Delete (invID, amount);
+								}
+								else
+								{
+									KickStarter.runtimeInventory.PlayerInvCollection.DeleteAllOfType (invID);
+								}
 							}
 						}
-					}
-				}
-				else if (invAction == InvAction.Replace)
-				{
-					if (KickStarter.runtimeInventory.SelectedItem != null && KickStarter.runtimeInventory.SelectedItem.id == invIDReplace)
-					{
-						KickStarter.runtimeInventory.SetNull ();
-					}
+						break;
 
-					KickStarter.runtimeInventory.Replace (invID, invIDReplace, amount);
+					case InvAction.Replace:
+						if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance) && KickStarter.runtimeInventory.SelectedInstance.ItemID == invIDReplace)
+						{
+							KickStarter.runtimeInventory.SetNull ();
+						}
+						KickStarter.runtimeInventory.Replace (invID, invIDReplace, amount);
+						break;
 				}
 			}
 			
 			return 0f;
+		}
+
+
+		private void AddItem (int _playerID, int _amount)
+		{
+			if (_playerID >= 0 && KickStarter.saveSystem.CurrentPlayerID != _playerID)
+			{
+				KickStarter.runtimeInventory.AddToOtherPlayer (new InvInstance (invID, _amount), _playerID, addToFront);
+			}
+			else
+			{
+				if (addToFront)
+				{
+					KickStarter.runtimeInventory.PlayerInvCollection.Insert (new InvInstance (invID, _amount), 0);
+				}
+				else
+				{
+					KickStarter.runtimeInventory.PlayerInvCollection.Add (new InvInstance (invID, _amount));
+				}
+			}
 		}
 
 		
@@ -212,7 +253,6 @@ namespace AC
 						if (removeLast)
 						{
 							setAmount = false;
-							AfterRunningOption ();
 							return;
 						}
 					}
@@ -292,8 +332,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("An Inventory Manager must be assigned for this Action to work", MessageType.Warning);
 			}
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -401,7 +439,7 @@ namespace AC
 		 */
 		public static ActionInventorySet CreateNew_Add (int itemID, bool addToFront = false, int amountToAdd = 1, int playerID = -1)
 		{
-			ActionInventorySet newAction = (ActionInventorySet) CreateInstance <ActionInventorySet>();
+			ActionInventorySet newAction = CreateNew<ActionInventorySet> ();
 			newAction.invAction = InvAction.Add;
 			newAction.invID = itemID;
 			newAction.addToFront = addToFront;
@@ -421,7 +459,7 @@ namespace AC
 		 */
 		public static ActionInventorySet CreateNew_Remove (int itemID, bool removeAllInstances = true, int amountToRemove = 1, int playerID = -1)
 		{
-			ActionInventorySet newAction = (ActionInventorySet) CreateInstance <ActionInventorySet>();
+			ActionInventorySet newAction = CreateNew<ActionInventorySet> ();
 			newAction.invAction = InvAction.Remove;
 			newAction.invID = itemID;
 			newAction.setAmount = !removeAllInstances;
@@ -440,7 +478,7 @@ namespace AC
 		 */
 		public static ActionInventorySet CreateNew_Replace (int itemIDToAdd, int itemIDToRemove, int amountToAdd = 1)
 		{
-			ActionInventorySet newAction = (ActionInventorySet) CreateInstance <ActionInventorySet>();
+			ActionInventorySet newAction = CreateNew<ActionInventorySet> ();
 			newAction.invAction = InvAction.Replace;
 			newAction.invID = itemIDToAdd;
 			newAction.invIDReplace = itemIDToRemove;

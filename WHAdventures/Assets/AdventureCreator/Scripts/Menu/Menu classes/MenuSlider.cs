@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuSlider.cs"
  * 
@@ -66,9 +66,6 @@ namespace AC
 		private string fullText;
 
 
-		/**
-		 * Initialises the MenuElement when it is created within MenuManager.
-		 */
 		public override void Declare ()
 		{
 			uiSlider = null;
@@ -140,11 +137,7 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObject.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			uiSlider = LinkUIElement <Slider> (canvas);
 			if (uiSlider)
@@ -152,9 +145,14 @@ namespace AC
 				uiSlider.interactable = isClickable;
 				if (isClickable)
 				{
-					uiSlider.onValueChanged.AddListener ((amount) => {
-						ProcessClickUI (_menu, 0, KickStarter.playerInput.GetMouseState ());
-					});
+					if (addEventListeners)
+					{
+						uiSlider.onValueChanged.AddListener ((amount) => {
+							ProcessClickUI (_menu, 0, KickStarter.playerInput.GetMouseState ());
+						});
+					}
+
+					CreateHoverSoundHandler (uiSlider, _menu, 0);
 				}
 			}
 		}
@@ -170,11 +168,6 @@ namespace AC
 		}
 		
 
-		/**
-		 * <summary>Gets the boundary of the element.</summary>
-		 * <param name = "_slot">Ignored by this subclass</param>
-		 * <returns>The boundary Rect of the element</returns>
-		 */
 		public override RectTransform GetRectTransform (int _slot)
 		{
 			if (uiSlider)
@@ -201,7 +194,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuSlider)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			sliderType = (AC_SliderType) CustomGUILayout.EnumPopup ("Slider affects:", sliderType, apiPrefix + ".sliderType", "What the slider's value represents");
 
@@ -259,14 +252,22 @@ namespace AC
 			{
 				uiSlider = LinkedUiGUI <Slider> (uiSlider, "Linked Slider:", source, "The Unity UI Slider this is linked to");
 				uiSelectableHideStyle = (UISelectableHideStyle) CustomGUILayout.EnumPopup ("When invisible:", uiSelectableHideStyle, apiPrefix + ".uiSelectableHideStyle", "The method by which this element is hidden from view when made invisible");
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 			}
 			
 
 			isClickable = CustomGUILayout.Toggle ("User can change value?", isClickable, apiPrefix + ".isClickable", "If True, the slider is interactive and can be modified by the user");
+			if (isClickable)
+			{
+				ChangeCursorGUI (menu);
+			}
+			else
+			{
+				changeCursor = false;
+			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			base.ShowGUI (menu);
 		}
@@ -330,14 +331,6 @@ namespace AC
 		}
 
 
-		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
-		{
-			if (uiSlider != null && uiSlider.gameObject == gameObject) return true;
-			if (linkedUiID == id) return true;
-			return false;
-		}
-
-
 		public override bool ReferencesAsset (ActionListAsset actionListAsset)
 		{
 			if (actionListOnChange == actionListAsset)
@@ -346,6 +339,14 @@ namespace AC
 		}
 
 		#endif
+
+
+		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
+		{
+			if (uiSlider && uiSlider.gameObject == gameObject) return true;
+			if (linkedUiID == id && id != 0) return true;
+			return false;
+		}
 
 
 		public override void PreDisplay (int _slot, int languageNumber, bool isActive)
@@ -500,7 +501,7 @@ namespace AC
 
 		public override bool IsSelectedByEventSystem (int slotIndex)
 		{
-			if (uiSlider != null)
+			if (uiSlider)
 			{
 				return KickStarter.playerMenus.IsEventSystemSelectingObject (uiSlider.gameObject);
 			}
@@ -639,7 +640,7 @@ namespace AC
 				}
 			}
 
-			if (uiSlider != null)
+			if (uiSlider)
 			{
 				visualAmount = amount;
 			}
@@ -650,20 +651,14 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Performs what should happen when the element is clicked on.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 * <param name = "_slot">Ignored by this subclass</param>
-		 * <param name = "_mouseState">The state of the mouse button</param>
-		 */
-		public override void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public override bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			if (!_menu.IsClickable ())
 			{
-				return;
+				return false;
 			}
 
-			if (uiSlider != null)
+			if (uiSlider)
 			{
 				visualAmount = uiSlider.value;
 				UpdateValue ();
@@ -699,7 +694,7 @@ namespace AC
 				MenuSystem.OnElementClick (_menu, this, _slot, (int) _mouseState);
 			}
 
-			base.ProcessClick (_menu, _slot, _mouseState);
+			return base.ProcessClick (_menu, _slot, _mouseState);
 		}
 
 
@@ -710,7 +705,7 @@ namespace AC
 
 			if (direction == increaseDirection)
 			{
-				if (clickSound != null)
+				if (clickSound)
 				{
 					KickStarter.sceneSettings.PlayDefaultSound (clickSound, false, true);
 				}
@@ -721,7 +716,7 @@ namespace AC
 			}
 			else if (direction == decreaseDirection)
 			{
-				if (clickSound != null)
+				if (clickSound)
 				{
 					KickStarter.sceneSettings.PlayDefaultSound (clickSound, false, true);
 				}
@@ -734,21 +729,16 @@ namespace AC
 		}
 		
 
-		/**
-		 * <summary>Performs what should happen when the element is clicked on continuously.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 * <param name = "_mouseState">The state of the mouse button</param>
-		 */
-		public override void ProcessContinuousClick (AC.Menu _menu, MouseState _mouseState)
+		public override bool ProcessContinuousClick (AC.Menu _menu, MouseState _mouseState)
 		{
 			if (KickStarter.stateHandler.gameState == GameState.Cutscene)
 			{
-				return;
+				return false;
 			}
 
 			float originalVisualAmount = visualAmount;
 
-			if (uiSlider != null)
+			if (uiSlider)
 			{
 				visualAmount = uiSlider.value;
 				UpdateValue ();
@@ -784,10 +774,12 @@ namespace AC
 				MenuSystem.OnElementClick (_menu, this, 0, (int) _mouseState);
 			}
 
-			if (clickSound != null && originalVisualAmount != visualAmount)
+			if (clickSound && originalVisualAmount != visualAmount)
 			{
 				KickStarter.sceneSettings.PlayDefaultSound(clickSound, false, true);
 			}
+
+			return true;
 		}
 
 		

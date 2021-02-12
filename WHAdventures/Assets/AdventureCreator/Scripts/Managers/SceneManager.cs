@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SceneManager.cs"
  * 
@@ -184,7 +184,7 @@ namespace AC
 
 				if (KickStarter.sceneSettings == null)
 				{
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 					return;
 				}
 
@@ -214,7 +214,7 @@ namespace AC
 				}
 				EditorGUILayout.EndHorizontal ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -343,7 +343,7 @@ namespace AC
 					EditorGUILayout.EndToggleGroup ();
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -416,7 +416,7 @@ namespace AC
 				}
 				EditorGUILayout.EndHorizontal ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -457,7 +457,7 @@ namespace AC
 					SceneView.RepaintAll ();
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -511,7 +511,7 @@ namespace AC
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -734,9 +734,21 @@ namespace AC
 
 		private static void RenameObject (GameObject ob, string resourceName)
 		{
-			ob.name = AdvGame.GetName (resourceName);
+			int slash = resourceName.IndexOf ("/");
+			string newName;
+
+			if (slash > 0)
+			{
+				newName = resourceName.Remove (0, slash + 1);
+			}
+			else
+			{
+				newName = resourceName;
+			}
+
+			ob.name = newName;
 		}
-		
+
 
 		/**
 		 * <summary>Adds an Adventure Creator prefab to the scene.</summary>
@@ -1009,7 +1021,7 @@ namespace AC
 				ListAllPrefabs ("Moveable", windowRect);
 				ListAllPrefabs ("Navigation", windowRect);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 		
 		

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"UISlot.cs"
  * 
@@ -44,7 +44,8 @@ namespace AC
 		private Image uiImage;
 		private RawImage uiRawImage;
 
-		private Color originalColour;
+		private Color originalNormalColour;
+		private Color originalHighlightedColour;
 		private UnityEngine.Sprite emptySprite;
 		private Texture cacheTexture;
 
@@ -105,9 +106,13 @@ namespace AC
 		 */
 		public RectTransform GetRectTransform ()
 		{
-			if (uiButton != null && uiButton.GetComponent <RectTransform>())
+			if (uiButton)
 			{
-				return uiButton.GetComponent <RectTransform>();
+				RectTransform rectTransform = uiButton.GetComponent <RectTransform>();
+				if (rectTransform)
+				{
+					return rectTransform;
+				}
 			}
 			return null;
 		}
@@ -121,7 +126,7 @@ namespace AC
 		 */
 		public void LinkUIElements (Canvas canvas, LinkUIGraphic linkUIGraphic, Texture2D emptySlotTexture = null)
 		{
-			if (canvas != null)
+			if (canvas)
 			{
 				uiButton = Serializer.GetGameObjectComponent <UnityEngine.UI.Button> (uiButtonID, canvas.gameObject);
 			}
@@ -145,7 +150,7 @@ namespace AC
 				}
 				else if (linkUIGraphic == LinkUIGraphic.ButtonTargetGraphic)
 				{
-					if (uiButton.targetGraphic != null)
+					if (uiButton.targetGraphic)
 					{
 						if (uiButton.targetGraphic is Image)
 						{
@@ -162,10 +167,11 @@ namespace AC
 					}
 				}
 
-				originalColour = uiButton.colors.normalColor;
+				originalNormalColour = uiButton.colors.normalColor;
+				originalHighlightedColour = uiButton.colors.highlightedColor;
 			}
 
-			if (emptySlotTexture != null)
+			if (emptySlotTexture)
 			{
 				emptySprite = Sprite.Create (emptySlotTexture, new Rect (0f, 0f, emptySlotTexture.width, emptySlotTexture.height), new Vector2 (0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
 			}
@@ -191,11 +197,11 @@ namespace AC
 		 */
 		public void SetImage (Texture _texture)
 		{
-			if (uiRawImage != null)
+			if (uiRawImage)
 			{
 				uiRawImage.texture = _texture;
 			}
-			else if (uiImage != null)
+			else if (uiImage)
 			{
 				if (_texture == null)
 				{
@@ -214,7 +220,7 @@ namespace AC
 					}
 				}
 
-				if (_texture != null)
+				if (_texture)
 				{
 					cacheTexture = _texture;
 				}
@@ -229,7 +235,7 @@ namespace AC
 		 */
 		public void SetImageAsSprite (Sprite _sprite)
 		{
-			if (uiImage != null)
+			if (uiImage)
 			{
 				if (_sprite == null)
 				{
@@ -251,7 +257,7 @@ namespace AC
 		 */
 		public void ShowUIElement (UIHideStyle uiHideStyle)
 		{
-			if (Application.isPlaying && uiButton != null && uiButton.gameObject != null)
+			if (Application.isPlaying && uiButton && uiButton.gameObject)
 			{
 				if (uiHideStyle == UIHideStyle.DisableObject && !uiButton.gameObject.activeSelf)
 				{
@@ -263,7 +269,7 @@ namespace AC
 
 		public void ShowUIElement (UISelectableHideStyle uiHideStyle)
 		{
-			if (Application.isPlaying && uiButton != null && uiButton.gameObject != null)
+			if (Application.isPlaying && uiButton && uiButton.gameObject)
 			{
 				if (uiHideStyle == UISelectableHideStyle.DisableObject && !uiButton.gameObject.activeSelf)
 				{
@@ -283,7 +289,7 @@ namespace AC
 		 */
 		public void HideUIElement (UIHideStyle uiHideStyle)
 		{
-			if (Application.isPlaying && uiButton != null && uiButton.gameObject != null && uiButton.gameObject.activeSelf)
+			if (Application.isPlaying && uiButton && uiButton.gameObject && uiButton.gameObject.activeSelf)
 			{
 				if (uiHideStyle == UIHideStyle.DisableObject)
 				{
@@ -300,7 +306,7 @@ namespace AC
 
 		public void HideUIElement (UISelectableHideStyle uiHideStyle)
 		{
-			if (Application.isPlaying && uiButton != null && uiButton.gameObject != null && uiButton.gameObject.activeSelf)
+			if (Application.isPlaying && uiButton && uiButton.gameObject && uiButton.gameObject.activeSelf)
 			{
 				if (uiHideStyle == UISelectableHideStyle.DisableObject)
 				{
@@ -322,21 +328,33 @@ namespace AC
 		 */
 		public void AddClickHandler (AC.Menu _menu, MenuElement _element, int _slot)
 		{
-			UISlotClick uiSlotClick = uiButton.gameObject.AddComponent <UISlotClick>();
-			uiSlotClick.Setup (_menu, _element, _slot);
+			UISlotClickRight uiSlotRightClick = uiButton.gameObject.GetComponent <UISlotClickRight>();
+			if (uiSlotRightClick == null)
+			{
+				UISlotClick uiSlotClick = uiButton.GetComponent <UISlotClick>();
+				if (uiSlotClick)
+				{
+					Object.Destroy (uiSlotClick);
+				}
+
+				uiSlotRightClick = uiButton.gameObject.AddComponent <UISlotClickRight> ();
+				uiSlotRightClick.Setup (_menu, _element, _slot);
+			}
 		}
 
 
 		/**
-		 * <summary>Changes the 'normal' colour of the linked UI Button.</summary>
-		 * <param name = "newColour">The new 'normal' colour to set</param>
+		 * <summary>Changes the colours of the linked UI Button.</summary>
+		 * <param name = "newNormalColour">The new 'normal' colour to set</param>
+		 * * <param name = "newHighlightedColour">The new 'highlighted' colour to set</param>
 		 */
-		public void SetColour (Color newColour)
+		public void SetColours (Color newNormalColour, Color newHighlightedColour)
 		{
-			if (uiButton != null)
+			if (uiButton)
 			{
 				ColorBlock colorBlock = uiButton.colors;
-				colorBlock.normalColor = newColour;
+				colorBlock.normalColor = newNormalColour;
+				colorBlock.highlightedColor = newHighlightedColour;
 				uiButton.colors = colorBlock;
 			}
 		}
@@ -347,10 +365,11 @@ namespace AC
 		 */
 		public void RestoreColour ()
 		{
-			if (uiButton != null)
+			if (uiButton)
 			{
 				ColorBlock colorBlock = uiButton.colors;
-				colorBlock.normalColor = originalColour;
+				colorBlock.normalColor = originalNormalColour;
+				colorBlock.highlightedColor = originalHighlightedColour;
 				uiButton.colors = colorBlock;
 			}
 		}
@@ -365,7 +384,7 @@ namespace AC
 		{
 			get
 			{
-				if (uiButton != null)
+				if (uiButton)
 				{
 					return uiButton.interactable;
 				}
@@ -380,7 +399,7 @@ namespace AC
 			{
 				if (emptySprite == null)
 				{
-					emptySprite = Resources.Load<Sprite> (Resource.emptySlot);
+					emptySprite = Resource.EmptySlot;
 				}
 				return emptySprite;
 			}

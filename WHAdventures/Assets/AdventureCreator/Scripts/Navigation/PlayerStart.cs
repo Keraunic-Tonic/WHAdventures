@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"PlayerStart.cs"
  * 
@@ -75,7 +75,7 @@ namespace AC
 
 						if (SceneSettings.ActInScreenSpace ())
 						{
-							KickStarter.player.transform.position = AdvGame.GetScreenNavMesh (KickStarter.player.transform.position);
+							KickStarter.player.Transform.position = AdvGame.GetScreenNavMesh (KickStarter.player.Transform.position);
 						}
 					}
 				
@@ -83,7 +83,7 @@ namespace AC
 					{
 						KickStarter.mainCamera.SetFirstPerson ();
 					}
-					else if (cameraOnStart != null)
+					else if (cameraOnStart)
 					{
 						SetCameraOnStart ();
 					}
@@ -167,12 +167,11 @@ namespace AC
 		 */
 		public void SetCameraOnStart ()
 		{
-			if (cameraOnStart != null && KickStarter.mainCamera != null)
+			if (cameraOnStart && KickStarter.mainCamera)
 			{
-				KickStarter.mainCamera.SetGameCamera (cameraOnStart);
-				KickStarter.mainCamera.lastNavCamera = cameraOnStart;
 				cameraOnStart.MoveCameraInstant ();
 				KickStarter.mainCamera.SetGameCamera (cameraOnStart);
+				KickStarter.mainCamera.lastNavCamera = cameraOnStart;
 			}
 		}
 
@@ -184,7 +183,7 @@ namespace AC
 		protected override void DrawGizmos ()
 		{
 			Renderer _renderer = GetComponent<Renderer> ();
-			if (_renderer != null && KickStarter.sceneSettings != null && !Application.isPlaying)
+			if (_renderer && KickStarter.sceneSettings && !Application.isPlaying)
 			{
 				_renderer.enabled = KickStarter.sceneSettings.visibilityPlayerStarts;
 			}

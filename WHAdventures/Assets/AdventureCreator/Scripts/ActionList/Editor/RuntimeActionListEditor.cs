@@ -16,17 +16,17 @@ namespace AC
 
 			if (Application.isPlaying)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				EditorGUILayout.ObjectField ("Asset source:", _target.assetSource, typeof (ActionListAsset), false);
 
 				if (_target.useParameters)
 				{
-					EditorGUILayout.EndVertical ();
-					EditorGUILayout.BeginVertical ("Button");
+					CustomGUILayout.EndVertical ();
+					CustomGUILayout.BeginVertical ();
 					EditorGUILayout.LabelField ("Parameters", EditorStyles.boldLabel);
 					ActionListEditor.ShowParametersGUI (_target, null, _target.parameters);
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 			else
 			{

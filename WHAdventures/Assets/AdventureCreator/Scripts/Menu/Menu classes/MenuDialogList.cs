@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuDialogList.cs"
  * 
@@ -147,18 +147,22 @@ namespace AC
 		}
 
 
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			int i=0;
 			foreach (UISlot uiSlot in uiSlots)
 			{
 				uiSlot.LinkUIElements (canvas, linkUIGraphic);
-				if (uiSlot != null && uiSlot.uiButton != null)
+
+				if (addEventListeners)
 				{
-					int j=i;
-					uiSlot.uiButton.onClick.AddListener (() => {
-						ProcessClickUI (_menu, j, KickStarter.playerInput.GetMouseState ());
-					});
+					if (uiSlot != null && uiSlot.uiButton)
+					{
+						int j=i;
+						uiSlot.uiButton.onClick.AddListener (() => {
+							ProcessClickUI (_menu, j, KickStarter.playerInput.GetMouseState ());
+						});
+					}
 				}
 				i++;
 			}
@@ -167,7 +171,7 @@ namespace AC
 
 		public override GameObject GetObjectToSelect (int slotIndex = 0)
 		{
-			if (uiSlots != null && uiSlots.Length > slotIndex && uiSlots[slotIndex].uiButton != null)
+			if (uiSlots != null && uiSlots.Length > slotIndex && uiSlots[slotIndex].uiButton)
 			{
 				return uiSlots[slotIndex].uiButton.gameObject;
 			}
@@ -198,7 +202,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuDialogList)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			fixedOption = CustomGUILayout.Toggle ("Fixed option number?", fixedOption, apiPrefix + ".fixedOption", "If True, then only one dialogue option will be shown");
 			if (fixedOption)
 			{
@@ -240,14 +244,14 @@ namespace AC
 			markAlreadyChosen = CustomGUILayout.Toggle ("Mark options already used?", markAlreadyChosen, apiPrefix + ".markAlreadyChosen", "If True, then options that have already been clicked can be displayed in a different colour");
 			if (markAlreadyChosen)
 			{
-				alreadyChosenFontColour = (Color) CustomGUILayout.ColorField ("'Already chosen' colour:", alreadyChosenFontColour, apiPrefix + ".alreadyChosenFontColour", "The font colour for options already chosen");
-				alreadyChosenFontHighlightedColour = (Color) CustomGUILayout.ColorField ("'Already chosen' highlighted colour:", alreadyChosenFontHighlightedColour, apiPrefix + ".alreadyChosenFontHighlightedColour", "The font colour when the option is highlighted but has already been chosen");
+				alreadyChosenFontColour = CustomGUILayout.ColorField ("'Already chosen' colour:", alreadyChosenFontColour, apiPrefix + ".alreadyChosenFontColour", "The font colour for options already chosen");
+				alreadyChosenFontHighlightedColour = CustomGUILayout.ColorField ("'Already chosen' highlighted colour:", alreadyChosenFontHighlightedColour, apiPrefix + ".alreadyChosenFontHighlightedColour", "The font colour when the option is highlighted but has already been chosen");
 			}
 
 			if (source != MenuSource.AdventureCreator)
 			{
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 				uiHideStyle = (UIHideStyle) CustomGUILayout.EnumPopup ("When invisible:", uiHideStyle, apiPrefix + ".uiHideStyle", "The method by which this element (or slots within it) are hidden from view when made invisible");
 				EditorGUILayout.LabelField ("Linked button objects", EditorStyles.boldLabel);
 
@@ -274,7 +278,7 @@ namespace AC
 			}
 
 			ChangeCursorGUI (menu);
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			base.ShowGUI (menu);
 		}
@@ -304,19 +308,20 @@ namespace AC
 				EditorGUILayout.EndHorizontal ();
 			}
 		}
+		
+		#endif
 
 
 		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
 		{
 			foreach (UISlot uiSlot in uiSlots)
 			{
-				if (uiSlot.uiButton != null && uiSlot.uiButton == gameObject) return true;
-				if (uiSlot.uiButtonID == id) return true;
+				if (uiSlot.uiButton && uiSlot.uiButton.gameObject == gameObject) return true;
+				if (uiSlot.uiButtonID == id && id != 0) return true;
 			}
 			return false;
 		}
-		
-		#endif
+
 
 		public override string GetHotspotLabelOverride (int _slot, int _language)
 		{
@@ -472,7 +477,7 @@ namespace AC
 		{
 			if (Application.isPlaying)
 			{
-				if (linkedConversation != null)
+				if (linkedConversation)
 				{
 					numOptions = linkedConversation.GetCount ();
 					
@@ -527,7 +532,7 @@ namespace AC
 								{
 									if (chosen)
 									{
-										uiSlots[i].SetColour (alreadyChosenFontColour);
+										uiSlots[i].SetColours (alreadyChosenFontColour, alreadyChosenFontHighlightedColour);
 									}
 									else
 									{
@@ -607,14 +612,14 @@ namespace AC
 			base.OnMenuTurnOn (menu);
 
 			Conversation oldConversation = linkedConversation;
-			linkedConversation = (overrideConversation != null) ? overrideConversation : KickStarter.playerInput.activeConversation;
+			linkedConversation = (overrideConversation) ? overrideConversation : KickStarter.playerInput.activeConversation;
 
 			if (oldConversation != linkedConversation || resetOffsetWhenRestart)
 			{
 				offset = 0;
 			}
 
-			if (linkedConversation != null && !fixedOption)
+			if (linkedConversation && !fixedOption)
 			{
 				LimitOffset ();
 			}
@@ -625,8 +630,8 @@ namespace AC
 		{
 			get
 			{
-				Conversation linkedConversation = (overrideConversation != null) ? overrideConversation : KickStarter.playerInput.activeConversation;
-				if (linkedConversation != null && !fixedOption)
+				Conversation linkedConversation = (overrideConversation) ? overrideConversation : KickStarter.playerInput.activeConversation;
+				if (linkedConversation && !fixedOption)
 				{
 					return (linkedConversation.GetCount());
 				}
@@ -648,7 +653,7 @@ namespace AC
 
 		public override bool IsSelectedByEventSystem (int slotIndex)
 		{
-			if (uiSlots != null && slotIndex >= 0 && uiSlots.Length > slotIndex && uiSlots[slotIndex] != null && uiSlots[slotIndex].uiButton != null)
+			if (uiSlots != null && slotIndex >= 0 && uiSlots.Length > slotIndex && uiSlots[slotIndex] != null && uiSlots[slotIndex].uiButton)
 			{
 				return KickStarter.playerMenus.IsEventSystemSelectingObject (uiSlots[slotIndex].uiButton.gameObject);
 			}
@@ -656,21 +661,20 @@ namespace AC
 		}
 		
 
-		/**
-		 * <summary>Performs what should happen when the element is clicked on.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 * <param name = "_slot">The index number of ths slot that was clicked</param>
-		 * <param name = "_mouseState">The state of the mouse button</param>
-		 */
-		public override void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public override bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			if (KickStarter.stateHandler.gameState != GameState.DialogOptions)
 			{
-				return;
+				return false;
 			}
 
-			if (linkedConversation != null && 
-				(linkedConversation == overrideConversation || (overrideConversation == null && KickStarter.playerInput.activeConversation != null)))
+			if (_mouseState != MouseState.SingleClick && _menu.menuSource == MenuSource.AdventureCreator)
+			{
+				return false;
+			}
+
+			if (linkedConversation && 
+				(linkedConversation == overrideConversation || (overrideConversation == null && KickStarter.playerInput.activeConversation)))
 			{
 				if (fixedOption)
 				{
@@ -682,7 +686,7 @@ namespace AC
 				}
 			}
 
-			base.ProcessClick (_menu, _slot, _mouseState);
+			return base.ProcessClick (_menu, _slot, _mouseState);
 		}
 
 

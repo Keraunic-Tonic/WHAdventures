@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AnimEngine_SpritesUnityComplex.cs"
  * 
@@ -38,12 +38,12 @@ namespace AC
 		{
 			#if UNITY_EDITOR
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Mecanim parameters:", EditorStyles.boldLabel);
 			
 			character.spriteChild = (Transform) CustomGUILayout.ObjectField <Transform> ("Sprite child:", character.spriteChild, true, "", "The sprite Transform, which should be a child GameObject");
 
-			if (character.spriteChild != null && character.spriteChild.GetComponent <Animator>() == null)
+			if (character.spriteChild && character.spriteChild.GetComponent <Animator>() == null)
 			{
 				character.customAnimator = (Animator) CustomGUILayout.ObjectField <Animator> ("Animator (if not on s.c.):", character.customAnimator, true, "", "The Animator component, which will be assigned automatically if not set manually.");
 			}
@@ -105,7 +105,7 @@ namespace AC
 					{
 						EditorGUILayout.HelpBox ("This feature will disable use of the Rigidbody2D component.", MessageType.Warning);
 					}
-					if (character.IsPlayer && AdvGame.GetReferences () != null && AdvGame.GetReferences ().settingsManager != null)
+					if (character.IsPlayer && AdvGame.GetReferences () != null && AdvGame.GetReferences ().settingsManager)
 					{
 						if (AdvGame.GetReferences ().settingsManager.movementMethod != MovementMethod.PointAndClick && AdvGame.GetReferences ().settingsManager.movementMethod != MovementMethod.None)
 						{
@@ -126,9 +126,9 @@ namespace AC
 				character.rotateSprite3D = (RotateSprite3D) EditorGUILayout.EnumPopup ("Rotate sprite to:", character.rotateSprite3D);
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
-			if (GUI.changed && character != null)
+			if (GUI.changed && character)
 			{
 				EditorUtility.SetDirty (character);
 			}
@@ -279,11 +279,6 @@ namespace AC
 				action.fadeTime = EditorGUILayout.Slider ("Transition time:", action.fadeTime, 0f, 1f);
 				action.willWait = EditorGUILayout.Toggle ("Wait until finish?", action.willWait);
 			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
 			
 			#endif
 		}
@@ -414,11 +409,17 @@ namespace AC
 				{
 					if (!string.IsNullOrEmpty (action.clip2D))
 					{
+
 						character.GetAnimator ().CrossFade (action.clip2D, action.fadeTime, action.layerInt);
 						
 						if (action.willWait)
 						{
-							return (action.defaultPauseTime);
+							// In 2019, sometimes more than 1 frame is necessary for the transition to kick in
+							#if UNITY_2019_1_OR_NEWER
+							return Time.fixedDeltaTime * 2f;
+							#else
+							return action.defaultPauseTime;
+							#endif
 						}
 					}
 				}
@@ -536,11 +537,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("This method is not compatible with Sprites Unity Complex.", MessageType.Info);
 			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
 			
 			#endif
 		}
@@ -603,8 +599,6 @@ namespace AC
 		{
 			if (!action.isRunning)
 			{
-				action.isRunning = true;
-
 				if (action.methodMecanim == AnimMethodMecanim.ChangeParameterValue && action.runtimeAnimator && !string.IsNullOrEmpty (action.parameterName))
 				{
 					if (action.mecanimParameterType == MecanimParameterType.Float)
@@ -645,7 +639,13 @@ namespace AC
 							
 							if (action.willWait)
 							{
-								return (action.defaultPauseTime);
+								action.isRunning = true;
+								// In 2019, sometimes more than 1 frame is necessary for the transition to kick in
+								#if UNITY_2019_1_OR_NEWER
+								return Time.fixedDeltaTime * 2f;
+								#else
+								return action.defaultPauseTime;
+								#endif
 							}
 						}
 						else
@@ -655,19 +655,16 @@ namespace AC
 					}
 				}
 			}
-			else if (action.methodMecanim == AnimMethodMecanim.PlayCustom)
+			else
 			{
-				if (action.runtimeAnimator && !string.IsNullOrEmpty (action.clip2D))
+				if (action.runtimeAnimator.GetCurrentAnimatorStateInfo (action.layerInt).normalizedTime < 1f)
 				{
-					if (action.runtimeAnimator.GetCurrentAnimatorStateInfo (action.layerInt).normalizedTime < 1f)
-					{
-						return (action.defaultPauseTime / 6f);
-					}
-					else
-					{
-						action.isRunning = false;
-						return 0f;
-					}
+					return (action.defaultPauseTime / 6f);
+				}
+				else
+				{
+					action.isRunning = false;
+					return 0f;
 				}
 			}
 
@@ -731,11 +728,6 @@ namespace AC
 			if (action.setNewDirections)
 			{
 				action.spriteDirectionData.ShowGUI ();
-			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
 			}
 			
 			#endif
@@ -963,13 +955,13 @@ namespace AC
 
 		protected void SetDirection (Animator animator)
 		{
-			if (!string.IsNullOrEmpty (character.directionParameter))
-			{
-				animator.SetInteger (character.directionParameter, character.GetSpriteDirectionInt ());
-			}
 			if (!string.IsNullOrEmpty (character.angleParameter))
 			{
 				animator.SetFloat (character.angleParameter, character.GetSpriteAngle ());
+			}
+			if (!string.IsNullOrEmpty (character.directionParameter) && character.spriteDirectionData.HasDirections ())
+			{
+				animator.SetInteger (character.directionParameter, character.GetSpriteDirectionInt ());
 			}
 		}
 
@@ -1000,7 +992,7 @@ namespace AC
 
 		public override void AddSaveScript (Action _action, GameObject _gameObject)
 		{
-			if (_gameObject != null && _gameObject.GetComponentInChildren <Animator>())
+			if (_gameObject && _gameObject.GetComponentInChildren <Animator>())
 			{
 				_action.AddSaveScript <RememberAnimator> (_gameObject.GetComponentInChildren <Animator>());
 			}

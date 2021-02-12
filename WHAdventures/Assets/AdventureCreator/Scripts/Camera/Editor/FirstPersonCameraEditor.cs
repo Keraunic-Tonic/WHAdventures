@@ -17,7 +17,7 @@ namespace AC
 		{
 			FirstPersonCamera _target = (FirstPersonCamera) target;
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			_target.headBob = EditorGUILayout.Toggle ("Bob head when moving?", _target.headBob);
 			if (_target.headBob)
 			{
@@ -41,9 +41,9 @@ namespace AC
 					EditorGUILayout.HelpBox ("The component's public method 'GetHeadBobSpeed' will return the desired head-bobbing speed.", MessageType.Info);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			_target.allowMouseWheelZooming = EditorGUILayout.Toggle ("Allow mouse-wheel zooming?", _target.allowMouseWheelZooming);
 			if (_target.allowMouseWheelZooming)
 			{
@@ -54,9 +54,9 @@ namespace AC
 				_target.maximumZoom = EditorGUILayout.FloatField (_target.maximumZoom, intWidth);
 				EditorGUILayout.EndHorizontal ();
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Constrain pitch-rotation (degrees)");
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField ("Min:", labelWidth);
@@ -64,11 +64,11 @@ namespace AC
 			EditorGUILayout.LabelField ("Max:", labelWidth);
 			_target.maxY = EditorGUILayout.FloatField (_target.maxY, intWidth);
 			EditorGUILayout.EndHorizontal ();
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			_target.sensitivity = EditorGUILayout.Vector2Field ("Freelook sensitivity:", _target.sensitivity);
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			UnityVersionHandler.CustomSetDirty (_target);
 		}

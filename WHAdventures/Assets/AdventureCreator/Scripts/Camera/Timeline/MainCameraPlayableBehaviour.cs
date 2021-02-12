@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MainCameraPlayableBehaviour.cs"
  * 
@@ -29,6 +29,7 @@ namespace AC
 		public _Camera gameCamera;
 		public float shakeIntensity;
 		public bool callCustomEvents;
+		public bool setsCameraAfterRunning;
 
 		#endregion
 

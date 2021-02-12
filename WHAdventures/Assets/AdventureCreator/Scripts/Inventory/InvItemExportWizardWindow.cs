@@ -94,7 +94,7 @@ namespace AC
 			EditorGUILayout.Space ();
 			for (int i=0; i<exportColumns.Count; i++)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 
 				EditorGUILayout.BeginHorizontal ();
 				exportColumns[i].ShowFieldSelector (i);
@@ -104,7 +104,7 @@ namespace AC
 				}
 				EditorGUILayout.EndHorizontal ();
 
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 
 			EditorGUILayout.Space ();

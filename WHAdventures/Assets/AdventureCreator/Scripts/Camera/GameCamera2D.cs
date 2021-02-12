@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"GameCamera2D.cs"
  * 
@@ -36,6 +36,9 @@ namespace AC
 		/** If True, then vertical panning will be limited to minimum and maximum values */
 		public bool limitVertical;
 
+		/** If set, then the sprite's bounds will be used to set the horizontal and vertical limits, overriding constrainHorizontal and constrainVertical */
+		public SpriteRenderer backgroundConstraint = null;
+
 		/** The lower and upper horizontal limits, if limitHorizontal = True */
 		public Vector2 constrainHorizontal;
 		/** The lower and upper vertical limits, if limitVertical = True */
@@ -60,6 +63,7 @@ namespace AC
 		protected Vector3 originalPosition = Vector3.zero;
 		protected Vector2 desiredOffset = Vector2.zero;
 		protected bool haveSetOriginalPosition = false;
+		private float lastOrthographicSize = 0f;
 
 		protected LerpUtils.FloatLerp xLerp = new LerpUtils.FloatLerp ();
 		protected LerpUtils.FloatLerp yLerp = new LerpUtils.FloatLerp ();
@@ -74,8 +78,24 @@ namespace AC
 			SetOriginalPosition ();
 			base.Awake ();
 		}
-		
-		
+
+
+		protected override void OnEnable ()
+		{
+			EventManager.OnTeleport += OnTeleport;
+			EventManager.OnUpdatePlayableScreenArea += OnUpdatePlayableScreenArea;
+			base.OnEnable ();
+		}
+
+
+		protected override void OnDisable ()
+		{
+			EventManager.OnTeleport -= OnTeleport;
+			EventManager.OnUpdatePlayableScreenArea -= OnUpdatePlayableScreenArea;
+			base.OnDisable ();
+		}
+
+
 		protected override void Start ()
 		{
 			base.Start ();
@@ -90,6 +110,11 @@ namespace AC
 
 		public override void _Update ()
 		{
+			if (Camera && Camera.orthographicSize != lastOrthographicSize)
+			{
+				UpdateBackgroundConstraint ();
+			}
+
 			MoveCamera ();
 		}
 
@@ -97,6 +122,14 @@ namespace AC
 
 
 		#region PublicFunctions
+
+		/** Force-sets the current position as its original position. This should not normally need to be called externally. */
+		public void ForceRecordOriginalPosition ()
+		{
+			originalPosition = Transform.position;
+			haveSetOriginalPosition = true;
+		}
+
 
 		public override bool Is2D ()
 		{
@@ -108,23 +141,38 @@ namespace AC
 		{
 			if (targetIsPlayer && KickStarter.player)
 			{
-				target = KickStarter.player.transform;
+				target = KickStarter.player.Transform;
 			}
-
 			SetOriginalPosition ();
 
-			if (target && (!lockHorizontal || !lockVertical))
+			if (!lockHorizontal || !lockVertical)
 			{
-				SetDesired ();
+				if (target)
+				{
+					SetDesired ();
 			
-				if (!lockHorizontal)
-				{
-					perspectiveOffset.x = xLerp.Update (desiredOffset.x, desiredOffset.x, dampSpeed);
-				}
+					if (!lockHorizontal)
+					{
+						perspectiveOffset.x = xLerp.Update (desiredOffset.x, desiredOffset.x, dampSpeed);
+					}
 				
-				if (!lockVertical)
+					if (!lockVertical)
+					{
+						perspectiveOffset.y = yLerp.Update (desiredOffset.y, desiredOffset.y, dampSpeed);
+					}
+				}
+				else if ((limitHorizontal || limitVertical) && Camera.orthographic)
 				{
-					perspectiveOffset.y = yLerp.Update (desiredOffset.y, desiredOffset.y, dampSpeed);
+					Vector3 position = originalPosition;
+					if (limitHorizontal && !lockHorizontal)
+					{
+						position.x = Mathf.Clamp (position.x, constrainHorizontal.x, constrainHorizontal.y);
+					}
+					if (limitVertical && !lockVertical)
+					{
+						position.y = Mathf.Clamp (position.y, constrainVertical.x, constrainVertical.y);
+					}
+					transform.position = position;
 				}
 			}
 
@@ -151,7 +199,7 @@ namespace AC
 			{
 				if (SceneSettings.IsTopDown ())
 				{
-					transform.rotation = Quaternion.Euler (90f, 0, 0);
+					Transform.rotation = Quaternion.Euler (90f, 0, 0);
 					return;
 				}
 
@@ -161,7 +209,7 @@ namespace AC
 				}
 			}
 
-			transform.rotation = Quaternion.Euler (0, 0, 0);
+			Transform.rotation = Quaternion.Euler (0, 0, 0);
 		}
 
 
@@ -173,7 +221,7 @@ namespace AC
 		{
 			if (SceneSettings.IsTopDown ())
 			{
-				if (transform.rotation == Quaternion.Euler (90f, 0f, 0f))
+				if (Transform.rotation == Quaternion.Euler (90f, 0f, 0f))
 				{
 					return true;
 				}
@@ -186,7 +234,7 @@ namespace AC
 				return true;
 			}
 
-			if (transform.rotation == Quaternion.Euler (0f, 0f, 0f))
+			if (Transform.rotation == Quaternion.Euler (0f, 0f, 0f))
 			{
 				return true;
 			}
@@ -213,7 +261,58 @@ namespace AC
 		#endregion
 
 
+		#region CustomEvents
+
+		protected void OnTeleport (GameObject _gameObject)
+		{
+			if (gameObject == _gameObject)
+			{
+				ForceRecordOriginalPosition ();
+			}
+		}
+
+
+		protected void OnUpdatePlayableScreenArea ()
+		{
+			UpdateBackgroundConstraint ();
+		}
+
+		#endregion
+
+
 		#region ProtectedFunctions
+
+		protected void UpdateBackgroundConstraint ()
+		{
+			lastOrthographicSize = Camera.orthographicSize;
+			if (backgroundConstraint == null || Camera == null || !Camera.orthographic) return;
+			if (!limitHorizontal && !limitVertical) return;
+			if (lockHorizontal && lockVertical) return;
+
+			Camera.enabled = true;
+
+			Vector3 bottomLeftWorldPosition = Camera.ViewportToWorldPoint (new Vector3 (0f, 0f, Camera.nearClipPlane));
+			Vector3 topRightWorldPosition = Camera.ViewportToWorldPoint (new Vector3 (1f, 1f, Camera.nearClipPlane));
+
+			Vector2 bottomLeftOffset = new Vector2 (Transform.position.x - bottomLeftWorldPosition.x, Transform.position.y - bottomLeftWorldPosition.y);
+			Vector2 topRightOffset = new Vector2 (Transform.position.x - topRightWorldPosition.x, Transform.position.y - topRightWorldPosition.y);
+
+			if (limitHorizontal)
+			{
+				Vector2 hLimits = new Vector2 (bottomLeftOffset.x + backgroundConstraint.bounds.min.x, topRightOffset.x + backgroundConstraint.bounds.max.x);
+				constrainHorizontal = hLimits;
+			}
+
+			if (limitVertical)
+			{
+				Vector2 vLimits = new Vector2 (bottomLeftOffset.y + backgroundConstraint.bounds.min.y, topRightOffset.y + backgroundConstraint.bounds.max.y);
+				constrainVertical = vLimits;
+			}
+
+			MoveCameraInstant ();
+			Camera.enabled = false;
+		}
+
 
 		protected void SetDesired ()
 		{
@@ -230,7 +329,7 @@ namespace AC
 			desiredOffset.x += afterOffset.x;
 			if (!Mathf.Approximately (directionInfluence.x, 0f))
 			{
-				desiredOffset.x += Vector3.Dot (TargetForward, transform.right) * directionInfluence.x;
+				desiredOffset.x += Vector3.Dot (TargetForward, Transform.right) * directionInfluence.x;
 			}
 
 			if (limitHorizontal)
@@ -252,11 +351,11 @@ namespace AC
 			{
 				if (SceneSettings.IsTopDown ())
 				{
-					desiredOffset.y += Vector3.Dot (TargetForward, transform.up) * directionInfluence.y;
+					desiredOffset.y += Vector3.Dot (TargetForward, Transform.up) * directionInfluence.y;
 				}
 				else
 				{
-					desiredOffset.y += Vector3.Dot (TargetForward, transform.forward) * directionInfluence.y;
+					desiredOffset.y += Vector3.Dot (TargetForward, Transform.forward) * directionInfluence.y;
 				}
 			}
 
@@ -271,7 +370,7 @@ namespace AC
 		{
 			if (targetIsPlayer && KickStarter.player)
 			{
-				target = KickStarter.player.transform;
+				target = KickStarter.player.Transform;
 			}
 			
 			if (target && (!lockHorizontal || !lockVertical))
@@ -306,19 +405,20 @@ namespace AC
 		{
 			if (!haveSetOriginalPosition)
 			{
-				originalPosition = transform.position;
-				haveSetOriginalPosition = true;
+				ForceRecordOriginalPosition ();
 			}
 		}
 		
 
 		protected void SetProjection ()
 		{
+			if (target == null) return;
+
 			Vector2 snapOffset = GetSnapOffset ();
 
 			if (Camera.orthographic)
 			{
-				transform.position = originalPosition + (transform.right * snapOffset.x) + (transform.up * snapOffset.y);
+				Transform.position = originalPosition + (Transform.right * snapOffset.x) + (Transform.up * snapOffset.y);
 			}
 			else
 			{
@@ -336,26 +436,26 @@ namespace AC
 			{
 				if (Camera.orthographic)
 				{
-					targetOffset.x = transform.position.x;
-					targetOffset.y = transform.position.z;
+					targetOffset.x = Transform.position.x;
+					targetOffset.y = Transform.position.z;
 				}
 				else
 				{
-					targetOffset.x = - (targetPosition.x - transform.position.x) / (forwardOffsetScale * (targetPosition.y - transform.position.y));
-					targetOffset.y = - (targetPosition.z - transform.position.z) / (forwardOffsetScale * (targetPosition.y - transform.position.y));
+					targetOffset.x = - (targetPosition.x - Transform.position.x) / (forwardOffsetScale * (targetPosition.y - Transform.position.y));
+					targetOffset.y = - (targetPosition.z - Transform.position.z) / (forwardOffsetScale * (targetPosition.y - Transform.position.y));
 				}
 			}
 			else
 			{
 				if (Camera.orthographic)
 				{
-					targetOffset = transform.TransformVector (new Vector3 (targetPosition.x, targetPosition.y, -targetPosition.z));
+					targetOffset = Transform.TransformVector (new Vector3 (targetPosition.x, targetPosition.y, -targetPosition.z));
 				}
 				else
 				{
-					float rightDot = Vector3.Dot (transform.right, targetPosition - transform.position);
-					float forwardDot = Vector3.Dot (transform.forward, targetPosition - transform.position);
-					float upDot = Vector3.Dot (transform.up, targetPosition - transform.position);
+					float rightDot = Vector3.Dot (Transform.right, targetPosition - Transform.position);
+					float forwardDot = Vector3.Dot (Transform.forward, targetPosition - Transform.position);
+					float upDot = Vector3.Dot (Transform.up, targetPosition - Transform.position);
 
 					targetOffset.x = rightDot / (forwardOffsetScale * forwardDot);
 					targetOffset.y = upDot / (forwardOffsetScale * forwardDot);

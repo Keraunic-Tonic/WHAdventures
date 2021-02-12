@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberParticleSystem.cs"
  * 
@@ -31,7 +31,7 @@ namespace AC
 			particleSystemData.savePrevented = savePrevented;
 
 			ParticleSystem particleSystem = GetComponent <ParticleSystem>();
-			if (particleSystem != null)
+			if (particleSystem)
 			{
 				particleSystemData.isPlaying = particleSystem.isPlaying;
 				particleSystemData.isPaused = particleSystem.isPaused;
@@ -49,7 +49,7 @@ namespace AC
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
 			ParticleSystem particleSystem = GetComponent <ParticleSystem>();
-			if (particleSystem != null)
+			if (particleSystem)
 			{
 				particleSystem.time = data.currentTime;
 				if (data.isPlaying)

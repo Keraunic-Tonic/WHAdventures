@@ -13,7 +13,7 @@ namespace AC
 			GameCamera2DDrag _target = (GameCamera2DDrag) target;
 
 			// X
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField (new GUIContent ("X movement", "How movement along the X-axis is affected"), EditorStyles.boldLabel, GUILayout.Width (130f));
 			_target.xLock = (RotationLock) EditorGUILayout.EnumPopup (_target.xLock);
@@ -32,10 +32,10 @@ namespace AC
 					_target.maxX = CustomGUILayout.FloatField ("Maximum X:", _target.maxX, "", "The maximum X-axis value");
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			// Y
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField (new GUIContent ("Y movement", "How movement along the Y-axis is affected"), EditorStyles.boldLabel, GUILayout.Width (130f));
 			_target.yLock = (RotationLock) EditorGUILayout.EnumPopup (_target.yLock);
@@ -54,7 +54,7 @@ namespace AC
 					_target.maxY = CustomGUILayout.FloatField ("Maximum Y:", _target.maxY, "", "The maximum Y-axis value");
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			UnityVersionHandler.CustomSetDirty (_target);
 		}

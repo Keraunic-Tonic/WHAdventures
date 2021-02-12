@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AlignToCamera.cs"
  * 
@@ -74,7 +74,7 @@ namespace AC
 		 */
 		public void CentreToCamera ()
 		{
-			float distanceFromCamera = Vector3.Dot (cameraToAlignTo.transform.forward, transform.position - cameraToAlignTo.transform.position);
+			float distanceFromCamera = Vector3.Dot (cameraToAlignTo.Transform.forward, transform.position - cameraToAlignTo.Transform.position);
 			if (Mathf.Approximately (distanceFromCamera, 0f))
 			{
 				return;
@@ -82,7 +82,7 @@ namespace AC
 
 			if (lockDistance)
 			{
-				Vector3 newPosition = cameraToAlignTo.transform.position + (cameraToAlignTo.transform.forward * distanceFromCamera);
+				Vector3 newPosition = cameraToAlignTo.Transform.position + (cameraToAlignTo.Transform.forward * distanceFromCamera);
 				transform.position = newPosition;
 			}
 		}
@@ -100,28 +100,28 @@ namespace AC
 			{
 				if (alignType == AlignType.YAxisOnly)
 				{
-					transform.rotation = Quaternion.Euler (transform.rotation.eulerAngles.x, cameraToAlignTo.transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
+					transform.rotation = Quaternion.Euler (transform.rotation.eulerAngles.x, cameraToAlignTo.Transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
 				}
 				else
 				{
-					transform.rotation = cameraToAlignTo.transform.rotation;
+					transform.rotation = cameraToAlignTo.Transform.rotation;
 				}
 
 				if (lockDistance)
 				{
 					if (distanceToCamera > 0f)
 					{
-						Vector3 relativePosition = transform.position - cameraToAlignTo.transform.position;
+						Vector3 relativePosition = transform.position - cameraToAlignTo.Transform.position;
 						float currentDistance = relativePosition.magnitude;
 						if (!Mathf.Approximately (currentDistance, distanceToCamera))
 						{
 							if (currentDistance > 0f)
 							{
-								transform.position = cameraToAlignTo.transform.position + (relativePosition * distanceToCamera / currentDistance);
+								transform.position = cameraToAlignTo.Transform.position + (relativePosition * distanceToCamera / currentDistance);
 							}
 							else
 							{
-								transform.position = cameraToAlignTo.transform.position + cameraToAlignTo.transform.forward * distanceToCamera;
+								transform.position = cameraToAlignTo.Transform.position + cameraToAlignTo.Transform.forward * distanceToCamera;
 							}
 						}
 
@@ -141,7 +141,7 @@ namespace AC
 					}
 					else if (Mathf.Approximately (distanceToCamera, 0f))
 					{
-						Vector3 relativePosition = transform.position - cameraToAlignTo.transform.position;
+						Vector3 relativePosition = transform.position - cameraToAlignTo.Transform.position;
 						float magnitude = relativePosition.magnitude;
 						if (magnitude > 0f)
 						{

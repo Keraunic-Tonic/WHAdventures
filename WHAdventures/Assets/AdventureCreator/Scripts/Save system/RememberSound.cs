@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberSound.cs"
  * 
@@ -11,13 +11,16 @@
  */
 
 using UnityEngine;
+#if AddressableIsPresent
+using System.Collections;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace AC
 {
 
-	/**
-	 * Attach this script to Sound objects you wish to save.
-	 */
+	/** Attach this script to Sound objects you wish to save. */
 	[RequireComponent (typeof (AudioSource))]
 	[RequireComponent (typeof (Sound))]
 	[AddComponentMenu("Adventure Creator/Save system/Remember Sound")]
@@ -25,16 +28,17 @@ namespace AC
 	public class RememberSound : Remember
 	{
 
+		private Sound sound;
+
+
 		public override string SaveData ()
 		{
-			Sound sound = GetComponent <Sound>();
-
 			SoundData soundData = new SoundData();
 			soundData.objectID = constantID;
 			soundData.savePrevented = savePrevented;
 
-			soundData = sound.GetSaveData (soundData);
-
+			soundData = Sound.GetSaveData (soundData);
+			
 			return Serializer.SaveScriptData <SoundData> (soundData);
 		}
 		
@@ -45,23 +49,67 @@ namespace AC
 			if (data == null) return;
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			Sound sound = GetComponent <Sound>();
-			if (sound is Music) return;
+			if (Sound is Music) return;
 
-			if (KickStarter.saveSystem.loadingGame == LoadingGame.No && sound.surviveSceneChange)
+			if (KickStarter.saveSystem.loadingGame == LoadingGame.No && Sound.surviveSceneChange)
 			{
 				return;
 			}
 
-			sound.LoadData (data);
+			#if AddressableIsPresent
+
+			if (data.isPlaying && KickStarter.settingsManager.saveAssetReferencesWithAddressables && !string.IsNullOrEmpty (data.clipID))
+			{
+				StopAllCoroutines ();
+				StartCoroutine (LoadDataFromAddressables (data));
+				return;
+			}
+
+			#endif
+
+			if (data.isPlaying)
+			{
+				Sound.audioSource.clip = AssetLoader.RetrieveAsset (Sound.audioSource.clip, data.clipID);
+			}
+
+			Sound.LoadData (data);
+		}
+
+
+		#if AddressableIsPresent
+
+		private IEnumerator LoadDataFromAddressables (SoundData data)
+		{
+			AsyncOperationHandle<AudioClip> handle = Addressables.LoadAssetAsync<AudioClip> (data.clipID);
+			yield return handle;
+			if (handle.Status == AsyncOperationStatus.Succeeded)
+			{
+				Sound.audioSource.clip = handle.Result;
+			}
+			Addressables.Release (handle);
+
+			Sound.LoadData (data);
+		}
+
+		#endif
+
+
+		private Sound Sound
+		{
+			get
+			{
+				if (sound == null)
+				{
+					sound = GetComponent <Sound>();
+				}
+				return sound;
+			}
 		}
 		
 	}
 	
 
-	/**
-	 * A data container used by the RememberSound script.
-	 */
+	/** A data container used by the RememberSound script. */
 	[System.Serializable]
 	public class SoundData : RememberData
 	{
@@ -99,9 +147,7 @@ namespace AC
 		/** The original time duration of the active change in relative volume */
 		public float originalRelativeChangeTime;
 
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public SoundData () { }
 
 	}

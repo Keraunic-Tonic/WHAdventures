@@ -9,9 +9,7 @@ namespace AC
 	public class AdventureCreator : EditorWindow
 	{
 		
-		public References references;
-		
-		public static string version = "1.71.8";
+		public static string version = "1.73.0";
 	 
 		private bool showScene = true;
 		private bool showSettings = false;
@@ -30,14 +28,7 @@ namespace AC
 		{
 			// Get existing open window or if none, make a new one:
 			AdventureCreator window = (AdventureCreator) EditorWindow.GetWindow (typeof (AdventureCreator));
-			window.GetReferences ();
 			window.titleContent.text = "AC Game Editor";
-		}
-		
-		
-		private void GetReferences ()
-		{
-			references = (References) Resources.Load (Resource.references);
 		}
 
 
@@ -59,13 +50,8 @@ namespace AC
 			{
 				ACInstaller.DoInstall ();
 			}
-
-			if (!references)
-			{
-				GetReferences ();
-			}
 			
-			if (references)
+			if (Resource.References)
 			{
 				GUILayout.Space (10);
 				GUILayoutOption tabWidth = GUILayout.Width (this.position.width / 4f);
@@ -116,26 +102,26 @@ namespace AC
 				{
 					GUILayout.Label ("Scene manager",  CustomStyles.managerHeader);
 					EditorGUI.BeginChangeCheck ();
-					references.sceneManager = (SceneManager) EditorGUILayout.ObjectField ("Asset file: ", references.sceneManager, typeof (SceneManager), false);
+					Resource.References.sceneManager = (SceneManager) EditorGUILayout.ObjectField ("Asset file: ", Resource.References.sceneManager, typeof (SceneManager), false);
 					if (EditorGUI.EndChangeCheck ())
 					{
 						KickStarter.ClearManagerCache ();
 					}
 					DrawManagerSpace ();
 
-					if (!references.sceneManager)
+					if (!Resource.References.sceneManager)
 					{
 						AskToCreate <SceneManager> ("SceneManager");
 					}
 					else
 					{
-						if (references.sceneManager.name == "Demo_SceneManager" || references.sceneManager.name == "Demo2D_SceneManager")
+						if (Resource.References.sceneManager.name == "Demo_SceneManager" || Resource.References.sceneManager.name == "Demo2D_SceneManager")
 						{
 							EditorGUILayout.HelpBox ("The Demo Managers are for demonstration purposes only.  Modifying them to create your game may result in data loss upon upgrading - instead, use the New Game Wizard to create a new set of Managers.", MessageType.Warning);
 						}
 
 						scroll = GUILayout.BeginScrollView (scroll);
-						references.sceneManager.ShowGUI (this.position);
+						Resource.References.sceneManager.ShowGUI (this.position);
 						GUILayout.EndScrollView ();
 					}
 				}
@@ -144,26 +130,26 @@ namespace AC
 				{
 					GUILayout.Label ("Settings manager",  CustomStyles.managerHeader);
 					EditorGUI.BeginChangeCheck ();
-					references.settingsManager = (SettingsManager) EditorGUILayout.ObjectField ("Asset file: ", references.settingsManager, typeof (SettingsManager), false);
+					Resource.References.settingsManager = (SettingsManager) EditorGUILayout.ObjectField ("Asset file: ", Resource.References.settingsManager, typeof (SettingsManager), false);
 					if (EditorGUI.EndChangeCheck ())
 					{
 						KickStarter.ClearManagerCache ();
 					}
 					DrawManagerSpace ();
 
-					if (!references.settingsManager)
+					if (!Resource.References.settingsManager)
 					{
 						AskToCreate <SettingsManager> ("SettingsManager");
 					}
 					else
 					{
-						if (references.settingsManager.name == "Demo_SettingsManager" || references.settingsManager.name == "Demo2D_SettingsManager")
+						if (Resource.References.settingsManager.name == "Demo_SettingsManager" || Resource.References.settingsManager.name == "Demo2D_SettingsManager")
 						{
 							EditorGUILayout.HelpBox ("The Demo Managers are for demonstration purposes only.  Modifying them to create your game may result in data loss upon upgrading - instead, use the New Game Wizard to create a new set of Managers.", MessageType.Warning);
 						}
 
 						scroll = GUILayout.BeginScrollView (scroll);
-						references.settingsManager.ShowGUI ();
+						Resource.References.settingsManager.ShowGUI ();
 						GUILayout.EndScrollView ();
 					}
 				}
@@ -172,26 +158,26 @@ namespace AC
 				{
 					GUILayout.Label ("Actions manager",  CustomStyles.managerHeader);
 					EditorGUI.BeginChangeCheck ();
-					references.actionsManager = (ActionsManager) EditorGUILayout.ObjectField ("Asset file: ", references.actionsManager, typeof (ActionsManager), false);
+					Resource.References.actionsManager = (ActionsManager) EditorGUILayout.ObjectField ("Asset file: ", Resource.References.actionsManager, typeof (ActionsManager), false);
 					if (EditorGUI.EndChangeCheck ())
 					{
 						KickStarter.ClearManagerCache ();
 					}
 					DrawManagerSpace ();
 
-					if (!references.actionsManager)
+					if (!Resource.References.actionsManager)
 					{
 						AskToCreate <ActionsManager> ("ActionsManager");
 					}
 					else
 					{
-						if (references.actionsManager.name == "Demo_ActionsManager" || references.actionsManager.name == "Demo2D_ActionsManager")
+						if (Resource.References.actionsManager.name == "Demo_ActionsManager" || Resource.References.actionsManager.name == "Demo2D_ActionsManager")
 						{
 							EditorGUILayout.HelpBox ("The Demo Managers are for demonstration purposes only.  Modifying them to create your game may result in data loss upon upgrading - instead, use the New Game Wizard to create a new set of Managers.", MessageType.Warning);
 						}
 
 						scroll = GUILayout.BeginScrollView (scroll);
-						references.actionsManager.ShowGUI ();
+						Resource.References.actionsManager.ShowGUI ();
 						GUILayout.EndScrollView ();
 					}
 				}
@@ -200,26 +186,26 @@ namespace AC
 				{
 					GUILayout.Label ("Variables manager",  CustomStyles.managerHeader);
 					EditorGUI.BeginChangeCheck ();
-					references.variablesManager = (VariablesManager) EditorGUILayout.ObjectField ("Asset file: ", references.variablesManager, typeof (VariablesManager), false);
+					Resource.References.variablesManager = (VariablesManager) EditorGUILayout.ObjectField ("Asset file: ", Resource.References.variablesManager, typeof (VariablesManager), false);
 					if (EditorGUI.EndChangeCheck ())
 					{
 						KickStarter.ClearManagerCache ();
 					}
 					DrawManagerSpace ();
 					
-					if (!references.variablesManager)
+					if (!Resource.References.variablesManager)
 					{
 						AskToCreate <VariablesManager> ("VariablesManager");
 					}
 					else
 					{
-						if (references.variablesManager.name == "Demo_VariablesManager" || references.variablesManager.name == "Demo2D_VariablesManager")
+						if (Resource.References.variablesManager.name == "Demo_VariablesManager" || Resource.References.variablesManager.name == "Demo2D_VariablesManager")
 						{
 							EditorGUILayout.HelpBox ("The Demo Managers are for demonstration purposes only.  Modifying them to create your game may result in data loss upon upgrading - instead, use the New Game Wizard to create a new set of Managers.", MessageType.Warning);
 						}
 
 						scroll = GUILayout.BeginScrollView (scroll);
-						references.variablesManager.ShowGUI ();
+						Resource.References.variablesManager.ShowGUI ();
 						GUILayout.EndScrollView ();
 					}
 				}
@@ -228,26 +214,26 @@ namespace AC
 				{
 					GUILayout.Label ("Inventory manager",  CustomStyles.managerHeader);
 					EditorGUI.BeginChangeCheck ();
-					references.inventoryManager = (InventoryManager) EditorGUILayout.ObjectField ("Asset file: ", references.inventoryManager, typeof (InventoryManager), false);
+					Resource.References.inventoryManager = (InventoryManager) EditorGUILayout.ObjectField ("Asset file: ", Resource.References.inventoryManager, typeof (InventoryManager), false);
 					if (EditorGUI.EndChangeCheck ())
 					{
 						KickStarter.ClearManagerCache ();
 					}
 					DrawManagerSpace ();
 
-					if (!references.inventoryManager)
+					if (!Resource.References.inventoryManager)
 					{
 						AskToCreate <InventoryManager> ("InventoryManager");
 					}
 					else
 					{
-						if (references.inventoryManager.name == "Demo_InventoryManager" || references.inventoryManager.name == "Demo2D_InventoryManager")
+						if (Resource.References.inventoryManager.name == "Demo_InventoryManager" || Resource.References.inventoryManager.name == "Demo2D_InventoryManager")
 						{
 							EditorGUILayout.HelpBox ("The Demo Managers are for demonstration purposes only.  Modifying them to create your game may result in data loss upon upgrading - instead, use the New Game Wizard to create a new set of Managers.", MessageType.Warning);
 						}
 
 						scroll = GUILayout.BeginScrollView (scroll);
-						references.inventoryManager.ShowGUI (this.position);
+						Resource.References.inventoryManager.ShowGUI (this.position);
 						GUILayout.EndScrollView ();
 					}
 				}
@@ -256,26 +242,26 @@ namespace AC
 				{
 					GUILayout.Label ("Speech manager",  CustomStyles.managerHeader);
 					EditorGUI.BeginChangeCheck ();
-					references.speechManager = (SpeechManager) EditorGUILayout.ObjectField ("Asset file: ", references.speechManager, typeof (SpeechManager), false);
+					Resource.References.speechManager = (SpeechManager) EditorGUILayout.ObjectField ("Asset file: ", Resource.References.speechManager, typeof (SpeechManager), false);
 					if (EditorGUI.EndChangeCheck ())
 					{
 						KickStarter.ClearManagerCache ();
 					}
 					DrawManagerSpace ();
 
-					if (!references.speechManager)
+					if (!Resource.References.speechManager)
 					{
 						AskToCreate <SpeechManager> ("SpeechManager");
 					}
 					else
 					{
-						if (references.speechManager.name == "Demo_SpeechManager" || references.speechManager.name == "Demo2D_SpeechManager")
+						if (Resource.References.speechManager.name == "Demo_SpeechManager" || Resource.References.speechManager.name == "Demo2D_SpeechManager")
 						{
 							EditorGUILayout.HelpBox ("The Demo Managers are for demonstration purposes only.  Modifying them to create your game may result in data loss upon upgrading - instead, use the New Game Wizard to create a new set of Managers.", MessageType.Warning);
 						}
 
 						scroll = GUILayout.BeginScrollView (scroll);
-						references.speechManager.ShowGUI (this.position);
+						Resource.References.speechManager.ShowGUI (this.position);
 						GUILayout.EndScrollView ();
 					}
 				}
@@ -284,26 +270,26 @@ namespace AC
 				{
 					GUILayout.Label ("Cursor manager",  CustomStyles.managerHeader);
 					EditorGUI.BeginChangeCheck ();
-					references.cursorManager = (CursorManager) EditorGUILayout.ObjectField ("Asset file: ", references.cursorManager, typeof (CursorManager), false);
+					Resource.References.cursorManager = (CursorManager) EditorGUILayout.ObjectField ("Asset file: ", Resource.References.cursorManager, typeof (CursorManager), false);
 					if (EditorGUI.EndChangeCheck ())
 					{
 						KickStarter.ClearManagerCache ();
 					}
 					DrawManagerSpace ();
 
-					if (!references.cursorManager)
+					if (!Resource.References.cursorManager)
 					{
 						AskToCreate <CursorManager> ("CursorManager");
 					}
 					else
 					{
-						if (references.cursorManager.name == "Demo_CursorManager" || references.cursorManager.name == "Demo2D_CursorManager")
+						if (Resource.References.cursorManager.name == "Demo_CursorManager" || Resource.References.cursorManager.name == "Demo2D_CursorManager")
 						{
 							EditorGUILayout.HelpBox ("The Demo Managers are for demonstration purposes only.  Modifying them to create your game may result in data loss upon upgrading - instead, use the New Game Wizard to create a new set of Managers.", MessageType.Warning);
 						}
 
 						scroll = GUILayout.BeginScrollView (scroll);
-						references.cursorManager.ShowGUI ();
+						Resource.References.cursorManager.ShowGUI ();
 						GUILayout.EndScrollView ();
 					}
 				}
@@ -312,31 +298,31 @@ namespace AC
 				{
 					GUILayout.Label ("Menu manager",  CustomStyles.managerHeader);
 					EditorGUI.BeginChangeCheck ();
-					references.menuManager = (MenuManager) EditorGUILayout.ObjectField ("Asset file: ", references.menuManager, typeof (MenuManager), false);
+					Resource.References.menuManager = (MenuManager) EditorGUILayout.ObjectField ("Asset file: ", Resource.References.menuManager, typeof (MenuManager), false);
 					if (EditorGUI.EndChangeCheck ())
 					{
 						KickStarter.ClearManagerCache ();
 					}
 					DrawManagerSpace ();
 
-					if (!references.menuManager)
+					if (!Resource.References.menuManager)
 					{
 						AskToCreate <MenuManager> ("MenuManager");
 					}
 					else
 					{
-						if (references.menuManager.name == "Demo_MenuManager" || references.menuManager.name == "Demo2D_MenuManager")
+						if (Resource.References.menuManager.name == "Demo_MenuManager" || Resource.References.menuManager.name == "Demo2D_MenuManager")
 						{
 							EditorGUILayout.HelpBox ("The Demo Managers are for demonstration purposes only.  Modifying them to create your game may result in data loss upon upgrading - instead, use the New Game Wizard to create a new set of Managers.", MessageType.Warning);
 						}
 
 						scroll = GUILayout.BeginScrollView (scroll);
-						references.menuManager.ShowGUI ();
+						Resource.References.menuManager.ShowGUI ();
 						GUILayout.EndScrollView ();
 					}
 				}
 
-				references.viewingMenuManager = showMenu;
+				Resource.References.viewingMenuManager = showMenu;
 
 				EditorGUILayout.Separator ();
 				GUILayout.Box ("", GUILayout.ExpandWidth (true), GUILayout.Height(1));
@@ -356,9 +342,9 @@ namespace AC
 				}
 
 				EditorUtility.SetDirty (this);
-				if (references != null)
+				if (Resource.References != null)
 				{
-					EditorUtility.SetDirty (references);
+					EditorUtility.SetDirty (Resource.References);
 				}
 			}
 		}
@@ -366,16 +352,14 @@ namespace AC
 
 		public static void MissingReferencesGUI ()
 		{
-			string intendedDirectory = Resource.MainFolderPathRelativeToAssets + Path.DirectorySeparatorChar.ToString () + "Resources";
-
 			EditorStyles.label.wordWrap = true;
 			GUILayout.Label ("Error - missing References",  CustomStyles.managerHeader);
 			EditorGUILayout.Space ();
-			EditorGUILayout.HelpBox ("A 'References' file must be present in the directory '" + intendedDirectory + "' - please click to create one.", MessageType.Warning);
+			EditorGUILayout.HelpBox ("A 'References' file must be present in the directory '" + ACInstaller.DefaultReferencesPath + "' - please click to create one.", MessageType.Warning);
 
 			if (GUILayout.Button ("Create 'References' file"))
 			{
-				CustomAssetUtility.CreateAsset<References> ("References", intendedDirectory);
+				CustomAssetUtility.CreateAsset<References> ("References", ACInstaller.DefaultReferencesPath);
 			}
 		}
 
@@ -384,8 +368,7 @@ namespace AC
 		{
 			EditorGUILayout.Space ();
 			EditorGUILayout.Separator ();
-			GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
-			//EditorGUILayout.Space ();
+			GUILayout.Box (string.Empty, GUILayout.ExpandWidth(true), GUILayout.Height(1));
 		}
 		
 		
@@ -445,40 +428,40 @@ namespace AC
 				try {
 					ScriptableObject t = CustomAssetUtility.CreateAsset<T> (obName);
 					
-					Undo.RecordObject (references, "Assign " + obName);
+					Undo.RecordObject (Resource.References, "Assign " + obName);
 					
 					if (t is SceneManager)
 					{
-						references.sceneManager = (SceneManager) t;
+						Resource.References.sceneManager = (SceneManager) t;
 					}
 					else if (t is SettingsManager)
 					{
-						references.settingsManager = (SettingsManager) t;
+						Resource.References.settingsManager = (SettingsManager) t;
 					}
 					else if (t is ActionsManager)
 					{
-						references.actionsManager = (ActionsManager) t;
+						Resource.References.actionsManager = (ActionsManager) t;
 						RefreshActions ();
 					}
 					else if (t is VariablesManager)
 					{
-						references.variablesManager = (VariablesManager) t;
+						Resource.References.variablesManager = (VariablesManager) t;
 					}
 					else if (t is InventoryManager)
 					{
-						references.inventoryManager = (InventoryManager) t;
+						Resource.References.inventoryManager = (InventoryManager) t;
 					}
 					else if (t is SpeechManager)
 					{
-						references.speechManager = (SpeechManager) t;
+						Resource.References.speechManager = (SpeechManager) t;
 					}
 					else if (t is CursorManager)
 					{
-						references.cursorManager = (CursorManager) t;
+						Resource.References.cursorManager = (CursorManager) t;
 					}
 					else if (t is MenuManager)
 					{
-						references.menuManager = (MenuManager) t;
+						Resource.References.menuManager = (MenuManager) t;
 					}
 				}
 				catch
@@ -575,7 +558,13 @@ namespace AC
 						MonoScript script = AssetDatabase.LoadAssetAtPath <MonoScript> (folderPath + "/" + f.Name);
 						if (script == null) continue;
 
+						#if AC_ActionListPrefabs
+						System.Runtime.Remoting.ObjectHandle handle = System.Activator.CreateInstance ("Assembly-CSharp", "AC." + script.name);
+						Action tempAction = (Action) handle.Unwrap();
+						#else
 						Action tempAction = (Action) CreateInstance (script.GetClass ());
+						#endif
+
 						if (tempAction != null && tempAction is Action)
 						{
 							ActionType newActionType = new ActionType (className, tempAction);

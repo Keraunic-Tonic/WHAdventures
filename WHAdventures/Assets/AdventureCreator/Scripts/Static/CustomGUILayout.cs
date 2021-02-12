@@ -9,6 +9,52 @@ namespace AC
 	public class CustomGUILayout
 	{
 
+		private static int LabelWidth
+		{
+			get
+			{
+				return ACEditorPrefs.EditorLabelWidth;
+			}
+		}
+
+
+		public static void DrawUILine ()
+		{
+			DrawUILine (Color.grey);
+		}
+
+
+		public static void DrawUILine (Color colour)
+		{
+			int padding = 10;
+			int thickness = 1;
+
+			Rect r = EditorGUILayout.GetControlRect (GUILayout.Height (padding + thickness));
+			r.height = thickness;
+			r.y += padding / 2;
+			r.x -= 2;
+			r.width += 6;
+
+			r.x += padding;
+			r.width -= padding * 2;
+
+			EditorGUI.DrawRect (r, colour);
+		}
+
+
+		public static void BeginVertical ()
+		{
+			EditorGUILayout.BeginVertical (EditorGUIUtility.isProSkin ? CustomStyles.Toolbar : CustomStyles.thinBox);
+		}
+
+
+		public static void EndVertical ()
+		{
+			EditorGUILayout.EndVertical ();
+			GUILayout.Space (4f);
+		}
+
+
 		public static void MultiLineLabelGUI (string title, string text)
 		{
 			if (string.IsNullOrEmpty (text)) return;
@@ -29,7 +75,19 @@ namespace AC
 
 		public static System.Enum EnumPopup (string label, System.Enum value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.EnumPopup (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
+			CreateMenu (api);
+			return value;
+		}
+
+
+		public static System.Enum EnumFlagsField (string label, System.Enum value, string api = "", string tooltip = "")
+		{
+			EditorGUIUtility.labelWidth = LabelWidth;
+			value = EditorGUILayout.EnumFlagsField (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -51,7 +109,9 @@ namespace AC
 
 		public static bool Toggle (string label, bool value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Toggle (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -59,7 +119,9 @@ namespace AC
 
 		public static bool Toggle (bool value, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Toggle (value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -67,7 +129,9 @@ namespace AC
 
 		public static bool Toggle (bool value, GUILayoutOption layoutOption, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Toggle (value, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -75,7 +139,9 @@ namespace AC
 
 		public static bool ToggleLeft (string label, bool value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.ToggleLeft (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -83,7 +149,9 @@ namespace AC
 		
 		public static int IntField (string label, int value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.IntField (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -91,7 +159,9 @@ namespace AC
 
 		public static int IntField (int value, GUILayoutOption layoutOption, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.IntField (value, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -99,7 +169,9 @@ namespace AC
 		
 		public static int IntSlider (string label, int value, int min, int max, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.IntSlider (new GUIContent (label, tooltip), value, min, max);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -107,7 +179,9 @@ namespace AC
 		
 		public static float FloatField (string label, float value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.FloatField (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -115,7 +189,9 @@ namespace AC
 
 		public static float FloatField (float value, GUILayoutOption layoutOption, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.FloatField (value, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -123,7 +199,9 @@ namespace AC
 		
 		public static float Slider (string label, float value, float min, float max, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Slider (new GUIContent (label, tooltip), value, min, max);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -131,7 +209,9 @@ namespace AC
 
 		public static string TextField (string value, GUILayoutOption layoutOption, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.TextField (value, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -139,7 +219,9 @@ namespace AC
 		
 		public static string TextField (string label, string value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.TextField (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -147,7 +229,9 @@ namespace AC
 
 		public static string DelayedTextField (string label, string value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.DelayedTextField (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -155,7 +239,9 @@ namespace AC
 
 		public static string DelayedTextField (string value, GUILayoutOption layoutOption, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.DelayedTextField (value, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -163,15 +249,36 @@ namespace AC
 
 		public static string TextArea (string value, GUILayoutOption layoutOption, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.TextArea (value, EditorStyles.textArea, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
+			return value;
+		}
+
+
+		public static string TextArea (string label, string value, string api = "", string tooltip = "")
+		{
+			int labelWidth = LabelWidth;
+			if (labelWidth <= 0) labelWidth = 150;
+
+			EditorGUILayout.BeginHorizontal ();
+			EditorGUILayout.LabelField (new GUIContent (label, tooltip), GUILayout.Width (labelWidth));
+			value = TextArea (value, GUILayout.MaxWidth (570f), api);
+			EditorGUILayout.EndHorizontal();
 			return value;
 		}
 
 
 		public static int Popup (string label, int value, string[] list, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
+			#if UNITY_2019_3_OR_NEWER
+			value = EditorGUILayout.Popup (new GUIContent (label, tooltip), value, list);
+			#else
 			value = EditorGUILayout.Popup (label, value, list);
+			#endif
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -179,7 +286,9 @@ namespace AC
 
 		public static int Popup (int value, string[] list, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Popup (value, list);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -187,7 +296,9 @@ namespace AC
 
 		public static Color ColorField (string label, Color value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.ColorField (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -195,7 +306,9 @@ namespace AC
 
 		public static Object ObjectField <T> (string label, Object value, bool allowSceneObjects, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.ObjectField (new GUIContent (label, tooltip), value, typeof (T), allowSceneObjects);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -203,7 +316,9 @@ namespace AC
 
 		public static Object ObjectField <T> (Object value, bool allowSceneObjects, GUILayoutOption layoutOption, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.ObjectField (value, typeof (T), allowSceneObjects, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -211,7 +326,9 @@ namespace AC
 
 		public static Object ObjectField <T> (Object value, bool allowSceneObjects, GUILayoutOption option1, GUILayoutOption option2, string api = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.ObjectField (value, typeof (T), allowSceneObjects, option1, option2);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return value;
 		}
@@ -219,7 +336,9 @@ namespace AC
 
 		public static Vector2 Vector2Field (string label, Vector2 value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Vector2Field (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return (value);
 		}
@@ -227,7 +346,9 @@ namespace AC
 
 		public static Vector2 Vector2Field (string label, Vector2 value, GUILayoutOption layoutOption, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Vector2Field (new GUIContent (label, tooltip), value, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return (value);
 		}
@@ -235,7 +356,9 @@ namespace AC
 
 		public static Vector3 Vector3Field (string label, Vector3 value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Vector3Field (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return (value);
 		}
@@ -243,7 +366,9 @@ namespace AC
 
 		public static Vector3 Vector2Field (string label, Vector3 value, GUILayoutOption layoutOption, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.Vector3Field (new GUIContent (label, tooltip), value, layoutOption);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return (value);
 		}
@@ -251,7 +376,9 @@ namespace AC
 
 		public static AnimationCurve CurveField (string label, AnimationCurve value, string api = "", string tooltip = "")
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			value = EditorGUILayout.CurveField (new GUIContent (label, tooltip), value);
+			EditorGUIUtility.labelWidth = 0;
 			CreateMenu (api);
 			return (value);
 		}
@@ -273,8 +400,28 @@ namespace AC
 
 		public static void TokenLabel (string token)
 		{
+			EditorGUIUtility.labelWidth = LabelWidth;
 			EditorGUILayout.LabelField (new GUIContent ("Replacement token:", "Text that you can enter into Menu elements, speech text etc and have it be replaced by this variable's value."), new GUIContent (token));
+			EditorGUIUtility.labelWidth = 0;
 			CreateTokenMenu (token);
+		}
+
+
+		public static void HelpBox (string message, MessageType messageType)
+		{
+			EditorGUILayout.HelpBox (message, messageType);
+		}
+
+
+		public static void BeginHorizontal ()
+		{
+			EditorGUILayout.BeginHorizontal ();
+		}
+
+
+		public static void EndHorizontal ()
+		{
+			EditorGUILayout.EndHorizontal ();
 		}
 
 

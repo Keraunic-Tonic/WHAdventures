@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AnimEngine_Mecanim.cs"
  * 
@@ -27,7 +27,7 @@ namespace AC
 		{
 			character = _character;
 			turningStyle = TurningStyle.RootMotion;
-			updateHeadAlways = (character != null && character.ikHeadTurning);
+			updateHeadAlways = (character && character.ikHeadTurning);
 		}
 
 
@@ -35,7 +35,7 @@ namespace AC
 		{
 			#if UNITY_EDITOR
 			
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Mecanim parameters", EditorStyles.boldLabel);
 
 			character.moveSpeedParameter = CustomGUILayout.TextField ("Move speed float:", character.moveSpeedParameter, "", "The name of the Animator float parameter set to the movement speed");
@@ -72,7 +72,7 @@ namespace AC
 			character.verticalMovementParameter = CustomGUILayout.TextField ("Vertical movement float:", character.verticalMovementParameter, "", "The name of the Animator float parameter set to the vertical movement speed");
 			character.isGroundedParameter = CustomGUILayout.TextField ("'Is grounded' bool:", character.isGroundedParameter, "", "The name of the Animator boolean parameter set to the 'Is Grounded' check");
 			Player player = character as Player;
-			if (player != null)
+			if (player)
 			{
 				player.jumpParameter = CustomGUILayout.TextField ("Jump bool:", player.jumpParameter, "", "The name of the Animator boolean parameter to set to 'True' when jumping");
 			}
@@ -83,8 +83,8 @@ namespace AC
 				character.expressionParameter = CustomGUILayout.TextField ("Expression ID integer:", character.expressionParameter, "", "The name of the Animator integer parameter set to the active Expression ID number");
 			}
 
-			EditorGUILayout.EndVertical ();
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.EndVertical ();
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Mecanim settings", EditorStyles.boldLabel);
 
 			if (SceneSettings.IsTopDown ())
@@ -118,7 +118,7 @@ namespace AC
 				character.ResetAnimator ();
 			}
 			Animator charAnimator = character.GetAnimator ();
-			if (charAnimator != null && charAnimator.applyRootMotion)
+			if (charAnimator && charAnimator.applyRootMotion)
 			{
 				character.rootTurningFactor = CustomGUILayout.Slider ("Root Motion turning:", character.rootTurningFactor, 0f, 1f, "", "The factor by which the job of turning is left to Mecanim root motion");
 			}
@@ -130,16 +130,16 @@ namespace AC
 				character.wallReductionOnlyParameter = CustomGUILayout.Toggle ("Only affects Mecanim parameter?", character.wallReductionOnlyParameter, "", "If True, then the wall reduction factor will only affect the Animator move speed float parameter, and not character's actual speed");
 			}
 
-			EditorGUILayout.EndVertical ();
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.EndVertical ();
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Bone transforms", EditorStyles.boldLabel);
 
 			character.neckBone = (Transform) CustomGUILayout.ObjectField <Transform> ("Neck bone:", character.neckBone, true, "", "The 'Neck bone' Transform");
 			character.leftHandBone = (Transform) CustomGUILayout.ObjectField <Transform> ("Left hand:", character.leftHandBone, true, "", "The 'Left hand bone' transform");
 			character.rightHandBone = (Transform) CustomGUILayout.ObjectField <Transform> ("Right hand:", character.rightHandBone, true, "", "The 'Right hand bone' transform");
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
-			if (GUI.changed && character != null)
+			if (GUI.changed && character)
 			{
 				EditorUtility.SetDirty (character);
 			}
@@ -223,11 +223,6 @@ namespace AC
 			action.headClip2D = EditorGUILayout.TextField ("Head animation:", action.headClip2D);
 			action.mouthClip2D = EditorGUILayout.TextField ("Mouth animation:", action.mouthClip2D);
 
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
-			
 			#endif
 		}
 
@@ -349,11 +344,6 @@ namespace AC
 				action.willWait = EditorGUILayout.Toggle ("Wait until finish?", action.willWait);
 			}
 
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
-
 			#endif
 		}
 
@@ -399,55 +389,51 @@ namespace AC
 
 		protected float ActionCharAnimProcess (ActionCharAnim action, bool isSkipping)
 		{
-			if (action.methodMecanim == AnimMethodCharMecanim.SetStandard)
+			switch (action.methodMecanim)
 			{
-				if (action.mecanimCharParameter == MecanimCharParameter.MoveSpeedFloat)
-				{
-					if (!string.IsNullOrEmpty (action.parameterName))
+				case AnimMethodCharMecanim.SetStandard:
+					if (action.mecanimCharParameter == MecanimCharParameter.MoveSpeedFloat)
 					{
-						character.moveSpeedParameter = action.parameterName;
-					}
-
-					if (action.changeSpeed)
-					{
-						character.walkSpeedScale = action.newSpeed;
-						character.runSpeedScale = action.parameterValue;
-					}
-
-					if (action.changeSound)
-					{
-						if (action.standard == AnimStandard.Walk)
+						if (!string.IsNullOrEmpty (action.parameterName))
 						{
-							character.walkSound = action.newSound;
+							character.moveSpeedParameter = action.parameterName;
 						}
-						else if (action.standard == AnimStandard.Run)
+
+						if (action.changeSpeed)
 						{
-							character.runSound = action.newSound;
+							character.walkSpeedScale = action.newSpeed;
+							character.runSpeedScale = action.parameterValue;
+						}
+
+						if (action.changeSound)
+						{
+							if (action.standard == AnimStandard.Walk)
+							{
+								character.walkSound = action.newSound;
+							}
+							else if (action.standard == AnimStandard.Run)
+							{
+								character.runSound = action.newSound;
+							}
 						}
 					}
-				}
-				else if (action.mecanimCharParameter == MecanimCharParameter.TalkBool)
-				{
-					character.talkParameter = action.parameterName;
-				}
-				else if (action.mecanimCharParameter == MecanimCharParameter.TurnFloat)
-				{
-					character.turnParameter = action.parameterName;
-				}
-				
-				return 0f;
-			}
+					else if (action.mecanimCharParameter == MecanimCharParameter.TalkBool)
+					{
+						character.talkParameter = action.parameterName;
+					}
+					else if (action.mecanimCharParameter == MecanimCharParameter.TurnFloat)
+					{
+						character.turnParameter = action.parameterName;
+					}
 
-			if (character.GetAnimator () == null)
-			{
-				return 0f;
-			}
-			
-			if (!action.isRunning)
-			{
-				action.isRunning = true;
-				if (action.methodMecanim == AnimMethodCharMecanim.ChangeParameterValue)
-				{
+					return 0f;
+
+				case AnimMethodCharMecanim.ChangeParameterValue:
+					if (character.GetAnimator () == null)
+					{
+						return 0f;
+					}
+
 					if (!string.IsNullOrEmpty (action.parameterName))
 					{
 						if (action.mecanimParameterType == MecanimParameterType.Float)
@@ -471,30 +457,39 @@ namespace AC
 							}
 						}
 					}
-				}
-				else if (action.methodMecanim == AnimMethodCharMecanim.PlayCustom)
-				{
-					if (!string.IsNullOrEmpty (action.clip2D))
+					break;
+
+				case AnimMethodCharMecanim.PlayCustom:
+					if (character.GetAnimator () == null)
 					{
-						string clip2DNew = action.clip2D;
-						if (action.includeDirection)
+						return 0f;
+					}
+
+					if (!action.isRunning)
+					{
+						if (!string.IsNullOrEmpty (action.clip2D))
 						{
-							clip2DNew += character.GetSpriteDirection ();
-						}
-						character.GetAnimator ().CrossFade (clip2DNew, action.fadeTime, action.layerInt);
-						
-						if (action.willWait)
-						{
-							return (action.defaultPauseTime);
+							action.isRunning = true;
+
+							string clip2DNew = action.clip2D;
+							if (action.includeDirection)
+							{
+								clip2DNew += character.GetSpriteDirection ();
+							}
+							character.GetAnimator ().CrossFade (clip2DNew, action.fadeTime, action.layerInt);
+
+							if (action.willWait)
+							{
+								// In 2019, sometimes more than 1 frame is necessary for the transition to kick in
+								#if UNITY_2019_1_OR_NEWER
+								return Time.fixedDeltaTime * 2f;
+								#else
+								return action.defaultPauseTime;
+								#endif
+							}
 						}
 					}
-				}
-			}
-			else
-			{
-				if (action.methodMecanim == AnimMethodCharMecanim.PlayCustom)
-				{
-					if (!string.IsNullOrEmpty (action.clip2D))
+					else
 					{
 						if (character.GetAnimator ().GetCurrentAnimatorStateInfo (action.layerInt).normalizedTime < 0.98f)
 						{
@@ -506,7 +501,10 @@ namespace AC
 							return 0f;
 						}
 					}
-				}
+					break;
+
+				default:
+					return 0f;
 			}
 			
 			return 0f;
@@ -623,11 +621,6 @@ namespace AC
 				action.fadeTime = EditorGUILayout.Slider ("Transition time:", action.fadeTime, 0f, 2f);
 				action.willWait = EditorGUILayout.Toggle ("Wait until finish?", action.willWait);
 			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
 			
 			#endif
 		}
@@ -635,7 +628,7 @@ namespace AC
 
 		public override string ActionAnimLabel (ActionAnim action)
 		{
-			string label = "";
+			string label = string.Empty;
 			
 			if (action.animator)
 			{
@@ -695,7 +688,7 @@ namespace AC
 		{
 			if (action.methodMecanim == AnimMethodMecanim.BlendShape)
 			{
-				if (action.runtimeShapeObject != null)
+				if (action.runtimeShapeObject)
 				{
 					action.runtimeShapeObject.Change (action.shapeKey, action.shapeValue, action.fadeTime);
 				}
@@ -713,90 +706,101 @@ namespace AC
 			{
 				action.isRunning = true;
 
-				if (action.methodMecanim == AnimMethodMecanim.ChangeParameterValue && action.runtimeAnimator && !string.IsNullOrEmpty (action.parameterName))
+				switch (action.methodMecanim)
 				{
-					if (action.mecanimParameterType == MecanimParameterType.Float)
-					{
-						action.runtimeAnimator.SetFloat (action.parameterName, action.parameterValue);
-					}
-					else if (action.mecanimParameterType == MecanimParameterType.Int)
-					{
-						action.runtimeAnimator.SetInteger (action.parameterName, (int) action.parameterValue);
-					}
-					else if (action.mecanimParameterType == MecanimParameterType.Bool)
-					{
-						bool paramValue = (action.parameterValue > 0f) ? true : false;
-						action.runtimeAnimator.SetBool (action.parameterName, paramValue);
-					}
-					else if (action.mecanimParameterType == MecanimParameterType.Trigger)
-					{
-						if (!isSkipping || action.parameterValue < 1f)
+					case AnimMethodMecanim.ChangeParameterValue:
+						if (action.runtimeAnimator && !string.IsNullOrEmpty (action.parameterName))
 						{
-							action.runtimeAnimator.SetTrigger (action.parameterName);
+							if (action.mecanimParameterType == MecanimParameterType.Float)
+							{
+								action.runtimeAnimator.SetFloat (action.parameterName, action.parameterValue);
+							}
+							else if (action.mecanimParameterType == MecanimParameterType.Int)
+							{
+								action.runtimeAnimator.SetInteger (action.parameterName, (int) action.parameterValue);
+							}
+							else if (action.mecanimParameterType == MecanimParameterType.Bool)
+							{
+								bool paramValue = (action.parameterValue > 0f) ? true : false;
+								action.runtimeAnimator.SetBool (action.parameterName, paramValue);
+							}
+							else if (action.mecanimParameterType == MecanimParameterType.Trigger)
+							{
+								if (!isSkipping || action.parameterValue < 1f)
+								{
+									action.runtimeAnimator.SetTrigger (action.parameterName);
+								}
+							}
+							return 0f;
 						}
-					}
-					
-					return 0f;
-				}
+						break;
 
-				else if (action.methodMecanim == AnimMethodMecanim.PlayCustom && action.runtimeAnimator)
-				{
-					if (!string.IsNullOrEmpty (action.clip2D))
-					{
-						#if UNITY_EDITOR
+					case AnimMethodMecanim.PlayCustom:
+						if (action.runtimeAnimator && !string.IsNullOrEmpty (action.clip2D))
+						{
+							#if UNITY_EDITOR
 
-						int hash = Animator.StringToHash (action.clip2D);
-						if (action.runtimeAnimator.HasState (0, hash))
-						{
-							action.runtimeAnimator.CrossFade (hash, action.fadeTime, action.layerInt);
-						}
-						else
-						{
-							action.ReportWarning ("Cannot play clip " + action.clip2D + " on " + action.runtimeAnimator.name, action.runtimeAnimator);
-						}
-						
-						#else
-						
-						try
-						{
-							action.runtimeAnimator.CrossFade (action.clip2D, action.fadeTime, action.layerInt);
-						}
-						catch
-						{}
-						
-						#endif
+							int hash = Animator.StringToHash (action.clip2D);
+							if (action.runtimeAnimator.HasState (0, hash))
+							{
+								action.runtimeAnimator.CrossFade (hash, action.fadeTime, action.layerInt);
+							}
+							else
+							{
+								action.ReportWarning ("Cannot play clip " + action.clip2D + " on " + action.runtimeAnimator.name, action.runtimeAnimator);
+							}
 
-						if (action.willWait)
-						{
-							return (action.defaultPauseTime);
-						}
-					}
-				}
-				
-				else if (action.methodMecanim == AnimMethodMecanim.BlendShape && action.shapeKey > -1)
-				{
-					if (action.runtimeShapeObject != null)
-					{
-						action.runtimeShapeObject.Change (action.shapeKey, action.shapeValue, action.fadeTime);
+							#else
 						
-						if (action.willWait)
-						{
-							return (action.fadeTime);
+							try
+							{
+								action.runtimeAnimator.CrossFade (action.clip2D, action.fadeTime, action.layerInt);
+							}
+							catch
+							{}
+						
+							#endif
+
+							if (action.willWait)
+							{
+								// In 2019, sometimes more than 1 frame is necessary for the transition to kick in
+								#if UNITY_2019_1_OR_NEWER
+								return Time.fixedDeltaTime * 2f;
+								#else
+								return action.defaultPauseTime;
+								#endif
+							}
 						}
-					}
+						break;
+
+					case AnimMethodMecanim.BlendShape:
+						if (action.methodMecanim == AnimMethodMecanim.BlendShape && action.shapeKey > -1)
+						{
+							if (action.runtimeShapeObject)
+							{
+								action.runtimeShapeObject.Change (action.shapeKey, action.shapeValue, action.fadeTime);
+
+								if (action.willWait)
+								{
+									return (action.fadeTime);
+								}
+							}
+						}
+						break;
+
+					default:
+						break;
 				}
 			}
 			else
 			{
-				if (action.methodMecanim == AnimMethodMecanim.BlendShape && action.runtimeShapeObject != null)
+				switch (action.methodMecanim)
 				{
-					action.isRunning = false;
-					return 0f;
-				}
-				else if (action.methodMecanim == AnimMethodMecanim.PlayCustom)
-				{
-					if (action.runtimeAnimator && !string.IsNullOrEmpty (action.clip2D))
-					{
+					case AnimMethodMecanim.BlendShape:
+						action.isRunning = false;
+						return 0f;
+
+					case AnimMethodMecanim.PlayCustom:
 						if (action.runtimeAnimator.GetCurrentAnimatorStateInfo (action.layerInt).normalizedTime < 1f)
 						{
 							return (action.defaultPauseTime / 6f);
@@ -806,7 +810,9 @@ namespace AC
 							action.isRunning = false;
 							return 0f;
 						}
-					}
+
+					default:
+						return 0f;
 				}
 			}
 			
@@ -828,11 +834,6 @@ namespace AC
 					action.scale = EditorGUILayout.IntField ("New scale (%):", action.scale);
 				}
 			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
 			
 			#endif
 		}
@@ -845,7 +846,7 @@ namespace AC
 				character.lockScale = true;
 				float _scale = (float) action.scale / 100f;
 				
-				if (character.spriteChild != null)
+				if (character.spriteChild)
 				{
 					character.spriteScale = _scale;
 				}
@@ -1033,7 +1034,7 @@ namespace AC
 
 		public override void OnSetExpression ()
 		{
-			if (character.mapExpressionsToShapeable && character.GetShapeable () != null)
+			if (character.mapExpressionsToShapeable && character.GetShapeable ())
 			{
 				if (character.CurrentExpression != null)
 				{
@@ -1073,7 +1074,7 @@ namespace AC
 
 		public override void AddSaveScript (Action _action, GameObject _gameObject)
 		{
-			if (_gameObject != null && _gameObject.GetComponentInChildren <Animator>())
+			if (_gameObject && _gameObject.GetComponentInChildren <Animator>())
 			{
 				_action.AddSaveScript <RememberAnimator> (_gameObject.GetComponentInChildren <Animator>());
 			}

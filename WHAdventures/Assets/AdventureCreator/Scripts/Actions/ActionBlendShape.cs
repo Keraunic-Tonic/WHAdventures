@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionBlendShape.cs"
  * 
@@ -44,15 +44,11 @@ namespace AC
 		protected Shapeable runtimeShapeObject;
 
 
-		public ActionBlendShape ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Blend shape";
-			description = "Animates a Skinned Mesh Renderer's blend shape by a chosen amount. If the Shapeable script attached to the renderer has grouped multiple shapes into a group, all other shapes in that group will be deactivated.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Blend shape"; }}
+		public override string Description { get { return "Animates a Skinned Mesh Renderer's blend shape by a chosen amount. If the Shapeable script attached to the renderer has grouped multiple shapes into a group, all other shapes in that group will be deactivated."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			runtimeShapeObject = AssignFile <Shapeable> (parameters, parameterID, constantID, shapeObject);
@@ -124,7 +120,7 @@ namespace AC
 			isPlayer = EditorGUILayout.Toggle ("Is player?", isPlayer);
 			if (isPlayer)
 			{
-				if (KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
+				if (KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
 				{
 					playerParameterID = ChooseParameterGUI ("Player ID:", parameters, playerParameterID, ParameterType.Integer);
 					if (playerParameterID < 0)
@@ -149,7 +145,7 @@ namespace AC
 					}
 				}
 
-				if (_player != null && _player.GetShapeable ())
+				if (_player && _player.GetShapeable ())
 				{
 					shapeObject = _player.GetShapeable ();
 				}
@@ -176,7 +172,7 @@ namespace AC
 				}
 			}
 			
-			if (shapeObject != null && shapeObject.shapeGroups != null)
+			if (shapeObject && shapeObject.shapeGroups != null)
 			{
 				shapeGroupID = ActionBlendShape.ShapeableGroupGUI ("Shape group:", shapeObject.shapeGroups, shapeGroupID);
 				disableAllKeys = EditorGUILayout.Toggle ("Disable all keys?", disableAllKeys);
@@ -212,8 +208,6 @@ namespace AC
 				}
 				willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 			}
-			
-			AfterRunningOption ();
 		}
 		
 		
@@ -327,7 +321,7 @@ namespace AC
 			{
 				if (!fromAssetFile)
 				{
-					Player charToUpdate = FindObjectOfType<Player> ();
+					Player charToUpdate = Object.FindObjectOfType<Player> ();
 					if (charToUpdate != null)
 						obToUpdate = charToUpdate.GetShapeable ();
 				}
@@ -351,14 +345,14 @@ namespace AC
 		{
 			if (!isPlayer && parameterID < 0)
 			{
-				if (shapeObject != null && shapeObject.gameObject == _gameObject) return true;
+				if (shapeObject && shapeObject.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
 			if (isPlayer && (KickStarter.settingsManager == null || KickStarter.settingsManager.playerSwitching == PlayerSwitching.DoNotAllow))
 			{
 				if (_gameObject.GetComponent<Char> () && _gameObject.GetComponent<Char> ().IsPlayer) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -385,7 +379,7 @@ namespace AC
 		 */
 		public static ActionBlendShape CreateNew_SetActiveKey (Shapeable shapeable, int groupID, int keyID, float newKeyValue, float transitionTime = 0f, MoveMethod moveMethod = MoveMethod.Linear, AnimationCurve timeCurve = null)
 		{
-			ActionBlendShape newAction = (ActionBlendShape) CreateInstance <ActionBlendShape>();
+			ActionBlendShape newAction = CreateNew<ActionBlendShape> ();
 			newAction.disableAllKeys = false;
 			newAction.shapeObject = shapeable;
 			newAction.shapeGroupID = groupID;
@@ -408,7 +402,7 @@ namespace AC
 		 */
 		public static ActionBlendShape CreateNew_DisableAllKeys (Shapeable shapeable, int groupID, float transitionTime = 0f, MoveMethod moveMethod = MoveMethod.Linear, AnimationCurve timeCurve = null)
 		{
-			ActionBlendShape newAction = (ActionBlendShape) CreateInstance <ActionBlendShape>();
+			ActionBlendShape newAction = CreateNew<ActionBlendShape> ();
 			newAction.disableAllKeys = true;
 			newAction.shapeObject = shapeable;
 			newAction.shapeGroupID = groupID;

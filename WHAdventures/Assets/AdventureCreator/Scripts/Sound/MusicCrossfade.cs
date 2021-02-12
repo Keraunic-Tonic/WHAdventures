@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MusicCrossfade.cs"
  * 
@@ -26,24 +26,14 @@ namespace AC
 		#region Variables
 
 		protected AudioSource _audioSource;
-		protected bool isFadingOut = false;
 		protected float fadeTime = 0f;
 		protected float originalFadeTime = 0f;
 		protected float originalVolume = 0f;
-
-		protected bool isPlaying;
 
 		#endregion
 
 
 		#region PublicFunctions
-
-		public void Init (bool ignoreListenerPause)
-		{
-			_audioSource = GetComponent <AudioSource>();
-			_audioSource.ignoreListenerPause = ignoreListenerPause;
-		}
-
 
 		/**
 		 * Updates the AudioSource's volume.
@@ -51,46 +41,29 @@ namespace AC
 		 */
 		public void _Update ()
 		{
-			if (isFadingOut)
+			float i = fadeTime / originalFadeTime;  // starts as 1, ends as 0
+			_audioSource.volume = originalVolume * i;
+
+			if (Mathf.Approximately (Time.deltaTime, 0f))
 			{
-				float i = fadeTime / originalFadeTime;  // starts as 1, ends as 0
-				_audioSource.volume = originalVolume * i;
+				fadeTime -= Time.fixedDeltaTime;
+			}
+			else
+			{
+				fadeTime -= Time.deltaTime;
+			}
 
-				if (Mathf.Approximately (Time.time, 0f))
-				{
-					fadeTime -= Time.fixedDeltaTime;
-				}
-				else
-				{
-					fadeTime -= Time.deltaTime;
-				}
-
-				if (fadeTime <= 0f)
-				{
-					Stop ();
-				}
+			if (fadeTime <= 0f)
+			{
+				Stop ();
 			}
 		}
 
 
-		/**
-		 * Stops the current audio immediately/
-		 */
+		/** Stops the current audio immediately. */
 		public void Stop ()
 		{
-			isFadingOut = false;
-			_audioSource.Stop ();
-			isPlaying = false;
-		}
-
-
-		/**
-		 * <summary>Checks if the crossfade audio is playing</summary>
-		 * <returns>True if the crossfade audio is playing</returns>
-		 */
-		public bool IsPlaying ()
-		{
-			return isPlaying;
+			Destroy (gameObject);
 		}
 
 
@@ -99,28 +72,36 @@ namespace AC
 		 * <param name = "audioSourceToCopy">The AudioSource to copy clip and volume data from</param>
 		 * <param name = "_fadeTime">The duration, in seconds, of the fade effect</param>
 		 */
-		public void FadeOut (AudioSource audioSourceToCopy, float _fadeTime)
+		public static MusicCrossfade FadeOut (Soundtrack soundtrack, AudioSource audioSourceToCopy, float _fadeTime)
 		{
-			Stop ();
-
-			if (audioSourceToCopy == null || audioSourceToCopy.clip == null || _fadeTime <= 0f)
+			if (soundtrack == null || audioSourceToCopy == null || audioSourceToCopy.clip == null || _fadeTime <= 0f)
 			{
-				return;
+				return null;
 			}
+			GameObject newOb = new GameObject (soundtrack.soundType.ToString () + " crossfade");
+			newOb.transform.parent = soundtrack.transform;
+			newOb.transform.localPosition = Vector3.zero;
 
-			_audioSource.clip = audioSourceToCopy.clip;
-			_audioSource.outputAudioMixerGroup = audioSourceToCopy.outputAudioMixerGroup;
-			_audioSource.volume = audioSourceToCopy.volume;
-			_audioSource.timeSamples = audioSourceToCopy.timeSamples;
-			_audioSource.loop = false;
-			_audioSource.Play ();
-			isPlaying = true;
+			AudioSource newAudioSource = newOb.AddComponent <AudioSource>();
+			newAudioSource.spatialBlend = 0f;
+			newAudioSource.playOnAwake = false;
+			newAudioSource.ignoreListenerPause = soundtrack.playWhilePaused;
 
-			originalFadeTime = _fadeTime;
-			originalVolume = audioSourceToCopy.volume;
-			fadeTime = _fadeTime;
+			MusicCrossfade newCrossfade = newOb.AddComponent <MusicCrossfade>();
+			newCrossfade._audioSource = newAudioSource;
 
-			isFadingOut = true;
+			newAudioSource.clip = audioSourceToCopy.clip;
+			newAudioSource.outputAudioMixerGroup = audioSourceToCopy.outputAudioMixerGroup;
+			newAudioSource.volume = audioSourceToCopy.volume;
+			newAudioSource.timeSamples = audioSourceToCopy.timeSamples;
+			newAudioSource.loop = audioSourceToCopy.loop;
+			newAudioSource.Play ();
+
+			newCrossfade.originalFadeTime = _fadeTime;
+			newCrossfade.originalVolume = audioSourceToCopy.volume;
+			newCrossfade.fadeTime = _fadeTime;
+
+			return newCrossfade;
 		}
 
 		#endregion

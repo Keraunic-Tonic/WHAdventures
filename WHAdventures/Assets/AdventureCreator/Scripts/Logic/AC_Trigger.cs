@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AC_Trigger.cs"
  * 
@@ -44,6 +44,8 @@ namespace AC
 
 		/** If True, and detectionMethod = TriggerDetectionMethod.TransformPosition, then the Trigger will react to the active Player */
 		public bool detectsPlayer = true;
+		/** If True, and detectsPlayer = True, and player-switching is enabled, then inactive Players will be detected too */
+		public bool detectsAllPlayers = false;
 		/** The GameObjects that the Trigger reacts to, if detectionMethod = TriggerDetectionMethod.TransformPosition */
 		public List<GameObject> obsToDetect = new List<GameObject>();
 
@@ -51,7 +53,7 @@ namespace AC
 
 		protected Collider2D _collider2D;
 		protected Collider _collider;
-		protected bool[] lastFrameWithins;
+		protected List<PositionDetectObject> positionDetectObjects = new List<PositionDetectObject>();
 
 		#endregion
 
@@ -60,16 +62,10 @@ namespace AC
 
 		protected void OnEnable ()
 		{
-			if (KickStarter.stateHandler) KickStarter.stateHandler.Register (this);
+			InitTrigger ();
 
-			_collider2D = GetComponent <Collider2D>();
-			_collider = GetComponent <Collider>();
-			lastFrameWithins = (detectsPlayer) ? new bool[obsToDetect.Count + 1] : new bool[obsToDetect.Count];
-
-			if (_collider == null && _collider2D == null)
-			{
-				ACDebug.LogWarning ("Trigger '" + gameObject.name + " cannot detect collisions because it has no Collider!", this);
-			}
+			EventManager.OnPlayerSpawn += OnPlayerSpawn;
+			EventManager.OnPlayerRemove += OnPlayerRemove;
 		}
 
 
@@ -82,6 +78,9 @@ namespace AC
 		protected void OnDisable ()
 		{
 			if (KickStarter.stateHandler) KickStarter.stateHandler.Unregister (this);
+
+			EventManager.OnPlayerSpawn -= OnPlayerSpawn;
+			EventManager.OnPlayerRemove -= OnPlayerRemove;
 		}
 
 
@@ -89,14 +88,9 @@ namespace AC
 		{
 			if (detectionMethod == TriggerDetectionMethod.TransformPosition)
 			{
-				for (int i=0; i<obsToDetect.Count; i++)
+				for (int i=0; i<positionDetectObjects.Count; i++)
 				{
-					ProcessObject (obsToDetect[i], i);
-				}
-
-				if (detectsPlayer && KickStarter.player != null)
-				{
-					ProcessObject (KickStarter.player.gameObject, lastFrameWithins.Length - 1);
+					positionDetectObjects[i].Process (this);
 				}
 			}
 		}
@@ -166,13 +160,13 @@ namespace AC
 		 */
 		public bool IsOn ()
 		{
-			if (GetComponent <Collider>())
+			if (_collider)
 			{
-				return GetComponent <Collider>().enabled;
+				return _collider.enabled;
 			}
-			else if (GetComponent <Collider2D>())
+			else if (_collider2D)
 			{
-				return GetComponent <Collider2D>().enabled;
+				return _collider2D.enabled;
 			}
 			return false;
 		}
@@ -183,13 +177,15 @@ namespace AC
 		 */
 		public void TurnOn ()
 		{
-			if (GetComponent <Collider>())
+			InitTrigger ();
+
+			if (_collider)
 			{
-				GetComponent <Collider>().enabled = true;
+				_collider.enabled = true;
 			}
-			else if (GetComponent <Collider2D>())
+			else if (_collider2D)
 			{
-				GetComponent <Collider2D>().enabled = true;
+				_collider2D.enabled = true;
 			}
 			else
 			{
@@ -203,25 +199,24 @@ namespace AC
 		 */
 		public void TurnOff ()
 		{
-			if (GetComponent <Collider>())
+			InitTrigger ();
+
+			if (_collider)
 			{
-				GetComponent <Collider>().enabled = false;
+				_collider.enabled = false;
 			}
-			else if (GetComponent <Collider2D>())
+			else if (_collider2D)
 			{
-				GetComponent <Collider2D>().enabled = false;
+				_collider2D.enabled = false;
 			}
 			else
 			{
 				ACDebug.LogWarning ("Cannot turn " + this.name + " off because it has no Collider component.", this);
 			}
 
-			if (lastFrameWithins != null)
+			for (int i=0; i<positionDetectObjects.Count; i++)
 			{
-				for (int i=0; i<lastFrameWithins.Length; i++)
-				{
-					lastFrameWithins[i] = false;
-				}
+				positionDetectObjects[i].OnTurnOff ();
 			}
 		}
 		
@@ -245,7 +240,7 @@ namespace AC
 			KickStarter.eventManager.Call_OnRunTrigger (this, collisionOb);
 
 			// Set correct parameter
-			if (collisionOb != null)
+			if (collisionOb)
 			{
 				if (source == ActionListSource.InScene)
 				{
@@ -266,16 +261,10 @@ namespace AC
 						&& assetFile.NumParameters > 0
 						&& gameObjectParameterID >= 0)
 				{
-					ActionParameter param = null;
-					if (syncParamValues)
-					{
-						param = assetFile.GetParameter (gameObjectParameterID);
-					}
-					else
-					{
-						param = GetParameter (gameObjectParameterID);
-					}
-
+					ActionParameter param = (syncParamValues)
+											? assetFile.GetParameter (gameObjectParameterID)
+											: GetParameter (gameObjectParameterID);
+					
 					if (param != null) param.SetValue (collisionOb);
 				}
 			}
@@ -311,7 +300,7 @@ namespace AC
 				return false;
 			}
 
-			if (KickStarter.stateHandler != null && KickStarter.stateHandler.AreTriggersDisabled ())
+			if (KickStarter.stateHandler && KickStarter.stateHandler.AreTriggersDisabled ())
 			{
 				return false;
 			}
@@ -324,14 +313,14 @@ namespace AC
 			switch (detects)
 			{
 				case TriggerDetects.Player:
-					if (KickStarter.player != null && obToCheck == KickStarter.player.gameObject)
+					if (KickStarter.player && obToCheck == KickStarter.player.gameObject)
 					{
 						return true;
 					}
 					break;
 
 				case TriggerDetects.SetObject:
-					if (obToDetect != null && obToCheck == obToDetect)
+					if (obToDetect && obToCheck == obToDetect)
 					{
 						return true;
 					}
@@ -376,61 +365,9 @@ namespace AC
 		}
 
 
-		protected void ProcessObject (GameObject objectToCheck, int i)
-		{
-			if (objectToCheck != null)
-			{
-				bool isInside = CheckForPoint (objectToCheck.transform.position);
-				if (DetermineValidity (isInside, i))
-				{
-					if (IsObjectCorrect (objectToCheck))
-					{
-						Interact (objectToCheck);
-					}
-				}
-			}
-		}
-
-
-		protected bool DetermineValidity (bool thisFrameWithin, int i)
-		{
-			bool isValid = false;
-
-			switch (triggerType)
-			{
-				case 0:
-					// OnEnter
-					if (thisFrameWithin && !lastFrameWithins[i])
-					{
-						isValid = true;
-					}
-					break;
-
-				case 1:
-					// Continuous
-					isValid = thisFrameWithin;
-					break;
-
-				case 2:
-					// OnExit
-					if (!thisFrameWithin && lastFrameWithins[i])
-					{
-						isValid = true;
-					}
-					break;
-
-				default:
-					break;
-			}
-
-			lastFrameWithins[i] = thisFrameWithin;
-			return isValid;
-		}
-
-
 		protected bool CheckForPoint (Vector3 position)
 		{
-			if (_collider2D != null)
+			if (_collider2D)
 			{
 				if (_collider2D.enabled)
 				{
@@ -439,12 +376,86 @@ namespace AC
 				return false;
 			}
 
-			if (_collider != null && _collider.enabled)
+			if (_collider && _collider.enabled)
 			{
 				return _collider.bounds.Contains (position);
 			}
 
 			return false;
+		}
+
+
+		protected void OnPlayerSpawn (Player player)
+		{
+			if (detectionMethod == TriggerDetectionMethod.TransformPosition && detectsPlayer && detectsAllPlayers)
+			{
+				foreach (PositionDetectObject positionDetectObject in positionDetectObjects)
+				{
+					if (positionDetectObject.IsForObject (player.gameObject))
+					{
+						return;
+					}
+				}
+
+				positionDetectObjects.Add (new PositionDetectObject (player));
+			}
+		}
+
+
+		protected void OnPlayerRemove (Player player)
+		{
+			if (detectionMethod == TriggerDetectionMethod.TransformPosition && detectsPlayer && detectsAllPlayers)
+			{
+				for (int i=0; i<positionDetectObjects.Count; i++)
+				{
+					if (positionDetectObjects[i].IsForObject (player.gameObject))
+					{
+						positionDetectObjects.RemoveAt (i);
+					}
+				}
+			}
+		}
+
+
+		protected void InitTrigger ()
+		{
+			if (KickStarter.stateHandler) KickStarter.stateHandler.Register (this);
+
+			_collider2D = GetComponent <Collider2D>();
+			_collider = GetComponent <Collider>();
+
+			if (detectionMethod == TriggerDetectionMethod.TransformPosition)
+			{
+				positionDetectObjects.Clear ();
+				foreach (GameObject obToDetect in obsToDetect)
+				{
+					if (obToDetect != null)
+					{
+						positionDetectObjects.Add (new PositionDetectObject (obToDetect));
+					}
+				}
+
+				if (detectsPlayer)
+				{
+					if (KickStarter.settingsManager == null || KickStarter.settingsManager.playerSwitching == PlayerSwitching.DoNotAllow || !detectsAllPlayers)
+					{
+						positionDetectObjects.Add (new PositionDetectObject (-1));
+					}
+					else if (detectsAllPlayers && KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
+					{
+						Player[] players = FindObjectsOfType<Player>();
+						foreach (Player player in players)
+						{
+							positionDetectObjects.Add (new PositionDetectObject (player));
+						}
+					}
+				}
+			}
+
+			if (_collider == null && _collider2D == null)
+			{
+				ACDebug.LogWarning ("Trigger '" + gameObject.name + " cannot detect collisions because it has no Collider!", this);
+			}
 		}
 
 		#endregion
@@ -454,7 +465,7 @@ namespace AC
 		
 		protected void OnDrawGizmos ()
 		{
-			if (KickStarter.sceneSettings != null && KickStarter.sceneSettings.visibilityTriggers && UnityEditor.Selection.activeGameObject != gameObject)
+			if (KickStarter.sceneSettings && KickStarter.sceneSettings.visibilityTriggers && UnityEditor.Selection.activeGameObject != gameObject)
 			{
 				DrawGizmos ();
 			}
@@ -493,14 +504,14 @@ namespace AC
 					else
 					{
 						CapsuleCollider capsuleCollider = GetComponent <CapsuleCollider>();
-						if (capsuleCollider != null)
+						if (capsuleCollider)
 						{
 							AdvGame.DrawCapsule (transform, capsuleCollider.center, capsuleCollider.radius, capsuleCollider.height, gizmoColor);
 						}
 						else
 						{
 							CharacterController characterController = GetComponent <CharacterController>();
-							if (characterController != null)
+							if (characterController)
 							{
 								AdvGame.DrawCapsule (transform, characterController.center, characterController.radius, characterController.height, gizmoColor);
 							}
@@ -518,6 +529,106 @@ namespace AC
 		}
 
 		#endif
+
+
+		#region PrivateStructs
+
+		protected class PositionDetectObject
+		{
+
+			private GameObject obToDetect;
+			private bool lastFrameWithin;
+			private int playerID;
+			
+
+			public PositionDetectObject (GameObject _obToDetect)
+			{
+				obToDetect = _obToDetect;
+				lastFrameWithin = false;
+				playerID = -2;
+			}
+
+
+			public PositionDetectObject (Player _player)
+			{
+				obToDetect = _player.gameObject;
+				lastFrameWithin = false;
+				playerID = _player.ID;
+			}
+
+
+			public PositionDetectObject (int _playerID)
+			{
+				obToDetect = null;
+				lastFrameWithin = false;
+				playerID = _playerID;
+			}
+
+
+			public void OnTurnOff ()
+			{
+				lastFrameWithin = false;
+			}
+
+
+			public bool IsForObject (GameObject gameObject)
+			{ 
+				return (obToDetect == gameObject);
+			}
+
+
+			public void Process (AC_Trigger trigger)
+			{
+				if (playerID == -1 && KickStarter.player)
+				{
+					obToDetect = KickStarter.player.gameObject;
+				}
+				if (obToDetect)
+				{
+					bool isInside = trigger.CheckForPoint (obToDetect.transform.position);
+					if (DetermineValidity (isInside, trigger.triggerType))
+					{
+						if (trigger.IsObjectCorrect (obToDetect))
+						{
+							trigger.Interact (obToDetect);
+						}
+					}
+					lastFrameWithin = isInside;
+				}
+			}
+
+
+			private bool DetermineValidity (bool thisFrameWithin, int triggerType)
+			{
+				switch (triggerType)
+				{
+					case 0:
+						// OnEnter
+						if (thisFrameWithin && !lastFrameWithin)
+						{
+							return true;
+						}
+						return false;
+
+					case 1:
+						// Continuous
+						return thisFrameWithin;
+
+					case 2:
+						// OnExit
+						if (!thisFrameWithin && lastFrameWithin)
+						{
+							return true;
+						}
+						return false;
+
+					default:
+						return false;
+				}
+			}
+		}
+
+		#endregion
 
 	}
 	

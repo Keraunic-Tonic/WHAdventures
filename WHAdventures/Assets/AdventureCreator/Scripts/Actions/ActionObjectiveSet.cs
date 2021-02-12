@@ -1,8 +1,6 @@
-﻿using UnityEngine;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEditor;
 #endif
-using System.Collections.Generic;
 
 namespace AC
 {
@@ -18,15 +16,11 @@ namespace AC
 		public bool setPlayer;
 		
 
-		public ActionObjectiveSet ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Objective;
-			title = "Set state";
-			description = "Updates an objective's current state.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Objective; }}
+		public override string Title { get { return "Set state"; }}
+		public override string Description { get { return "Updates an objective's current state."; }}
+
+
 		public override float Run ()
 		{
 			if (KickStarter.inventoryManager.ObjectiveIsPerPlayer (objectiveID) && setPlayer)
@@ -54,7 +48,6 @@ namespace AC
 		{
 			if (KickStarter.inventoryManager == null)
 			{
-				numSockets = 0;
 				EditorGUILayout.HelpBox ("An Inventory Manager must be defined to use this Action", MessageType.Warning);
 				return;
 			}
@@ -83,8 +76,6 @@ namespace AC
 					selectAfter = EditorGUILayout.Toggle ("Select after?", selectAfter);
 				}
 			}
-
-			AfterRunningOption ();
 		}
 		
 
@@ -96,6 +87,12 @@ namespace AC
 				return objective.Title;
 			}			
 			return string.Empty;
+		}
+
+
+		public override int GetObjectiveReferences (int _objectiveID)
+		{
+			return (objectiveID == _objectiveID) ? 1 : 0;
 		}
 
 		#endif

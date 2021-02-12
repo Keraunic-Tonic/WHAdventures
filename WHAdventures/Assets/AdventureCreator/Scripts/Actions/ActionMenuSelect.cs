@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMenuSelect.cs"
  * 
@@ -34,13 +34,9 @@ namespace AC
 		public bool selectFirstVisible = false;
 
 
-		public ActionMenuSelect ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Menu;
-			title = "Select element";
-			description = "Selects an element within an enabled menu.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Menu; }}
+		public override string Title { get { return "Select element"; }}
+		public override string Description { get { return "Selects an element within an enabled menu."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -106,8 +102,6 @@ namespace AC
 					slotIndex = EditorGUILayout.IntField ("Slot index (optional):", slotIndex);
 				}
 			}
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -118,6 +112,25 @@ namespace AC
 				return menuName + " - " + elementName;
 			}
 			return string.Empty;
+		}
+
+
+		public override int GetMenuReferences (string _menuName, string _elementName = "")
+		{
+			if (menuNameParameterID < 0 && menuName == _menuName)
+			{
+				if (string.IsNullOrEmpty (elementName))
+				{
+					return 1;
+				}
+
+				if (elementNameParameterID < 0 && _elementName == elementName)
+				{
+					return 1;
+				}
+			}
+
+			return 0;
 		}
 
 		#endif
@@ -132,7 +145,7 @@ namespace AC
 		 */
 		public static ActionMenuSelect CreateNew (string menuName, string elementName = "", int slotIndex = 0)
 		{
-			ActionMenuSelect newAction = (ActionMenuSelect) CreateInstance <ActionMenuSelect>();
+			ActionMenuSelect newAction = CreateNew<ActionMenuSelect> ();
 			newAction.menuName = menuName;
 			newAction.elementName = elementName;
 			newAction.selectFirstVisible = string.IsNullOrEmpty (elementName);

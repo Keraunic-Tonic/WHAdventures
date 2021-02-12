@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SpeechPlayableTrack.cs"
  * 
@@ -73,7 +73,7 @@ namespace AC
 				{
 					if (isPlayerLine)
 					{
-						if (KickStarter.settingsManager != null)
+						if (KickStarter.settingsManager)
 						{
 							if (KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow && playerID >= 0)
 							{
@@ -114,7 +114,7 @@ namespace AC
 			isPlayerLine = CustomGUILayout.Toggle ("Player line?", isPlayerLine, "", "If True, the line is spoken by the active Player");
 			if (isPlayerLine)
 			{
-				if (KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
+				if (KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
 				{
 					playerID = ChoosePlayerGUI (playerID);
 				}
@@ -144,14 +144,14 @@ namespace AC
 					}
 					else
 					{
-						EditorGUILayout.BeginVertical ("Button");
+						CustomGUILayout.BeginVertical ();
 						EditorGUILayout.LabelField ("Recorded ConstantID: " + speakerConstantID.ToString (), EditorStyles.miniLabel);
-						EditorGUILayout.EndVertical ();
+						CustomGUILayout.EndVertical ();
 					}
 				}
 			}
 
-			playbackMode = (SpeechTrackPlaybackMode) EditorGUILayout.EnumPopup ("Playback mode:", playbackMode);
+			playbackMode = (SpeechTrackPlaybackMode) CustomGUILayout.EnumPopup ("Playback mode:", playbackMode);
 
 			if (playbackMode == SpeechTrackPlaybackMode.Natural)
 			{
@@ -206,7 +206,7 @@ namespace AC
 				}
 			}
 
-			playerNumber = EditorGUILayout.Popup ("Player:", playerNumber, labelList.ToArray ());
+			playerNumber = CustomGUILayout.Popup ("Player:", playerNumber, labelList.ToArray ());
 
 			if (playerNumber > 0)
 			{
@@ -307,29 +307,29 @@ namespace AC
 		public string GetOwner (int index)
 		{
 			bool _isPlayer = isPlayerLine;
-			if (!_isPlayer && SpeakerPrefab != null && SpeakerPrefab.IsPlayer)
+			if (!_isPlayer && SpeakerPrefab && SpeakerPrefab.IsPlayer)
 			{
 				_isPlayer = true;
 			}
 
 			if (_isPlayer)
 			{
-				if (isPlayerLine && KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
+				if (isPlayerLine && KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
 				{
 					if (playerID >= 0)
 					{
 						PlayerPrefab playerPrefab = KickStarter.settingsManager.GetPlayerPrefab (playerID);
-						if (playerPrefab != null && playerPrefab.playerOb != null)
+						if (playerPrefab != null && playerPrefab.playerOb)
 						{
 							return playerPrefab.playerOb.name;
 						}
 					}
 				}
-				else if (isPlayerLine && KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.DoNotAllow && KickStarter.settingsManager.player)
+				else if (isPlayerLine && KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.DoNotAllow && KickStarter.settingsManager.player)
 				{
 					return KickStarter.settingsManager.player.name;
 				}
-				else if (!isPlayerLine && SpeakerPrefab != null)
+				else if (!isPlayerLine && SpeakerPrefab)
 				{
 					return SpeakerPrefab.name;
 				}
@@ -354,14 +354,14 @@ namespace AC
 		{
 			if (isPlayerLine)
 			{
-				if (KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow && playerID >= 0)
+				if (KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow && playerID >= 0)
 				{
 					return false;
 				}
 				return true;
 			}
 
-			if (SpeakerPrefab != null && SpeakerPrefab.IsPlayer)
+			if (SpeakerPrefab && SpeakerPrefab.IsPlayer)
 			{
 				return true;
 			}
@@ -412,7 +412,7 @@ namespace AC
 		{
 			get
 			{
-				if (speakerObject != null)
+				if (speakerObject)
 				{
 					return speakerObject.GetComponent <Char>();
 				}

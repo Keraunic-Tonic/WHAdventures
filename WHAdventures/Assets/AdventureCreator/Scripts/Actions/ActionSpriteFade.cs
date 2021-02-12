@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionSpriteFade.cs"
  * 
@@ -32,13 +32,9 @@ namespace AC
 		public float fadeSpeed;
 
 
-		public ActionSpriteFade ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Fade sprite";
-			description = "Fades a sprite in or out.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Fade sprite"; }}
+		public override string Description { get { return "Fades a sprite in or out."; }}
 		
 		
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -105,8 +101,6 @@ namespace AC
 			
 			fadeSpeed = EditorGUILayout.Slider ("Time to fade:", fadeSpeed, 0f, 10f);
 			willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
-
-			AfterRunningOption ();
 		}
 
 
@@ -135,9 +129,9 @@ namespace AC
 			if (parameterID < 0)
 			{
 				if (spriteFader != null && spriteFader.gameObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 		
 		#endif
@@ -153,7 +147,7 @@ namespace AC
 		 */
 		public static ActionSpriteFade CreateNew (SpriteFader spriteFaderToAffect, FadeType fadeType, float transitionTime = 1f, bool waitUntilFinish = false)
 		{
-			ActionSpriteFade newAction = (ActionSpriteFade) CreateInstance <ActionSpriteFade>();
+			ActionSpriteFade newAction = CreateNew<ActionSpriteFade> ();
 			newAction.spriteFader = spriteFaderToAffect;
 			newAction.fadeType = fadeType;
 			newAction.fadeSpeed = transitionTime;

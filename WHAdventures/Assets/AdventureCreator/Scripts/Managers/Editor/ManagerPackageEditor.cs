@@ -15,7 +15,7 @@ namespace AC
 		{
 			ManagerPackage _target = (ManagerPackage) target;
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 				EditorGUILayout.LabelField ("Manager asset files", EditorStyles.boldLabel);
 				_target.sceneManager = (SceneManager) EditorGUILayout.ObjectField ("Scene manager:", _target.sceneManager, typeof (SceneManager), false);
 				_target.settingsManager = (SettingsManager) EditorGUILayout.ObjectField ("Settings manager:", _target.settingsManager, typeof (SettingsManager), false);
@@ -25,7 +25,7 @@ namespace AC
 				_target.speechManager = (SpeechManager) EditorGUILayout.ObjectField ("Speech manager:", _target.speechManager, typeof (SpeechManager), false);
 				_target.cursorManager = (CursorManager) EditorGUILayout.ObjectField ("Cursor manager:", _target.cursorManager, typeof (CursorManager), false);
 				_target.menuManager = (MenuManager) EditorGUILayout.ObjectField ("Menu manager:", _target.menuManager, typeof (MenuManager), false);
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 

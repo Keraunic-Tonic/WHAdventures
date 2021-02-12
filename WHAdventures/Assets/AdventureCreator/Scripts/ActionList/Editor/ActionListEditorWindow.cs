@@ -25,7 +25,6 @@ namespace AC
 		private const float zoomMax = 1f;
 		
 		private Action actionChanging = null;
-		private bool resultType;
 		private int multipleResultType;
 		private int offsetChanging = 0;
 		private int numActions = 0;
@@ -54,7 +53,7 @@ namespace AC
 		private const float propertiesBoxWidth = 360f;
 		private const float scrollbarSelectedSizeFactor = 2.5f;
 
-
+		
 		[MenuItem ("Adventure Creator/Editors/ActionList Editor", false, 1)]
 		private static void Init ()
 		{
@@ -84,7 +83,7 @@ namespace AC
 
 		private static ActionListEditorWindow CreateWindow ()
 		{
-			if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().actionsManager != null && AdvGame.GetReferences ().actionsManager.allowMultipleActionListWindows == false)
+			if (AdvGame.GetReferences () != null && AdvGame.GetReferences ().actionsManager && AdvGame.GetReferences ().actionsManager.allowMultipleActionListWindows == false)
 			{
 				return (ActionListEditorWindow) EditorWindow.GetWindow (typeof (ActionListEditorWindow));
 			}
@@ -1135,7 +1134,7 @@ namespace AC
 				PerformEmptyCallBack ("Copy selected");
 			}
 
-			if (!noList && AdvGame.copiedActions != null && AdvGame.copiedActions.Count > 0)
+			if (!noList && JsonAction.HasCopyBuffer ())
 			{
 				GUI.enabled = true;
 			}
@@ -1213,6 +1212,8 @@ namespace AC
 				return;
 			}
 			
+			if (i >= Actions.Count) return;
+
 			bool isAsset = false;
 			Action _action = Actions[i];
 			List<ActionParameter> parameters = null;
@@ -1254,6 +1255,8 @@ namespace AC
 			}
 			else
 			{
+				GUI.enabled = _action.isEnabled;
+
 				int typeIndex = KickStarter.actionsManager.GetActionTypeIndex (_action);
 				int newTypeIndex = ActionListEditor.ShowTypePopup (_action, typeIndex);
 				
@@ -1263,11 +1266,7 @@ namespace AC
 					Vector2 currentPosition = new Vector2 (_action.NodeRect.x, _action.NodeRect.y);
 					
 					// Store "After running data" to transfer over
-					ActionEnd _end = new ActionEnd ();
-					_end.resultAction = _action.endAction;
-					_end.skipAction = _action.skipAction;
-					_end.linkedAsset = _action.linkedAsset;
-					_end.linkedCutscene = _action.linkedCutscene;
+					ActionEnd _end = _action.endings.Count > 0 ? new ActionEnd (_action.endings[0]) : null;
 					
 					if (isAsset)
 					{
@@ -1290,16 +1289,15 @@ namespace AC
 				}
 
 				_action.ShowGUI (parameters);
+
+				GUI.enabled = true;
 			}
 			
-			if (_action.endAction == ResultAction.Skip || _action.numSockets == 2 || _action is ActionCheckMultiple || _action is ActionParallel)
-			{
-				_action.SkipActionGUI (Actions, true);
-			}
-
+			_action.SkipActionGUI (Actions, true);
+			
 			_action.isDisplayed = EditorGUI.Foldout (new Rect (10,1,20,16), _action.isDisplayed, string.Empty);
 			
-			if (GUI.Button (new Rect(273,3,16,16), " ", CustomStyles.IconCogNode))
+			if (GUI.Button (new Rect (_action.NodeRect.width - 27, 3, 16, 16), " ", CustomStyles.IconCogNode))
 			{
 				CreateNodeMenu (i, _action);
 			}
@@ -1316,12 +1314,9 @@ namespace AC
 			Action _action = Actions[i];
 			bool isAsset = (windowData.targetAsset != null);
 
-			if (_action.endAction == ResultAction.Skip || _action.numSockets == 2 || _action is ActionCheckMultiple || _action is ActionParallel)
-			{
-				_action.SkipActionGUI (Actions, !isAsset);
-			}
+			_action.SkipActionGUI (Actions, !isAsset);
 			
-			_action.isDisplayed = EditorGUI.Foldout (new Rect (10,1,20,16), _action.isDisplayed, "");
+			_action.isDisplayed = EditorGUI.Foldout (new Rect (10, 1, 20, 16), _action.isDisplayed, string.Empty);
 
 			if (_action.showComment)
 			{
@@ -1332,7 +1327,7 @@ namespace AC
 				GUI.color = _color;
 			}
 
-			if (GUI.Button (new Rect(273,3,16,16), " ", CustomStyles.IconCogNode))
+			if (GUI.Button (new Rect (_action.NodeRect.width - 27, 3, 16, 16), " ", CustomStyles.IconCogNode))
 			{
 				CreateNodeMenu (i, _action);
 			}
@@ -1514,12 +1509,23 @@ namespace AC
 
 					_action.AssignParentList (windowData.target);
 
-					if (_action.NodeRect.width == 0)
+					if (_action.NodeRect.width == 0 || _action.NodeRect.width != ACEditorPrefs.ActionNodeWidth)
 					{
-						_action.NodeRect = new Rect (_action.NodeRect.position, new Vector2 (300, _action.NodeRect.height));
+						_action.NodeRect = new Rect (_action.NodeRect.position, new Vector2 (ACEditorPrefs.ActionNodeWidth, _action.NodeRect.height));
 					}
 
 					string label = "(" + i + ") " + actionsManager.GetActionTypeLabel (_action, false);
+
+					if (!isAsset && windowData.target && windowData.target.ActionModified (i))
+					{
+						Rect modifiedRect = new Rect (_action.NodeRect.x - 10f, _action.NodeRect.y, 3, _action.NodeRect.height);
+						modifiedRect.position -= ScrollPosition;
+						Color color = GUI.color;
+						GUI.color = Color.cyan;
+						GUI.Box (modifiedRect, string.Empty, CustomStyles.ToolbarInverted);
+						GUI.color = color;
+					}
+
 					if (!_action.isDisplayed)
 					{
 						_action.NodeRect = new Rect (_action.NodeRect.position, new Vector2 (_action.NodeRect.size.x, 21f));
@@ -1622,7 +1628,7 @@ namespace AC
 
 			if (dragMode == DragMode.Wire)
 			{	
-				bool onSide = (actionChanging is ActionCheck || actionChanging is ActionCheckMultiple || actionChanging is ActionParallel);
+				bool onSide = (actionChanging.NumSockets > 1);
 				AdvGame.DrawNodeCurve (new Rect (actionChanging.NodeRect.position - ScrollPosition, actionChanging.NodeRect.size), e.mousePosition, Color.black, offsetChanging, onSide, false, actionChanging.isDisplayed);
 			}
 
@@ -1630,7 +1636,20 @@ namespace AC
 			if (e.type == EventType.ContextClick && dragMode == DragMode.None)
 			{
 				menuPosition = e.mousePosition + ScrollPosition;
-				CreateEmptyMenu (isAsset);
+
+				bool clickedInsideAction = false;
+				for (int i=0; i<Actions.Count; i++)
+				{
+					if (Actions[i] != null && Actions[i].NodeRect.Contains (menuPosition))
+					{
+						clickedInsideAction = true;
+					}
+				}
+
+				if (!clickedInsideAction)
+				{
+					CreateEmptyMenu (isAsset);
+				}
 			}
 
 			EndWindows ();
@@ -1644,7 +1663,7 @@ namespace AC
 			{
 				foreach (Action action in Actions)
 				{
-					if (action)
+					if (action != null)
 					{
 						action.isMarked = state;
 					}
@@ -1684,7 +1703,18 @@ namespace AC
 			UnmarkAll ();
 			
 			actionList [i+1].NodeRect = new Rect (new Vector2 (_position.x - 150, _position.y), actionList [i+1].NodeRect.size);
-			actionList [i+1].endAction = ResultAction.Stop;
+
+			if (actionList[i+1].NumSockets == 1)
+			{
+				if (actionList[i+1].endings.Count == 0)
+				{
+					actionList[i+1].endings.Add (Action.GenerateStopActionEnd ());
+				}
+				else
+				{
+					actionList [i+1].endings[0] = Action.GenerateStopActionEnd ();
+				}
+			}
 			actionList [i+1].isDisplayed = true;
 			
 			return actionList [i+1];
@@ -1705,64 +1735,14 @@ namespace AC
 
 			if (actionList[i] == null) return;
 			
-			if (actionList[i].numSockets == 0)
+			actionList[i].Upgrade ();
+			foreach (ActionEnd ending in actionList[i].endings)
 			{
-				actionList[i].endAction = ResultAction.Stop;
-			}
-			
-			else if (actionList[i] is ActionCheck)
-			{
-				ActionCheck tempAction = (ActionCheck) actionList[i];
-				if (tempAction.resultActionTrue == ResultAction.Skip && !actionList.Contains (tempAction.skipActionTrueActual))
+				if (ending.resultAction == ResultAction.Skip && !actionList.Contains (ending.skipActionActual))
 				{
-					if (tempAction.skipActionTrue >= actionList.Count)
+					if (ending.skipAction >= actionList.Count)
 					{
-						tempAction.resultActionTrue = ResultAction.Stop;
-					}
-				}
-				if (tempAction.resultActionFail == ResultAction.Skip && !actionList.Contains (tempAction.skipActionFailActual))
-				{
-					if (tempAction.skipActionFail >= actionList.Count)
-					{
-						tempAction.resultActionFail = ResultAction.Stop;
-					}
-				}
-			}
-			else if (actionList[i] is ActionCheckMultiple)
-			{
-				ActionCheckMultiple tempAction = (ActionCheckMultiple) actionList[i];
-				foreach (ActionEnd ending in tempAction.endings)
-				{
-					if (ending.resultAction == ResultAction.Skip && !actionList.Contains (ending.skipActionActual))
-					{
-						if (ending.skipAction >= actionList.Count)
-						{
-							ending.resultAction = ResultAction.Stop;
-						}
-					}
-				}
-			}
-			else if (actionList[i] is ActionParallel)
-			{
-				ActionParallel tempAction = (ActionParallel) actionList[i];
-				foreach (ActionEnd ending in tempAction.endings)
-				{
-					if (ending.resultAction == ResultAction.Skip && !actionList.Contains (ending.skipActionActual))
-					{
-						if (ending.skipAction >= actionList.Count)
-						{
-							ending.resultAction = ResultAction.Stop;
-						}
-					}
-				}
-			}
-			else
-			{
-				if (actionList[i].endAction == ResultAction.Skip && !actionList.Contains (actionList[i].skipActionActual))
-				{
-					if (actionList[i].skipAction >= actionList.Count)
-					{
-						actionList[i].endAction = ResultAction.Stop;
+						ending.resultAction = ResultAction.Stop;
 					}
 				}
 			}
@@ -1774,142 +1754,30 @@ namespace AC
 			List<Action> actionList = (isAsset) ? windowData.targetAsset.actions : windowData.target.actions;
 
 			dragMode = DragMode.None;
-			
-			if (action1 is ActionCheck)
+
+			ActionEnd ending = action1.endings[multipleResultType];
+
+			if (actionList.IndexOf (action1) == actionList.Count - 1 && ending.resultAction != ResultAction.Skip)
 			{
-				ActionCheck tempAction = (ActionCheck) action1;
-				if (resultType)
-				{
-					if (actionList.IndexOf (action1) == actionList.Count - 1 && tempAction.resultActionTrue != ResultAction.Skip)
-					{
-						InsertAction (actionList.IndexOf (action1), mousePosition, isAsset);
-						tempAction.resultActionTrue = ResultAction.Continue;
+				InsertAction (actionList.IndexOf (action1), mousePosition, isAsset);
+				ending.resultAction = ResultAction.Continue;
 
-						if (tempAction.resultActionFail == ResultAction.Continue)
-						{
-							tempAction.resultActionFail = ResultAction.Stop;
-						}
-					}
-					else if (tempAction.resultActionTrue == ResultAction.Stop)
-					{
-						tempAction.resultActionTrue = ResultAction.Skip;
-						tempAction.skipActionTrueActual = InsertAction (actionList.Count-1, mousePosition, isAsset);
-					}
-					else
-					{
-						tempAction.resultActionTrue = ResultAction.Stop;
-					}
-				}
-				else
+				foreach (ActionEnd otherEnding in action1.endings)
 				{
-					if (actionList.IndexOf (action1) == actionList.Count - 1 && tempAction.resultActionFail != ResultAction.Skip)
+					if (otherEnding != ending && otherEnding.resultAction == ResultAction.Continue)
 					{
-						InsertAction (actionList.IndexOf (action1), mousePosition, isAsset);
-						tempAction.resultActionFail = ResultAction.Continue;
-
-						if (tempAction.resultActionTrue == ResultAction.Continue)
-						{
-							tempAction.resultActionTrue = ResultAction.Stop;
-						}
-					}
-					else if (tempAction.resultActionFail == ResultAction.Stop)
-					{
-						tempAction.resultActionFail = ResultAction.Skip;
-						tempAction.skipActionFailActual = InsertAction (actionList.Count-1, mousePosition, isAsset);
-					}
-					else
-					{
-						tempAction.resultActionFail = ResultAction.Stop;
+						otherEnding.resultAction = ResultAction.Stop;
 					}
 				}
 			}
-			else if (action1 is ActionCheckMultiple)
+			else if (ending.resultAction == ResultAction.Stop)
 			{
-				ActionCheckMultiple tempAction = (ActionCheckMultiple) action1;
-				ActionEnd ending = tempAction.endings [multipleResultType];
-				
-				if (actionList.IndexOf (action1) == actionList.Count - 1 && ending.resultAction != ResultAction.Skip)
-				{
-					InsertAction (actionList.IndexOf (action1), mousePosition, isAsset);
-					ending.resultAction = ResultAction.Continue;
-
-					foreach (ActionEnd otherEnding in tempAction.endings)
-					{
-						if (otherEnding != ending && otherEnding.resultAction == ResultAction.Continue)
-						{
-							otherEnding.resultAction = ResultAction.Stop;
-						}
-					}
-				}
-				else if (ending.resultAction == ResultAction.Stop)
-				{
-					ending.resultAction = ResultAction.Skip;
-					ending.skipActionActual = InsertAction (actionList.Count-1, mousePosition, isAsset);
-				}
-				else
-				{
-					ending.resultAction = ResultAction.Stop;
-				}
-			}
-			else if (action1 is ActionParallel)
-			{
-				ActionParallel tempAction = (ActionParallel) action1;
-				ActionEnd ending = tempAction.endings [multipleResultType];
-				
-				if (actionList.IndexOf (action1) == actionList.Count - 1 && ending.resultAction != ResultAction.Skip)
-				{
-					InsertAction (actionList.IndexOf (action1), mousePosition, isAsset);
-					ending.resultAction = ResultAction.Continue;
-
-					foreach (ActionEnd otherEnding in tempAction.endings)
-					{
-						if (otherEnding != ending && otherEnding.resultAction == ResultAction.Continue)
-						{
-							otherEnding.resultAction = ResultAction.Stop;
-						}
-					}
-				}
-				else if (ending.resultAction == ResultAction.Stop)
-				{
-					ending.resultAction = ResultAction.Skip;
-					ending.skipActionActual = InsertAction (actionList.Count-1, mousePosition, isAsset);
-				}
-				else
-				{
-					ending.resultAction = ResultAction.Stop;
-				}
+				ending.resultAction = ResultAction.Skip;
+				ending.skipActionActual = InsertAction (actionList.Count - 1, mousePosition, isAsset);
 			}
 			else
 			{
-				if (actionList.IndexOf (action1) == actionList.Count - 1 && action1.endAction != ResultAction.Skip)
-				{
-					InsertAction (actionList.IndexOf (action1), mousePosition, isAsset);
-					action1.endAction = ResultAction.Continue;
-				}
-				else if (action1.endAction == ResultAction.Stop)
-				{
-					// Remove bad "end" connection
-					float x = mousePosition.x;
-					foreach (AC.Action action in actionList)
-					{
-						if (action.NodeRect.x > x && !(action is ActionCheck) && !(action is ActionCheckMultiple || action is ActionParallel) && action.endAction == ResultAction.Continue)
-						{
-							// Is this the "last" one?
-							int i = actionList.IndexOf (action);
-							if (actionList.Count == (i+1))
-							{
-								action.endAction = ResultAction.Stop;
-							}
-						}
-					}
-					
-					action1.endAction = ResultAction.Skip;
-					action1.skipActionActual = InsertAction (actionList.Count-1, mousePosition, isAsset);
-				}
-				else
-				{
-					action1.endAction = ResultAction.Stop;
-				}
+				ending.resultAction = ResultAction.Stop;
 			}
 
 			actionChanging = null;
@@ -1929,57 +1797,15 @@ namespace AC
 		private void Reconnect (Action action1, Action action2, bool isAsset)
 		{
 			dragMode = DragMode.None;
-			
-			if (action1 is ActionCheck)
+
+			ActionEnd ending = action1.endings[multipleResultType];
+
+			ending.resultAction = ResultAction.Skip;
+			if (action2 != null)
 			{
-				ActionCheck actionCheck = (ActionCheck) action1;
-				
-				if (resultType)
-				{
-					actionCheck.resultActionTrue = ResultAction.Skip;
-					if (action2 != null)
-					{
-						actionCheck.skipActionTrueActual = action2;
-					}
-				}
-				else
-				{
-					actionCheck.resultActionFail = ResultAction.Skip;
-					if (action2 != null)
-					{
-						actionCheck.skipActionFailActual = action2;
-					}
-				}
+				ending.skipActionActual = action2;
 			}
-			else if (action1 is ActionCheckMultiple)
-			{
-				ActionCheckMultiple actionCheckMultiple = (ActionCheckMultiple) action1;
-				
-				ActionEnd ending = actionCheckMultiple.endings [multipleResultType];
-				
-				ending.resultAction = ResultAction.Skip;
-				if (action2 != null)
-				{
-					ending.skipActionActual = action2;
-				}
-			}
-			else if (action1 is ActionParallel)
-			{
-				ActionParallel actionParallel = (ActionParallel) action1;
-				ActionEnd ending = actionParallel.endings [multipleResultType];
-				
-				ending.resultAction = ResultAction.Skip;
-				if (action2 != null)
-				{
-					ending.skipActionActual = action2;
-				}
-			}
-			else
-			{
-				action1.endAction = ResultAction.Skip;
-				action1.skipActionActual = action2;
-			}
-			
+
 			actionChanging = null;
 			offsetChanging = 0;
 			
@@ -2010,236 +1836,76 @@ namespace AC
 			
 			int i = actionList.IndexOf (action);
 			
-			if (action.numSockets == 0)
+			if (action.NumSockets == 0)
 			{
 				return;
 			}
 			
-			if (!action.isDisplayed && (action is ActionCheck || action is ActionCheckMultiple || action is ActionParallel))
+			if (!action.isDisplayed && action.NumSockets > 1)
 			{
 				action.DrawOutWires (actionList, i, 0, scrollPosition);
 				return;
 			}
 			
 			int offset = 0;
-			
-			if (action is ActionCheck)
+
+			int totalHeight = 20;
+			for (int j = action.endings.Count - 1; j >= 0; j--)
 			{
-				ActionCheck actionCheck = (ActionCheck) action;
-				if (actionCheck.resultActionFail != ResultAction.RunCutscene)
+				ActionEnd ending = action.endings[j];
+
+				if (ending.resultAction != ResultAction.RunCutscene)
 				{
-					if (actionCheck.resultActionFail != ResultAction.Skip || action.showOutputSockets)
+					if (ending.resultAction != ResultAction.Skip || action.showOutputSockets)
 					{
-						Vector2 buttonPosition = new Vector2 (action.NodeRect.x + action.NodeRect.width - 2, action.NodeRect.y + action.NodeRect.height - 22);
+						Vector2 buttonPosition;
+						if (action.endings.Count == 1)
+						{
+							buttonPosition = new Vector2 (action.NodeRect.x + action.NodeRect.width / 2f - 8, action.NodeRect.y + action.NodeRect.height);
+						}
+						else
+						{
+							buttonPosition = new Vector2 (action.NodeRect.x + action.NodeRect.width - 2, action.NodeRect.y + action.NodeRect.height - totalHeight);
+						}
 						Rect buttonRect = new Rect (buttonPosition - scrollPosition, socketSize);
-						
-						if (e.isMouse && dragMode == DragMode.None && e.type == EventType.MouseDown && action.isEnabled && buttonRect.Contains(e.mousePosition))
+
+						if (e.isMouse && dragMode == DragMode.None && e.type == EventType.MouseDown && action.isEnabled && buttonRect.Contains (e.mousePosition))
 						{
 							if (e.button == 0)
 							{
-								offsetChanging = 10;
-								resultType = false;
+								offsetChanging = totalHeight - 10;
+								multipleResultType = action.endings.IndexOf (ending);
 								actionChanging = action;
 								dragMode = DragMode.Wire;
 								hasDraggedWire = false;
 							}
 							else if (e.button == 1)
 							{
-								if (actionCheck.resultActionFail == ResultAction.Continue && (actionList.IndexOf (action) < actionList.Count - 1))
+								if (ending.resultAction == ResultAction.Continue && (actionList.IndexOf (action) < actionList.Count - 1))
 								{
 									CreateSocketMenu (actionList.IndexOf (action) + 1);
 								}
-								else if (actionCheck.resultActionFail == ResultAction.Skip)
+								else if (ending.resultAction == ResultAction.Skip)
 								{
-									CreateSocketMenu (actionCheck.skipActionFail);
+									CreateSocketMenu (ending.skipAction);
 								}
 							}
 						}
 
-						GUI.Button (buttonRect, "", CustomStyles.IconSocket);
-					}
-
-					if (actionCheck.resultActionFail == ResultAction.Skip)
-					{
-						offset = 17;
-					}
-				}
-				if (actionCheck.resultActionTrue != ResultAction.RunCutscene)
-				{
-					if (actionCheck.resultActionTrue != ResultAction.Skip || action.showOutputSockets)
-					{
-						Vector2 buttonPosition = new Vector2 (action.NodeRect.x + action.NodeRect.width - 2, action.NodeRect.y + action.NodeRect.height - 40 - offset);
-						Rect buttonRect = new Rect (buttonPosition - scrollPosition, socketSize);
-
-						if (e.isMouse && dragMode == DragMode.None && e.type == EventType.MouseDown && action.isEnabled && buttonRect.Contains(e.mousePosition))
-						{
-							if (e.button == 0)
-							{
-								offsetChanging = 30 + offset;
-								resultType = true;
-								actionChanging = action;
-								dragMode = DragMode.Wire;
-								hasDraggedWire = false;
-							}
-							else if (e.button == 1)
-							{
-								if (actionCheck.resultActionTrue == ResultAction.Continue && (actionList.IndexOf (action) < actionList.Count - 1))
-								{
-									CreateSocketMenu (actionList.IndexOf (action) + 1);
-								}
-								else if (actionCheck.resultActionTrue == ResultAction.Skip)
-								{
-									CreateSocketMenu (actionCheck.skipActionTrue);
-								}
-							}
-						}
-						
-						GUI.Button (buttonRect, "", CustomStyles.IconSocket);
-					}
-				}
-			}
-			else if (action is ActionCheckMultiple)
-			{
-				ActionCheckMultiple actionCheckMultiple = (ActionCheckMultiple) action;
-
-				int totalHeight = 20;
-				for (int j = actionCheckMultiple.endings.Count-1; j>=0; j--)
-				{
-					ActionEnd ending = actionCheckMultiple.endings [j];
-
-					if (ending.resultAction != ResultAction.RunCutscene)
-					{
-						if (ending.resultAction != ResultAction.Skip || action.showOutputSockets)
-						{
-							Vector2 buttonPosition = new Vector2 (action.NodeRect.x + action.NodeRect.width - 2, action.NodeRect.y + action.NodeRect.height - totalHeight);
-							Rect buttonRect = new Rect (buttonPosition - scrollPosition, socketSize);
-
-							if (e.isMouse && dragMode == DragMode.None && e.type == EventType.MouseDown && action.isEnabled && buttonRect.Contains(e.mousePosition))
-							{
-								if (e.button == 0)
-								{
-									offsetChanging = totalHeight - 10;
-									multipleResultType = actionCheckMultiple.endings.IndexOf (ending);
-									actionChanging = action;
-									dragMode = DragMode.Wire;
-									hasDraggedWire = false;
-								}
-								else if (e.button == 1)
-								{
-									if (ending.resultAction == ResultAction.Continue && (actionList.IndexOf (action) < actionList.Count - 1))
-									{
-										CreateSocketMenu (actionList.IndexOf (action) + 1);
-									}
-									else if (ending.resultAction == ResultAction.Skip)
-									{
-										CreateSocketMenu (ending.skipAction);
-									}
-								}
-							}
-							
-							GUI.Button (buttonRect, string.Empty, CustomStyles.IconSocket);
-						}
-					}
-
-					if (ending.resultAction == ResultAction.Skip)
-					{
-						totalHeight += 44;
-					}
-					else
-					{
-						totalHeight += 26;
-					}
-				}
-			}
-			else if (action is ActionParallel)
-			{
-				ActionParallel actionParallel = (ActionParallel) action;
-
-				int totalHeight = 20;
-				for (int j = actionParallel.endings.Count-1; j>=0; j--)
-				{
-					ActionEnd ending = actionParallel.endings [j];
-
-					if (ending.resultAction != ResultAction.RunCutscene)
-					{
-						if (ending.resultAction != ResultAction.Skip || action.showOutputSockets)
-						{
-							Vector2 buttonPosition = new Vector2 (action.NodeRect.x + action.NodeRect.width - 2, action.NodeRect.y + action.NodeRect.height - totalHeight);
-							Rect buttonRect = new Rect (buttonPosition - scrollPosition, socketSize);
-
-							if (e.isMouse && dragMode == DragMode.None && e.type == EventType.MouseDown && action.isEnabled && buttonRect.Contains(e.mousePosition))
-							{
-								if (e.button == 0)
-								{
-									offsetChanging = totalHeight - 10;
-									multipleResultType = actionParallel.endings.IndexOf (ending);
-									actionChanging = action;
-									dragMode = DragMode.Wire;
-									hasDraggedWire = false;
-								}
-								else if (e.button == 1)
-								{
-									if (ending.resultAction == ResultAction.Continue && (actionList.IndexOf (action) < actionList.Count - 1))
-									{
-										CreateSocketMenu (actionList.IndexOf (action) + 1);
-									}
-									else if (ending.resultAction == ResultAction.Skip)
-									{
-										CreateSocketMenu (ending.skipAction);
-									}
-								}
-							}
-							
-							GUI.Button (buttonRect, string.Empty, CustomStyles.IconSocket);
-						}
-					}
-
-					if (ending.resultAction == ResultAction.Skip)
-					{
-						totalHeight += 44;
-					}
-					else
-					{
-						totalHeight += 26;
-					}
-				}
-			}
-			else
-			{
-				// Base class
-				if (action.endAction != ResultAction.RunCutscene)
-				{
-					if (action.endAction != ResultAction.Skip || action.showOutputSockets)
-					{
-						Vector2 buttonPosition = new Vector2 (action.NodeRect.x + action.NodeRect.width / 2f - 8, action.NodeRect.y + action.NodeRect.height);
-						Rect buttonRect = new Rect (buttonPosition - scrollPosition, socketSize);
-
-						if (e.isMouse && dragMode == DragMode.None && e.type == EventType.MouseDown && action.isEnabled && buttonRect.Contains(e.mousePosition))
-						{
-							if (e.button == 0)
-							{
-								offsetChanging = 10;
-								actionChanging = action;
-								dragMode = DragMode.Wire;
-								hasDraggedWire = false;
-							}
-							else if (e.button == 1)
-							{
-								if (action.endAction == ResultAction.Continue && (actionList.IndexOf (action) < actionList.Count - 1))
-								{
-									CreateSocketMenu (actionList.IndexOf (action) + 1);
-								}
-								else if (action.endAction == ResultAction.Skip)
-								{
-									CreateSocketMenu (action.skipAction);
-								}
-							}
-						}
-						
 						GUI.Button (buttonRect, string.Empty, CustomStyles.IconSocket);
 					}
 				}
+
+				if (ending.resultAction == ResultAction.Skip)
+				{
+					totalHeight += Action.skipSocketSeparation;
+				}
+				else
+				{
+					totalHeight += Action.socketSeparation;
+				}
 			}
+
 
 			action.DrawOutWires (actionList, i, offset, scrollPosition);
 		}
@@ -2259,7 +1925,7 @@ namespace AC
 					}
 				}
 
-				Vector2 minCorner = maxCorner - new Vector2 (300f, 50f);
+				Vector2 minCorner = maxCorner - new Vector2 (ACEditorPrefs.ActionNodeWidth, 50f);
 				for (int i=0; i<Actions.Count; i++)
 				{
 					if (Actions[i].isMarked || !onlyMarked)
@@ -2320,9 +1986,8 @@ namespace AC
 			EditorGUIUtility.editingTextField = false;
 			GenericMenu menu = new GenericMenu ();
 			menu.AddItem (new GUIContent ("Add new Action"), false, EmptyCallback, "Add new Action");
-			if (AdvGame.copiedActions != null && AdvGame.copiedActions.Count > 0)
+			if (JsonAction.HasCopyBuffer ())
 			{
-				//menu.AddSeparator ("");
 				menu.AddItem (new GUIContent ("Paste copied Action(s)"), false, EmptyCallback, "Paste copied Action(s)");
 			}
 
@@ -2388,7 +2053,7 @@ namespace AC
 			{
 				if (Actions[i] != null)
 				{
-					string actionLabel = "(" + i.ToString () + ") " + Actions[i].category.ToString () + ": " + Actions[i].title;
+					string actionLabel = "(" + i.ToString () + ") " + Actions[i].Category.ToString () + ": " + Actions[i].Title;
 					menu.AddItem (new GUIContent ("View/Action/" + actionLabel), false, EmptyCallback, "ViewFrame" + i.ToString ());
 				}
 			}
@@ -2431,7 +2096,7 @@ namespace AC
 			{
 				menu.AddItem (new GUIContent ("Cut"), false, EmptyCallback, "Cut selected");
 				menu.AddItem (new GUIContent ("Copy"), false, EmptyCallback, "Copy selected");
-				if (AdvGame.copiedActions.Count > 0)
+				if (JsonAction.HasCopyBuffer ())
 				{
 					menu.AddItem (new GUIContent ("Paste after"), false, EmptyCallback, "Paste after");
 				}
@@ -2535,14 +2200,18 @@ namespace AC
 				if (isAsset)
 				{
 					Undo.SetCurrentGroupName (objString);
-					Undo.RecordObjects (new UnityEngine.Object [] {  windowData.targetAsset }, objString);
-					Undo.RecordObjects (windowData.targetAsset.actions.ToArray (), objString);
+					Undo.RecordObjects (new Object [] {  windowData.targetAsset }, objString);
+					#if !AC_ActionListPrefabs
+					if (windowData.targetAsset.actions != null) Undo.RecordObjects (windowData.targetAsset.actions.ToArray (), objString);
+					#endif
 				}
 				else
 				{
 					Undo.SetCurrentGroupName (objString);
-					Undo.RecordObjects (new UnityEngine.Object [] {  windowData.target }, objString);
-					Undo.RecordObjects (windowData.target.actions.ToArray (), objString);
+					Undo.RecordObjects (new Object [] {  windowData.target }, objString);
+					#if !AC_ActionListPrefabs
+					if (windowData.target.actions != null) Undo.RecordObjects (windowData.target.actions.ToArray (), objString);
+					#endif
 				}
 			}
 
@@ -2557,9 +2226,9 @@ namespace AC
 			if (objString == "Add new Action")
 			{
 				Action currentAction = actionList[actionList.Count - 1];
-				if (currentAction.endAction == ResultAction.Continue)
+				if (currentAction.NumSockets == 1 && currentAction.endings[0].resultAction == ResultAction.Continue)
 				{
-					currentAction.endAction = ResultAction.Stop;
+					currentAction.endings[0].resultAction = ResultAction.Stop;
 				}
 
 				if (isAsset)
@@ -2576,7 +2245,7 @@ namespace AC
 			}
 			else if (objString == "Paste copied Action(s)")
 			{
-				if (AdvGame.copiedActions.Count == 0)
+				if (!JsonAction.HasCopyBuffer ())
 				{
 					return;
 				}
@@ -2585,66 +2254,57 @@ namespace AC
 				UnmarkAll ();
 
 				Action currentLastAction = actionList[actionList.Count - 1];
-				if (currentLastAction.endAction == ResultAction.Continue)
+				if (currentLastAction.endings.Count == 1 && currentLastAction.endings[0].resultAction == ResultAction.Continue)
 				{
-					currentLastAction.endAction = ResultAction.Stop;
+					currentLastAction.endings[0].resultAction = ResultAction.Stop;
 				}
 
-				Vector2 firstPosition = new Vector2 (AdvGame.copiedActions[0].NodeRect.x, AdvGame.copiedActions[0].NodeRect.y);
-				foreach (Action actionToCopy in AdvGame.copiedActions)
+				List<Action> newActions = JsonAction.CreatePasteBuffer ();
+				Vector2 firstPosition = new Vector2 (newActions[0].NodeRect.x, newActions[0].NodeRect.y);
+				foreach (Action newAction in newActions)
 				{
-					if (actionToCopy == null)
+					if (newActions.IndexOf (newAction) == 0)
 					{
-						ACDebug.LogWarning ("Error when pasting Action - cannot find original. Did you change scene before pasting? If you need to transfer Actions between scenes, copy them to an ActionList asset first.");
-						continue;
-					}
-
-					AC.Action duplicatedAction = Object.Instantiate (actionToCopy) as AC.Action;
-					duplicatedAction.PrepareToPaste (offset);
-
-					if (AdvGame.copiedActions.IndexOf (actionToCopy) == 0)
-					{
-						duplicatedAction.NodeRect = new Rect (menuPosition, duplicatedAction.NodeRect.size);
+						newAction.NodeRect = new Rect (menuPosition, newAction.NodeRect.size);
 					}
 					else
 					{
-						Vector2 newPosition = menuPosition + (actionToCopy.NodeRect.position - firstPosition);
-						duplicatedAction.NodeRect = new Rect (newPosition, duplicatedAction.NodeRect.size);
+						Vector2 newPosition = menuPosition + (newAction.NodeRect.position - firstPosition);
+						newAction.NodeRect = new Rect (newPosition, newAction.NodeRect.size);
 					}
 
-					duplicatedAction.isMarked = true;
+					newAction.isMarked = true;
 
 					if (isAsset)
 					{
-						ActionListAssetEditor.AddAction (duplicatedAction, -1, windowData.targetAsset);
+						ActionListAssetEditor.AddAction (newAction, -1, windowData.targetAsset);
 					}
 					else
 					{
-						ActionListEditor.AddAction (duplicatedAction, -1, windowData.target);
+						ActionListEditor.AddAction (newAction, -1, windowData.target);
 					}
 				}
-				AdvGame.DuplicateActionsBuffer ();
 				FocusOnActions (true, true);
 			}
 			else if (objString == "Select all")
 			{
 				foreach (Action action in actionList)
 				{
-					action.isMarked = true;
+					if (action != null) action.isMarked = true;
 				}
 			}
 			else if (objString == "Deselect all")
 			{
 				foreach (Action action in actionList)
 				{
-					action.isMarked = false;
+					if (action != null) action.isMarked = false;
 				}
 			}
 			else if (objString == "Expand selected")
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.isDisplayed = true;
 					}
@@ -2654,7 +2314,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.isDisplayed = false;
 					}
@@ -2664,7 +2324,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.showComment = true;
 					}
@@ -2674,7 +2334,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.showComment = false;
 					}
@@ -2684,7 +2344,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.showOutputSockets = true;
 					}
@@ -2694,7 +2354,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.showOutputSockets = false;
 					}
@@ -2702,20 +2362,16 @@ namespace AC
 			}
 			else if (objString == "Cut selected")
 			{
-				List<Action> copyList = new List<Action> ();
+				List<Action> cutList = new List<Action> ();
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
-						Action copyAction = Object.Instantiate (action) as Action;
-						copyAction.name = copyAction.name.Replace ("(Clone)", "");
-						copyAction.PrepareToCopy (actionList.IndexOf (action), actionList);
-						copyAction.isMarked = false;
-						copyList.Add (copyAction);
+						cutList.Add (action);
 					}
 				}
 
-				AdvGame.copiedActions = copyList;
+				JsonAction.ToCopyBuffer (cutList);
 				PerformEmptyCallBack ("Delete selected");
 			}
 			else if (objString == "Copy selected")
@@ -2723,19 +2379,14 @@ namespace AC
 				List<Action> copyList = new List<Action> ();
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
-						Action copyAction = Object.Instantiate (action) as Action;
-						copyAction.name = copyAction.name.Replace ("(Clone)", "");
-						copyAction.PrepareToCopy (actionList.IndexOf (action), actionList);
-						copyAction.ClearIDs ();
-						copyAction.isMarked = false;
-						copyList.Add (copyAction);
+						copyList.Add (action);
+						action.isMarked = false;
 					}
 				}
 
-				AdvGame.copiedActions = copyList;
-				UnmarkAll ();
+				JsonAction.ToCopyBuffer (copyList);
 			}
 			else if (objString == "Delete selected")
 			{
@@ -2743,18 +2394,17 @@ namespace AC
 				{
 					foreach (Action action in actionList)
 					{
-						if (action.isMarked)
+						if (action != null && action.isMarked)
 						{
 							// Work out what has to be re-connected to what after deletion
 							Action targetAction = null;
-							if (action is ActionCheck || action is ActionCheckMultiple || action is ActionParallel) { }
-							else
+							foreach (ActionEnd ending in action.endings)
 							{
-								if (action.endAction == ResultAction.Skip && action.skipActionActual)
+								if (ending.resultAction == ResultAction.Skip && ending.skipActionActual != null)
 								{
-									targetAction = action.skipActionActual;
+									targetAction = ending.skipActionActual;
 								}
-								else if (action.endAction == ResultAction.Continue && actionList.IndexOf (action) < (actionList.Count - 1))
+								else if (ending.resultAction == ResultAction.Continue && actionList.IndexOf (action) < (actionList.Count - 1))
 								{
 									targetAction = actionList[actionList.IndexOf (action) + 1];
 								}
@@ -2802,7 +2452,7 @@ namespace AC
 				for (int i = 0; i < actionList.Count; i++)
 				{
 					Action action = actionList[i];
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.isMarked = false;
 
@@ -2811,112 +2461,22 @@ namespace AC
 							bool hasConnection = false;
 							bool isLast = (i == actionList.Count - 1);
 
-							if (action is ActionParallel)
+							foreach (ActionEnd ending in action.endings)
 							{
-								ActionParallel actionParallel = (ActionParallel)action;
-
-								foreach (ActionEnd ending in actionParallel.endings)
-								{
-									if (ending.resultAction == ResultAction.Continue)
-									{
-										if (isLast)
-										{
-											ending.resultAction = ResultAction.Stop;
-										}
-										else
-										{
-											ending.resultAction = ResultAction.Skip;
-											ending.skipActionActual = actionList[i + 1];
-											hasConnection = true;
-										}
-									}
-									else if (ending.resultAction != ResultAction.Stop)
-									{
-										hasConnection = true;
-									}
-								}
-							}
-							else if (action is ActionCheck)
-							{
-								ActionCheck actionCheck = (ActionCheck)action;
-
-								if (actionCheck.resultActionTrue == ResultAction.Continue)
+								if (ending.resultAction == ResultAction.Continue)
 								{
 									if (isLast)
 									{
-										actionCheck.resultActionTrue = ResultAction.Stop;
+										ending.resultAction = ResultAction.Stop;
 									}
 									else
 									{
-										actionCheck.resultActionTrue = ResultAction.Skip;
-										actionCheck.skipActionTrueActual = actionList[i + 1];
+										ending.resultAction = ResultAction.Skip;
+										ending.skipActionActual = actionList[i + 1];
 										hasConnection = true;
 									}
 								}
-								else if (actionCheck.resultActionTrue != ResultAction.Stop)
-								{
-									hasConnection = true;
-								}
-
-								if (actionCheck.resultActionFail == ResultAction.Continue)
-								{
-									if (isLast)
-									{
-										actionCheck.resultActionFail = ResultAction.Stop;
-									}
-									else
-									{
-										actionCheck.resultActionFail = ResultAction.Skip;
-										actionCheck.skipActionFailActual = actionList[i + 1];
-										hasConnection = true;
-									}
-								}
-								else if (actionCheck.resultActionFail != ResultAction.Stop)
-								{
-									hasConnection = true;
-								}
-							}
-							else if (action is ActionCheckMultiple)
-							{
-								ActionCheckMultiple actionCheckMultiple = (ActionCheckMultiple)action;
-
-								foreach (ActionEnd ending in actionCheckMultiple.endings)
-								{
-									if (ending.resultAction == ResultAction.Continue)
-									{
-										if (isLast)
-										{
-											ending.resultAction = ResultAction.Stop;
-										}
-										else
-										{
-											ending.resultAction = ResultAction.Skip;
-											ending.skipActionActual = actionList[i + 1];
-											hasConnection = true;
-										}
-									}
-									else if (ending.resultAction != ResultAction.Stop)
-									{
-										hasConnection = true;
-									}
-								}
-							}
-							else
-							{
-								if (action.endAction == ResultAction.Continue)
-								{
-									if (isLast)
-									{
-										action.endAction = ResultAction.Stop;
-									}
-									else
-									{
-										action.endAction = ResultAction.Skip;
-										action.skipActionActual = actionList[i + 1];
-										hasConnection = true;
-									}
-								}
-								else if (action.endAction != ResultAction.Stop)
+								else if (ending.resultAction != ResultAction.Stop)
 								{
 									hasConnection = true;
 								}
@@ -2928,16 +2488,10 @@ namespace AC
 
 							if (!hasConnection && actionList.Count > 1)
 							{
-								if (action is ActionParallel)
-								{ }
-								else if (action is ActionCheckMultiple)
-								{ }
-								else if (action is ActionCheck)
-								{ }
-								else
+								if (action.endings.Count == 1)
 								{
-									action.endAction = ResultAction.Skip;
-									action.skipActionActual = actionList[1];
+									action.endings[0].resultAction = ResultAction.Skip;
+									action.endings[0].skipActionActual = actionList[1];
 								}
 							}
 						}
@@ -2956,7 +2510,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.isBreakPoint = !action.isBreakPoint;
 						action.isMarked = false;
@@ -2967,7 +2521,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.showComment = !action.showComment;
 						action.isMarked = false;
@@ -2978,7 +2532,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.showOutputSockets = !action.showOutputSockets;
 						action.isMarked = false;
@@ -2989,7 +2543,7 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.isMarked = false;
 
@@ -3009,30 +2563,9 @@ namespace AC
 
 						actionList[newIndex].isDisplayed = true;
 
-						if (action is ActionParallel)
+						if (action.endings != null && action.endings.Count > 0)
 						{
-							ActionParallel actionParallel = (ActionParallel)action;
-							if (actionParallel.endings != null && actionParallel.endings.Count > 0)
-							{
-								actionParallel.endings[0].resultAction = ResultAction.Continue;
-							}
-						}
-						else if (action is ActionCheck)
-						{
-							ActionCheck actionCheck = (ActionCheck)action;
-							actionCheck.resultActionTrue = ResultAction.Continue;
-						}
-						else if (action is ActionCheckMultiple)
-						{
-							ActionCheckMultiple actionCheckMultiple = (ActionCheckMultiple)action;
-							if (actionCheckMultiple.endings != null && actionCheckMultiple.endings.Count > 0)
-							{
-								actionCheckMultiple.endings[0].resultAction = ResultAction.Continue;
-							}
-						}
-						else
-						{
-							action.endAction = ResultAction.Continue;
+							action.endings[0].resultAction = ResultAction.Continue;
 						}
 
 						break;
@@ -3043,76 +2576,44 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.isMarked = false;
 
 						int offset = actionList.IndexOf (action) + 1;
 						Vector2 initialPosition = new Vector2 (action.NodeRect.x + 50, action.NodeRect.y + 100);
 
-						//
-						Vector2 firstPosition = new Vector2 (AdvGame.copiedActions[0].NodeRect.x, AdvGame.copiedActions[0].NodeRect.y);
-						foreach (Action actionToCopy in AdvGame.copiedActions)
+						List<Action> newActions = JsonAction.CreatePasteBuffer ();
+						Vector2 firstPosition = new Vector2 (newActions[0].NodeRect.x, newActions[0].NodeRect.y);
+						foreach (Action newAction in newActions)
 						{
-							if (actionToCopy == null)
-							{
-								ACDebug.LogWarning ("Error when pasting Action - cannot find original. Did you change scene before pasting? If you need to transfer Actions between scenes, copy them to an ActionList asset first.");
-								continue;
-							}
-
-							int ownIndex = AdvGame.copiedActions.IndexOf (actionToCopy);
-
-							AC.Action duplicatedAction = Object.Instantiate (actionToCopy) as AC.Action;
-							duplicatedAction.PrepareToPaste (offset);
+							int ownIndex = newActions.IndexOf (newAction);
 
 							if (ownIndex == 0)
 							{
-								duplicatedAction.NodeRect = new Rect (initialPosition, duplicatedAction.NodeRect.size);
+								newAction.NodeRect = new Rect (initialPosition, newAction.NodeRect.size);
 							}
 							else
 							{
-								Vector2 newPosition = initialPosition + actionToCopy.NodeRect.position - firstPosition;
-								duplicatedAction.NodeRect = new Rect (newPosition, duplicatedAction.NodeRect.size);
+								Vector2 newPosition = initialPosition + newAction.NodeRect.position - firstPosition;
+								newAction.NodeRect = new Rect (newPosition, newAction.NodeRect.size);
 							}
 
-							duplicatedAction.isMarked = true;
+							newAction.isMarked = true;
 							if (isAsset)
 							{
-								ActionListAssetEditor.AddAction (duplicatedAction, offset + ownIndex, windowData.targetAsset);
+								ActionListAssetEditor.AddAction (newAction, offset + ownIndex, windowData.targetAsset);
 							}
 							else
 							{
-								ActionListEditor.AddAction (duplicatedAction, offset + ownIndex, windowData.target);
+								ActionListEditor.AddAction (newAction, offset + ownIndex, windowData.target);
 							}
 						}
 
-						if (action is ActionParallel)
+						if (action.endings != null && action.endings.Count > 0)
 						{
-							ActionParallel actionParallel = (ActionParallel)action;
-							if (actionParallel.endings != null && actionParallel.endings.Count > 0)
-							{
-								actionParallel.endings[0].resultAction = ResultAction.Continue;
-							}
+							action.endings[0].resultAction = ResultAction.Continue;
 						}
-						else if (action is ActionCheck)
-						{
-							ActionCheck actionCheck = (ActionCheck)action;
-							actionCheck.resultActionTrue = ResultAction.Continue;
-						}
-						else if (action is ActionCheckMultiple)
-						{
-							ActionCheckMultiple actionCheckMultiple = (ActionCheckMultiple)action;
-							if (actionCheckMultiple.endings != null && actionCheckMultiple.endings.Count > 0)
-							{
-								actionCheckMultiple.endings[0].resultAction = ResultAction.Continue;
-							}
-						}
-						else
-						{
-							action.endAction = ResultAction.Continue;
-						}
-
-						AdvGame.DuplicateActionsBuffer ();
 						break;
 					}
 				}
@@ -3129,7 +2630,7 @@ namespace AC
 
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						action.overrideColor = newColor;
 					}
@@ -3141,7 +2642,7 @@ namespace AC
 				int numActions = 0;
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						medianY += action.NodeRect.y;
 						numActions++;
@@ -3173,7 +2674,7 @@ namespace AC
 				int numActions = 0;
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
 						medianX += action.NodeRect.x;
 						numActions++;
@@ -3209,6 +2710,7 @@ namespace AC
 				Vector2 maxCorner = Actions[0].NodeRect.position;
 				for (int i=1; i<Actions.Count; i++)
 				{
+					if (Actions[i] == null) continue;
 					maxCorner.x = Mathf.Max (maxCorner.x, Actions[i].NodeRect.x + Actions[i].NodeRect.width + 30f);
 					maxCorner.y = Mathf.Max (maxCorner.y, Actions[i].NodeRect.y + Actions[i].NodeRect.height + 130f);
 				}
@@ -3241,7 +2743,7 @@ namespace AC
 				{
 					foreach (Action action in actionList)
 					{
-						if (action.isMarked)
+						if (action != null && action.isMarked)
 						{
 							KickStarter.actionsManager.SetFavourite (action, _favouriteID);
 							action.isMarked = false;
@@ -3258,12 +2760,11 @@ namespace AC
 				if (int.TryParse (favouriteIDText, out _favouriteID))
 				{
 					Action newAction = KickStarter.actionsManager.GenerateFavouriteAction (_favouriteID);
-					if (newAction != null)
 					{
 						Action currentAction = actionList[actionList.Count - 1];
-						if (currentAction.endAction == ResultAction.Continue)
+						if (currentAction != null && currentAction.endings.Count > 0 && currentAction.endings[0].resultAction == ResultAction.Continue)
 						{
-							currentAction.endAction = ResultAction.Stop;
+							currentAction.endings[0].resultAction = ResultAction.Stop;
 						}
 
 						if (isAsset)
@@ -3284,15 +2785,10 @@ namespace AC
 			{
 				foreach (Action action in actionList)
 				{
-					if (action.isMarked)
+					if (action != null && action.isMarked)
 					{
-						var script = MonoScript.FromScriptableObject (action);
-						if (script != null)
-						{
-							AssetDatabase.OpenAsset (script);
-							action.isMarked = false;
-							break;
-						}
+						Action.EditSource (action);
+						action.isMarked = false;
 					}
 				}
 			}
@@ -3309,13 +2805,17 @@ namespace AC
 			{
 				if (isAsset)
 				{
-					Undo.RecordObjects (new UnityEngine.Object [] { windowData.targetAsset }, objString);
-					Undo.RecordObjects (windowData.targetAsset.actions.ToArray (), objString);
+					Undo.RecordObjects (new Object [] { windowData.targetAsset }, objString);
+					#if !AC_ActionListPrefabs
+					if (windowData.targetAsset.actions != null) Undo.RecordObjects (windowData.targetAsset.actions.ToArray (), objString);
+					#endif
 				}
 				else
 				{
-					Undo.RecordObjects (new UnityEngine.Object [] { windowData.target }, objString);
-					Undo.RecordObjects (windowData.target.actions.ToArray (), objString);
+					Undo.RecordObjects (new Object [] { windowData.target }, objString);
+					#if !AC_ActionListPrefabs
+					if (windowData.target.actions != null) Undo.RecordObjects (windowData.target.actions.ToArray (), objString);
+					#endif
 				}
 				Undo.CollapseUndoOperations (Undo.GetCurrentGroup ());
 			}
@@ -3354,6 +2854,7 @@ namespace AC
 			List<Action> actionList = new List<Action> ();
 			foreach (Action action in Actions)
 			{
+				if (action == null) continue;
 				if (!onlyMarked || action.isMarked)
 				{
 					actionList.Add (action);
@@ -3368,91 +2869,22 @@ namespace AC
 				// Need to convert Continue Actions to skip, since next index to process is different from actual ActionList
 				foreach (Action action in actionList)
 				{
+					if (action == null) continue;
 					int _i = Actions.IndexOf (action);
 
-					if (action is ActionCheckMultiple)
+					for (int j=action.endings.Count-1; j>=0; j--)
 					{
-						ActionCheckMultiple actionCheckMultiple = (ActionCheckMultiple) action;
-
-						for (int j=actionCheckMultiple.endings.Count-1; j>=0; j--)
-						{
-							ActionEnd ending = actionCheckMultiple.endings [j];
-							if (ending.resultAction == ResultAction.Continue)
-							{
-								if (_i == Actions.Count -1)
-								{
-									ending.resultAction = ResultAction.Stop;
-								}
-								else
-								{
-									ending.resultAction = ResultAction.Skip;
-									ending.skipActionActual= Actions[_i+1];
-								}
-							}
-						}
-					}
-					else if (action is ActionParallel)
-					{
-						ActionParallel actionParallel = (ActionParallel) action;
-
-						for (int j=actionParallel.endings.Count-1; j>=0; j--)
-						{
-							ActionEnd ending = actionParallel.endings [j];
-							if (ending.resultAction == ResultAction.Continue)
-							{
-								if (_i == Actions.Count -1)
-								{
-									ending.resultAction = ResultAction.Stop;
-								}
-								else
-								{
-									ending.resultAction = ResultAction.Skip;
-									ending.skipActionActual= Actions[_i+1];
-								}
-							}
-						}
-					}
-					else if (action is ActionCheck)
-					{
-						ActionCheck actionCheck = (ActionCheck) action;
-
-						if (actionCheck.resultActionTrue == ResultAction.Continue)
+						ActionEnd ending = action.endings [j];
+						if (ending.resultAction == ResultAction.Continue)
 						{
 							if (_i == Actions.Count -1)
 							{
-								actionCheck.resultActionTrue = ResultAction.Stop;
+								ending.resultAction = ResultAction.Stop;
 							}
 							else
 							{
-								actionCheck.resultActionTrue = ResultAction.Skip;
-								actionCheck.skipActionTrueActual = Actions[_i+1];
-							}
-						}
-						if (actionCheck.resultActionFail == ResultAction.Continue)
-						{
-							if (_i == Actions.Count -1)
-							{
-								actionCheck.resultActionFail = ResultAction.Stop;
-							}
-							else
-							{
-								actionCheck.resultActionFail = ResultAction.Skip;
-								actionCheck.skipActionFailActual = Actions[_i+1];
-							}
-						}
-					}
-					else
-					{
-						if (action.endAction == ResultAction.Continue)
-						{
-							if (_i == Actions.Count -1)
-							{
-								action.endAction = ResultAction.Stop;
-							}
-							else
-							{
-								action.endAction = ResultAction.Skip;
-								action.skipActionActual = Actions[_i+1];
+								ending.resultAction = ResultAction.Skip;
+								ending.skipActionActual= Actions[_i+1];
 							}
 						}
 					}
@@ -3477,11 +2909,10 @@ namespace AC
 
 			foreach (Action action in actionList)
 			{
+				if (action == null) continue;
+
 				// Fix reconnection error from non-displayed Actions
-				//if (action.endAction == ResultAction.Skip || action.numSockets == 2 || action is ActionCheckMultiple || action is ActionParallel)
-				{
-					action.SkipActionGUI (Actions, false);
-				}
+				action.SkipActionGUI (Actions, false);
 
 				action.isMarked = true;
 				if (actionList.IndexOf (action) > 0)
@@ -3509,6 +2940,7 @@ namespace AC
 			float maxValue = 0f;
 			foreach (Action _action in actionList)
 			{
+				if (_action == null) continue;
 				if (_display == DisplayActionsInEditor.ArrangedVertically)
 				{
 					maxValue = Mathf.Max (maxValue, _action.NodeRect.y + _action.NodeRect.height);
@@ -3521,7 +2953,7 @@ namespace AC
 
 			foreach (Action _action in actionList)
 			{
-				if (_action.isMarked)
+				if (_action != null && _action.isMarked)
 				{
 					// Wasn't arranged
 					if (_display == DisplayActionsInEditor.ArrangedVertically)
@@ -3531,7 +2963,7 @@ namespace AC
 					}
 					else
 					{
-						_action.NodeRect = new Rect (new Vector2 (maxValue + 350*i, 14), _action.NodeRect.size);
+						_action.NodeRect = new Rect (new Vector2 (maxValue + AutoArrangeWidthMargin * i, 14), _action.NodeRect.size);
 						ArrangeFromIndex (actionList, actionList.IndexOf (_action), 0, 14, _display);
 					}
 					_action.isMarked = false;
@@ -3548,6 +2980,7 @@ namespace AC
 			{
 				foreach (Action _action in Actions)
 				{
+					if (_action == null) continue;
 					_action.isMarked = (actionList.Contains (_action));
 				}
 				FocusOnActions (false);
@@ -3565,7 +2998,7 @@ namespace AC
 				{
 					if (_display == DisplayActionsInEditor.ArrangedVertically)
 					{
-						Vector2 newPosition = new Vector2 (actionList[0].NodeRect.position.x + (350 * depth), 0f);
+						Vector2 newPosition = new Vector2 (actionList[0].NodeRect.position.x + (AutoArrangeWidthMargin * depth), 0f);
 						_action.NodeRect = new Rect (newPosition, _action.NodeRect.size);
 
 						// Find top-most Y position
@@ -3598,7 +3031,7 @@ namespace AC
 						_action.NodeRect = new Rect (newPosition, _action.NodeRect.size);
 
 						// Find left-most X position
-						float xPos = minValue + 350;
+						float xPos = minValue + AutoArrangeWidthMargin;
 						bool doAgain = true;
 						
 						while (doAgain)
@@ -3608,7 +3041,7 @@ namespace AC
 							{
 								if (otherAction != _action && Mathf.Approximately (otherAction.NodeRect.x, xPos) && Mathf.Approximately (otherAction.NodeRect.y, _action.NodeRect.y))
 								{
-									xPos += 350;
+									xPos += AutoArrangeWidthMargin;
 									numChanged ++;
 								}
 							}
@@ -3633,131 +3066,41 @@ namespace AC
 									? _action.NodeRect.y + _action.NodeRect.height + 30f
 									: _action.NodeRect.x;
 				
-				if (_action is ActionCheckMultiple)
+				for (int j= _action.endings.Count-1; j>=0; j--)
 				{
-					ActionCheckMultiple _actionCheckMultiple = (ActionCheckMultiple) _action;
-					
-					for (int j=_actionCheckMultiple.endings.Count-1; j>=0; j--)
+					ActionEnd ending = _action.endings [j];
+					if (j >= 0)
 					{
-						ActionEnd ending = _actionCheckMultiple.endings [j];
-						if (j >= 0)
+						if (ending.resultAction == ResultAction.Skip)
 						{
-							if (ending.resultAction == ResultAction.Skip)
+							int newDepth = depth;
+							for (int k = 0; k<j; k++)
 							{
-								int newDepth = depth;
-								for (int k = 0; k<j; k++)
+								ActionEnd prevEnding = _action.endings [k];
+								if (prevEnding.resultAction == ResultAction.Continue || 
+									(prevEnding.resultAction == ResultAction.Skip && prevEnding.skipAction != i))
 								{
-									ActionEnd prevEnding = _actionCheckMultiple.endings [k];
-									if (prevEnding.resultAction == ResultAction.Continue || 
-									    (prevEnding.resultAction == ResultAction.Skip && prevEnding.skipAction != i))
-									{
-										newDepth ++;
-									}
+									newDepth ++;
 								}
+							}
 
-								ArrangeFromIndex (actionList, actionList.IndexOf (ending.skipActionActual), newDepth, newMinValue, _display);
-							}
-							else if (ending.resultAction == ResultAction.Continue)
-							{
-								ArrangeFromIndex (actionList, i+1, depth+j, newMinValue, _display);
-							}
+							ArrangeFromIndex (actionList, actionList.IndexOf (ending.skipActionActual), newDepth, newMinValue, _display);
+						}
+						else if (ending.resultAction == ResultAction.Continue)
+						{
+							ArrangeFromIndex (actionList, i+1, depth+j, newMinValue, _display);
 						}
 					}
 				}
-				if (_action is ActionParallel)
-				{
-					ActionParallel _ActionParallel = (ActionParallel) _action;
-					
-					for (int j=_ActionParallel.endings.Count-1; j>=0; j--)
-					{
-						ActionEnd ending = _ActionParallel.endings [j];
-						if (j >= 0) // Want this to run for all, now
-						{
-							if (ending.resultAction == ResultAction.Skip)
-							{
-								ArrangeFromIndex (actionList, actionList.IndexOf (ending.skipActionActual), depth+j, newMinValue, _display);
-							}
-							else if (ending.resultAction == ResultAction.Continue)
-							{
-								ArrangeFromIndex (actionList, i+1, depth+j, newMinValue, _display);
-							}
-						}
-						else
-						{
-							if (ending.resultAction == ResultAction.Skip)
-							{
-								i = actionList.IndexOf (ending.skipActionActual);
-							}
-							else if (ending.resultAction == ResultAction.Continue)
-							{
-								i++;
-							}
-							else
-							{
-								i = -1;
-							}
-						}
-					}
-				}
-				else if (_action is ActionCheck)
-				{
-					ActionCheck _actionCheck = (ActionCheck) _action;
+			}
+		}
 
-					if (_actionCheck.resultActionFail == ResultAction.Stop || _actionCheck.resultActionFail == ResultAction.RunCutscene)
-					{
-						if (_actionCheck.resultActionTrue == ResultAction.Skip)
-						{
-							i = actionList.IndexOf (_actionCheck.skipActionTrueActual);
-						}
-						else if (_actionCheck.resultActionTrue == ResultAction.Continue)
-						{
-							i++;
-						}
-						else
-						{
-							i = -1;
-						}
-					}
-					else
-					{
-						if (_actionCheck.resultActionTrue == ResultAction.Skip)
-						{
-							ArrangeFromIndex (actionList, actionList.IndexOf (_actionCheck.skipActionTrueActual), depth+1, newMinValue, _display);
-						}
-						else if (_actionCheck.resultActionTrue == ResultAction.Continue)
-						{
-							ArrangeFromIndex (actionList, i+1, depth+1, newMinValue, _display);
-						}
-						
-						if (_actionCheck.resultActionFail == ResultAction.Skip)
-						{
-							i = actionList.IndexOf (_actionCheck.skipActionFailActual);
-						}
-						else if (_actionCheck.resultActionFail == ResultAction.Continue)
-						{
-							i++;
-						}
-						else
-						{
-							i = -1;
-						}
-					}
-				}
-				else
-				{
-					if (_action.endAction == ResultAction.Skip)
-					{
-						i = actionList.IndexOf (_action.skipActionActual);
-					}
-					else if (_action.endAction == ResultAction.Continue)
-					{
-						i++;
-					}
-					else
-					{
-						i = -1;
-					}
-				}
+
+		private int AutoArrangeWidthMargin
+		{
+			get
+			{
+				return ACEditorPrefs.ActionNodeWidth + 50;
 			}
 		}
 
@@ -3837,64 +3180,13 @@ namespace AC
 					continue;
 				}
 
-				if (_actions[i] is ActionCheckMultiple)
+				foreach (ActionEnd ending in _actions[i].endings)
 				{
-					ActionCheckMultiple action = _actions[i] as ActionCheckMultiple;
-					foreach (ActionEnd ending in action.endings)
+					if (ending.resultAction == ResultAction.Skip)
 					{
-						if (ending.resultAction == ResultAction.Skip)
-						{
-							if (ending.skipActionActual == toAction) return true;
-						}
-						else if (ending.resultAction == ResultAction.Continue)
-						{
-							if (i == toIndex - 1) return true;
-						}
+						if (ending.skipActionActual == toAction) return true;
 					}
-				}
-				else if (_actions[i] is ActionParallel)
-				{
-					ActionParallel action = _actions[i] as ActionParallel;
-					foreach (ActionEnd ending in action.endings)
-					{
-						if (ending.resultAction == ResultAction.Skip)
-						{
-							if (ending.skipActionActual == toAction) return true;
-						}
-						else if (ending.resultAction == ResultAction.Continue)
-						{
-							if (i == toIndex - 1) return true;
-						}
-					}
-				}
-				else if (_actions[i] is ActionCheck)
-				{
-					ActionCheck action = _actions[i] as ActionCheck;
-					if (action.resultActionTrue == ResultAction.Skip)
-					{
-						if (action.skipActionTrueActual == toAction) return true;
-					}
-					else if (action.resultActionTrue == ResultAction.Continue)
-					{
-						if (i == toIndex - 1) return true;
-					}
-
-					if (action.resultActionFail == ResultAction.Skip)
-					{
-						if (action.skipActionFailActual == toAction) return true;
-					}
-					else if (action.resultActionFail == ResultAction.Continue)
-					{
-						if (i == toIndex - 1) return true;
-					}
-				}
-				else
-				{
-					if (_actions[i].endAction == ResultAction.Skip)
-					{
-						if (_actions[i].skipActionActual == toAction) return true;
-					}
-					else if (_actions[i].endAction == ResultAction.Continue)
+					else if (ending.resultAction == ResultAction.Continue)
 					{
 						if (i == toIndex - 1) return true;
 					}

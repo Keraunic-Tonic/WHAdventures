@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMenuCheck.cs"
  * 
@@ -35,13 +35,9 @@ namespace AC
 		protected string _menuToCheck, _elementToCheck;
 
 		
-		public ActionMenuCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Menu;
-			title = "Check state";
-			description = "Queries the visibility of menu elements, and the enabled or locked state of menus.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Menu; }}
+		public override string Title { get { return "Check state"; }}
+		public override string Description { get { return "Queries the visibility of menu elements, and the enabled or locked state of menus."; }}
 
 
 		public override void AssignParentList (ActionList actionList)
@@ -136,6 +132,33 @@ namespace AC
 			}
 			return labelAdd;
 		}
+
+
+		public override int GetMenuReferences (string menuName, string elementName = "")
+		{
+			if (menuToCheckParameterID < 0 && menuName == menuToCheck)
+			{
+				switch (checkType)
+				{
+					case MenuCheckType.MenuIsLocked:
+					case MenuCheckType.MenuIsVisible:
+						if (string.IsNullOrEmpty (elementName))
+						{
+							return 1;
+						}
+						break;
+
+					case MenuCheckType.ElementIsVisible:
+						if (elementToCheckParameterID < 0 && !string.IsNullOrEmpty (elementName) && elementToCheck == elementName)
+						{
+							return 1;
+						}
+						break;
+				}
+			}
+			
+			return 0;
+		}
 		
 		#endif
 
@@ -147,7 +170,7 @@ namespace AC
 		 */
 		public static ActionMenuCheck CreateNew_MenuIsLocked (string menuName)
 		{
-			ActionMenuCheck newAction = (ActionMenuCheck) CreateInstance <ActionMenuCheck>();
+			ActionMenuCheck newAction = CreateNew<ActionMenuCheck> ();
 			newAction.checkType = MenuCheckType.MenuIsLocked;
 			newAction.menuToCheck = menuName;
 			return newAction;
@@ -161,7 +184,7 @@ namespace AC
 		 */
 		public static ActionMenuCheck CreateNew_MenuIsOn (string menuName)
 		{
-			ActionMenuCheck newAction = (ActionMenuCheck) CreateInstance <ActionMenuCheck>();
+			ActionMenuCheck newAction = CreateNew<ActionMenuCheck> ();
 			newAction.checkType = MenuCheckType.MenuIsVisible;
 			newAction.menuToCheck = menuName;
 			return newAction;
@@ -176,7 +199,7 @@ namespace AC
 		 */
 		public static ActionMenuCheck CreateNew_ElementIsVisible (string menuName, string elementName)
 		{
-			ActionMenuCheck newAction = (ActionMenuCheck) CreateInstance <ActionMenuCheck>();
+			ActionMenuCheck newAction = CreateNew<ActionMenuCheck> ();
 			newAction.checkType = MenuCheckType.ElementIsVisible;
 			newAction.menuToCheck = menuName;
 			newAction.elementToCheck = elementName;

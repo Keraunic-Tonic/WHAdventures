@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Ambience.cs"
  * 
@@ -21,6 +21,13 @@ namespace AC
 	[HelpURL("https://www.adventurecreator.org/scripting-guide/class_a_c_1_1_ambience.html")]
 	public class Ambience : Soundtrack
 	{
+
+		#region Variables
+
+		private int timeSamplesBackup = -1;
+
+		#endregion
+
 
 		#region UnityStandards
 
@@ -44,14 +51,8 @@ namespace AC
 			mainData.ambienceTimeSamples = 0;
 			mainData.lastAmbienceTimeSamples = LastTimeSamples;
 
-			if (GetCurrentTrackID () >= 0)
-			{
-				MusicStorage musicStorage = GetSoundtrack (GetCurrentTrackID ());
-				if (musicStorage != null && musicStorage.audioClip != null && audioSource.clip == musicStorage.audioClip && IsPlaying ())
-				{
-					mainData.ambienceTimeSamples = audioSource.timeSamples;
-				}
-			}
+			mainData.ambienceTimeSamples = (timeSamplesBackup >= 0) ? timeSamplesBackup : GetTimeSamplesToSave ();
+			timeSamplesBackup = -1;
 
 			mainData.oldAmbienceTimeSamples = CreateOldTimesampleString ();
 
@@ -64,6 +65,31 @@ namespace AC
 			LoadMainData (mainData.ambienceTimeSamples, mainData.oldAmbienceTimeSamples, mainData.lastAmbienceTimeSamples, mainData.lastAmbienceQueueData, mainData.ambienceQueueData);
 		}
 
+
+		/** Prepares save data that cannot be generated while threading */
+		public void PrepareSaveBeforeThreading ()
+		{
+			timeSamplesBackup = GetTimeSamplesToSave ();
+		}
+
+		#endregion
+
+
+		#region ProtectedFunctions
+
+		protected int GetTimeSamplesToSave ()
+		{
+			if (GetCurrentTrackID () >= 0)
+			{
+				MusicStorage musicStorage = GetSoundtrack (GetCurrentTrackID ());
+				if (musicStorage != null && musicStorage.audioClip != null && audioSource.clip == musicStorage.audioClip && IsPlaying ())
+				{
+					return audioSource.timeSamples;
+				}
+			}
+			return 0;
+		}
+
 		#endregion
 
 
@@ -74,6 +100,33 @@ namespace AC
 			get
 			{
 				return KickStarter.settingsManager.ambienceStorages;
+			}
+		}
+
+
+		protected override float LoadFadeTime
+		{
+			get
+			{
+				return KickStarter.settingsManager.loadAmbienceFadeTime;
+			}
+		}
+
+
+		protected override bool CrossfadeWhenLoading
+		{
+			get
+			{
+				return KickStarter.settingsManager.crossfadeAmbienceWhenLoading;
+			}
+		}
+
+
+		protected override bool RestartTrackWhenLoading
+		{
+			get
+			{
+				return KickStarter.settingsManager.restartAmbienceTrackWhenLoading;
 			}
 		}
 

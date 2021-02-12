@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Recipe.cs"
  * 
@@ -10,6 +10,7 @@
  */
 
 using System.Collections.Generic;
+
 
 namespace AC
 {
@@ -73,6 +74,145 @@ namespace AC
 		#endregion
 
 
+		#region PublicFunctions
+
+		/**
+		 * <summary>Checks if a collection of inventory item instances has all the items necessary to craft this recipe's item.</summary>
+		 * <param name="invCollection">The collection of inventory item instances to check</param>
+		 * <returns>True if the collection has all the items necessary to craft the recipe's item</returns>
+		 */
+		public bool CanBeCrafted (InvCollection invCollection)
+		{
+			if (HasInvalidItems (invCollection))
+			{
+				return false;
+			}
+
+			if (useSpecificSlots)
+			{
+				int maxSlot = invCollection.InvInstances.Count-1;
+				foreach (Ingredient ingredient in ingredients)
+				{
+					if (maxSlot < ingredient.CraftingIndex)
+					{
+						maxSlot = ingredient.CraftingIndex;
+					}
+				}
+				
+				if (maxSlot < 0)
+				{
+					return false;
+				}
+
+				for (int i=0; i<=maxSlot; i++)
+				{
+					Ingredient ingredient = GetIngredientForIndex (i);
+					InvInstance invInstance = invCollection.GetInstanceAtIndex (i);
+
+					if (InvInstance.IsValid (invInstance))
+					{
+						// Item in slot
+
+						if (ingredient == null)
+						{
+							return false;
+						}
+
+						if (ingredient.ItemID != invInstance.ItemID)
+						{
+							return false;
+						}
+
+						if (ingredient.Amount > invInstance.Count)
+						{
+							return false;
+						}
+					}
+					else
+					{
+						// Slot is empty
+
+						if (ingredient != null)
+						{
+							return false;
+						}
+					}
+				}
+			}
+			else
+			{
+				// Indices don't matter, just check counts are correct
+
+				foreach (Ingredient ingredient in ingredients)
+				{
+					int ingredientCount = invCollection.GetCount (ingredient.ItemID);
+					if (ingredientCount < ingredient.Amount)
+					{
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		#endregion
+
+
+		#region PrivateFunctions
+
+		private bool HasInvalidItems (InvCollection invCollection)
+		{
+			if (ingredients.Count == 0)
+			{
+				return true;
+			}
+
+			// Are any invalid ingredients present?
+			List<InvItem> craftingItems = invCollection.InvItems;
+
+			foreach (InvItem craftingItem in craftingItems)
+			{
+				if (!RequiresItem (craftingItem))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+
+		private Ingredient GetIngredientForIndex (int index)
+		{
+			// No item in slot
+			foreach (Ingredient ingredient in ingredients)
+			{
+				if (ingredient.CraftingIndex == index)
+				{
+					return ingredient;
+				}
+			}
+			return null;
+		}
+
+		private bool RequiresItem (InvItem invItem)
+		{
+			if (invItem == null) return false;
+
+			foreach (Ingredient ingredient in ingredients)
+			{
+				if (ingredient.ItemID == invItem.id)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+
+		#endregion
+
+
 		#if UNITY_EDITOR
 
 		public string EditorLabel
@@ -84,35 +224,6 @@ namespace AC
 		}
 
 		#endif
-
-	}
-
-
-	/**
-	 * A data container for an ingredient within a Recipe.
-	 * If multiple instances of the associated inventory item can be carried, then the amount needed of that item can also be set.
-	 */
-	[System.Serializable]
-	public class Ingredient
-	{
-
-		/** The ID number of the associated inventory item (InvItem) */
-		public int itemID;
-		/** The amount needed, if the InvItem's canCarryMultiple = True */
-		public int amount;
-		/** The recipe's required slot, if the Recipe's useSpecificSlots = True */
-		public int slotNumber;
-
-
-		/**
-		 * The default Constructor.
-		 */
-		public Ingredient ()
-		{
-			itemID = 0;
-			amount = 1;
-			slotNumber = 1;
-		}
 
 	}
 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Objective.cs"
  * 
@@ -163,7 +163,7 @@ namespace AC
 
 		public void ShowGUI (string apiPrefix)
 		{
-			if (Application.isPlaying && KickStarter.runtimeObjectives != null)
+			if (Application.isPlaying && KickStarter.runtimeObjectives)
 			{
 				ObjectiveState currentState = KickStarter.runtimeObjectives.GetObjectiveState (ID);
 				if (currentState != null)
@@ -193,7 +193,7 @@ namespace AC
 				EditorGUILayout.LabelField ("Speech Manager ID:", descriptionLineID.ToString ());
 			}
 
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
+			if (KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
 			{
 				perPlayer = CustomGUILayout.Toggle ("Per-Player?", perPlayer, apiPrefix + ".perPlayer");
 			}
@@ -236,19 +236,19 @@ namespace AC
 				Undo.RecordObject (KickStarter.inventoryManager, "Add Objective state");
 				states.Add (new ObjectiveState (GetStateIDArray ()));
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 
 			if (selectedState >= 0 && states.Count > selectedState)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 				showStateGUI = CustomGUILayout.ToggleHeader (showStateGUI, "State #" + states[selectedState].ID.ToString () + ": " + states[selectedState].Label);
 				if (showStateGUI)
 				{
 					states[selectedState].ShowGUI (apiPrefix + ".states[" + selectedState.ToString () + "].");
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 		}
 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"IKCommand.cs"
  * 
@@ -140,13 +140,13 @@ namespace AC
 		public string GetSaveData ()
 		{
 			int targetID = 0;
-			ConstantID targetIDComponent = (targetTransform != null) ? targetTransform.GetComponent<ConstantID> () : null;
+			ConstantID targetIDComponent = (targetTransform) ? targetTransform.GetComponent<ConstantID> () : null;
 			if (targetIDComponent != null)
 			{
 				targetID = targetIDComponent.constantID;
 			}
 
-			if (targetID == 0 && targetTransform != null)
+			if (targetID == 0 && targetTransform)
 			{
 				ACDebug.LogWarning ("Cannot save IK target " + targetTransform + " because it has no Constant ID component.", targetTransform);
 			}
@@ -170,7 +170,7 @@ namespace AC
 				if (targetID != 0)
 				{
 					ConstantID targetConstantID = ConstantID.GetComponent (targetID);
-					if (targetConstantID != null)
+					if (targetConstantID)
 					{
 						string curveData = dataArray[1];
 						AnimationCurve transitionCurve = StringToCurve (curveData);

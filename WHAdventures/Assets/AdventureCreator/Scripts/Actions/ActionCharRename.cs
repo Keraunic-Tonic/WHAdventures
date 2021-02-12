@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCharRename.cs"
  * 
@@ -35,16 +35,11 @@ namespace AC
 		public int lineID = -1;
 
 
-		public ActionCharRename ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Character;
-			title = "Rename";
-			lineID = -1;
-			description = "Changes the display name of a Character when subtitles are used.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Character; }}
+		public override string Title { get { return "Rename"; }}
+		public override string Description { get { return "Changes the display name of a Character when subtitles are used."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			if (isPlayer)
@@ -103,8 +98,6 @@ namespace AC
 			}
 			
 			newName = EditorGUILayout.TextField ("New name:", newName);
-			
-			AfterRunningOption ();
 		}
 
 
@@ -143,7 +136,7 @@ namespace AC
 				if (_charID == id) return true;
 			}
 			if (isPlayer && _gameObject.GetComponent <Player>() != null) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -235,7 +228,7 @@ namespace AC
 		 */
 		public static ActionCharRename CreateNew (Char characterToRename, string newName, int translationID = -1)
 		{
-			ActionCharRename newAction = (ActionCharRename) CreateInstance <ActionCharRename>();
+			ActionCharRename newAction = CreateNew<ActionCharRename> ();
 			newAction._char = characterToRename;
 			newAction.newName = newName;
 			newAction.lineID = translationID;

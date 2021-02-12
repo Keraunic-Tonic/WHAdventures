@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionQTE.cs"
  * 
@@ -42,6 +42,7 @@ namespace AC
 		
 		public float holdDuration;
 		public float cooldownTime;
+		public int targetPressesParameterID = -1;
 		public int targetPresses;
 		public bool doCooldown;
 
@@ -52,20 +53,17 @@ namespace AC
 		public int targetRotationsParameterID = -1;
 
 		
-		public ActionQTE ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Input;
-			title = "QTE";
-			description = "Initiates a Quick Time Event for a set duration. The QTE type can either be a single key- press, holding a button down, or button-mashing. The Input button must be defined in Unity's Input Manager.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Input; }}
+		public override string Title { get { return "QTE"; }}
+		public override string Description { get { return "Initiates a Quick Time Event for a set duration. The QTE type can either be a single key- press, holding a button down, or button-mashing. The Input button must be defined in Unity's Input Manager."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			menuName = AssignString (parameters, menuNameParameterID, menuName);
 			inputName = AssignString (parameters, inputNameParameterID, inputName);
 			duration = AssignFloat (parameters, durationParameterID, duration);
+			targetPresses = AssignInteger (parameters, targetPressesParameterID, targetPresses);
 		}
 		
 		
@@ -249,16 +247,30 @@ namespace AC
 			durationParameterID = Action.ChooseParameterGUI ("Duration (s):", parameters, durationParameterID, ParameterType.Float);
 			if (durationParameterID < 0)
 			{
-				duration = EditorGUILayout.Slider ("Duration (s):", duration, 0f, 10f);
+				duration = EditorGUILayout.FloatField ("Duration (s):", duration);
+				if (duration < 0f) duration = 0f;
 			}
 			
 			if (qteType == QTEType.ButtonMash)
 			{
-				targetPresses = EditorGUILayout.IntField ("Target # of presses:", targetPresses);
+				targetPressesParameterID = Action.ChooseParameterGUI ("Target # of presses:", parameters, targetPressesParameterID, ParameterType.Integer);
+				if (targetPressesParameterID < 0)
+				{
+					targetPresses = EditorGUILayout.IntField ("Target # of presses:", targetPresses);
+				}
+
 				doCooldown = EditorGUILayout.Toggle ("Cooldown effect?", doCooldown);
 				if (doCooldown)
 				{
-					cooldownTime = EditorGUILayout.Slider ("Cooldown time (s):", cooldownTime, 0f, duration);
+					if (durationParameterID < 0)
+					{
+						cooldownTime = EditorGUILayout.Slider ("Cooldown time (s):", cooldownTime, 0f, duration);
+					}
+					else
+					{
+						cooldownTime = EditorGUILayout.FloatField ("Cooldown time (s):", cooldownTime);
+						if (cooldownTime < 0f) cooldownTime = 0f;
+					}
 				}
 			}
 			else if (qteType == QTEType.HoldKey)
@@ -311,7 +323,7 @@ namespace AC
 		 */
 		public static ActionQTE CreateNew_SingleKeypress (string inputButtonName, float duration, bool wrongButtonFails = false, string menuToDisplay = "", bool animateUI = false)
 		{
-			ActionQTE newAction = (ActionQTE) CreateInstance <ActionQTE>();
+			ActionQTE newAction = CreateNew<ActionQTE> ();
 			newAction.qteType = QTEType.SingleKeypress;
 			newAction.inputName = inputButtonName;
 			newAction.duration = duration;
@@ -334,7 +346,7 @@ namespace AC
 		 */
 		public static ActionQTE CreateNew_SingleAxis (string inputAxisName, float duration, float axisThreshold = 0.2f, bool wrongDirectionFails = false, string menuToDisplay = "", bool animateUI = false)
 		{
-			ActionQTE newAction = (ActionQTE) CreateInstance <ActionQTE>();
+			ActionQTE newAction = CreateNew<ActionQTE> ();
 			newAction.qteType = QTEType.SingleAxis;
 			newAction.inputName = inputAxisName;
 			newAction.duration = duration;
@@ -358,7 +370,7 @@ namespace AC
 		 */
 		public static ActionQTE CreateNew_HoldKey (string inputButtonName, float duration, float requiredDuration, bool wrongButtonFails = false, string menuToDisplay = "", bool animateUI = false)
 		{
-			ActionQTE newAction = (ActionQTE) CreateInstance <ActionQTE>();
+			ActionQTE newAction = CreateNew<ActionQTE> ();
 			newAction.qteType = QTEType.HoldKey;
 			newAction.inputName = inputButtonName;
 			newAction.duration = duration;
@@ -383,7 +395,7 @@ namespace AC
 		 */
 		public static ActionQTE CreateNew_ButtonMash (string inputButtonName, float duration, int requiredPresses, float cooldownTime = -1f, bool wrongButtonFails = false, string menuToDisplay = "", bool animateUI = false)
 		{
-			ActionQTE newAction = (ActionQTE) CreateInstance <ActionQTE>();
+			ActionQTE newAction = CreateNew<ActionQTE> ();
 			newAction.qteType = QTEType.ButtonMash;
 			newAction.inputName = inputButtonName;
 			newAction.duration = duration;

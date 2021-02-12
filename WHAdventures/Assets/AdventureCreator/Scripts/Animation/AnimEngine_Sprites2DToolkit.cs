@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AnimEngine_Sprites2DToolkit.cs"
  * 
@@ -45,7 +45,7 @@ namespace AC
 				EditorGUILayout.HelpBox ("'tk2DIsPresent' must be listed in your Unity Player Setting's 'Scripting define symbols' for AC's 2D Toolkit integration to work.", MessageType.Warning);
 			}
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Standard 2D animations", EditorStyles.boldLabel);
 
 			character.talkingAnimation = TalkingAnimation.Standard;
@@ -90,7 +90,7 @@ namespace AC
 				EditorGUILayout.HelpBox ("The following animations are required, based on the settings above:" + result, MessageType.Info);
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (GUI.changed && character != null)
 			{
@@ -204,11 +204,6 @@ namespace AC
 				}
 			}
 
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
-
 			#endif
 		}
 
@@ -300,7 +295,7 @@ namespace AC
 					{
 						if (action.standard == AnimStandard.Walk)
 						{
-							if (action.newSound != null)
+							if (action.newSound)
 							{
 								character.walkSound = action.newSound;
 							}
@@ -311,7 +306,7 @@ namespace AC
 						}
 						else if (action.standard == AnimStandard.Run)
 						{
-							if (action.newSound != null)
+							if (action.newSound)
 							{
 								character.runSound = action.newSound;
 							}
@@ -428,7 +423,7 @@ namespace AC
 				{
 					if (action.standard == AnimStandard.Walk)
 					{
-						if (action.newSound != null)
+						if (action.newSound)
 						{
 							character.walkSound = action.newSound;
 						}
@@ -439,7 +434,7 @@ namespace AC
 					}
 					else if (action.standard == AnimStandard.Run)
 					{
-						if (action.newSound != null)
+						if (action.newSound)
 						{
 							character.runSound = action.newSound;
 						}
@@ -494,11 +489,6 @@ namespace AC
 			else if (action.method == AnimMethod.BlendShape)
 			{
 				EditorGUILayout.HelpBox ("BlendShapes are not available in 2D animation.", MessageType.Info);
-			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
 			}
 
 			#endif
@@ -650,11 +640,6 @@ namespace AC
 			{
 				action.spriteDirectionData.ShowGUI ();
 			}
-
-			if (GUI.changed && action != null)
-			{
-				EditorUtility.SetDirty (action);
-			}
 			
 			#endif
 		}
@@ -710,7 +695,6 @@ namespace AC
 		
 		public override void PlayTalk ()
 		{
-
 			if (character.LipSyncGameObject ())
 			{
 				PlayStandardAnim (character.talkAnimSprite, true, character.GetLipSyncFrame ());
@@ -730,7 +714,7 @@ namespace AC
 
 		private void PlayStandardAnim (string clip, bool includeDirection, int frame)
 		{
-			if (clip != "" && character != null)
+			if (!string.IsNullOrEmpty (clip) && character)
 			{
 				string newClip = clip;
 				

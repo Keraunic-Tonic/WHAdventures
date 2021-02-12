@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Char.cs"
  * 
@@ -84,8 +84,9 @@ namespace AC
 
 		protected Quaternion newRotation;
 		private float prevHeight;
-		private float prevHeight2;
 		private float heightChange;
+		protected Transform _transform;
+		protected Speech activeSpeech;
 
 		// Lip sync variables
 
@@ -234,8 +235,6 @@ namespace AC
 		public bool crossfadeAnims = false;
 		/** (DEPRECATED - Use spriteDirectionData instead) */
 		public bool doDiagonals = false;
-		/** If True, the character is talking */
-		public bool isTalking = false;
 		/** The type of frame-flipping to use on sprite-based characters (None, LeftMirrorsRight, RightMirrorsLeft) */
 		public AC_2DFrameFlipping frameFlipping = AC_2DFrameFlipping.None;
 		/** If True, and frameFlipping != AC_2DFrameFlipping.None, then custom animations will also be flipped */
@@ -392,44 +391,60 @@ namespace AC
 		private CharacterAnimation2DShot activeCharacterAnimation2DShot;
 
 		protected bool timelineHeadTurnOverride;
+		protected Vector3 timelineHeadTurnTargetOffset;
 		protected Transform timelineHeadTurnTarget;
 		protected float timelineHeadTurnWeight;
 
 
 		protected void _Awake ()
 		{
+			if (!CanPhysicallyRotate)
+			{
+				// Use initial rotation for starting rotation only in this situation
+				newRotation = transform.rotation;
+				TransformRotation = newRotation;
+			}
+
 			newRotation = TransformRotation;
 
-			isTalking = false;
 			exactDestination = defaultExactDestination;
 
-			if (GetComponent<CharacterController> ())
+			_characterController = GetComponent <CharacterController>();
+			if (_characterController)
 			{
-				_characterController = GetComponent<CharacterController> ();
 				wallRayOrigin = _characterController.center;
 				wallRayForward = _characterController.radius;
 			}
-			else if (GetComponent<CapsuleCollider> ())
+			else
 			{
-				CapsuleCollider capsuleCollider = GetComponent<CapsuleCollider> ();
-				wallRayOrigin = capsuleCollider.center;
-				wallRayForward = capsuleCollider.radius;
-			}
-			else if (GetComponent<CircleCollider2D> ())
-			{
-				CircleCollider2D circleCollider = GetComponent<CircleCollider2D> ();
-				wallRayOrigin = circleCollider.offset;
-				wallRayForward = circleCollider.radius;
-			}
-			else if (GetComponent<BoxCollider2D> ())
-			{
-				BoxCollider2D boxCollider = GetComponent<BoxCollider2D> ();
-				wallRayOrigin = boxCollider.bounds.center;
-				wallRayForward = boxCollider.bounds.size.x / 2f;
+				CapsuleCollider capsuleCollider = GetComponent <CapsuleCollider>();
+				if (capsuleCollider)
+				{
+					wallRayOrigin = capsuleCollider.center;
+					wallRayForward = capsuleCollider.radius;
+				}
+				else
+				{
+					CircleCollider2D circleCollider = GetComponent <CircleCollider2D>();
+					if (circleCollider)
+					{
+						wallRayOrigin = circleCollider.offset;
+						wallRayForward = circleCollider.radius;
+					}
+					else
+					{
+						BoxCollider2D boxCollider = GetComponent <BoxCollider2D>();
+						if (boxCollider)
+						{
+							wallRayOrigin = boxCollider.bounds.center;
+							wallRayForward = boxCollider.bounds.size.x / 2f;
+						}
+					}
+				}
 			}
 
 			#if UNITY_EDITOR
-			if (GetComponent <NavMeshAgent>() != null && GetComponent <NavMeshAgentIntegration>() == null && motionControl != MotionControl.Manual)
+			if (GetComponent <NavMeshAgent>() && GetComponent <NavMeshAgentIntegration>() == null && motionControl != MotionControl.Manual)
 			{
 				ACDebug.LogWarning ("Charater " + GetName (0) + " has a NavMesh Agent, but no NavMesh Agent Integration component - unless you are using a custom motion controller, add this to make use of the NavMesh Agent.", this);
 			}
@@ -443,18 +458,15 @@ namespace AC
 
 			if (GetComponentInChildren<FollowSortingMap> ())
 			{
-				transform.localScale = Vector3.one;
+				Transform.localScale = Vector3.one;
 			}
-			originalScale = transform.localScale;
+			originalScale = Transform.localScale;
 			charState = CharState.Idle;
 			shapeable = GetShapeable ();
 			lipSyncTexture = GetComponentInChildren<LipSyncTexture> ();
 
-			if (GetComponent<Sound> ())
-			{
-				speechSound = GetComponent<Sound> ();
-			}
-
+			speechSound = GetComponent<Sound> ();
+			
 			ResetAnimationEngine ();
 			ResetBaseClips ();
 
@@ -462,7 +474,7 @@ namespace AC
 			_animation = GetAnimation ();
 			SetAntiGlideState ();
 
-			if (spriteChild && spriteChild.gameObject.GetComponent<SpriteRenderer> ())
+			if (spriteChild)
 			{
 				_spriteRenderer = spriteChild.gameObject.GetComponent<SpriteRenderer> ();
 				Vector2 localPosition2D = (Vector2) spriteChild.localPosition;
@@ -472,52 +484,56 @@ namespace AC
 				}
 			}
 
-			if (spriteChild && spriteChild.GetComponent<FollowSortingMap> ())
+			if (spriteChild)
 			{
-				followSortingMap = spriteChild.GetComponent<FollowSortingMap> ();
+				followSortingMap = spriteChild.GetComponent <FollowSortingMap>();
 			}
-			else if (GetComponentInChildren<FollowSortingMap> ())
+			if (followSortingMap == null)
 			{
-				followSortingMap = GetComponentInChildren<FollowSortingMap> ();
+				followSortingMap = GetComponentInChildren <FollowSortingMap>();
 			}
 
-			if (speechAudioSource == null && GetComponent<AudioSource> ())
+			if (speechAudioSource == null)
 			{
 				speechAudioSource = GetComponent<AudioSource> ();
 			}
 
-			if (soundChild && soundChild.gameObject.GetComponent<AudioSource> ())
+			if (soundChild && audioSource == null)
 			{
-				audioSource = soundChild.gameObject.GetComponent<AudioSource> ();
+				audioSource = soundChild.GetComponent<AudioSource> ();
 			}
 
-			if (GetComponent<Rigidbody> ())
+			if (_rigidbody == null)
 			{
 				_rigidbody = GetComponent<Rigidbody> ();
 			}
-			else if (GetComponent<Rigidbody2D> ())
+
+			if (_rigidbody == null)
 			{
 				_rigidbody2D = GetComponent<Rigidbody2D> ();
-				originalGravityScale = _rigidbody2D.gravityScale;
-				if (originalGravityScale <= 0f) originalGravityScale = 1f;
+				if (_rigidbody2D)
+				{
+					originalGravityScale = _rigidbody2D.gravityScale;
+					if (originalGravityScale <= 0f) originalGravityScale = 1f;
 
-				if (SceneSettings.CameraPerspective != CameraPerspective.TwoD)
-				{
-					ACDebug.LogWarning ("In order to move a sprite-based character (" + gameObject.name + ") in 3D, there must not be a Rigidbody2D component on the base.", gameObject);
-				}
-				else if (antiGlideMode)
-				{
-					_rigidbody2D.isKinematic = true;
-					_rigidbody2D = null;
-					ACDebug.LogWarning ("The use of character " + gameObject.name + "'s Rigidbody2D component is disabled as it conflicts with the 'Only move when sprite changes feature.", gameObject);
+					if (SceneSettings.CameraPerspective != CameraPerspective.TwoD)
+					{
+						ACDebug.LogWarning ("In order to move a sprite-based character (" + gameObject.name + ") in 3D, there must not be a Rigidbody2D component on the base.", gameObject);
+					}
+					else if (antiGlideMode)
+					{
+						_rigidbody2D.isKinematic = true;
+						_rigidbody2D = null;
+						ACDebug.LogWarning ("The use of character " + gameObject.name + "'s Rigidbody2D component is disabled as it conflicts with the 'Only move when sprite changes feature.", gameObject);
+					}
 				}
 			}
 			PhysicsUpdate ();
 
-			if (GetComponent<Collider> ())
+			if (_collider == null)
 			{
 				_collider = GetComponent<Collider> ();
-				if (_collider is CapsuleCollider)
+				if (_collider && _collider is CapsuleCollider)
 				{
 					capsuleCollider = _collider as CapsuleCollider;
 				}
@@ -552,6 +568,8 @@ namespace AC
 			if (KickStarter.stateHandler) KickStarter.stateHandler.Register (this);
 			//EventManager.OnInitialiseScene += OnInitialiseScene;
 			EventManager.OnManuallyTurnACOff += OnManuallyTurnACOff;
+			EventManager.OnStartSpeech_Alt += OnStartSpeech;
+			EventManager.OnStopSpeech_Alt += OnStopSpeech;
 		}
 
 
@@ -566,6 +584,8 @@ namespace AC
 			if (KickStarter.stateHandler) KickStarter.stateHandler.Unregister (this);
 			//EventManager.OnInitialiseScene -= OnInitialiseScene;
 			EventManager.OnManuallyTurnACOff -= OnManuallyTurnACOff;
+			EventManager.OnStartSpeech_Alt -= OnStartSpeech;
+			EventManager.OnStopSpeech_Alt -= OnStopSpeech;
 		}
 
 
@@ -579,9 +599,7 @@ namespace AC
 		}
 
 
-		/**
-		 * The character's "Update" function, called by StateHandler.
-		 */
+		/** The character's "Update" function, called by StateHandler. */
 		public virtual void _Update ()
 		{
 			BaseUpdate ();
@@ -594,7 +612,7 @@ namespace AC
 			UpdateWallReductionFactor ();
 			CalcHeightChange ();
 
-			if (spriteChild != null && KickStarter.settingsManager != null)
+			if (spriteChild && KickStarter.settingsManager)
 			{
 				PrepareSpriteChild (SceneSettings.IsTopDown (), SceneSettings.IsUnity2D ());
 			}
@@ -612,22 +630,20 @@ namespace AC
 		}
 
 
-		/**
-		 * The character's "LateUpdate" function, called by StateHandler.
-		 */
+		/** The character's "LateUpdate" function, called by StateHandler. */
 		public void _LateUpdate ()
 		{
 			if (antiGlideMode)
 			{
 				MoveUpdate ();
 
-				if (spriteChild && KickStarter.settingsManager != null)
+				if (spriteChild && KickStarter.settingsManager)
 				{
 					PrepareSpriteChild (SceneSettings.IsTopDown (), SceneSettings.IsUnity2D ());
 				}
 			}
 
-			if (spriteChild && KickStarter.settingsManager != null)
+			if (spriteChild && KickStarter.settingsManager)
 			{
 				UpdateSpriteChild (SceneSettings.IsTopDown (), SceneSettings.IsUnity2D ());
 			}
@@ -651,12 +667,12 @@ namespace AC
 			{
 				if (timelineHeadTurnOverride)
 				{
-					_animator.SetLookAtPosition (timelineHeadTurnTarget.position);
+					_animator.SetLookAtPosition (timelineHeadTurnTarget.position + timelineHeadTurnTarget.TransformVector (timelineHeadTurnTargetOffset));
 					_animator.SetLookAtWeight (timelineHeadTurnWeight, bodyIKTurnFactor, headIKTurnFactor, eyesIKTurnFactor);
 				}
 				else if (ikHeadTurning)
 				{
-					if (headTurnWeight > 0f && headTurnTarget != null)
+					if (headTurnWeight > 0f && headTurnTarget)
 					{
 						Vector3 position = CalculateIKHeadTurnPosition ();
 						_animator.SetLookAtPosition (position);
@@ -672,18 +688,18 @@ namespace AC
 
 		private Vector3 CalculateIKHeadTurnPosition ()
 		{
-			Vector3 headPosition = transform.position;
-			if (neckBone != null)
+			Vector3 headPosition = Transform.position;
+			if (neckBone)
 			{
-				headPosition += (neckBone.position - transform.position);
+				headPosition += (neckBone.position - Transform.position);
 			}
-			else if (_characterController != null)
+			else if (_characterController)
 			{
-				headPosition += new Vector3 (0f, _characterController.height * transform.localScale.y * 0.8f, 0f);
+				headPosition += new Vector3 (0f, _characterController.height * Transform.localScale.y * 0.8f, 0f);
 			}
-			else if (capsuleCollider != null)
+			else if (capsuleCollider)
 			{
-				headPosition += new Vector3 (0f, capsuleCollider.height * transform.localScale.y * 0.8f, 0f);
+				headPosition += new Vector3 (0f, capsuleCollider.height * Transform.localScale.y * 0.8f, 0f);
 			}
 
 			Vector3 rightDirection = Vector3.RotateTowards (TransformForward, TransformRight, actualHeadAngles.x * Mathf.Deg2Rad, 1f);
@@ -695,13 +711,13 @@ namespace AC
 
 		private void OnDrawGizmos ()
 		{
-			if (!retroPathfinding && KickStarter.settingsManager != null)
+			if (!retroPathfinding && KickStarter.settingsManager)
 			{
 				Gizmos.color = Color.yellow;
-				Gizmos.DrawWireSphere (transform.position, KickStarter.settingsManager.GetDestinationThreshold ());
+				Gizmos.DrawWireSphere (Transform.position, KickStarter.settingsManager.GetDestinationThreshold ());
 			}
 
-			if (ikHeadTurning && headTurnTarget != null)
+			if (ikHeadTurning && headTurnTarget)
 			{
 				Gizmos.color = Color.red;
 				Gizmos.DrawWireSphere (CalculateIKHeadTurnPosition (), 0.1f);
@@ -717,7 +733,7 @@ namespace AC
 		public void RecalculateActivePathfind ()
 		{
 			// Caveat: If pathfindUpdateTime < 0, the character is not pathfinding and just heading in a straight line (special case), so don't recalculate
-			if (activePath != null && !pausePath && activePath == ownPath && pathfindUpdateTime >= 0f)
+			if (activePath && !pausePath && activePath == ownPath && pathfindUpdateTime >= 0f)
 			{
 				Vector3 targetPosition = activePath.nodes[activePath.nodes.Count - 1];
 				MoveToPoint (targetPosition, isRunning, true);
@@ -731,7 +747,7 @@ namespace AC
 			{
 				if (pausePath)
 				{
-					if (nodeActionList != null)
+					if (nodeActionList)
 					{
 						if (!KickStarter.actionListManager.IsListRunning (nodeActionList))
 						{
@@ -761,7 +777,9 @@ namespace AC
 						}
 					}
 
-					Vector3 direction = activePath.nodes[targetNode] - transform.position;
+					if (targetNode >= activePath.nodes.Count) return;
+
+					Vector3 direction = activePath.nodes[targetNode] - Transform.position;
 					Vector3 lookDir = new Vector3 (direction.x, 0f, direction.z);
 
 					if (SceneSettings.IsUnity2D ())
@@ -818,11 +836,11 @@ namespace AC
 							NodeCommand nodeCommand = activePath.nodeCommands[targetNode];
 							nodeCommand.SetParameter (activePath.commandSource, this.gameObject);
 
-							if (activePath.commandSource == ActionListSource.InScene && nodeCommand.cutscene != null && nodeCommand.pausesCharacter)
+							if (activePath.commandSource == ActionListSource.InScene && nodeCommand.cutscene && nodeCommand.pausesCharacter)
 							{
 								PausePath (activePath.nodePause, nodeCommand.cutscene);
 							}
-							else if (activePath.commandSource == ActionListSource.AssetFile && nodeCommand.actionListAsset != null && nodeCommand.pausesCharacter)
+							else if (activePath.commandSource == ActionListSource.AssetFile && nodeCommand.actionListAsset && nodeCommand.pausesCharacter)
 							{
 								PausePath (activePath.nodePause, nodeCommand.actionListAsset);
 							}
@@ -952,7 +970,7 @@ namespace AC
 			{
 				return;
 			}
-
+			
 			if (isJumping)
 			{
 				animEngine.PlayJump ();
@@ -960,49 +978,52 @@ namespace AC
 			}
 			else
 			{
-				if (charState == CharState.Idle || charState == CharState.Decelerate)
+				switch (charState)
 				{
-					if (IsTurning ())
-					{
-						if (turnFloat < 0f)
+					case CharState.Idle:
+					case CharState.Decelerate:
+						if (IsTurning ())
 						{
-							animEngine.PlayTurnLeft ();
+							if (turnFloat < 0f)
+							{
+								animEngine.PlayTurnLeft ();
+							}
+							else
+							{
+								animEngine.PlayTurnRight ();
+							}
 						}
 						else
 						{
-							animEngine.PlayTurnRight ();
+							if (isTalking && (talkingAnimation == TalkingAnimation.Standard || animationEngine == AnimationEngine.Custom))
+							{
+								animEngine.PlayTalk ();
+							}
+							else
+							{
+								animEngine.PlayIdle ();
+							}
 						}
-					}
-					else
-					{
-						if (isTalking && (talkingAnimation == TalkingAnimation.Standard || animationEngine == AnimationEngine.Custom))
+
+						StopStandardAudio ();
+						break;
+
+					case CharState.Move:
+						if (isRunning)
 						{
-							animEngine.PlayTalk ();
+							animEngine.PlayRun ();
 						}
 						else
 						{
-							animEngine.PlayIdle ();
+							animEngine.PlayWalk ();
 						}
-					}
 
-					StopStandardAudio ();
-				}
-				else if (charState == CharState.Move)
-				{
-					if (isRunning)
-					{
-						animEngine.PlayRun ();
-					}
-					else
-					{
-						animEngine.PlayWalk ();
-					}
+						PlayStandardAudio ();
+						break;
 
-					PlayStandardAudio ();
-				}
-				else
-				{
-					StopStandardAudio ();
+					default:
+						StopStandardAudio ();
+						break;
 				}
 			}
 
@@ -1086,7 +1107,7 @@ namespace AC
 						}
 						else if (antiGlideMode)
 						{
-							if (_spriteRenderer != null && _spriteRenderer.sprite != null)
+							if (_spriteRenderer && _spriteRenderer.sprite)
 							{
 								string newSpriteName = _spriteRenderer.sprite.name;
 								if (newSpriteName == currentSpriteName)
@@ -1128,19 +1149,19 @@ namespace AC
 								{
 									float frameSpeed = ((isRunning) ? runSpeedScale : walkSpeedScale) * sortingMapScale;
 
-									float upAmount = Mathf.Abs (Vector2.Dot ((GetTargetPosition () - transform.position).normalized, Vector2.up));
+									float upAmount = Mathf.Abs (Vector2.Dot ((GetTargetPosition () - Transform.position).normalized, Vector2.up));
 									float mag = (1f - upAmount) + (KickStarter.sceneSettings.GetVerticalReductionFactor () * upAmount);
 									frameSpeed *= mag;
 
-									Vector3 newPosition = Vector3.MoveTowards (transform.position, GetTargetPosition (), frameSpeed * _deltaTime);
-									transform.position = newPosition;
+									Vector3 newPosition = Vector3.MoveTowards (Transform.position, GetTargetPosition (), frameSpeed * _deltaTime);
+									Transform.position = newPosition;
 								}
 								else
 								{
-									transform.position += (newVel * _deltaTime);
+									Transform.position += (newVel * _deltaTime);
 								}
 
-								if (antiGlideMode && KickStarter.mainCamera != null && KickStarter.mainCamera.attachedCamera != null)
+								if (antiGlideMode && KickStarter.mainCamera && KickStarter.mainCamera.attachedCamera)
 								{
 									// Update camera position again if we're moving this frame in anti-glide mode
 									KickStarter.mainCamera.attachedCamera._Update ();
@@ -1190,7 +1211,7 @@ namespace AC
 				{
 					if (_rigidbody.isKinematic)
 					{
-						_rigidbody.MovePosition (transform.position + newVel * Time.deltaTime);
+						_rigidbody.MovePosition (Transform.position + newVel * Time.deltaTime);
 					}
 					else
 					{
@@ -1227,7 +1248,7 @@ namespace AC
 				{
 					if (_rigidbody2D.isKinematic)
 					{
-						_rigidbody2D.MovePosition (transform.position + newVel * Time.deltaTime);
+						_rigidbody2D.MovePosition (Transform.position + newVel * Time.deltaTime);
 					}
 					else
 					{
@@ -1307,11 +1328,11 @@ namespace AC
 		{
 			if (SceneSettings.IsUnity2D ())
 			{
-				targetPoint.z = transform.position.z;
+				targetPoint.z = Transform.position.z;
 			}
 			else
 			{
-				targetPoint.y = transform.position.y;
+				targetPoint.y = Transform.position.y;
 			}
 			return targetPoint;
 		}
@@ -1325,12 +1346,12 @@ namespace AC
 			}
 
 			float lerpDistance = 3f * ((isRunning) ? (runSpeedScale / walkSpeedScale) : 1f) / GetDeceleration ();
-			float dist = Vector3.Distance (GetSmartPosition (exactDestination), transform.position);
+			float dist = Vector3.Distance (GetSmartPosition (exactDestination), Transform.position);
 
 			if (canStop && dist <= 0f)
 			{
 				charState = CharState.Idle;
-				transform.position = GetSmartPosition (exactDestination);
+				Transform.position = GetSmartPosition (exactDestination);
 				moveSpeed = 0f;
 				isExactLerping = false;
 				exactDestination = defaultExactDestination;
@@ -1339,7 +1360,7 @@ namespace AC
 			else if (canStop && (dist < lerpDistance / 4f || dist > lastDist))
 			{
 				isExactLerping = true;
-				transform.position = exactPositionLerp.Update (transform.position, GetSmartPosition (exactDestination), GetDeceleration ());
+				Transform.position = exactPositionLerp.Update (Transform.position, GetSmartPosition (exactDestination), GetDeceleration ());
 			}
 			else
 			{
@@ -1360,7 +1381,7 @@ namespace AC
 
 			if (canStop)
 			{
-				moveDirection = GetSmartPosition (exactDestination) - transform.position;
+				moveDirection = GetSmartPosition (exactDestination) - Transform.position;
 				lastDist = dist;
 			}
 		}
@@ -1451,13 +1472,13 @@ namespace AC
 		public void Teleport (Vector3 _position, bool recalculateActivePathFind = false)
 		{
 			bool enableCharacterController = false;
-			if (_characterController != null)
+			if (_characterController)
 			{
 				enableCharacterController = _characterController.enabled;
 				_characterController.enabled = false;
 			}
 
-			transform.position = _position;
+			Transform.position = _position;
 
 			if (enableCharacterController)
 			{
@@ -1543,7 +1564,7 @@ namespace AC
 				}
 				newRotation = targetRotation;
 
-				if (KickStarter.settingsManager != null && spriteChild)
+				if (KickStarter.settingsManager && spriteChild)
 				{
 					PrepareSpriteChild (SceneSettings.IsTopDown (), SceneSettings.IsUnity2D ());
 				}
@@ -1637,12 +1658,12 @@ namespace AC
 				Vector3 idealDir = Vector3.zero;
 				if (SceneSettings.IsUnity2D ())
 				{
-					Vector2 idealDir2D = GetTargetPosition () - transform.position;
+					Vector2 idealDir2D = GetTargetPosition () - Transform.position;
 					idealDir = new Vector3 (idealDir2D.x, 0f, idealDir2D.y);
 				}
 				else
 				{
-					idealDir = GetSmartPosition (GetTargetPosition ()) - transform.position;
+					idealDir = GetSmartPosition (GetTargetPosition ()) - Transform.position;
 				}
 				float scale = Vector3.Dot (TransformForward, idealDir.normalized);
 				scale = (scale * scale);
@@ -1657,6 +1678,8 @@ namespace AC
 
 		private void UpdateWallReductionFactor ()
 		{
+			if (!doWallReduction) return;
+			
 			if (SceneSettings.CameraPerspective == CameraPerspective.TwoD)
 			{
 				// 2D
@@ -1667,10 +1690,10 @@ namespace AC
 					forwardVector = new Vector2 (TransformForward.x, TransformForward.z);
 				}
 
-				Vector2 origin = (Vector2) transform.position + (Vector2) wallRayOrigin + (forwardVector * wallRayForward);
+				Vector2 origin = (Vector2) Transform.position + (Vector2) wallRayOrigin + (forwardVector * wallRayForward);
 				RaycastHit2D hit = UnityVersionHandler.Perform2DRaycast (origin, forwardVector, wallDistance, 1 << LayerMask.NameToLayer (wallLayer));
 
-				if (hit.collider != null)
+				if (hit.collider)
 				{
 					wallReductionFactor = wallReductionLerp.Update (wallReductionFactor, (hit.point - origin).magnitude / wallDistance, 10f);
 				}
@@ -1683,7 +1706,7 @@ namespace AC
 			{
 				// 3D
 
-				Vector3 origin = transform.position + wallRayOrigin + (TransformForward * wallRayForward);
+				Vector3 origin = Transform.position + wallRayOrigin + (TransformForward * wallRayForward);
 				RaycastHit hit;
 				if (Physics.Raycast (origin, TransformForward, out hit, wallDistance, 1 << LayerMask.NameToLayer (wallLayer)))
 				{
@@ -1699,7 +1722,7 @@ namespace AC
 
 		private float GetScriptTurningFactor ()
 		{
-			if (_animator != null && _animator.applyRootMotion)
+			if (_animator && _animator.applyRootMotion)
 			{
 				return (1f - rootTurningFactor);
 			}
@@ -1740,6 +1763,7 @@ namespace AC
 		 */
 		public void SetLookDirection (Vector3 _direction, bool isInstant)
 		{
+			Vector3 oldLookDirection = lookDirection;
 			lookDirection = new Vector3 (_direction.x, 0f, _direction.z);
 
 			if (KickStarter.settingsManager.rotationsAffectedByVerticalReduction && SceneSettings.IsUnity2D () && KickStarter.settingsManager.movementMethod == MovementMethod.PointAndClick)
@@ -1754,6 +1778,11 @@ namespace AC
 			if (isInstant)
 			{
 				Turn (isInstant);
+			}
+
+			if (oldLookDirection.normalized != lookDirection.normalized)
+			{
+				KickStarter.eventManager.Call_OnSetLookDirection (this, lookDirection, isInstant);
 			}
 		}
 
@@ -1851,7 +1880,7 @@ namespace AC
 				{
 					_animator = spriteChild.GetComponent<Animator> ();
 				}
-				else if (customAnimator != null)
+				else if (customAnimator)
 				{
 					_animator = customAnimator;
 					animatorIsOnRoot = (customAnimator.gameObject == gameObject);
@@ -1859,7 +1888,7 @@ namespace AC
 				else
 				{
 					_animator = GetComponent<Animator> ();
-					if (_animator != null)
+					if (_animator)
 					{
 						animatorIsOnRoot = true;
 					}
@@ -1885,7 +1914,7 @@ namespace AC
 				//	return RootMotionType.None;
 			}
 
-			if (_animator == null || !_animator.applyRootMotion)
+			if (_animator == null || !_animator.applyRootMotion || _animator.runtimeAnimatorController == null || !_animator.enabled)
 			{
 				return RootMotionType.None;
 			}
@@ -1895,7 +1924,7 @@ namespace AC
 			}
 
 			#if UNITY_EDITOR
-			if (_animator != null && _animator.applyRootMotion && IsPlayer && KickStarter.settingsManager.movementMethod == MovementMethod.FirstPerson && KickStarter.stateHandler.IsInGameplay ())
+			if (_animator && _animator.applyRootMotion && IsPlayer && KickStarter.settingsManager.movementMethod == MovementMethod.FirstPerson && KickStarter.stateHandler.IsInGameplay ())
 			{
 				ACDebug.LogWarning ("Attempting to movea first-person Player in Root Motion - uncheck 'Apply Root Motion' in the Animator to unconstrain movement.", this);
 			}
@@ -1936,7 +1965,7 @@ namespace AC
 
 			if (targetNode == 0 && activePath.pathType == AC_PathType.Loop && activePath.teleportToStart)
 			{
-				Teleport (activePath.transform.position);
+				Teleport (activePath.Transform.position);
 
 				// Set rotation if there is more than one node
 				if (activePath.nodes.Count > 1)
@@ -1980,7 +2009,7 @@ namespace AC
 		 */
 		public bool IsPathfinding ()
 		{
-			if (activePath != null && activePath == ownPath)
+			if (activePath && activePath == ownPath)
 			{
 				return true;
 			}
@@ -1994,7 +2023,7 @@ namespace AC
 		 */
 		public void EndPath (Paths optionalPath, bool stopTurningToo = true)
 		{
-			if (optionalPath != null && activePath != null && activePath != optionalPath)
+			if (optionalPath && activePath && activePath != optionalPath)
 			{
 				return;
 			}
@@ -2004,7 +2033,7 @@ namespace AC
 				StopTurning ();
 			}
 
-			if (activePath != null)
+			if (activePath)
 			{
 				KickStarter.eventManager.Call_OnCharacterEndPath (this, activePath);
 			}
@@ -2076,7 +2105,7 @@ namespace AC
 		 */
 		public void ResumeLastPath ()
 		{
-			if (lastPathActivePath != null)
+			if (lastPathActivePath)
 			{
 				SetPath (lastPathActivePath, lastPathTargetNode, lastPathPrevNode);
 			}
@@ -2097,7 +2126,7 @@ namespace AC
 		 */
 		public void Halt (bool haltTurning = true)
 		{
-			if (!IsPathfinding () && activePath != null)
+			if (!IsPathfinding () && activePath)
 			{
 				lastPathPrevNode = prevNode;
 				lastPathTargetNode = targetNode;
@@ -2214,7 +2243,7 @@ namespace AC
 				}
 			}
 
-			Vector3 direction = activePath.nodes[1] - transform.position;
+			Vector3 direction = activePath.nodes[1] - Transform.position;
 
 			if (SceneSettings.IsUnity2D ())
 			{
@@ -2250,6 +2279,11 @@ namespace AC
 		{
 			if (turnBeforeWalking && IsPathfinding () && targetNode <= 1 && activePath.nodes.Count > 1)
 			{
+				if (charState == CharState.Move && KickStarter.settingsManager.pathfindUpdateFrequency > 0f)
+				{
+					// In this case, don't turn as path recalc interferes
+					return false;
+				}
 				return true;
 			}
 			return false;
@@ -2269,7 +2303,7 @@ namespace AC
 			prevNode = _prevNode;
 
 			exactDestination = (pathOb.pathType == AC_PathType.ReverseOnly) ?
-								pathOb.transform.position :
+								pathOb.Transform.position :
 								pathOb.nodes [pathOb.nodes.Count-1];
 
 			if (CanTurnBeforeMoving ())
@@ -2296,7 +2330,7 @@ namespace AC
 			
 			pathfindUpdateTime = 0f;
 
-			if (pathOb != null)
+			if (pathOb)
 			{
 				KickStarter.eventManager.Call_OnCharacterSetPath (this, pathOb);
 			}
@@ -2310,9 +2344,9 @@ namespace AC
 		 */
 		public void SetPath (Paths pathOb, PathSpeed _speed)
 		{
-			if (pathOb != null && pathOb.nodes.Count > 0)
+			if (pathOb && pathOb.nodes.Count > 0)
 			{
-				if (pathOb.nodes.Count == 1 && pathOb.nodes[0] == transform.position)
+				if (pathOb.nodes.Count == 1 && pathOb.nodes[0] == Transform.position)
 				{
 					return;
 				}
@@ -2333,7 +2367,7 @@ namespace AC
 		 */
 		public void SetPath (Paths pathOb)
 		{
-			if (pathOb != null)
+			if (pathOb)
 			{
 				if (pathOb.nodes.Count > 0)
 				{
@@ -2362,7 +2396,7 @@ namespace AC
 		 */
 		public void SetPath (Paths pathOb, int _targetNode, int _prevNode)
 		{
-			if (pathOb != null)
+			if (pathOb)
 			{
 				SetPath (pathOb, pathOb.pathSpeed, _targetNode, _prevNode);
 			}
@@ -2444,7 +2478,7 @@ namespace AC
 			if (usePathfinding)
 			{
 				Vector3[] pointArray = null;
-				pointArray = KickStarter.navigationManager.navigationEngine.GetPointsArray (transform.position, point, this);
+				pointArray = KickStarter.navigationManager.navigationEngine.GetPointsArray (Transform.position, point, this);
 				MoveAlongPoints (pointArray, run);
 			}
 			else
@@ -2686,7 +2720,7 @@ namespace AC
 		
 		private void CalcHeightChange ()
 		{
-			float currentHeight = transform.position.y;
+			float currentHeight = Transform.position.y;
 			heightChange = currentHeight - prevHeight;
 			prevHeight = currentHeight;
 		}
@@ -2723,7 +2757,7 @@ namespace AC
 					audioSource.loop = false;
 					audioSource.clip = runSound;
 					audioSource.Play ();
-					if (KickStarter.eventManager != null) KickStarter.eventManager.Call_OnPlayFootstepSound (this, null, false, audioSource, runSound);
+					if (KickStarter.eventManager) KickStarter.eventManager.Call_OnPlayFootstepSound (this, null, false, audioSource, runSound);
 				}
 				else if (walkSound)
 				{
@@ -2740,7 +2774,7 @@ namespace AC
 					audioSource.loop = false;
 					audioSource.clip = walkSound;
 					audioSource.Play ();
-					if (KickStarter.eventManager != null) KickStarter.eventManager.Call_OnPlayFootstepSound (this, null, true, audioSource, walkSound);
+					if (KickStarter.eventManager) KickStarter.eventManager.Call_OnPlayFootstepSound (this, null, true, audioSource, walkSound);
 				}
 			}
 		}
@@ -2797,8 +2831,8 @@ namespace AC
 			}
 			else
 			{
-				forwardAmount = Vector3.Dot (KickStarter.mainCamera.ForwardVector ().normalized, TransformForward.normalized);
-				rightAmount = Vector3.Dot (KickStarter.mainCamera.RightVector ().normalized, TransformForward.normalized);
+				forwardAmount = Vector3.Dot (MainCamera.ForwardVector ().normalized, TransformForward.normalized);
+				rightAmount = Vector3.Dot (MainCamera.RightVector ().normalized, TransformForward.normalized);
 			}
 			
 			spriteAngle = Mathf.Atan (rightAmount / forwardAmount) * Mathf.Rad2Deg;
@@ -2939,7 +2973,7 @@ namespace AC
 				if (animEngine && !animEngine.isSpriteBased)
 				{
 					spriteChild.rotation = TransformRotation;
-					spriteChild.RotateAround (transform.position, Vector3.right, 90f);
+					spriteChild.RotateAround (Transform.position, Vector3.right, 90f);
 				}
 				else
 				{
@@ -2955,16 +2989,16 @@ namespace AC
 				switch (rotateSprite3D)
 				{
 					case RotateSprite3D.RelativePositionToCamera:
-						Vector3 relative = (transform.position - KickStarter.mainCamera.transform.position).normalized;
+						Vector3 relative = (Transform.position - KickStarter.mainCamera.Transform.position).normalized;
 						spriteChild.forward = relative;
 						break;
 
 					case RotateSprite3D.CameraFacingDirection:
-						spriteChild.rotation = Quaternion.Euler (spriteChild.rotation.eulerAngles.x, KickStarter.mainCamera.transform.rotation.eulerAngles.y, spriteChild.rotation.eulerAngles.z);
+						spriteChild.rotation = Quaternion.Euler (spriteChild.rotation.eulerAngles.x, KickStarter.mainCamera.Transform.rotation.eulerAngles.y, spriteChild.rotation.eulerAngles.z);
 						break;
 
 					case RotateSprite3D.FullCameraRotation:
-						spriteChild.rotation = Quaternion.Euler (KickStarter.mainCamera.transform.rotation.eulerAngles.x, KickStarter.mainCamera.transform.rotation.eulerAngles.y, KickStarter.mainCamera.transform.rotation.eulerAngles.z);
+						spriteChild.rotation = Quaternion.Euler (KickStarter.mainCamera.Transform.rotation.eulerAngles.x, KickStarter.mainCamera.Transform.rotation.eulerAngles.y, KickStarter.mainCamera.Transform.rotation.eulerAngles.z);
 						break;
 
 					default:
@@ -2976,7 +3010,7 @@ namespace AC
 
 		protected void UpdateScale ()
 		{
-			if (followSortingMap != null)
+			if (followSortingMap)
 			{	
 				if (!lockScale)
 				{
@@ -2985,7 +3019,7 @@ namespace AC
 				
 				if (spriteScale > 0f)
 				{
-					transform.localScale = originalScale * spriteScale;
+					Transform.localScale = originalScale * spriteScale;
 				}
 					
 				if (lockScale)
@@ -3188,7 +3222,7 @@ namespace AC
 		 */
 		public Vector3 GetHeadTurnTarget ()
 		{
-			if (headFacing != HeadFacing.None && headTurnTarget != null)
+			if (headFacing != HeadFacing.None && headTurnTarget)
 			{
 				return headTurnTarget.position + headTurnTargetOffset;
 			}
@@ -3210,9 +3244,9 @@ namespace AC
 				// Horizontal
 				Vector3 pointForward = (SceneSettings.IsUnity2D ())
 										?
-										new Vector3 (headTurnTarget.position.x - transform.position.x, 0, headTurnTarget.position.y - transform.position.y) + headTurnTargetOffset
+										new Vector3 (headTurnTarget.position.x - Transform.position.x, 0, headTurnTarget.position.y - Transform.position.y) + headTurnTargetOffset
 										:
-										headTurnTarget.position + headTurnTargetOffset - transform.position;
+										headTurnTarget.position + headTurnTargetOffset - Transform.position;
 				pointForward.y = 0f;
 				targetHeadAngles.x = Vector3.Angle (TransformForward, pointForward);
 				targetHeadAngles.x = Mathf.Min (targetHeadAngles.x, (animEngine.isSpriteBased) ? 100f : 70f);
@@ -3227,20 +3261,20 @@ namespace AC
 				
 				// Vertical
 				Vector3 pointPitch = headTurnTarget.position + headTurnTargetOffset;
-				if (neckBone != null)
+				if (neckBone)
 				{
 					pointPitch -= neckBone.position;
 				}
 				else
 				{
-					pointPitch -= transform.position;
-					if (_characterController != null)
+					pointPitch -= Transform.position;
+					if (_characterController)
 					{
-						pointPitch -= new Vector3 (0f, _characterController.height * transform.localScale.y * 0.8f, 0f);
+						pointPitch -= new Vector3 (0f, _characterController.height * Transform.localScale.y * 0.8f, 0f);
 					}
-					else if (capsuleCollider != null)
+					else if (capsuleCollider)
 					{
-						pointPitch -= new Vector3 (0f, capsuleCollider.height * transform.localScale.y * 0.8f, 0f);
+						pointPitch -= new Vector3 (0f, capsuleCollider.height * Transform.localScale.y * 0.8f, 0f);
 					}
 				}
 
@@ -3270,7 +3304,7 @@ namespace AC
 				GetAnimEngine ().TurnHead (actualHeadAngles);
 			}
 
-			float speedFactor = (Mathf.Approximately (headTurnWeight, 0f) && KickStarter.stateHandler != null && KickStarter.stateHandler.IsInGameplay ())
+			float speedFactor = (Mathf.Approximately (headTurnWeight, 0f) && KickStarter.stateHandler && KickStarter.stateHandler.IsInGameplay ())
 								? 0.75f
 								: 1.25f;
 
@@ -3320,12 +3354,12 @@ namespace AC
 		 */
 		public void ReleaseHeldObjects ()
 		{
-			if (leftHandHeldObject != null && leftHandHeldObject.transform.IsChildOf (transform))
+			if (leftHandHeldObject && leftHandHeldObject.transform.IsChildOf (transform))
 			{
 				leftHandHeldObject.transform.parent = null;
 			}
 			
-			if (rightHandHeldObject != null && rightHandHeldObject.transform.IsChildOf (transform))
+			if (rightHandHeldObject && rightHandHeldObject.transform.IsChildOf (transform))
 			{
 				rightHandHeldObject.transform.parent = null;
 			}
@@ -3338,18 +3372,18 @@ namespace AC
 		 */
 		public Vector3 GetSpeechWorldPosition ()
 		{
-			Vector3 worldPosition = transform.position;
+			Vector3 worldPosition = Transform.position;
 
-			if (speechMenuPlacement != null)
+			if (speechMenuPlacement)
 			{
 				worldPosition = speechMenuPlacement.position;
 			}
 			else if (_collider && _collider is CapsuleCollider)
 			{
 				CapsuleCollider capsuleCollder = (CapsuleCollider) _collider;
-				float addedHeight = capsuleCollder.height * transform.localScale.y;
+				float addedHeight = capsuleCollder.height * Transform.localScale.y;
 				
-				if (_spriteRenderer != null)
+				if (_spriteRenderer)
 				{
 					addedHeight *= spriteChild.localScale.y;
 				}
@@ -3363,9 +3397,9 @@ namespace AC
 					worldPosition.y += addedHeight;
 				}
 			}
-			else if (_characterController != null)
+			else if (_characterController)
 			{
-				float addedHeight = _characterController.height * transform.localScale.y;
+				float addedHeight = _characterController.height * Transform.localScale.y;
 
 				if (SceneSettings.IsTopDown ())
 				{
@@ -3378,9 +3412,9 @@ namespace AC
 			}
 			else
 			{
-				if (spriteChild != null)
+				if (spriteChild)
 				{
-					if (_spriteRenderer != null)
+					if (_spriteRenderer)
 					{
 						worldPosition.y = _spriteRenderer.bounds.extents.y + _spriteRenderer.bounds.center.y;
 					}
@@ -3450,16 +3484,6 @@ namespace AC
 		}
 
 		
-		private float GetTargetDistance ()
-		{
-			if (activePath != null && activePath.nodes.Count > targetNode)
-			{
-				return (activePath.nodes[targetNode] - transform.position).magnitude;
-			}
-			return 0f;
-		}
-		
-
 		private void OnInitialiseScene ()
 		{
 			headFacing = HeadFacing.None;
@@ -3468,6 +3492,24 @@ namespace AC
 			isLipSyncing = false;
 			lipSyncShapes.Clear ();
 			ReleaseSorting ();
+		}
+
+
+		private void OnStartSpeech (Speech speech)
+		{ 
+			if (speech.GetSpeakingCharacter () == this)
+			{
+				activeSpeech = speech;
+			}
+		}
+
+
+		private void OnStopSpeech (Speech speech)
+		{ 
+			if (speech == activeSpeech || speech.GetSpeakingCharacter () == this)
+			{
+				activeSpeech = null;
+			}
 		}
 
 
@@ -3600,13 +3642,9 @@ namespace AC
 		}
 		
 		
-		/**
-		 * Stops the character speaking.  This is for animation and audio only - to stop the Speech class from running, call the Dialog script's EndSpeechByCharacter method.
-		 */
+		/** Stops the character speaking.  This is for animation and audio only - to stop the Speech class from running, call the Dialog script's EndSpeechByCharacter method. */
 		public void StopSpeaking ()
 		{
-			isTalking = false;
-
 			if (_animation && !isLipSyncing)
 			{
 				foreach (AnimationState state in _animation)
@@ -3619,11 +3657,11 @@ namespace AC
 				}
 			}
 			
-			if (shapeable != null && KickStarter.speechManager.lipSyncOutput == LipSyncOutput.PortraitAndGameObject)
+			if (shapeable && KickStarter.speechManager.lipSyncOutput == LipSyncOutput.PortraitAndGameObject)
 			{
 				shapeable.DisableAllKeys (lipSyncGroupID, 0.1f, MoveMethod.Curved, null);
 			}
-			else if (lipSyncTexture != null && KickStarter.speechManager.lipSyncOutput == LipSyncOutput.GameObjectTexture)
+			else if (lipSyncTexture && KickStarter.speechManager.lipSyncOutput == LipSyncOutput.GameObjectTexture)
 			{
 				lipSyncTexture.SetFrame (0);
 			}
@@ -3743,17 +3781,35 @@ namespace AC
 					return;
 				}
 			}
-			ACDebug.LogWarning ("Cannot find expression with ID=" + ID.ToString () + " on character " + gameObject.name, gameObject);
+			ACDebug.LogWarning ("Cannot find expression with ID = " + ID.ToString () + " on character " + gameObject.name, gameObject);
 		}
-		
-		
+
+
+		/**
+		 * <summary>Changes the active Expression.</summary>
+		 * <param name = "_name">The name of the Expression, in expressions, to make active.</param>
+		 */
+		public void SetExpression (string _name)
+		{
+			foreach (Expression expression in expressions)
+			{
+				if (expression.label == _name)
+				{
+					SetExpression (expression.ID);
+					return;
+				}
+			}
+			ACDebug.LogWarning ("Cannot find expression with name = " + _name + " on character " + gameObject.name, gameObject);
+		}
+
+
 		/**
 		 * <summary>Gets the active portrait that's displayed in a MenuGraphic element when the character speaks.
 		 * The portrait can change if an Expression has been defined.</summary>
 		 */
 		public CursorIconBase GetPortrait ()
 		{
-			if (useExpressions && currentExpression != null && currentExpression.portraitIcon.texture != null)
+			if (useExpressions && currentExpression != null && currentExpression.portraitIcon.texture)
 			{
 				return currentExpression.portraitIcon;
 			}
@@ -3769,33 +3825,33 @@ namespace AC
 		 */
 		public bool IsGrounded (bool reportError = false)
 		{
-			if (_characterController != null)
+			if (_characterController)
 			{
 				return _characterController.isGrounded;
 			}
 
-			if (_collider != null && _collider.enabled)
+			if (_collider && _collider.enabled)
 			{
-				if (capsuleCollider != null && capsuleCollider.direction != 1)
+				if (capsuleCollider && capsuleCollider.direction != 1)
 				{
-					return Physics.CheckCapsule (transform.position + new Vector3 (0f, _collider.bounds.size.x / 2f, 0f),
-												 transform.position + new Vector3 (0f, _collider.bounds.size.x / 4f, 0f),
+					return Physics.CheckCapsule (Transform.position + new Vector3 (0f, _collider.bounds.size.x / 2f, 0f),
+												 Transform.position + new Vector3 (0f, _collider.bounds.size.x / 4f, 0f),
 												 _collider.bounds.size.y * 0.45f, /* was 0.5 */
 												 groundCheckLayerMask);
 				}
 
-				return Physics.CheckCapsule (transform.position + new Vector3 (0f, _collider.bounds.size.y - (_collider.bounds.size.x / 2f), 0f),
-											 transform.position + new Vector3 (0f, _collider.bounds.size.x / 4f, 0f),
+				return Physics.CheckCapsule (Transform.position + new Vector3 (0f, _collider.bounds.size.y - (_collider.bounds.size.x / 2f), 0f),
+											 Transform.position + new Vector3 (0f, _collider.bounds.size.x / 4f, 0f),
 											 _collider.bounds.size.x * 0.45f, /* was 0.5 */
 											 groundCheckLayerMask);
 			}
 
-			if (_rigidbody != null && Mathf.Abs (_rigidbody.velocity.y) > 0.1f)
+			if (_rigidbody && Mathf.Abs (_rigidbody.velocity.y) > 0.1f)
 			{
 				return false;
 			}
 
-			if (spriteChild != null && GetAnimEngine ().isSpriteBased)
+			if (spriteChild && GetAnimEngine ().isSpriteBased)
 			{
 				return !isJumping;
 			}
@@ -3806,7 +3862,7 @@ namespace AC
 				{
 					if (!capsuleCollider.isTrigger && capsuleCollider.enabled)
 					{
-						return Physics.CheckCapsule (transform.position + new Vector3 (0f, _collider.bounds.size.y - (_collider.bounds.size.x / 2f), 0f), transform.position + new Vector3 (0f, _collider.bounds.size.x / 4f, 0f), _collider.bounds.size.x / 2f, groundCheckLayerMask);
+						return Physics.CheckCapsule (Transform.position + new Vector3 (0f, _collider.bounds.size.y - (_collider.bounds.size.x / 2f), 0f), Transform.position + new Vector3 (0f, _collider.bounds.size.x / 4f, 0f), _collider.bounds.size.x / 2f, groundCheckLayerMask);
 					}
 				}
 			}
@@ -3860,7 +3916,7 @@ namespace AC
 					}
 				}
 			}
-			return transform.position;
+			return Transform.position;
 		}
 
 
@@ -3890,24 +3946,11 @@ namespace AC
 		 */
 		public AnimEngine GetAnimEngine ()
 		{
+			#if !UNITY_EDITOR
 			if (animEngine == null)
+			#endif
 			{
-			    ResetAnimationEngine ();
-			}
-			else
-			{
-			    if (animationEngine == AnimationEngine.Custom && !string.IsNullOrEmpty (customAnimationClass) && animEngine.ToString ().EndsWith (customAnimationClass + ")"))
-			    {
-			        // OK
-			    }
-			    else if (animationEngine != AnimationEngine.Custom && animEngine.ToString ().EndsWith (animationEngine.ToString () + ")"))
-			    {
-			        // OK
-			    }
-			    else
-			    {
-			        ResetAnimationEngine ();
-			    }
+				ResetAnimationEngine ();
 			}
 			return animEngine;
 		}
@@ -4042,11 +4085,11 @@ namespace AC
 		 */
 		public void SetSpeechVolume (float volume)
 		{
-			if (speechSound != null)
+			if (speechSound)
 			{
 				speechSound.SetVolume (volume);
 			}
-			else if (speechAudioSource != null)
+			else if (speechAudioSource)
 			{
 				if (KickStarter.settingsManager.volumeControl == VolumeControl.AudioMixerGroups)
 				{
@@ -4063,14 +4106,7 @@ namespace AC
 		 */
 		public Speech GetCurrentSpeech ()
 		{
-			foreach (Speech speech in KickStarter.dialog.speechList)
-			{
-				if (speech.speaker == this)
-				{
-					return speech;
-				}
-			}
-			return null;
+			return activeSpeech;
 		}
 
 
@@ -4095,7 +4131,8 @@ namespace AC
 		{
 			get
 			{
-				if (animEngine != null && animEngine.isSpriteBased && !turn2DCharactersIn3DSpace && motionControl != MotionControl.Manual)
+				AnimEngine _animEngine = GetAnimEngine ();
+				if (_animEngine != null && _animEngine.isSpriteBased && !turn2DCharactersIn3DSpace && motionControl != MotionControl.Manual)
 				{
 					return false;
 				}
@@ -4104,16 +4141,14 @@ namespace AC
 		}
 
 
-		/**
-		 * The character's rotation.  This is normally the transform.rotation, but if the character is sprite-based and turn2DCharactersIn3DSpace = False, then this is a 'dummy' rotation instead.
-		 */
+		/** The character's rotation.  This is normally the transform.rotation, but if the character is sprite-based and turn2DCharactersIn3DSpace = False, then this is a 'dummy' rotation instead. */
 		public Quaternion TransformRotation
 		{
 			get
 			{
 				if (CanPhysicallyRotate)
 				{
-					return transform.rotation;
+					return Transform.rotation;
 				}
 				return actualRotation;
 			}
@@ -4121,7 +4156,7 @@ namespace AC
 			{
 				if (CanPhysicallyRotate)
 				{
-					transform.rotation = value;
+					Transform.rotation = value;
 				}
 
 				actualRotation = value;
@@ -4131,32 +4166,28 @@ namespace AC
 		}
 
 
-		/**
-		 * The character's forward vector.  This is normally the transform.forward, but if the character is sprite-based and turn2DCharactersIn3DSpace = False, then this is a 'dummy' forward instead.
-		 */
+		/** The character's forward vector.  This is normally the transform.forward, but if the character is sprite-based and turn2DCharactersIn3DSpace = False, then this is a 'dummy' forward instead. */
 		public Vector3 TransformForward
 		{
 			get
 			{
 				if (CanPhysicallyRotate)
 				{
-					return transform.forward;
+					return Transform.forward;
 				}
 				return actualForward;
 			}
 		}
 
 
-		/**
-		 * The character's right vector.  This is normally the transform.right, but if the character is sprite-based and turn2DCharactersIn3DSpace = False, then this is a 'dummy' forward instead.
-		 */
+		/** The character's right vector.  This is normally the transform.right, but if the character is sprite-based and turn2DCharactersIn3DSpace = False, then this is a 'dummy' forward instead. */
 		public Vector3 TransformRight
 		{
 			get
 			{
 				if (CanPhysicallyRotate)
 				{
-					return transform.right;
+					return Transform.right;
 				}
 				return actualRight;
 			}
@@ -4237,7 +4268,7 @@ namespace AC
 		public UnityEngine.Sprite GetPortraitSprite ()
 		{
 			CursorIconBase portraitIcon = GetPortrait ();
-			if (portraitIcon != null && portraitIcon.texture != null)
+			if (portraitIcon != null && portraitIcon.texture)
 			{
 				if (portraitIcon.isAnimated)
 				{
@@ -4396,19 +4427,27 @@ namespace AC
 		}
 
 
-		public void SetTimelineHeadTurnOverride (Transform _timelineHeadTurnTarget, float _timelineHeadTurnWeight)
+		public void SetTimelineHeadTurnOverride (Transform _timelineHeadTurnTarget, Vector3 _timelineHeadTurnTargetOffset, float _timelineHeadTurnWeight)
 		{
 			if (_timelineHeadTurnTarget == null)
 			{
-				ReleaseTimelineHeadTurnOverride();
+				ReleaseTimelineHeadTurnOverride ();
 				return;
 			}
 
+			bool isNew = (!timelineHeadTurnOverride || _timelineHeadTurnTarget != timelineHeadTurnTarget);
+			
 			timelineHeadTurnOverride = true;
 			timelineHeadTurnTarget = _timelineHeadTurnTarget;
+			timelineHeadTurnTargetOffset = _timelineHeadTurnTargetOffset;
 			timelineHeadTurnWeight = _timelineHeadTurnWeight;
 
-			if (animEngine == null || !animEngine.IKEnabled)
+			if (isNew)
+			{
+				KickStarter.eventManager.Call_OnSetHeadTurnTarget (this, _timelineHeadTurnTarget, _timelineHeadTurnTargetOffset, true);
+			}
+
+			if (Application.isPlaying && (animEngine == null || !animEngine.IKEnabled))
 			{
 				ACDebug.LogWarning ("Character " + GetName () + " will not be able to respond to the head-turning Timeline track because they do not have IK head-turning enabled.", this);
 			}
@@ -4417,7 +4456,31 @@ namespace AC
 
 		public void ReleaseTimelineHeadTurnOverride ()
 		{
-			timelineHeadTurnOverride = false;
+			if (timelineHeadTurnOverride)
+			{
+				timelineHeadTurnOverride = false;
+				KickStarter.eventManager.Call_OnClearHeadTurnTarget (this, true);
+			}
+		}
+
+
+		/** A cache of the character's root transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
+			}
+		}
+
+
+		public bool isTalking
+		{
+			get
+			{
+				return (activeSpeech != null && activeSpeech.IsAnimating ());
+			}
 		}
 
 	}

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionManageProfiles.cs"
  * 
@@ -38,15 +38,11 @@ namespace AC
 		public string elementName = "";
 
 		
-		public ActionManageProfiles ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Save;
-			title = "Manage profiles";
-			description = "Creates, renames and deletes save game profiles.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Save; }}
+		public override string Title { get { return "Manage profiles"; }}
+		public override string Description { get { return "Creates, renames and deletes save game profiles."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			profileIndex = AssignInteger (parameters, profileIndexParameterID, profileIndex);
@@ -185,7 +181,6 @@ namespace AC
 			if (AdvGame.GetReferences ().settingsManager != null && !AdvGame.GetReferences ().settingsManager.useProfiles)
 			{
 				EditorGUILayout.HelpBox ("Save game profiles are not enabled - please set in Settings Manager to use this Action.", MessageType.Warning);
-				AfterRunningOption ();
 				return;
 			}
 
@@ -252,8 +247,6 @@ namespace AC
 					elementName = EditorGUILayout.TextField ("ProfilesList element:", elementName);
 				}
 			}
-			
-			AfterRunningOption ();
 		}
 		
 		
@@ -272,7 +265,7 @@ namespace AC
 		 */
 		public static ActionManageProfiles CreateNew_CreateProfile (int labelGlobalStringVariableID = -1)
 		{
-			ActionManageProfiles newAction = (ActionManageProfiles) CreateInstance <ActionManageProfiles>();
+			ActionManageProfiles newAction = CreateNew<ActionManageProfiles> ();
 			newAction.manageProfileType = ManageProfileType.CreateProfile;
 			newAction.useCustomLabel = (labelGlobalStringVariableID >= 0);
 			newAction.varID = labelGlobalStringVariableID;
@@ -290,7 +283,7 @@ namespace AC
 		 */
 		public static ActionManageProfiles CreateNew_DeleteProfile (DeleteProfileType deleteProfileType, string menuName, string elementName, int indexOrID)
 		{
-			ActionManageProfiles newAction = (ActionManageProfiles) CreateInstance <ActionManageProfiles>();
+			ActionManageProfiles newAction = CreateNew<ActionManageProfiles> ();
 			newAction.manageProfileType = ManageProfileType.DeleteProfile;
 			newAction.deleteProfileType = deleteProfileType;
 			newAction.profileIndex = indexOrID;
@@ -309,7 +302,7 @@ namespace AC
 		 */
 		public static ActionManageProfiles CreateNew_RenameProfile (int labelGlobalStringVariableID, DeleteProfileType renameProfileType, string menuName, string elementName, int indexOrID)
 		{
-			ActionManageProfiles newAction = (ActionManageProfiles) CreateInstance <ActionManageProfiles>();
+			ActionManageProfiles newAction = CreateNew<ActionManageProfiles> ();
 			newAction.manageProfileType = ManageProfileType.RenameProfile;
 			newAction.deleteProfileType = renameProfileType;
 			newAction.varID = labelGlobalStringVariableID;
@@ -329,7 +322,7 @@ namespace AC
 		 */
 		public static ActionManageProfiles CreateNew_SwitchActiveProfile (DeleteProfileType selectProfileType, string menuName, string elementName, int indexOrID)
 		{
-			ActionManageProfiles newAction = (ActionManageProfiles) CreateInstance <ActionManageProfiles>();
+			ActionManageProfiles newAction = CreateNew<ActionManageProfiles> ();
 			newAction.manageProfileType = ManageProfileType.SwitchActiveProfile;
 			newAction.deleteProfileType = selectProfileType;
 			newAction.profileIndex = indexOrID;

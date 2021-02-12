@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"PlayMakerIntegration.cs"
  * 
@@ -279,6 +279,42 @@ namespace AC
 			#endif
 			return Vector3.zero;
 		}
+
+
+		/**
+		 * <summary>Gets the value of a PlayMaker GameObject.</summary>
+		 * <param name = "_name">The name of the PlayMaker GameObject to search for</param>
+		 * <param name = "_variables">The Variables component attached to the FSM, if local. If null, the variable is assumed to be global</param>
+		 * <returns>The value of the PlayMaker GameObject</returns>
+		 */
+		public static GameObject GetGameObject (string _name, Variables _variables)
+		{
+			#if PlayMakerIsPresent
+			if (_variables != null)
+			{
+				PlayMakerFSM playMakerFSM = _variables.GetComponent <PlayMakerFSM>();
+				if (playMakerFSM != null && playMakerFSM.Fsm != null)
+				{
+					FsmGameObject fsmGameObject = playMakerFSM.Fsm.GetFsmGameObject (_name);
+					if (fsmGameObject != null)
+					{
+						return fsmGameObject.Value;
+					}
+				}
+				ACDebug.LogWarning ("Cannot find Playmaker GameObject with the name '" + _name + "' on " + _variables.gameObject + ".", _variables);
+			}
+			else
+			{
+				FsmGameObject fsmGameObject = FsmVariables.GlobalVariables.FindFsmGameObject (_name);
+				if (fsmGameObject != null)
+				{
+					return fsmGameObject.Value;
+				}
+				ACDebug.LogWarning ("Cannot find Playmaker global GameObject with the name '" + _name + "'");
+			}
+			#endif
+			return null;
+		}
 		
 
 		/**
@@ -461,6 +497,43 @@ namespace AC
 					return;
 				}
 				ACDebug.LogWarning ("Cannot find Playmaker global Vector3 with the name '" + _name + "'");
+			}
+			#endif
+		}
+
+
+		/**
+		 * <summary>Sets the value of a PlayMaker GameObject.</summary>
+		 * <param name = "_name">The name of the PlayMaker GameObject to update</param>
+		 * <param name = "_val">The new value to assign the PlayMaker GameObject</param>
+		 * <param name = "_variables">The Variables component attached to the FSM, if local. If null, the variable is assumed to be global</param>
+		 */
+		public static void SetGameObject (string _name, GameObject _val, Variables _variables)
+		{
+			#if PlayMakerIsPresent
+			if (_variables != null)
+			{
+				PlayMakerFSM playMakerFSM = _variables.GetComponent <PlayMakerFSM>();
+				if (playMakerFSM != null && playMakerFSM.Fsm != null)
+				{
+					FsmGameObject fsmGameObject = playMakerFSM.Fsm.GetFsmGameObject (_name);
+					if (fsmGameObject != null)
+					{
+						fsmGameObject.Value = _val;
+						return;
+					}
+				}
+				ACDebug.LogWarning ("Cannot find Playmaker GameObject with the name '" + _name + "' on " + _variables.gameObject + ".", _variables);
+			}
+			else
+			{
+				FsmGameObject fsmGameObject = FsmVariables.GlobalVariables.FindFsmGameObject (_name);
+				if (fsmGameObject != null)
+				{
+					fsmGameObject.Value = _val;
+					return;
+				}
+				ACDebug.LogWarning ("Cannot find Playmaker global GameObject with the name '" + _name + "'");
 			}
 			#endif
 		}

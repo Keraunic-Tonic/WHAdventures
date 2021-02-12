@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"StateHandler.cs"
  * 
@@ -62,10 +62,9 @@ namespace AC
 		protected HashSet<SortingMap> sortingMaps = new HashSet<SortingMap>();
 		protected HashSet<BackgroundCamera> backgroundCameras = new HashSet<BackgroundCamera>();
 		protected HashSet<BackgroundImage> backgroundImages = new HashSet<BackgroundImage>();
+		protected HashSet<Container> containers = new HashSet<Container> ();
 
 		protected ConstantIDManager constantIDManager;
-
-		protected int _i = 0;
 
 		#endregion
 
@@ -94,22 +93,23 @@ namespace AC
 			Time.timeScale = 1f;
 			DontDestroyOnLoad (this);
 
-			if (rebuildMenus)
-			{
-				KickStarter.playerMenus.OnInitPersistentEngine ();
-			}
-
 			KickStarter.sceneChanger.OnInitPersistentEngine ();
+			KickStarter.runtimeInventory.OnInitPersistentEngine ();
 
 			KickStarter.saveSystem.SetInitialPlayerID ();
 
 			KickStarter.runtimeLanguages.OnInitPersistentEngine ();
+			KickStarter.runtimeVariables.TransferFromManager ();
 			KickStarter.options.OnInitPersistentEngine ();
 			KickStarter.levelStorage.OnInitPersistentEngine ();
 			KickStarter.runtimeVariables.OnInitPersistentEngine ();
-			KickStarter.runtimeInventory.OnInitPersistentEngine ();
 			KickStarter.runtimeDocuments.OnInitPersistentEngine ();
 			KickStarter.runtimeObjectives.OnInitPersistentEngine ();
+
+			if (rebuildMenus)
+			{
+				KickStarter.playerMenus.OnInitPersistentEngine ();
+			}
 
 			KickStarter.playerMenus.RecalculateAll ();
 		}
@@ -161,7 +161,7 @@ namespace AC
 			
 				bool canHideHotspots = KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot && KickStarter.settingsManager.hideUnhandledHotspots;
 				bool canDrawHotspotIcons = (KickStarter.settingsManager.hotspotIconDisplay != HotspotIconDisplay.Never);
-				bool canUpdateProximity = (KickStarter.settingsManager.hotspotDetection == HotspotDetection.PlayerVicinity && KickStarter.settingsManager.placeDistantHotspotsOnSeparateLayer && KickStarter.player != null);
+				bool canUpdateProximity = (KickStarter.settingsManager.hotspotDetection == HotspotDetection.PlayerVicinity && KickStarter.settingsManager.placeDistantHotspotsOnSeparateLayer && KickStarter.player);
 
 				foreach (Hotspot hotspot in hotspots)
 				{
@@ -187,14 +187,11 @@ namespace AC
 					}
 				}
 			}
-
+			
 			if (!menuIsOff)
 			{
 				KickStarter.playerMenus.CheckForInput ();
-			}
-
-			if (!menuIsOff)
-			{
+				
 				if (KickStarter.settingsManager.inputMethod == InputMethod.TouchScreen && KickStarter.playerInput.GetMouseState () != MouseState.Normal)
 				{
 					KickStarter.playerMenus.UpdateAllMenus ();
@@ -263,7 +260,7 @@ namespace AC
 			
 			foreach (AC.Char character in characters)
 			{
-				if (character != null && (!playerIsOff || !(character.IsPlayer)))
+				if (character && (!playerIsOff || !(character.IsPlayer)))
 				{
 					character._Update ();
 				}
@@ -286,7 +283,7 @@ namespace AC
 				return;
 			}
 
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.IsInLoadingScene ())
+			if (KickStarter.settingsManager && KickStarter.settingsManager.IsInLoadingScene ())
 			{
 				return;
 			}
@@ -299,7 +296,7 @@ namespace AC
 				}
 			}
 
-			if (!cameraIsOff)
+			if (!cameraIsOff && KickStarter.mainCamera)
 			{
 				KickStarter.mainCamera._LateUpdate ();
 			}
@@ -332,7 +329,7 @@ namespace AC
 				return;
 			}
 
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.IsInLoadingScene ())
+			if (KickStarter.settingsManager && KickStarter.settingsManager.IsInLoadingScene ())
 			{
 				return;
 			}
@@ -379,8 +376,6 @@ namespace AC
 				return;
 			}
 
-			StatusBox.DrawDebugWindow ();
-
 			if (KickStarter.settingsManager.IsInLoadingScene () || KickStarter.sceneChanger.IsLoading ())
 			{
 				if (!cameraIsOff && !KickStarter.settingsManager.IsInLoadingScene ())
@@ -402,6 +397,8 @@ namespace AC
 				{
 					KickStarter.mainCamera.DrawBorders ();
 				}
+
+				StatusBox.DrawDebugWindow ();
 				return;
 			}
 
@@ -450,13 +447,19 @@ namespace AC
 				{
 					KickStarter.playerCursor.DrawCursor ();
 				}
+				else if (InvInstance.IsValid (KickStarter.runtimeInventory.SelectedInstance))
+				{
+					KickStarter.runtimeInventory.DrawSelectedInventoryCount ();
+				}
 			}
 
-			if (!cameraIsOff)
+			if (!cameraIsOff && KickStarter.mainCamera)
 			{
 				KickStarter.mainCamera.DrawCameraFade ();
 				KickStarter.mainCamera.DrawBorders ();
 			}
+
+			StatusBox.DrawDebugWindow ();
 		}
 
 		#endregion
@@ -481,7 +484,7 @@ namespace AC
 				}
 
 				if (inScriptedCutscene) return GameState.Cutscene;
-				if (KickStarter.mainCamera != null && KickStarter.mainCamera.IsShowingForcedOverlay ()) return GameState.Cutscene;
+				if (KickStarter.mainCamera && KickStarter.mainCamera.IsShowingForcedOverlay ()) return GameState.Cutscene;
 				if (KickStarter.playerInteraction.InPreInteractionCutscene) return GameState.Cutscene;
 
 				if (KickStarter.actionListManager.IsGameplayBlocked ())
@@ -522,12 +525,6 @@ namespace AC
 		}
 
 
-		private bool CanRun ()
-		{
-			return (!isACDisabled && activeKickStarter != null);
-		}
-
-
 		/**
 		 * <summary>Runs the ActionListAsset defined in SettingsManager's actionListOnStart when the game begins.</summary>
 		 * <returns>True if an ActionListAsset was run</returns>
@@ -540,6 +537,8 @@ namespace AC
 			}
 
 			runAtLeastOnce = true;
+
+			KickStarter.playerMenus.ShowEnabledOnStartMenus ();
 
 			ActiveInput.Upgrade ();
 			if (KickStarter.settingsManager.activeInputs != null)
@@ -596,22 +595,6 @@ namespace AC
 			foreach (Sound sound in sounds)
 			{
 				sound.SetMaxVolume ();
-			}
-		}
-
-
-		/**
-		 * <summary>Goes through all Hotspots in the scene, and limits their enabed state based on a specific _Camera, if appropriate.</summary>
-		 * <param name = "_camera">The _Camera to attempt to limit all Hotspots to</param>
-		 */
-		public void LimitHotspotsToCamera (_Camera _camera)
-		{
-			if (_camera != null)
-			{
-				foreach (Hotspot hotspot in hotspots)
-				{
-					hotspot.LimitToCamera (_camera);
-				}
 			}
 		}
 
@@ -841,6 +824,16 @@ namespace AC
 
 
 		/**
+		 * <summary>Checks if the camera system is disabled.</summary>
+		 * <returns>True if the camera system is disabled</returns>
+		 */
+		public bool AreCamerasDisabled ()
+		{
+			return cameraIsOff;
+		}
+
+
+		/**
 		 * <summary>Updates a MainData class with its own variables that need saving.</summary>
 		 * <param name = "mainData">The original MainData class</param>
 		 * <returns>The updated MainData class</returns>
@@ -856,12 +849,12 @@ namespace AC
 			mainData.triggerIsOff = triggerIsOff;
 			mainData.playerIsOff = playerIsOff;
 
-			if (music != null)
+			if (music)
 			{
 				mainData = music.SaveMainData (mainData);
 			}
 
-			if (ambience != null)
+			if (ambience)
 			{
 				mainData = ambience.SaveMainData (mainData);
 			}
@@ -929,6 +922,17 @@ namespace AC
 			return ambience;
 		}
 
+
+		/** Creates an initial record of all ConstantID components in the Hierarchy. More may be added through OnEnable / Start functions, but this way those that are initially present are ensured to be included in initialisation processes */
+		public void RegisterInitialConstantIDs ()
+		{
+			ConstantID[] allConstantIDs = Object.FindObjectsOfType <ConstantID>();
+			foreach (ConstantID constantID in allConstantIDs)
+			{
+				Register(constantID);
+			}
+		}
+
 		#endregion
 
 
@@ -971,7 +975,12 @@ namespace AC
 		{
 			if (music == null)
 			{
-				music = CreateSoundtrackEngine <Music> (Resource.musicEngine);
+				GameObject newMusicOb = new GameObject ("_Music");
+				AudioSource audioSource = newMusicOb.AddComponent <AudioSource>();
+				audioSource.playOnAwake = false;
+				audioSource.spatialBlend = 0f;
+
+				music = newMusicOb.AddComponent <Music>();
 			}
 		}
 
@@ -980,35 +989,19 @@ namespace AC
 		{
 			if (ambience == null)
 			{
-				ambience = CreateSoundtrackEngine <Ambience> (Resource.ambienceEngine);
+				GameObject newAmbienceOb = new GameObject ("_Ambience");
+				AudioSource audioSource = newAmbienceOb.AddComponent <AudioSource>();
+				audioSource.playOnAwake = false;
+				audioSource.spatialBlend = 0f;
+
+				ambience = newAmbienceOb.AddComponent<Ambience>();
 			}
 		}
 
 
-		protected T CreateSoundtrackEngine <T> (string resourceName) where T : Soundtrack
+		protected bool CanRun ()
 		{
-			GameObject soundtrackOb = (GameObject) Instantiate (Resources.Load (resourceName));
-			if (soundtrackOb != null)
-			{
-				soundtrackOb.name = AdvGame.GetName (resourceName);
-				return soundtrackOb.GetComponent <T>();
-			}
-			else
-			{
-				ACDebug.LogError ("Cannot find " + resourceName + " prefab in /AdventureCreator/Resources - did you import AC completely?");
-				return null;
-			}
-		}
-
-
-		/** Creates an initial record of all ConstantID components in the Hierarchy. More may be added through OnEnable / Start functions, but this way those that are initially present are ensured to be included in initialisation processes */
-		public void RegisterInitialConstantIDs ()
-		{
-			ConstantID[] allConstantIDs = Object.FindObjectsOfType <ConstantID>();
-			foreach (ConstantID constantID in allConstantIDs)
-			{
-				Register (constantID);
-			}
+			return (!isACDisabled && activeKickStarter);
 		}
 
 		#endregion
@@ -1092,6 +1085,16 @@ namespace AC
 			get
 			{
 				return backgroundImages;
+			}
+		}
+
+
+		/** A HashSet of all Container components found in the scene */
+		public HashSet<Container> Containers
+		{
+			get
+			{
+				return containers;
 			}
 		}
 
@@ -1200,7 +1203,7 @@ namespace AC
 			{
 				hotspots.Add (_object);
 
-				if (KickStarter.eventManager != null)
+				if (KickStarter.eventManager)
 				{
 					KickStarter.eventManager.Call_OnRegisterHotspot (_object, true);
 				}
@@ -1218,7 +1221,7 @@ namespace AC
 			{
 				hotspots.Remove (_object);
 
-				if (KickStarter.eventManager != null)
+				if (KickStarter.eventManager)
 				{
 					KickStarter.eventManager.Call_OnRegisterHotspot (_object, false);
 				}
@@ -1452,6 +1455,26 @@ namespace AC
 		public void Unregister (BackgroundImage _object)
 		{
 			backgroundImages.Remove (_object);
+		}
+
+
+		/**
+		 * <summary>Registers a Container, so that it can be updated</summary>
+		 * <param name = "_object">The Container to register</param>
+		 */
+		public void Register (Container _object)
+		{
+			containers.Add (_object);
+		}
+
+
+		/**
+		 * <summary>Unregisters a Container, so that it is no longer updated</summary>
+		 * <param name = "_object">The Container to unregister</param>
+		 */
+		public void Unregister (Container _object)
+		{
+			containers.Remove (_object);
 		}
 
 

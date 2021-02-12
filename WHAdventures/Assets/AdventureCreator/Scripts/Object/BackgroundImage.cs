@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"BackgroundImage.cs"
  * 
@@ -65,6 +65,7 @@ namespace AC
 		protected float startShakeIntensity;
 		protected float shakeIntensity;
 		protected Rect originalPixelInset;
+		protected AnimationCurve shakeCurve;
 
 		#endregion
 
@@ -160,11 +161,12 @@ namespace AC
 		 * <param name = "_shakeIntensity">How intense the shake effect should be</param>
 		 * <param name = "_duration">How long the shake effect should last, in seconds</param>
 		 */
-		public void Shake (float _shakeIntensity, float _duration)
+		public void Shake (float _shakeIntensity, float _duration, AnimationCurve _shakeCurve = null)
 		{
 			shakeDuration = _duration;
 			startTime = Time.time;
 			shakeIntensity = _shakeIntensity;
+			shakeCurve = _shakeCurve;
 
 			startShakeIntensity = shakeIntensity;
 
@@ -177,7 +179,7 @@ namespace AC
 
 		public void CancelVideoPlayback ()
 		{
-			if (videoPlayer != null)
+			if (videoPlayer)
 			{
 				videoPlayer.Stop ();
 			}
@@ -219,7 +221,7 @@ namespace AC
 					videoPlayer.Stop ();
 					if (videoPlayer.isPrepared)
 					{
-						if (videoPlayer.texture != null)
+						if (videoPlayer.texture)
 						{
 							BackgroundImageUI.Instance.ClearTexture (videoPlayer.texture);
 						}
@@ -231,7 +233,7 @@ namespace AC
 			#endif
 
 			Texture texture = backgroundTexture;
-			if (texture != null)
+			if (texture)
 			{
 				BackgroundImageUI.Instance.ClearTexture (texture);
 			}
@@ -260,8 +262,22 @@ namespace AC
 
 				BackgroundImageUI.Instance.SetShakeIntensity (_size);
 
-				shakeIntensity = Mathf.Lerp (startShakeIntensity, 0f, AdvGame.Interpolate (startTime, shakeDuration, MoveMethod.Linear, null));
-
+				float lerpAmount = AdvGame.Interpolate (startTime, shakeDuration, MoveMethod.Linear, null);
+				if (lerpAmount >= 1f)
+				{
+					shakeIntensity = 0f;
+				}
+				else if (shakeCurve != null)
+				{
+					shakeIntensity = startShakeIntensity * shakeCurve.Evaluate (lerpAmount);
+					shakeIntensity = Mathf.Max (shakeIntensity, 0.001f);
+				}
+				else
+				{
+					shakeIntensity = Mathf.Lerp (startShakeIntensity, 0f, lerpAmount);
+					shakeIntensity = Mathf.Max (shakeIntensity, 0.001f);
+				}
+				
 				yield return new WaitForEndOfFrame ();
 			}
 			
@@ -283,7 +299,7 @@ namespace AC
 		{
 			foreach (BackgroundImage backgroundImage in KickStarter.stateHandler.BackgroundImages)
 			{
-				if (backgroundImage != null)
+				if (backgroundImage)
 				{
 					backgroundImage.CancelVideoPlayback ();
 				}

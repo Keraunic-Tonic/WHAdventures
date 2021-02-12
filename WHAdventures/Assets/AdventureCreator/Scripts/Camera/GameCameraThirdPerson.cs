@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"GameCameraThirdPerson.cs"
  * 
@@ -136,9 +136,9 @@ namespace AC
 		{
 			base.Awake ();
 
-			targetRotation = transform.rotation;
-			initialPitch = transform.eulerAngles.x;
-			initialSpin = transform.eulerAngles.y;
+			targetRotation = Transform.rotation;
+			initialPitch = Transform.eulerAngles.x;
+			initialSpin = Transform.eulerAngles.y;
 			autoControlPitch = autoControlSpin = false;
 		}
 
@@ -149,7 +149,7 @@ namespace AC
 
 			ResetTarget ();
 
-			Vector3 angles = transform.eulerAngles;
+			Vector3 angles = Transform.eulerAngles;
 			spin = angles.y;
 			roll = angles.z; 
 
@@ -239,7 +239,7 @@ namespace AC
 
 		protected void DetectCollisions ()
 		{
-			if (detectCollisions && target != null)
+			if (detectCollisions && target)
 			{
 				Vector3 direction = target.position + new Vector3 (0, verticalOffset, 0f) - targetPosition;
 
@@ -261,8 +261,8 @@ namespace AC
 
 		protected void UpdateSelf ()
 		{
-			transform.rotation = targetRotation;
-			transform.position = targetPosition + actualCollisionOffset;
+			Transform.rotation = targetRotation;
+			Transform.position = targetPosition + actualCollisionOffset;
 		}
 
 
@@ -516,7 +516,7 @@ namespace AC
 
 		protected bool CanAcceptInput ()
 		{
-			if (KickStarter.mainCamera != null && KickStarter.mainCamera.attachedCamera != this)
+			if (KickStarter.mainCamera && KickStarter.mainCamera.attachedCamera != this)
 			{
 				return false;
 			}
@@ -535,8 +535,8 @@ namespace AC
 
 		protected void SnapMovement ()
 		{
-			transform.rotation = targetRotation;
-			transform.position = targetPosition;
+			Transform.rotation = targetRotation;
+			Transform.position = targetPosition;
 
 			SetFocalPoint ();
 		}
@@ -544,9 +544,9 @@ namespace AC
 
 		protected void SetFocalPoint ()
 		{
-			if (focalPointIsTarget && target != null)
+			if (focalPointIsTarget && target)
 			{
-				focalDistance = Vector3.Dot (transform.forward, target.position - transform.position);
+				focalDistance = Vector3.Dot (Transform.forward, target.position - Transform.position);
 				if (focalDistance < 0f)
 				{
 					focalDistance = 0f;

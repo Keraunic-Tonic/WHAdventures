@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionConversation.cs"
  * 
@@ -20,7 +20,7 @@ namespace AC
 {
 
 	[System.Serializable]
-	public class ActionConversation : ActionCheckMultiple
+	public class ActionConversation : Action
 	{
 
 		public int parameterID = -1;
@@ -34,15 +34,13 @@ namespace AC
 		protected Conversation tempConversation;
 		#endif
 
+		public int numSockets;
 
-		public ActionConversation ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Dialogue;
-			title = "Start conversation";
-			description = "Enters Conversation mode, and displays the available dialogue options in a specified conversation.";
-			numSockets = 0;
-		}
+
+		public override ActionCategory Category { get { return ActionCategory.Dialogue; }}
+		public override string Title { get { return "Start conversation"; }}
+		public override string Description { get { return "Enters Conversation mode, and displays the available dialogue options in a specified conversation."; }}
+		public override int NumSockets { get { return numSockets; }}
 
 
 		public override void AssignParentList (ActionList actionList)
@@ -95,7 +93,7 @@ namespace AC
 		}
 
 		
-		public override ActionEnd End (List<Action> actions)
+		public override int GetNextOutputIndex ()
 		{
 			if (runtimeConversation)
 			{
@@ -104,11 +102,11 @@ namespace AC
 				runtimeConversation.lastOption = -1;
 				if (overrideOptions && _chosenOptionIndex >= 0 && endings.Count > _chosenOptionIndex)
 				{
-					return endings[_chosenOptionIndex];
+					return _chosenOptionIndex;
 				}
 			}
 			
-			return GenerateStopActionEnd ();
+			return -1;
 		}
 
 
@@ -189,8 +187,6 @@ namespace AC
 
 		protected override string GetSocketLabel (int i)
 		{
-			i -= 1;
-
 			if (!overrideOptions && !KickStarter.settingsManager.allowGameplayDuringConversations && willWait)
 			{
 				return "After running:";
@@ -236,7 +232,7 @@ namespace AC
 				if (conversation != null && conversation.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -249,7 +245,7 @@ namespace AC
 		 */
 		public static ActionConversation CreateNew (Conversation conversationToRun)
 		{
-			ActionConversation newAction = (ActionConversation) CreateInstance <ActionConversation>();
+			ActionConversation newAction = CreateNew<ActionConversation> ();
 			newAction.conversation = conversationToRun;
 			return newAction;
 		}

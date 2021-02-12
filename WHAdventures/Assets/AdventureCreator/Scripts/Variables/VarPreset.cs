@@ -1,5 +1,5 @@
 /*	Adventure Creator
-*	by Chris Burton, 2013-2020
+*	by Chris Burton, 2013-2021
 *	
 *	"VarPreset.cs"
 * 
@@ -191,6 +191,8 @@ namespace AC
 		public string textVal;
 		/** Its value, if a Vector3 */
 		public Vector3 vector3Val;
+		/** Its value, if a GameObject */
+		public GameObject gameObjectVal;
 
 
 		/**
@@ -204,6 +206,7 @@ namespace AC
 			floatVal = _gVar.FloatValue;
 			textVal = _gVar.TextValue;
 			vector3Val = _gVar.Vector3Value;
+			gameObjectVal = _gVar.GameObjectValue;
 		}
 
 	}

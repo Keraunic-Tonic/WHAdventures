@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MainCameraTrack.cs"
  * 
@@ -14,6 +14,10 @@
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace AC
 {
@@ -30,6 +34,7 @@ namespace AC
 		#region Variables
 
 		[SerializeField] private bool callCustomEvents = false;
+		[SerializeField] private bool setsCameraAfterRunning = false;
 
 		#endregion
 
@@ -42,6 +47,7 @@ namespace AC
 			{
 				MainCameraShot shot = (MainCameraShot) clip.asset;
 				shot.callCustomEvents = callCustomEvents;
+				shot.setsCameraAfterRunning = setsCameraAfterRunning;
 			}
 
 			ScriptPlayable<MainCameraMixer> mixer = ScriptPlayable<MainCameraMixer>.Create (graph);
@@ -56,10 +62,11 @@ namespace AC
 
 		public void ShowGUI ()
 		{
-			callCustomEvents = UnityEditor.EditorGUILayout.Toggle ("Calls custom events?", callCustomEvents);
+			setsCameraAfterRunning = CustomGUILayout.Toggle ("Sets camera after running?", setsCameraAfterRunning, string.Empty, "If True, the MainCamera's active camera will be updated with each camera shot, causing it to remain active once the Timeline ends");
+			callCustomEvents = CustomGUILayout.Toggle ("Calls custom events?", callCustomEvents, string.Empty, "If True, OnCameraSwitch events will be fired whenever there is a new camera shot.");
 			if (callCustomEvents)
 			{
-				UnityEditor.EditorGUILayout.HelpBox ("The OnCameraSwitch event's transition time will always be zero.", UnityEditor.MessageType.Info);
+				EditorGUILayout.HelpBox ("The OnCameraSwitch event's transition time will always be zero.", MessageType.Info);
 			}
 		}
 

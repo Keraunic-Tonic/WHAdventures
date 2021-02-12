@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SpeechLine.cs"
  * 
@@ -315,7 +315,7 @@ namespace AC
 
 			if (lineID == speechManager.activeLineID)
 			{
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.BeginVertical ();
 
 				EditorGUILayout.BeginHorizontal ();
 
@@ -590,7 +590,7 @@ namespace AC
 					description = EditField ("Description:", description, true, apiPrefix + ".description", "An Editor-only description");
 				}
 				
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 			}
 			else
 			{
@@ -782,7 +782,7 @@ namespace AC
 
 			result += "<tr><td><b>Line text:</b></td><td>" + lineText + "</td></tr>\n";
 			
-			if (description != null && description.Length > 0 && includeDescriptions)
+			if (!string.IsNullOrEmpty (description) && includeDescriptions)
 			{
 				result += "<tr><td><b>Description:</b></td><td>" + description + "</td></tr>\n";
 			}
@@ -804,7 +804,7 @@ namespace AC
 							{
 								for (int j = 0; j < KickStarter.settingsManager.players.Count; j++)
 								{
-									if (KickStarter.settingsManager.players[j].playerOb != null)
+									if (KickStarter.settingsManager.players[j].playerOb)
 									{
 										string overrideName = KickStarter.settingsManager.players[j].playerOb.name;
 										result += "<td><b>Lipsync file:</b></td><td>" + GetFolderName (language, true, overrideName) + GetFilename (overrideName) + "</td></tr>\n";
@@ -814,7 +814,7 @@ namespace AC
 
 							for (int j = 0; j < KickStarter.settingsManager.players.Count; j++)
 							{
-								if (KickStarter.settingsManager.players[j].playerOb != null)
+								if (KickStarter.settingsManager.players[j].playerOb)
 								{
 									string overrideName = KickStarter.settingsManager.players[j].playerOb.name;
 									result += "<tr><td><b>Audio file:</b></td><td>" + GetFolderName (language, false, overrideName) + GetFilename (overrideName) + "</td></tr>\n";
@@ -834,11 +834,11 @@ namespace AC
 
 				case ReferenceSpeechFiles.ByDirectReference:
 					{
-						if (speechManager.UseFileBasedLipSyncing () && customLipsyncFile != null)
+						if (speechManager.UseFileBasedLipSyncing () && customLipsyncFile)
 						{
 							result += "<td><b>Lipsync file:</b></td><td>" + customLipsyncFile.name + "</td></tr>\n";
 						}
-						if (customAudioClip != null)
+						if (customAudioClip)
 						{
 							result += "<tr><td><b>Audio file:</b></td><td>" + customAudioClip.name + "</td></tr>\n";
 						}
@@ -895,11 +895,11 @@ namespace AC
 
 				Object foundClp = null;
 
-				if (KickStarter.settingsManager != null && SeparatePlayerAudio ())
+				if (KickStarter.settingsManager && SeparatePlayerAudio ())
 				{
 					foreach (PlayerPrefab player in KickStarter.settingsManager.players)
 					{
-						if (player != null && player.playerOb != null)
+						if (player != null && player.playerOb)
 						{
 							fullName = GetAutoAssetPathAndName (language, forLipSync, player.playerOb.name);
 
@@ -908,7 +908,7 @@ namespace AC
 								if (KickStarter.speechManager.lipSyncMode == LipSyncMode.RogoLipSync)
 								{
 									Object lipSyncFile = RogoLipSyncIntegration.GetObjectToPing (fullName);
-									if (lipSyncFile != null)
+									if (lipSyncFile)
 									{
 										foundClp = lipSyncFile;
 									}
@@ -916,7 +916,7 @@ namespace AC
 								else
 								{
 									TextAsset textFile = Resources.Load (fullName) as TextAsset;
-									if (textFile != null)
+									if (textFile )
 									{
 										foundClp = textFile;
 									}
@@ -925,7 +925,7 @@ namespace AC
 							else
 							{
 								AudioClip clipObj = Resources.Load (fullName) as AudioClip;
-								if (clipObj != null)
+								if (clipObj)
 								{
 									foundClp = clipObj;
 									break;
@@ -957,7 +957,7 @@ namespace AC
 					}
 				}
 
-				if (foundClp != null)
+				if (foundClp)
 				{
 					EditorGUIUtility.PingObject (foundClp);
 				}
@@ -992,7 +992,7 @@ namespace AC
 							bool doDisplay = false;
 							foreach (PlayerPrefab player in KickStarter.settingsManager.players)
 							{
-								if (player != null && player.playerOb != null)
+								if (player != null && player.playerOb)
 								{
 									string fullName = GetAutoAssetPathAndName (language, false, player.playerOb.name);
 									AudioClip clipObj = Resources.Load (fullName) as AudioClip;
@@ -1015,7 +1015,7 @@ namespace AC
 							string fullName = GetAutoAssetPathAndName (language);
 							AudioClip clipObj = Resources.Load (fullName) as AudioClip;
 
-							if (clipObj != null)
+							if (clipObj)
 							{
 								return true;
 							}
@@ -1025,15 +1025,15 @@ namespace AC
 
 				case ReferenceSpeechFiles.ByDirectReference:
 					{
-						if (languageIndex == 0 && customAudioClip != null)
+						if (languageIndex == 0 && customAudioClip)
 						{
 							return true;
 						}
-						if (speechManager.translateAudio && languageIndex > 0 && customTranslationAudioClips.Count > (languageIndex - 1) && customTranslationAudioClips[languageIndex - 1] != null)
+						if (speechManager.translateAudio && languageIndex > 0 && customTranslationAudioClips.Count > (languageIndex - 1) && customTranslationAudioClips[languageIndex - 1])
 						{
 							return true;
 						}
-						if (!speechManager.translateAudio && customAudioClip != null)
+						if (!speechManager.translateAudio && customAudioClip)
 						{
 							return true;
 						}

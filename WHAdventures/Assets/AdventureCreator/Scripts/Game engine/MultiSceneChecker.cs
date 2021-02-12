@@ -22,7 +22,6 @@ namespace AC
 			if (!UnityVersionHandler.ObjectIsInActiveScene (gameObject))
 			{
 				// Register self as a "sub-scene"
-
 				GameObject subSceneOb = new GameObject ();
 				SubScene newSubScene = subSceneOb.AddComponent <SubScene>();
 				newSubScene.Initialise (this);
@@ -52,7 +51,7 @@ namespace AC
 			if (!runStart) return;
 			runStart = false;
 
-			if (UnityVersionHandler.ObjectIsInActiveScene (gameObject) && KickStarter.settingsManager != null && KickStarter.saveSystem != null)
+			if (UnityVersionHandler.ObjectIsInActiveScene (gameObject) && KickStarter.settingsManager && KickStarter.saveSystem)
 			{
 				if (KickStarter.settingsManager.IsInLoadingScene ())
 				{
@@ -67,7 +66,7 @@ namespace AC
 
 		private void OnEnable ()
 		{
-			if (UnityVersionHandler.ObjectIsInActiveScene (gameObject) && KickStarter.stateHandler != null)
+			if (UnityVersionHandler.ObjectIsInActiveScene (gameObject) && KickStarter.stateHandler)
 			{
 				KickStarter.stateHandler.Register (GetComponent<KickStarter> ());
 			}
@@ -76,10 +75,29 @@ namespace AC
 
 		private void OnDisable ()
 		{
-			if (KickStarter.stateHandler != null)
+			if (KickStarter.stateHandler)
 			{
 				KickStarter.stateHandler.Unregister (GetComponent<KickStarter> ());
 			}
+		}
+
+		#endregion
+
+
+		#region StaticFunctions
+
+		public static MultiSceneChecker GetSceneInstance (Scene scene)
+		{
+			MultiSceneChecker[] multiSceneCheckers = FindObjectsOfType<MultiSceneChecker>();
+			foreach (MultiSceneChecker multiSceneChecker in multiSceneCheckers)
+			{
+				if (multiSceneChecker.gameObject.scene == scene)
+				{
+					return multiSceneChecker;
+				}
+			}
+
+			return null;
 		}
 
 		#endregion
@@ -89,7 +107,7 @@ namespace AC
 
 		protected bool TestManagerPresence ()
 		{
-			References references = (References)Resources.Load (Resource.references);
+			References references = Resource.References;
 			if (references)
 			{
 				SceneManager sceneManager = AdvGame.GetReferences ().sceneManager;
@@ -145,6 +163,7 @@ namespace AC
 
 				if (!string.IsNullOrEmpty (missingManagers))
 				{
+					if (KickStarter.kickStarter && KickStarter.sceneSettings) KickStarter.kickStarter.CheckRequiredManagerPackage (KickStarter.sceneSettings.requiredManagerPackage);
 					ACDebug.LogError ("Unassigned AC Manager(s): " + missingManagers + " - all Managers must be assigned in the AC Game Editor window for AC to initialise");
 					return false;
 				}
@@ -237,7 +256,7 @@ namespace AC
 
 			if (!string.IsNullOrEmpty (openScene) && !Application.isPlaying)
 			{
-				if (FindObjectOfType <KickStarter>() != null)
+				if (FindObjectOfType <KickStarter>())
 				{
 					FindObjectOfType <KickStarter>().ClearVariables ();
 				}

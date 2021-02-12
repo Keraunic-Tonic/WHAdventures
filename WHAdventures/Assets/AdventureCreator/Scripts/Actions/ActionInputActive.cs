@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionInputCheck.cs"
  * 
@@ -27,13 +27,9 @@ namespace AC
 		public bool newState;
 
 		
-		public ActionInputActive ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Input;
-			title = "Toggle active";
-			description = "Enables or disables an Active Input";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Input; }}
+		public override string Title { get { return "Toggle active"; }}
+		public override string Description { get { return "Enables or disables an Active Input"; }}
 
 
 		public override float Run ()
@@ -99,8 +95,6 @@ namespace AC
 				activeInputID = 0;
 				tempNumber = 0;
 			}
-
-			AfterRunningOption ();
 		}
 		
 		#endif
@@ -114,7 +108,7 @@ namespace AC
 		 */
 		public static ActionInputActive CreateNew (int activeInputID, ChangeType changeType)
 		{
-			ActionInputActive newAction = (ActionInputActive) CreateInstance <ActionInputActive>();
+			ActionInputActive newAction = CreateNew<ActionInputActive> ();
 			newAction.activeInputID = activeInputID;
 			newAction.newState = (changeType == ChangeType.Enable);
 			return newAction;

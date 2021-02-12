@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Action.cs"
  * 
@@ -27,17 +27,20 @@ namespace AC
 	 * They are chained together in ActionLists to form cutscenes, gameplay logic etc.
 	 */
 	[System.Serializable]
+	#if AC_ActionListPrefabs
+	abstract public class Action
+	#else
 	abstract public class Action : ScriptableObject
+	#endif
 	{
 
 		/** A unique identifier */
 		public int id;
-		/** The category (ActionList, Camera, Character, Container, Dialogue, Engine, Hotspot, Input, Inventory, Menu, Moveable, Object, Player, Save, Sound, ThirdParty, Variable, Custom) */
-		public ActionCategory category = ActionCategory.Custom;
-		/** The Action's title */
-		public string title;
-		/** A brief description about what the Action does */
-		public string description;
+
+		protected ActionCategory category = ActionCategory.Custom;
+		protected string title = "Untitled";
+		protected string description;
+
 		/** If True, the Action is expanded in the Editor */
 		public bool isDisplayed;
 		/** If True, then the comment text will be shown in the Action's UI in the ActionList Editor window */
@@ -45,26 +48,27 @@ namespace AC
 		/** A user-defined comment about the Action's purpose */
 		public string comment;
 
-		/** How many output sockets the Action has */
-		public int numSockets = 1;
 		/** If True, the ActionList will wait until the Action has finished running before continuing */
 		public bool willWait;
 
 		/** If True, then the Action is running */
 		[System.NonSerialized] public bool isRunning;
-		/** What happened the last time the Action was run (used when skipping Actions) */
-		[System.NonSerialized] public ActionEnd lastResult = new ActionEnd (-10);
 
-		/** What happens when the Action ends (Continue, Stop, Skip, RunCutscene) */
-		public ResultAction endAction = ResultAction.Continue;
-		/** The index number of the Action to skip to, if resultAction = ResultAction.Skip */
-		public int skipAction = -1;
-		/** The Action to skip to, if resultAction = ResultAction.Skip */
-		public AC.Action skipActionActual;
-		/** The Cutscene to run, if resultAction = ResultAction.RunCutscene and the Action is in a scene-based ActionList */
-		public Cutscene linkedCutscene;
-		/** The ActionListAsset to run, if resultAction = ResultAction.RunCutscene and the Action is in an ActionListAsset file */
-		public ActionListAsset linkedAsset;
+		private int lastRunOutput = -10;
+
+		/** Deprecated */
+		[SerializeField] private ResultAction endAction = ResultAction.Continue;
+		/** Deprecated */
+		[SerializeField] private int skipAction = -1;
+		/** Deprecated */
+		[SerializeField] private AC.Action skipActionActual;
+		/** Deprecated */
+		[SerializeField] private Cutscene linkedCutscene;
+		/** Deprecated */
+		[SerializeField] private ActionListAsset linkedAsset;
+
+		/** A List of the various outcomes that running the Action can have */
+		public List<ActionEnd> endings = new List<ActionEnd> ();
 
 		/** If True, the Action is enabled and can be run */
 		public bool isEnabled = true;
@@ -82,6 +86,13 @@ namespace AC
 		public bool showOutputSockets = true;
 		/** The Action's parent ActionList, if in the scene.  This is not 100% reliable and should not be used in custom scripts */
 		public ActionList parentActionListInEditor = null;
+
+		public const int skipSocketSeparation = 44;
+		#if UNITY_EDITOR_OSX
+		public const int socketSeparation = 26;
+		#else
+		public const int socketSeparation = 28;
+		#endif
 		#endif
 
 
@@ -92,7 +103,63 @@ namespace AC
 		{
 			this.isDisplayed = true;
 		}
-		
+
+
+		/** The category (ActionList, Camera, Character, Container, Dialogue, Engine, Hotspot, Input, Inventory, Menu, Moveable, Object, Player, Save, Sound, ThirdParty, Variable, Custom) */
+		public virtual ActionCategory Category
+		{
+			get
+			{
+				return category;
+			}
+		}
+
+
+		/** The Action's title */
+		public virtual string Title
+		{
+			get
+			{
+				return title;
+			}
+		}
+
+
+		/** A brief description about what the Action does */
+		public virtual string Description
+		{
+			get
+			{
+				return description;
+			}
+		}
+
+
+		public virtual int NumSockets
+		{
+			get
+			{
+				return 1;
+			}
+		}
+
+
+		/** Used to upgrade Action data to the latest AC release */
+		public virtual void Upgrade ()
+		{
+			if (skipAction != -99 && endings.Count == 0)
+			{
+				ActionEnd actionEnd = new ActionEnd ();
+				actionEnd.resultAction = endAction;
+				actionEnd.skipAction = skipAction;
+				actionEnd.skipActionActual = skipActionActual;
+				actionEnd.linkedCutscene = linkedCutscene;
+				actionEnd.linkedAsset = linkedAsset;
+				endings.Add (actionEnd);
+				skipAction = -99;
+			}
+		}
+
 
 		/**
 		 * <summary>Runs the Action.</summary>
@@ -113,6 +180,15 @@ namespace AC
 		}
 
 
+		public virtual bool RunAllOutputs
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+
 		public float defaultPauseTime
 		{
 			get
@@ -123,31 +199,66 @@ namespace AC
 		
 
 		/**
-		 * <summary>Generates an ActionEnd class that describes what should happen after the Action has run.</summary>
-		 * <param name = "actions">The List of Actions that the Action is a part of</param>
-		 * <returns>An ActionEnd class that describes what should happen after the Action has run</returns>
+		 * <summary>Gets the index of the output socket to use after the Action has run.</summary>
+		 * <returns>The index of the output socket to run. If the index is negative or invalid it will result in the ActionList ending</returns>
 		 */
-		public virtual ActionEnd End (List<Action> actions)
+		public virtual int GetNextOutputIndex ()
 		{
-			return GenerateActionEnd (endAction, linkedAsset, linkedCutscene, skipAction, skipActionActual, actions);
+			if (endings.Count > 0)
+			{
+				return 0;
+			}
+			return -1;
 		}
 
 
 		/**
 		 * <summary>Prints the Action's comment, if applicable, to the Console.</summary>
 		 * <param name = "actionList">The associated ActionList of which this Action is a part of</param>
+		 * <param name = "actionListAsset">The associated ActionListAsset of which this Action is a part of</param>
 		 */
-		public void PrintComment (ActionList actionList)
+		public void PrintComment (ActionList actionList, ActionListAsset actionListAsset = null)
 		{
-			if (showComment && !string.IsNullOrEmpty (comment))
+			if (actionList == null) return;
+
+			if (!string.IsNullOrEmpty (comment))
 			{
 				string log = AdvGame.ConvertTokens (comment, 0, null, actionList.parameters);
-				log += "\n" + "(From Action '(" + actionList.actions.IndexOf (this) + ") " + KickStarter.actionsManager.GetActionTypeLabel (this) + "' in ActionList '" + actionList.gameObject.name + "')";
-				ACDebug.Log (log, actionList);
+				log += "\n" + "(From Action '(" + actionList.actions.IndexOf (this) + ") " + KickStarter.actionsManager.GetActionTypeLabel (this);
+
+				if (actionListAsset)
+				{
+					log += "' in ActionList asset '" + actionListAsset.name + "')";
+					ACDebug.Log (log, actionListAsset);
+				}
+				else
+				{
+					log += "' in ActionList '" + actionList.gameObject.name + "')";
+					ACDebug.Log (log, actionList);
+				}
 			}
 		}
-		
-		
+
+
+		/**
+		 * <summary>Update the Action's output sockets</summary>
+		 * <param name = "actionEnds">A data container for the output sockets</param>
+		 */
+		public void SetOutputs (ActionEnd[] actionEnds)
+		{
+			endings = new List<ActionEnd>();
+			foreach (ActionEnd actionEnd in actionEnds)
+			{
+				endings.Add (new ActionEnd (actionEnd));
+			}
+
+			if (endings.Count > NumSockets)
+			{
+				LogWarning ("Ending mismatch - setting " + actionEnds.Length + " outputs for Action, but only " + NumSockets + " are supported");
+			}
+		}
+
+
 		#if UNITY_EDITOR
 
 		/**
@@ -168,44 +279,80 @@ namespace AC
 
 
 		protected void AfterRunningOption ()
+		{}
+		
+
+		public void SkipActionGUI (List<Action> actions, bool showGUI)
 		{
-			EditorGUILayout.Space ();
-			endAction = (ResultAction) EditorGUILayout.EnumPopup ("After running:", (ResultAction) endAction);
+			Upgrade ();
 			
-			if (endAction == ResultAction.RunCutscene)
+			int numSockets = Mathf.Max (NumSockets, 0);
+
+			if (numSockets < endings.Count)
 			{
-				if (isAssetFile)
+				endings.RemoveRange (Mathf.Max (1, numSockets), endings.Count - Mathf.Max (1, numSockets));
+			}
+			else if (numSockets > endings.Count)
+			{
+				if (numSockets > endings.Capacity)
 				{
-					linkedAsset = ActionListAssetMenu.AssetGUI ("ActionList to run:", linkedAsset);
+					endings.Capacity = numSockets;
 				}
-				else
+				for (int i = endings.Count; i < numSockets; i++)
 				{
-					linkedCutscene = ActionListAssetMenu.CutsceneGUI ("Cutscene to run:", linkedCutscene);
+					ActionEnd newEnd = new ActionEnd ();
+					newEnd.resultAction = ResultAction.Stop;
+					endings.Add (newEnd);
+				}
+			}
+
+			for (int i=0; i<numSockets; i++)
+			{
+				if (showGUI)
+				{
+					EditorGUILayout.Space ();
+					endings[i].resultAction = (ResultAction) EditorGUILayout.EnumPopup (GetSocketLabel (i), (ResultAction) endings[i].resultAction);
+				}
+
+				if (endings[i].resultAction == ResultAction.RunCutscene && showGUI)
+				{
+					if (isAssetFile)
+					{
+						endings[i].linkedAsset = ActionListAssetMenu.AssetGUI ("ActionList to run:", endings[i].linkedAsset);
+					}
+					else
+					{
+						endings[i].linkedCutscene = ActionListAssetMenu.CutsceneGUI ("Cutscene to run:", endings[i].linkedCutscene);
+					}
+				}
+				else if (endings[i].resultAction == ResultAction.Skip)
+				{
+					SkipActionGUI (endings[i], actions, showGUI);
 				}
 			}
 		}
-		
 
-		public virtual void SkipActionGUI (List<Action> actions, bool showGUI)
+
+		protected void SkipActionGUI (ActionEnd ending, List<Action> actions, bool showGUI)
 		{
-			if (skipAction == -1)
+			if (ending.skipAction == -1)
 			{
 				// Set default
 				int i = actions.IndexOf (this);
-				if (actions.Count > i+1)
+				if (actions.Count > i + 1)
 				{
-					skipAction = i+1;
+					ending.skipAction = i + 1;
 				}
 				else
 				{
-					skipAction = i;
+					ending.skipAction = i;
 				}
 			}
 
-			int tempSkipAction = skipAction;
-			List<string> labelList = new List<string>();
+			int tempSkipAction = ending.skipAction;
+			List<string> labelList = new List<string> ();
 
-			if (skipActionActual)
+			if (ending.skipActionActual != null)
 			{
 				bool found = false;
 
@@ -213,33 +360,33 @@ namespace AC
 				{
 					labelList.Add ("(" + i.ToString () + ") " + ((KickStarter.actionsManager != null) ? KickStarter.actionsManager.GetActionTypeLabel (actions[i]) : string.Empty));
 
-					if (skipActionActual == actions [i])
+					if (ending.skipActionActual == actions[i])
 					{
-						skipAction = i;
+						ending.skipAction = i;
 						found = true;
 					}
 				}
-				
+
 				if (!found)
 				{
-					skipAction = tempSkipAction;
+					ending.skipAction = tempSkipAction;
 				}
 			}
 
-			if (skipAction >= actions.Count)
+			if (ending.skipAction >= actions.Count)
 			{
-				skipAction = actions.Count - 1;
+				ending.skipAction = actions.Count - 1;
 			}
 
 			if (showGUI)
 			{
 				if (actions.Count > 1)
 				{
-					EditorGUILayout.BeginHorizontal();
+					EditorGUILayout.BeginHorizontal ();
 					EditorGUILayout.LabelField ("  Action to skip to:", GUILayout.Width (155f));
-					tempSkipAction = EditorGUILayout.Popup (skipAction, labelList.ToArray());
-					EditorGUILayout.EndHorizontal();
-					skipAction = tempSkipAction;
+					tempSkipAction = EditorGUILayout.Popup (ending.skipAction, labelList.ToArray ());
+					ending.skipAction = tempSkipAction;
+					EditorGUILayout.EndHorizontal ();
 				}
 				else
 				{
@@ -248,7 +395,7 @@ namespace AC
 				}
 			}
 
-			skipActionActual = actions [skipAction];
+			ending.skipActionActual = actions[ending.skipAction];
 		}
 
 
@@ -272,24 +419,65 @@ namespace AC
 		}
 
 
-		public virtual void DrawOutWires (List<Action> actions, int i, int offset, Vector2 scrollPosition)
+		public void DrawOutWires (List<Action> actions, int i, int offset, Vector2 scrollPosition)
 		{
-			if (endAction == ResultAction.Continue)
+			if (endings.Count == 1)
 			{
-				if (actions.Count > i+1)
+				if (endings[0].resultAction == ResultAction.Continue)
 				{
-					AdvGame.DrawNodeCurve (new Rect (NodeRect.position - scrollPosition, NodeRect.size),
-										   new Rect (actions[i+1].NodeRect.position - scrollPosition, actions[i + 1].NodeRect.size),
-										   new Color (0.3f, 0.3f, 1f, 1f), 10, false, isDisplayed);
+					if (actions.Count > i + 1)
+					{
+						AdvGame.DrawNodeCurve (new Rect (NodeRect.position - scrollPosition, NodeRect.size),
+											   new Rect (actions[i + 1].NodeRect.position - scrollPosition, actions[i + 1].NodeRect.size),
+											   new Color (0.3f, 0.3f, 1f, 1f), 10, false, isDisplayed);
+					}
 				}
-			}
-			else if (endAction == ResultAction.Skip && showOutputSockets)
-			{
-				if (skipActionActual != null && actions.Contains (skipActionActual))
+				else if (endings[0].resultAction == ResultAction.Skip && showOutputSockets)
 				{
-					AdvGame.DrawNodeCurve (new Rect (NodeRect.position - scrollPosition, NodeRect.size),
-										   new Rect (skipActionActual.NodeRect.position - scrollPosition, skipActionActual.NodeRect.size),
-										   new Color (0.3f, 0.3f, 1f, 1f), 10, false, isDisplayed);
+					if (endings[0].skipActionActual != null && actions.Contains (endings[0].skipActionActual))
+					{
+						AdvGame.DrawNodeCurve (new Rect (NodeRect.position - scrollPosition, NodeRect.size),
+											   new Rect (endings[0].skipActionActual.NodeRect.position - scrollPosition, endings[0].skipActionActual.NodeRect.size),
+											   new Color (0.3f, 0.3f, 1f, 1f), 10, false, isDisplayed);
+					}
+				}
+				return;
+			}
+
+			int totalHeight = 7;
+			for (int j = endings.Count - 1; j >= 0; j--)
+			{
+				ActionEnd ending = endings[j];
+
+				float fac = (float) (endings.Count - endings.IndexOf (ending)) / endings.Count;
+				Color wireColor = new Color (1f - fac, fac * 0.7f, 0.1f);
+
+				if (ending.resultAction == ResultAction.Continue)
+				{
+					if (actions.Count > i + 1)
+					{
+						AdvGame.DrawNodeCurve (new Rect (NodeRect.position - scrollPosition, NodeRect.size),
+											   new Rect (actions[i + 1].NodeRect.position - scrollPosition, actions[i + 1].NodeRect.size),
+											   wireColor, totalHeight, true, isDisplayed);
+					}
+				}
+				else if (ending.resultAction == ResultAction.Skip && showOutputSockets)
+				{
+					if (ending.skipActionActual != null && actions.Contains (ending.skipActionActual))
+					{
+						AdvGame.DrawNodeCurve (new Rect (NodeRect.position - scrollPosition, NodeRect.size),
+											   new Rect (ending.skipActionActual.NodeRect.position - scrollPosition, ending.skipActionActual.NodeRect.size),
+											   wireColor, totalHeight, true, isDisplayed);
+					}
+				}
+
+				if (ending.resultAction == ResultAction.Skip)
+				{
+					totalHeight += skipSocketSeparation;
+				}
+				else
+				{
+					totalHeight += socketSeparation;
 				}
 			}
 		}
@@ -349,7 +537,7 @@ namespace AC
 
 			if (!string.IsNullOrEmpty (label))
 			{
-				chosenNumber = CustomGUILayout.Popup ("-> " + label, chosenNumber, labelList.ToArray (), "", tooltip) - 1;
+				chosenNumber = CustomGUILayout.Popup ("-> " + label, chosenNumber, labelList.ToArray (), string.Empty, tooltip) - 1;
 			}
 			else
 			{
@@ -425,7 +613,7 @@ namespace AC
 
 			if (!string.IsNullOrEmpty (label))
 			{
-				chosenNumber = CustomGUILayout.Popup ("-> " + label, chosenNumber, labelList.ToArray (), "", tooltip) - 1;
+				chosenNumber = CustomGUILayout.Popup ("-> " + label, chosenNumber, labelList.ToArray (), string.Empty, tooltip) - 1;
 			}
 			else
 			{
@@ -539,7 +727,9 @@ namespace AC
 						ACDebug.Log ("Added '" + newComponent.GetType ().ToString () + "' component to " + field.gameObject.name, field.gameObject);
 					}
 
+					#if !AC_ActionListPrefabs
 					EditorUtility.SetDirty (this);
+					#endif
 				}
 			}
 		}
@@ -555,7 +745,9 @@ namespace AC
 
 					ACDebug.Log ("Added '" + newComponent.GetType ().ToString () + "' component to " + _gameObject.name, _gameObject);
 
+					#if !AC_ActionListPrefabs
 					EditorUtility.SetDirty (this);
+					#endif
 				}
 			}
 		}
@@ -621,19 +813,19 @@ namespace AC
 				if (_constantID != 0)
 				{
 					newField = ConstantID.GetComponent <T> (_constantID);
-					if (field != null && field.GetComponent <ConstantID>() != null && field.GetComponent <ConstantID>().constantID == _constantID)
+					if (field && field.GetComponent <ConstantID>() != null && field.GetComponent <ConstantID>().constantID == _constantID)
 					{}
-					else if (newField != null && !Application.isPlaying)
+					else if (newField && !Application.isPlaying)
 					{
 						field = newField;
 					}
 
-					EditorGUILayout.BeginVertical ("Button");
+					CustomGUILayout.BeginVertical ();
 					EditorGUILayout.BeginHorizontal ();
 					EditorGUILayout.LabelField ("Recorded ConstantID: " + _constantID.ToString (), EditorStyles.miniLabel);
 					if (field == null)
 					{
-						if (GUILayout.Button ("Search scenes", EditorStyles.miniButton))
+						if (!Application.isPlaying && GUILayout.Button ("Locate", EditorStyles.miniButton))
 						{
 							AdvGame.FindObjectWithConstantID (_constantID);
 						}
@@ -644,7 +836,7 @@ namespace AC
 					{
 						EditorGUILayout.HelpBox ("Further controls cannot display because the referenced object cannot be found.", MessageType.Warning);
 					}
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 			}
 			return field;
@@ -659,19 +851,19 @@ namespace AC
 				if (_constantID != 0)
 				{
 					newField = ConstantID.GetComponent <Collider> (_constantID);
-					if (field != null && field.GetComponent <ConstantID>() != null && field.GetComponent <ConstantID>().constantID == _constantID)
+					if (field && field.GetComponent <ConstantID>() != null && field.GetComponent <ConstantID>().constantID == _constantID)
 					{}
-					else if (newField != null && !Application.isPlaying)
+					else if (newField && !Application.isPlaying)
 					{
 						field = newField;
 					}
 
-					EditorGUILayout.BeginVertical ("Button");
+					CustomGUILayout.BeginVertical ();
 					EditorGUILayout.BeginHorizontal ();
 					EditorGUILayout.LabelField ("Recorded ConstantID: " + _constantID.ToString (), EditorStyles.miniLabel);
 					if (field == null)
 					{
-						if (GUILayout.Button ("Search scenes", EditorStyles.miniButton))
+						if (!Application.isPlaying && GUILayout.Button ("Locate", EditorStyles.miniButton))
 						{
 							AdvGame.FindObjectWithConstantID (_constantID);
 						}
@@ -682,7 +874,7 @@ namespace AC
 					{
 						EditorGUILayout.HelpBox ("Further controls cannot display because the referenced object cannot be found.", MessageType.Warning);
 					}
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 			}
 			return field;
@@ -725,19 +917,19 @@ namespace AC
 				if (_constantID != 0)
 				{
 					ConstantID newID = ConstantID.GetComponent <ConstantID> (_constantID);
-					if (field != null && field.GetComponent <ConstantID>() != null && field.GetComponent <ConstantID>().constantID == _constantID)
+					if (field && field.GetComponent <ConstantID>() != null && field.GetComponent <ConstantID>().constantID == _constantID)
 					{}
-					else if (newID != null && !Application.isPlaying)
+					else if (newID && !Application.isPlaying)
 					{
 						field = newID.transform;
 					}
 
-					EditorGUILayout.BeginVertical ("Button");
+					CustomGUILayout.BeginVertical ();
 					EditorGUILayout.BeginHorizontal ();
 					EditorGUILayout.LabelField ("Recorded ConstantID: " + _constantID.ToString (), EditorStyles.miniLabel);
 					if (field == null)
 					{
-						if (GUILayout.Button ("Search scenes", EditorStyles.miniButton))
+						if (!Application.isPlaying && GUILayout.Button ("Locate", EditorStyles.miniButton))
 						{
 							AdvGame.FindObjectWithConstantID (_constantID);
 						}
@@ -748,7 +940,7 @@ namespace AC
 					{
 						EditorGUILayout.HelpBox ("Further controls cannot display because the referenced object cannot be found.", MessageType.Warning);
 					}
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 			}
 			return field;
@@ -815,19 +1007,19 @@ namespace AC
 				if (_constantID != 0)
 				{
 					ConstantID newID = ConstantID.GetComponent <ConstantID> (_constantID);
-					if (field != null && field.GetComponent <ConstantID>() != null && field.GetComponent <ConstantID>().constantID == _constantID)
+					if (field && field.GetComponent <ConstantID>() != null && field.GetComponent <ConstantID>().constantID == _constantID)
 					{}
-					else if (newID != null && !Application.isPlaying)
+					else if (newID && !Application.isPlaying)
 					{
 						field = newID.gameObject;
 					}
 
-					EditorGUILayout.BeginVertical ("Button");
+					CustomGUILayout.BeginVertical ();
 					EditorGUILayout.BeginHorizontal ();
 					EditorGUILayout.LabelField ("Recorded ConstantID: " + _constantID.ToString (), EditorStyles.miniLabel);
 					if (field == null)
 					{
-						if (GUILayout.Button ("Search scenes", EditorStyles.miniButton))
+						if (!Application.isPlaying && GUILayout.Button ("Locate", EditorStyles.miniButton))
 						{
 							AdvGame.FindObjectWithConstantID (_constantID);
 						}
@@ -838,7 +1030,7 @@ namespace AC
 					{
 						EditorGUILayout.HelpBox ("Further controls cannot display because the referenced object cannot be found.", MessageType.Warning);
 					}
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 			}
 			return field;
@@ -887,19 +1079,20 @@ namespace AC
 		 * <param name = "parameters">The List of ActionParameters associated with the ActionList that contains the Action</param>
 		 * <param name = "location">The variable's location (Global, Local)</param>
 		 * <param name = "varID">The variable's ID number</param>
+		 * <param name="variablesConstantID">The Constant ID of the associated Variabels component, if a Component variable</param>
 		 * <returns>The number of references the Action makes to the variable</returns>
 		 */
-		public virtual int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID)
+		public virtual int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, int variablesConstantID = 0)
 		{
-			return GetVariableReferences (parameters, location, varID, null);
+			return GetVariableReferences (parameters, location, varID, null, variablesConstantID);
 		}
 
 
-		public virtual int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables variables)
+		public virtual int GetVariableReferences (List<ActionParameter> parameters, VariableLocation location, int varID, Variables variables, int variablesConstantID = 0)
 		{
 			string tokenText = AdvGame.GetVariableTokenText (location, varID);
 
-			if (!string.IsNullOrEmpty (tokenText) && comment != null && comment.Contains (tokenText))
+			if (!string.IsNullOrEmpty (tokenText) && !string.IsNullOrEmpty (comment) && comment.Contains (tokenText))
 			{
 				return 1;
 			}
@@ -912,8 +1105,20 @@ namespace AC
 			return 0;
 		}
 
+		
+		public virtual int GetMenuReferences (string menuTitle, string elementTitle = "")
+		{
+			return 0;
+		}
 
-		public virtual int GetDocumentReferences (List<ActionParameter> parameters, int invID)
+
+		public virtual int GetDocumentReferences (List<ActionParameter> parameters, int documentID)
+		{
+			return 0;
+		}
+
+
+		public virtual int GetObjectiveReferences (int objectiveID)
 		{
 			return 0;
 		}
@@ -927,9 +1132,17 @@ namespace AC
 		 */
 		public virtual bool ReferencesObjectOrID (GameObject gameObject, int id)
 		{
-			if (!isAssetFile && endAction == ResultAction.RunCutscene)
+			Upgrade ();
+
+			if (!isAssetFile)
 			{
-				if (linkedCutscene != null && linkedCutscene.gameObject == gameObject) return true;
+				foreach (ActionEnd ending in endings)
+				{
+					if (ending.resultAction == ResultAction.RunCutscene)
+					{
+						if (ending.linkedCutscene != null && ending.linkedCutscene.gameObject == gameObject) return true;
+					}
+				}
 			}
 			return false;
 		}
@@ -942,9 +1155,17 @@ namespace AC
 		 */
 		public virtual bool ReferencesAsset (ActionListAsset actionListAsset)
 		{
-			if (isAssetFile && endAction == ResultAction.RunCutscene)
+			Upgrade ();
+
+			if (isAssetFile)
 			{
-				if (linkedAsset == actionListAsset) return true;
+				foreach (ActionEnd ending in endings)
+				{
+					if (ending.resultAction == ResultAction.RunCutscene)
+					{
+						if (ending.linkedAsset == actionListAsset) return true;
+					}
+				}
 			}
 			return false;
 		}
@@ -1610,18 +1831,21 @@ namespace AC
 
 		#if UNITY_EDITOR
 
-		public virtual void FixLinkAfterDeleting (Action actionToDelete, Action targetAction, List<Action> actionList)
+		public void FixLinkAfterDeleting (Action actionToDelete, Action targetAction, List<Action> actionList)
 		{
-			if ((endAction == ResultAction.Skip && skipActionActual == actionToDelete) || (endAction == ResultAction.Continue && actionList.IndexOf (actionToDelete) == (actionList.IndexOf (this) + 1)))
+			foreach (ActionEnd end in endings)
 			{
-				if (targetAction == null)
+				if ((end.resultAction == ResultAction.Skip && end.skipActionActual == actionToDelete) || (end.resultAction == ResultAction.Continue && actionList.IndexOf (actionToDelete) == (actionList.IndexOf (this) + 1)))
 				{
-					endAction = ResultAction.Stop;
-				}
-				else
-				{
-					endAction = ResultAction.Skip;
-					skipActionActual = targetAction;
+					if (targetAction == null)
+					{
+						end.resultAction = ResultAction.Stop;
+					}
+					else
+					{
+						end.resultAction = ResultAction.Skip;
+						end.skipActionActual = targetAction;
+					}
 				}
 			}
 		}
@@ -1631,64 +1855,23 @@ namespace AC
 		{}
 
 
-		public virtual void PrepareToCopy (int originalIndex, List<Action> actionList)
-		{
-			if (endAction == ResultAction.Continue)
-			{
-				if (originalIndex == actionList.Count - 1)
-				{
-					endAction = ResultAction.Stop;
-				}
-				else if (actionList [originalIndex + 1].isMarked)
-				{
-					endAction = ResultAction.Skip;
-					skipActionActual = actionList [originalIndex + 1];
-				}
-				else
-				{
-					endAction = ResultAction.Stop;
-				}
-			}
-			if (endAction == ResultAction.Skip)
-			{
-				if (skipActionActual.isMarked)
-				{
-					int place = 0;
-					foreach (Action _action in actionList)
-					{
-						if (_action.isMarked)
-						{
-							if (_action == skipActionActual)
-							{
-								skipActionActual = null;
-								skipAction = place;
-								break;
-							}
-							place ++;
-						}
-					}
-				}
-				else
-				{
-					endAction = ResultAction.Stop;
-				}
-			}
-		}
-
-
-		public virtual void PrepareToPaste (int offset)
-		{
-			skipAction += offset;
-		}
-
-
 		public void BreakPoint (int i, ActionList list)
 		{
 			if (isBreakPoint)
 			{
-				ACDebug.Log ("Break-point with (" + i.ToString () + ") '" + category.ToString () + ": " + title + "' in " + list.gameObject.name, list.gameObject);
+				ACDebug.Log ("Break-point with (" + i.ToString () + ")", list, this);
 				EditorApplication.isPaused = true;
 			}
+		}
+
+
+		protected virtual string GetSocketLabel (int i)
+		{
+			if (NumSockets == 1)
+			{
+				return "After running:";
+			}
+			return "Option " + i.ToString () + ":";
 		}
 
 		#endif
@@ -1716,7 +1899,7 @@ namespace AC
 			else if (_resultAction == ResultAction.Skip)
 			{
 				int skip = _skipAction;
-				if (_skipActionActual && _actions.Contains (_skipActionActual))
+				if (_skipActionActual != null && _actions.Contains (_skipActionActual))
 				{
 					skip = _actions.IndexOf (_skipActionActual);
 				}
@@ -1730,22 +1913,39 @@ namespace AC
 			return actionEnd;
 		}
 
-
-		protected ActionEnd GenerateStopActionEnd ()
+		
+		public static ActionEnd GenerateStopActionEnd ()
 		{
-			ActionEnd actionEnd = new ActionEnd ();
-			actionEnd.resultAction = ResultAction.Stop;
-			return actionEnd;
+			ActionEnd stopActionEnd = new ActionEnd
+			{
+				resultAction = ResultAction.Stop
+			};
+			return stopActionEnd;
 		}
 
 
 		/**
-		 * <summary>Sets the value of the lastResult ActionEnd.</summary>
-		 * <param name = "_actionEnd">The ActionEnd to copy onto lastResult</param>
+		 * <summary>Updates which output was followed when the Action was last run</summary>
+		 * <param name = "_lastRunOutput">The index of the ending last run</param>
 		 */
-		public virtual void SetLastResult (ActionEnd _actionEnd)
+		public virtual void SetLastResult (int _lastRunOutput)
 		{
-			lastResult = _actionEnd;
+			lastRunOutput = _lastRunOutput;
+		}
+
+
+		public void ResetLastResult ()
+		{
+			lastRunOutput = -10;
+		}
+
+
+		public int LastRunOutput
+		{
+			get
+			{
+				return lastRunOutput;
+			}
 		}
 
 
@@ -1763,25 +1963,68 @@ namespace AC
 		}
 
 
+		public static T CreateNew <T> () where T : Action
+		{
+			#if AC_ActionListPrefabs
+			T newAction = (T) System.Activator.CreateInstance<T> ();
+			#else
+			T newAction = (T) CreateInstance<T> ();
+			#endif
+			return newAction;
+		}
+
+
+		public static Action CreateNew (string className)
+		{
+			#if AC_ActionListPrefabs
+			System.Runtime.Remoting.ObjectHandle handle = System.Activator.CreateInstance ("Assembly-CSharp", "AC." + className);
+			Action newAction = (Action) handle.Unwrap ();
+			#else
+			Action newAction = (Action) CreateInstance (className);
+			#endif
+			return newAction;
+		}
+
+
 		#if UNITY_EDITOR
 
 		public Rect NodeRect
 		{
 			get
 			{
-				/*private const float gridSnapSize = 20f;
-				if (KickStarter.actionsManager != null && KickStarter.actionsManager.snapToGrid)
-				{
-					Vector2 snappedPosition = new Vector2 (Mathf.RoundToInt (nodeRect.x / gridSnapSize) * gridSnapSize, Mathf.RoundToInt (nodeRect.y / gridSnapSize) * gridSnapSize);
-					return new Rect (snappedPosition, nodeRect.size);
-				}*/
-
 				return nodeRect;
 			}
 			set
 			{
 				nodeRect = value;
 			}
+		}
+
+
+		public static void EditSource (Action _action)
+		{
+			if (_action == null) return;
+
+			#if AC_ActionListPrefabs
+
+			ActionType actionType = KickStarter.actionsManager.GetActionType (_action);
+			string[] assets = AssetDatabase.FindAssets (actionType.fileName + " t: Script", null);
+			if (assets.Length > 0)
+			{
+				string assetPath = AssetDatabase.GUIDToAssetPath (assets[0]);
+				var script = AssetDatabase.LoadMainAssetAtPath (assetPath);
+				AssetDatabase.OpenAsset (script);
+			}
+
+			#else
+
+			var script = MonoScript.FromScriptableObject (_action);
+			if (script != null)
+			{
+				AssetDatabase.OpenAsset (script);
+			}
+
+			#endif
 		}
 
 		#endif

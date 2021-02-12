@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionAmbience.cs"
  * 
@@ -42,13 +42,9 @@ namespace AC
 		protected Ambience ambience;
 			
 		
-		public ActionAmbience ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Sound;
-			title = "Play ambience";
-			description = "Plays or queues ambience clips.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Sound; }}
+		public override string Title { get { return "Play ambience"; }}
+		public override string Description { get { return "Plays or queues ambience clips."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -108,26 +104,23 @@ namespace AC
 
 		protected float Perform (float _time)
 		{
-			if (ambience != null)
+			switch (musicAction)
 			{
-				if (musicAction == MusicAction.Play)
-				{
+				case MusicAction.Play:
 					return ambience.Play (trackID, loop, isQueued, _time, resumeIfPlayedBefore, 0, loopingOverlapTime);
-				}
-				else if (musicAction == MusicAction.Crossfade)
-				{
+
+				case MusicAction.Crossfade:
 					return ambience.Crossfade (trackID, loop, isQueued, _time, resumeIfPlayedBefore, 0, loopingOverlapTime);
-				}
-				else if (musicAction == MusicAction.Stop)
-				{
+
+				case MusicAction.Stop:
 					return ambience.StopAll (_time);
-				}
-				else if (musicAction == MusicAction.ResumeLastStopped)
-				{
+
+				case MusicAction.ResumeLastStopped:
 					return ambience.ResumeLastQueue (_time, resumeFromStart);
-				}
+
+				default:
+					return 0f;
 			}
-			return 0f;
 		}
 
 		
@@ -198,8 +191,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("A Settings Manager must be defined for this Action to function correctly. Please go to your Game Window and assign one.", MessageType.Warning);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -290,7 +281,7 @@ namespace AC
 		 */
 		public static ActionAmbience CreateNew_Play (int trackID, bool loop = true, bool addToQueue = false, float transitionTime = 0f, bool doCrossfade = false, bool waitUntilFinish = false)
 		{
-			ActionAmbience newAction = (ActionAmbience) CreateInstance <ActionAmbience>();
+			ActionAmbience newAction = CreateNew<ActionAmbience> ();
 			newAction.musicAction = doCrossfade ? MusicAction.Crossfade : MusicAction.Play;
 			newAction.trackID = trackID;
 			newAction.loop = loop;
@@ -309,7 +300,7 @@ namespace AC
 		 */
 		public static ActionAmbience CreateNew_Stop (float transitionTime = 0f, bool waitUntilFinish = false)
 		{
-			ActionAmbience newAction = (ActionAmbience) CreateInstance <ActionAmbience>();
+			ActionAmbience newAction = CreateNew<ActionAmbience> ();
 			newAction.musicAction = MusicAction.Stop;
 			newAction.fadeTime = transitionTime;
 			newAction.willWait = waitUntilFinish;
@@ -326,7 +317,7 @@ namespace AC
 		 */
 		public static ActionAmbience CreateNew_ResumeLastTrack (float transitionTime = 0f, bool doRestart = false, bool waitUntilFinish = false)
 		{
-			ActionAmbience newAction = (ActionAmbience) CreateInstance <ActionAmbience>();
+			ActionAmbience newAction = CreateNew<ActionAmbience> ();
 			newAction.musicAction = MusicAction.ResumeLastStopped;
 			newAction.fadeTime = transitionTime;
 			newAction.resumeFromStart = doRestart;

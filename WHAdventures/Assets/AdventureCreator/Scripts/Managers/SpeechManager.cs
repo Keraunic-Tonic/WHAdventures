@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"SpeechManager.cs"
  * 
@@ -69,8 +69,10 @@ namespace AC
 		public bool allowGameplaySpeechSkipping = false;
 		/** The minimum time that speech text must be displayed before it can be skipped, if allowSpeechSkipping = True */
 		public float skipThresholdTime = 0f;
-		/** If True, then left-clicking will complete any scrolling speech text */
+		/** Deprecated */
 		public bool endScrollBeforeSkip = false;
+		/** What action to take if the user attempts to skip speech while it it still scrolling */
+		public IfSkipWhileScrolling ifSkipWhileScrolling = IfSkipWhileScrolling.DisplayFullText;
 		/** If True, and text is scrolling, then the display time upon completion will be influenced by the length of the speech text */
 		public bool scrollingTextFactorsLength = false;
 		/** If True, then subtitles with audio will cease to display once the audio has completed */
@@ -149,7 +151,7 @@ namespace AC
 		/** What types of text are able to be translated (and will be included in the 'gather text' process) */
 		public AC_TextTypeFlags translatableTextTypes = (AC_TextTypeFlags) ~0;
 
-#if UNITY_EDITOR
+		#if UNITY_EDITOR
 
 		/** A record of the highest-used ID number */
 		public int maxID = -1;
@@ -201,9 +203,9 @@ namespace AC
 
 		public MergeMatchingIDs mergeMatchingIDs = MergeMatchingIDs.NoMerging;
 
-#if !ACIgnoreTimeline
+		#if !ACIgnoreTimeline
 		private List<TimelineAsset> allTimelineAssets = new List<TimelineAsset>();
-#endif
+		#endif
 
 
 		private void Upgrade ()
@@ -223,15 +225,13 @@ namespace AC
 		}
 
 
-		/**
-		 * Shows the GUI.
-		 */
+		/** Shows the GUI. */
 		public void ShowGUI (Rect position)
 		{
-#if UNITY_WEBPLAYER
+			#if UNITY_WEBPLAYER
 			EditorGUILayout.HelpBox ("Exporting game text cannot be performed in WebPlayer mode - please switch platform to do so.", MessageType.Warning);
 			GUILayout.Space (10);
-#endif
+			#endif
 
 			EditorGUILayout.BeginVertical (CustomStyles.thinBox);
 			showSubtitles = CustomGUILayout.ToggleHeader (showSubtitles, "Subtitles");
@@ -239,7 +239,7 @@ namespace AC
 			{
 				previewMenuName = CustomGUILayout.DelayedTextField ("Subtitle preview menu:", previewMenuName, "AC.KickStarter.speechManager.previewMenuName", "The name of the Menu to display subtitles in when previewing Speech tracks in a Timeline.");
 
-				waitTimeOffset = CustomGUILayout.Slider ("Default post-line delay (s):", waitTimeOffset, 0f, 4f, "AC.KickStarter.speechManager.waitTimeOffset", "The default delay to insert after triggering a line of dialogue with the 'Dialogue: Play speech' Action. A further delay can be added per-Action.");
+				waitTimeOffset = CustomGUILayout.Slider ("Initial post-line delay (s):", waitTimeOffset, 0f, 4f, "AC.KickStarter.speechManager.waitTimeOffset", "The default delay to insert after triggering a line of dialogue with the 'Dialogue: Play speech' Action. A further delay can be added per-Action.");
 
 				separateLines = CustomGUILayout.ToggleLeft ("Treat carriage returns as separate speech lines?", separateLines, "AC.KickStarter.speechManager.separateLines", "If True, then a speech line will be split by carriage returns into separate speech lines");
 				if (separateLines)
@@ -311,7 +311,12 @@ namespace AC
 					skipThresholdTime = CustomGUILayout.FloatField ("Time before can skip (s):", skipThresholdTime, "AC.KickStarter.speechManager.skipThresholdTime", "The minimum time that speech text must be displayed before it can be skipped");
 					if (scrollSubtitles || scrollNarration)
 					{
-						endScrollBeforeSkip = CustomGUILayout.ToggleLeft ("Skipping speech first displays currently-scrolling text?", endScrollBeforeSkip, "AC.KickStarter.speechManager.endScrollBeforeSkip", "If True, then skipping scrolling text will first display it in full before requiring another input to skip it completely");
+						if (endScrollBeforeSkip)
+						{
+							endScrollBeforeSkip = false;
+							ifSkipWhileScrolling = IfSkipWhileScrolling.DisplayFullText;
+						}
+						ifSkipWhileScrolling = (IfSkipWhileScrolling) CustomGUILayout.EnumPopup ("If skip while scrolling:", ifSkipWhileScrolling, "AC.KickStarter.speechManager.ifSkipWhileScrolling", "What action to take if the user attempts to skip speech while it it still scrolling");
 					}
 					allowGameplaySpeechSkipping = CustomGUILayout.ToggleLeft ("Subtitles during gameplay can also be skipped?", allowGameplaySpeechSkipping, "AC.KickStarter.speechManager.allowGameplaySpeechSkipping", "If True, then speech text during gameplay can be skipped by the player left-clicking");
 				}
@@ -346,7 +351,7 @@ namespace AC
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			EditorGUILayout.Space ();
 
 			EditorGUILayout.BeginVertical (CustomStyles.thinBox);
@@ -369,17 +374,17 @@ namespace AC
 
 					if (referenceSpeechFiles == ReferenceSpeechFiles.ByAddressable)
 					{
-#if !AddressableIsPresent
+						#if !AddressableIsPresent
 						EditorGUILayout.HelpBox ("The 'AddressableIsPresent' preprocessor define must be declared in the Player Settings.", MessageType.Warning);
-#endif
+						#endif
 					}
 
-#if UNITY_IOS || UNITY_ANDROID || UNITY_WEBGL
+					#if UNITY_IOS || UNITY_ANDROID || UNITY_WEBGL
 					if (referenceSpeechFiles == ReferenceSpeechFiles.ByDirectReference)
 					{
 						EditorGUILayout.HelpBox ("Manually-assigning speech files takes memory - consider auto-naming on this platform.", MessageType.Warning);
 					}
-#endif
+					#endif
 
 					translateAudio = CustomGUILayout.ToggleLeft ("Speech audio can be translated?", translateAudio, "AC.KickStarter.speechManager.translateAudio", "If True, then each translation will have its own set of speech audio files");
 					if (translateAudio)
@@ -417,7 +422,7 @@ namespace AC
 					EditorGUILayout.HelpBox ("Speech audio is not possible because 'Speech' is not marked as a translatable text type.", MessageType.Info);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			EditorGUILayout.Space ();
 
 			EditorGUILayout.Space ();
@@ -457,16 +462,16 @@ namespace AC
 					
 					EditorGUILayout.HelpBox ("Speaking animations must have 4 frames: Rest, Small, Medium and Large.", MessageType.Info);
 					
-#if !SalsaIsPresent
+					#if !SalsaIsPresent
 					EditorGUILayout.HelpBox ("The 'SalsaIsPresent' preprocessor define must be declared in the Player Settings.", MessageType.Warning);
-#endif
+					#endif
 				}
 				else if (lipSyncMode == LipSyncMode.RogoLipSync && !RogoLipSyncIntegration.IsDefinePresent ())
 				{
 					EditorGUILayout.HelpBox ("The 'RogoLipSyncIsPresent' preprocessor define must be declared in the Player Settings.", MessageType.Warning);
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 			LanguagesGUI ();
@@ -485,7 +490,7 @@ namespace AC
 				EditorGUILayout.BeginVertical (CustomStyles.thinBox);
 				string numLines = (lines != null) ? lines.Count.ToString () : "0";
 				EditorGUILayout.LabelField ("Gathered " + numLines + " lines of text.");
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 
 				EditorGUILayout.BeginHorizontal ();
 				if (GUILayout.Button ("Gather text", EditorStyles.miniButtonLeft))
@@ -541,7 +546,7 @@ namespace AC
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (GUI.changed)
 			{
@@ -693,21 +698,13 @@ namespace AC
 				GetSceneNames ();
 			}
 			
-			EditorGUILayout.BeginHorizontal ();
-			EditorGUILayout.LabelField ("Type filter:", GUILayout.Width (70f));
-			typeFilter = (AC_TextType) EditorGUILayout.EnumPopup (typeFilter);
-			EditorGUILayout.EndHorizontal ();
+			typeFilter = (AC_TextType) CustomGUILayout.EnumPopup ("Type filter:", typeFilter);			
+			sceneFilter = CustomGUILayout.Popup ("Scene filter:", sceneFilter, sceneNames.ToArray ());
 			
-			EditorGUILayout.BeginHorizontal ();
-			EditorGUILayout.LabelField ("Scene filter:", GUILayout.Width (70f));
-			sceneFilter = EditorGUILayout.Popup (sceneFilter, sceneNames.ToArray ());
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal ();
-			EditorGUILayout.LabelField ("Text filter:", GUILayout.Width (70f));
-			filterSpeechLine = (FilterSpeechLine) EditorGUILayout.EnumPopup (filterSpeechLine, GUILayout.MaxWidth (100f));
+			CustomGUILayout.BeginHorizontal ();
+			filterSpeechLine = (FilterSpeechLine) CustomGUILayout.EnumPopup ("Text filter", filterSpeechLine);
 			textFilter = EditorGUILayout.TextField (textFilter);
-			EditorGUILayout.EndHorizontal ();
+			CustomGUILayout.EndHorizontal ();
 
 			if (typeFilter == AC_TextType.Speech && useSpeechTags && speechTags != null && speechTags.Count > 1)
 			{
@@ -730,21 +727,15 @@ namespace AC
 
 			if (typeFilter == AC_TextType.Speech && referenceSpeechFiles == ReferenceSpeechFiles.ByDirectReference)
 			{
-				EditorGUILayout.BeginHorizontal ();
-				EditorGUILayout.LabelField ("Audio filter:", GUILayout.Width (65f));
-				audioFilter = (AudioFilter) EditorGUILayout.EnumPopup (audioFilter);
-				EditorGUILayout.EndHorizontal ();
+				audioFilter = (AudioFilter) CustomGUILayout.EnumPopup ("Audio filter:", audioFilter);
 			}
 
-			EditorGUILayout.BeginHorizontal ();
-			EditorGUILayout.LabelField ("Sort by:", GUILayout.Width (65f));
-			gameTextSorting = (GameTextSorting) EditorGUILayout.EnumPopup (gameTextSorting);
+			gameTextSorting = (GameTextSorting) CustomGUILayout.EnumPopup ("Sort by:", gameTextSorting);
 			if (lastGameTextSorting != gameTextSorting)
 			{
 				activeLineID = -1;
 			}
 			lastGameTextSorting = gameTextSorting;
-			EditorGUILayout.EndHorizontal ();
 
 			EditorGUILayout.Space ();
 
@@ -816,7 +807,7 @@ namespace AC
 				EditorGUILayout.BeginHorizontal ();
 				languages[0] = EditorGUILayout.TextField ("Original language:", languages[0]);
 
-				if (lines.Count > 0 && GUILayout.Button ("", CustomStyles.IconCog))
+				if (lines.Count > 0 && GUILayout.Button (string.Empty, CustomStyles.IconCog))
 				{
 					SideMenu (0);
 				}
@@ -838,7 +829,7 @@ namespace AC
 						}
 					}
 				}
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 
 				if (languages.Count > 1)
 				{
@@ -846,10 +837,9 @@ namespace AC
 					{
 						EditorGUILayout.BeginVertical (CustomStyles.thinBox);
 						EditorGUILayout.BeginHorizontal ();
-						EditorGUILayout.LabelField ("Language #" + i.ToString () + ":", GUILayout.Width (146f));
-						languages[i] = EditorGUILayout.TextField (languages[i]);
+						languages[i] = EditorGUILayout.TextField ("Language #" + i.ToString () + ":", languages[i]);
 
-						if (GUILayout.Button ("", CustomStyles.IconCog))
+						if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
 						{
 							SideMenu (i);
 						}
@@ -864,7 +854,7 @@ namespace AC
 								languageLipsyncAssetBundles[i] = CustomGUILayout.TextField ("Lipsync AssetBundle name:", languageLipsyncAssetBundles[i], "AC.KickStarter.speechManager.languageLipSyncAssetBundles[i]", "An AssetBundle filename (in a StreamingAssets folder) that stores the language's speech lipsync files");
 							}
 						}
-						EditorGUILayout.EndVertical ();
+						CustomGUILayout.EndVertical ();
 					}
 				}
 
@@ -874,7 +864,7 @@ namespace AC
 					CreateLanguage ("New " + languages.Count.ToString ());
 				}
 
-				if (lines.Count == 0)
+				if (lines.Count == 0 && languages.Count > 1)
 				{
 					EditorGUILayout.HelpBox ("No text has been gathered for translations - add your scenes to the build, and click 'Gather text' below.", MessageType.Warning);
 				}
@@ -885,7 +875,7 @@ namespace AC
 				EditorGUILayout.HelpBox ("Changes made will not be updated until the game is restarted.", MessageType.Info);
 			}
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
@@ -903,7 +893,7 @@ namespace AC
 
 				if (languages.Count > 2)
 				{
-					menu.AddSeparator ("");
+					menu.AddSeparator (string.Empty);
 
 					if (i > 1)
 					{
@@ -926,7 +916,7 @@ namespace AC
 					menu.AddItem (new GUIContent ("Export"), false, MenuCallback, "Export translation");
 				}
 				
-				menu.AddSeparator ("");
+				menu.AddSeparator (string.Empty);
 				menu.AddItem (new GUIContent ("Create script sheet.."), false, MenuCallback, "Create script sheet");
 			}
 
@@ -1515,9 +1505,9 @@ namespace AC
 					ClearLines ();
 					checkedAssets.Clear ();
 
-#if !ACIgnoreTimeline
+					#if !ACIgnoreTimeline
 					allTimelineAssets.Clear ();
-#endif
+					#endif
 
 					sceneFiles = AdvGame.GetSceneFiles ();
 					GetSceneNames ();
@@ -1542,9 +1532,9 @@ namespace AC
 						ProcessActionListAsset (allActionListAssets[i], false);
 					}
 
-#if !ACIgnoreTimeline
+					#if !ACIgnoreTimeline
 					GetLinesFromTimelines (false);
-#endif
+					#endif
 
 					checkedAssets.Clear ();
 
@@ -1567,18 +1557,18 @@ namespace AC
 						ProcessActionListAsset (allActionListAssets[i], true);
 					}
 
-#if !ACIgnoreTimeline
+					#if !ACIgnoreTimeline
 					GetLinesFromTimelines (true);
-#endif
+					#endif
 
 					checkedAssets.Clear ();
 
 					GetEmptyID ();
 
 					allActionListAssets.Clear ();
-#if !ACIgnoreTimeline
+					#if !ACIgnoreTimeline
 					allTimelineAssets.Clear ();
-#endif
+					#endif
 					UnityVersionHandler.OpenScene (originalScene);
 				}
 	
@@ -1866,6 +1856,8 @@ namespace AC
 			SettingsManager settingsManager = AdvGame.GetReferences ().settingsManager;
 			if (settingsManager)
 			{
+				ExtractTranslatable (settingsManager.saveLabels, onlySeekNew, false, false);
+
 				if (settingsManager.playerSwitching == PlayerSwitching.Allow)
 				{
 					foreach (PlayerPrefab playerPrefab in settingsManager.players)
@@ -2102,7 +2094,7 @@ namespace AC
 			allActionListAssets = new List<ActionListAsset>();
 			CollectAllActionListAssets ();
 
-#if !ACIgnoreTimeline
+			#if !ACIgnoreTimeline
 			allTimelineAssets = new List<TimelineAsset>();
 
 			sceneFiles = AdvGame.GetSceneFiles ();
@@ -2125,16 +2117,16 @@ namespace AC
 					}
 				}
 			}
-#endif
+			#endif
 		}
 
 
 		public void ClearAllAssets ()
 		{
 			allActionListAssets.Clear ();
-#if !ACIgnoreTimeline
+			#if !ACIgnoreTimeline
 			allTimelineAssets.Clear ();
-#endif
+			#endif
 		}
 
 
@@ -2449,7 +2441,7 @@ namespace AC
 				}
 			}
 
-#if !ACIgnoreTimeline
+			#if !ACIgnoreTimeline
 			foreach (TimelineAsset timelineAsset in allTimelineAssets)
 			{
 				IEnumerable<TrackAsset> trackAssets = timelineAsset.GetOutputTracks ();
@@ -2465,7 +2457,7 @@ namespace AC
 					}
 				}
 			}
-#endif
+			#endif
 
 			if (succesful)
 			{
@@ -2553,7 +2545,7 @@ namespace AC
 					
 					checkedAssets.Clear ();
 
-					if (originalScene == "")
+					if (string.IsNullOrEmpty (originalScene))
 					{
 						UnityVersionHandler.NewScene ();
 					}
@@ -2599,13 +2591,13 @@ namespace AC
 				}
 			}
 
-#if !ACIgnoreTimeline
+			#if !ACIgnoreTimeline
 			PlayableDirector[] directors = FindObjectsOfType<PlayableDirector>();
 			for (int i=0; i<directors.Length; i++)
 			{
 				ClearTimeline (directors[i]);
 			}
-#endif
+			#endif
 
 			// Save the scene
 			UnityVersionHandler.SaveScene ();
@@ -2653,13 +2645,13 @@ namespace AC
 					ClearTranslatable (action as ITranslatable, isInScene, false);
 				}
 
-#if !ACIgnoreTimeline
+				#if !ACIgnoreTimeline
 				if (action is ActionTimeline)
 				{
 					ActionTimeline actionTimeline = (ActionTimeline) action;
 					ClearTimeline (actionTimeline.director);
 				}
-#endif
+				#endif
 			}
 		}
 
@@ -2821,84 +2813,24 @@ namespace AC
 			{
 				UnityVersionHandler.OpenScene (sceneFile);
 
+				CollectAllCurrentActionListAssets (null);
+
 				// ActionLists
-				ActionList[] actionLists = GameObject.FindObjectsOfType (typeof (ActionList)) as ActionList[];
+				ActionList[] actionLists = FindObjectsOfType (typeof (ActionList)) as ActionList[];
 				foreach (ActionList actionList in actionLists)
 				{
-					if (actionList.useParameters && actionList.parameters != null)
+					if (actionList.source == ActionListSource.InScene)
 					{
-						if (!actionList.syncParamValues && actionList.source == ActionListSource.AssetFile && actionList.assetFile != null && actionList.assetFile.useParameters)
+						foreach (Action action in actionList.actions)
 						{
-							foreach (ActionParameter parameter in actionList.parameters)
+							if (action != null && action is ActionInstantiate)
 							{
-								if (parameter.parameterType == ParameterType.UnityObject)
+								ActionInstantiate actionInstantiate = action as	ActionInstantiate;
+								if (actionInstantiate.invAction == InvAction.Add && actionInstantiate.gameObject != null && actionInstantiate.parameterID == -1)
 								{
-									if (parameter.objectValue != null)
-									{
-										if (parameter.objectValue is ActionListAsset)
-										{
-											ActionListAsset _actionListAsset = (ActionListAsset) parameter.objectValue;
-											SmartAddAsset (_actionListAsset);
-										}
-									}
+									CollectAllCurrentActionListAssets (actionInstantiate.gameObject);
 								}
 							}
-						}
-					}
-
-					if (actionList.source == ActionListSource.AssetFile)
-					{
-						SmartAddAsset (actionList.assetFile);
-					}
-					else
-					{
-						GetActionListAssetsFromActions (actionList.actions);
-					}
-				}
-
-				// Hotspots
-				Hotspot[] hotspots = GameObject.FindObjectsOfType (typeof (Hotspot)) as Hotspot[];
-				foreach (Hotspot hotspot in hotspots)
-				{
-					if (hotspot.interactionSource == InteractionSource.AssetFile)
-					{
-						SmartAddAsset (hotspot.useButton.assetFile);
-						SmartAddAsset (hotspot.lookButton.assetFile);
-						SmartAddAsset (hotspot.unhandledInvButton.assetFile);
-
-						foreach (Button _button in hotspot.useButtons)
-						{
-							SmartAddAsset (_button.assetFile);
-						}
-						
-						foreach (Button _button in hotspot.invButtons)
-						{
-							SmartAddAsset (_button.assetFile);
-						}
-					}
-				}
-				
-				// Dialogue options
-				Conversation[] conversations = GameObject.FindObjectsOfType (typeof (Conversation)) as Conversation[];
-				foreach (Conversation conversation in conversations)
-				{
-					foreach (ButtonDialog dialogOption in conversation.options)
-					{
-						SmartAddAsset (dialogOption.assetFile);
-					}
-					EditorUtility.SetDirty (conversation);
-				}
-
-				// SetParameterBase components
-				SetParametersBase[] setParameterBases = GameObject.FindObjectsOfType (typeof (SetParametersBase)) as SetParametersBase[];
-				foreach (SetParametersBase setParameterBase in setParameterBases)
-				{
-					List<ActionListAsset> foundAssets = setParameterBase.GetReferencedActionListAssets ();
-					if (foundAssets != null)
-					{
-						foreach (ActionListAsset foundAsset in foundAssets)
-						{
-							SmartAddAsset (foundAsset);
 						}
 					}
 				}
@@ -2955,9 +2887,9 @@ namespace AC
 							SmartAddAsset (invInteraction.actionList);
 						}
 
-						foreach (ActionListAsset actionList in item.combineActionList)
+						foreach (InvCombineInteraction invCombineInteraction in item.combineInteractions)
 						{
-							SmartAddAsset (actionList);
+							SmartAddAsset (invCombineInteraction.actionList);
 						}
 					}
 				}
@@ -3036,6 +2968,144 @@ namespace AC
 		}
 
 
+		private void CollectAllCurrentActionListAssets (GameObject gameObject)
+		{
+			// Scene settings
+			if (gameObject == null)
+			{
+				SceneSettings sceneSettings = FindObjectOfType <SceneSettings>();
+				if (sceneSettings && sceneSettings.actionListSource == ActionListSource.AssetFile)
+				{
+					SmartAddAsset (sceneSettings.actionListAssetOnStart);
+					SmartAddAsset (sceneSettings.actionListAssetOnLoad);
+					SmartAddAsset (sceneSettings.actionListAssetOnVarChange);
+				}
+			}
+
+			// ActionLists
+			ActionList[] actionLists = (gameObject != null)
+										? gameObject.GetComponentsInChildren <ActionList>()
+										: FindObjectsOfType (typeof (ActionList)) as ActionList[];
+
+			foreach (ActionList actionList in actionLists)
+			{
+				if (actionList.useParameters && actionList.parameters != null)
+				{
+					if (!actionList.syncParamValues && actionList.source == ActionListSource.AssetFile && actionList.assetFile && actionList.assetFile.useParameters)
+					{
+						foreach (ActionParameter parameter in actionList.parameters)
+						{
+							if (parameter.parameterType == ParameterType.UnityObject)
+							{
+								if (parameter.objectValue != null)
+								{
+									if (parameter.objectValue is ActionListAsset)
+									{
+										ActionListAsset _actionListAsset = (ActionListAsset) parameter.objectValue;
+										SmartAddAsset (_actionListAsset);
+									}
+								}
+							}
+						}
+					}
+				}
+
+				if (actionList.source == ActionListSource.AssetFile)
+				{
+					SmartAddAsset (actionList.assetFile);
+				}
+				else
+				{
+					GetActionListAssetsFromActions (actionList.actions);
+				}
+			}
+
+			// Hotspots
+			Hotspot[] hotspots = (gameObject != null)
+								 ? gameObject.GetComponentsInChildren <Hotspot>()
+								 : FindObjectsOfType (typeof (Hotspot)) as Hotspot[];
+
+			foreach (Hotspot hotspot in hotspots)
+			{
+				if (hotspot.interactionSource == InteractionSource.AssetFile)
+				{
+					SmartAddAsset (hotspot.useButton.assetFile);
+					SmartAddAsset (hotspot.lookButton.assetFile);
+					SmartAddAsset (hotspot.unhandledInvButton.assetFile);
+
+					foreach (Button _button in hotspot.useButtons)
+					{
+						SmartAddAsset (_button.assetFile);
+					}
+
+					foreach (Button _button in hotspot.invButtons)
+					{
+						SmartAddAsset (_button.assetFile);
+					}
+				}
+			}
+
+			// Dialogue options
+			Conversation[] conversations = (gameObject != null)
+											? gameObject.GetComponentsInChildren <Conversation>()
+											: FindObjectsOfType (typeof (Conversation)) as Conversation[];
+
+			foreach (Conversation conversation in conversations)
+			{
+				foreach (ButtonDialog dialogOption in conversation.options)
+				{
+					SmartAddAsset (dialogOption.assetFile);
+				}
+				EditorUtility.SetDirty (conversation);
+			}
+
+			// SetParameterBase components
+			SetParametersBase[] setParameterBases = (gameObject != null)
+													? gameObject.GetComponentsInChildren <SetParametersBase>()
+													: FindObjectsOfType (typeof (SetParametersBase)) as SetParametersBase[];
+
+			foreach (SetParametersBase setParameterBase in setParameterBases)
+			{
+				List<ActionListAsset> foundAssets = setParameterBase.GetReferencedActionListAssets ();
+				if (foundAssets != null)
+				{
+					foreach (ActionListAsset foundAsset in foundAssets)
+					{
+						SmartAddAsset (foundAsset);
+					}
+				}
+			}
+
+			// Draggable
+			Moveable_Drag[] moveable_Drags = (gameObject != null)
+											 ? gameObject.GetComponentsInChildren <Moveable_Drag>()
+											 : FindObjectsOfType (typeof (Moveable_Drag)) as Moveable_Drag[];
+
+			foreach (Moveable_Drag moveable_Drag in moveable_Drags)
+			{
+				if (moveable_Drag.actionListSource == ActionListSource.AssetFile)
+				{
+					SmartAddAsset (moveable_Drag.actionListAssetOnDrop);
+					SmartAddAsset (moveable_Drag.actionListAssetOnMove);
+				}
+			}
+
+			// PickUp
+			Moveable_PickUp[] moveable_PickUps = (gameObject != null)
+												 ? gameObject.GetComponentsInChildren <Moveable_PickUp>()
+												 : FindObjectsOfType (typeof (Moveable_PickUp)) as Moveable_PickUp[];
+
+			foreach (Moveable_PickUp moveable_PickUp in moveable_PickUps)
+			{
+				if (moveable_PickUp.actionListSource == ActionListSource.AssetFile)
+				{
+					SmartAddAsset (moveable_PickUp.actionListAssetOnGrab);
+					SmartAddAsset (moveable_PickUp.actionListAssetOnDrop);
+				}
+			}
+		}
+
+
 		private void GatherAssetsFromPlayer (Player player)
 		{
 			if (player == null) return;
@@ -3103,7 +3173,7 @@ namespace AC
 				{
 					if (trackAsset is ITranslatable)
 					{
-						ExtractTranslatable (trackAsset as ITranslatable, onlySeekNew, false, false, "", -1, timelineAsset.name);
+						ExtractTranslatable (trackAsset as ITranslatable, onlySeekNew, false, false, string.Empty, -1, timelineAsset.name);
 					}
 				}
 
@@ -3117,7 +3187,7 @@ namespace AC
 
 		private bool LocateLineInTimeline (PlayableDirector director, int lineID)
 		{
-			if (director.playableAsset != null && director.playableAsset is TimelineAsset)
+			if (director.playableAsset && director.playableAsset is TimelineAsset)
 			{
 				TimelineAsset timelineAsset = director.playableAsset as TimelineAsset;
 				IEnumerable<TrackAsset> trackAssets = timelineAsset.GetOutputTracks ();
@@ -3163,7 +3233,7 @@ namespace AC
 		{
 			if (director != null)
 			{
-				if (director.playableAsset != null && director.playableAsset is TimelineAsset)
+				if (director.playableAsset && director.playableAsset is TimelineAsset)
 				{
 					TimelineAsset timelineAsset = director.playableAsset as TimelineAsset;
 					IEnumerable<TrackAsset> trackAssets = timelineAsset.GetOutputTracks ();
@@ -3178,7 +3248,8 @@ namespace AC
 				}
 			}
 		}
-#endif
+
+		#endif
 
 
 		private void SmartAddAsset (ActionListAsset asset)
@@ -3189,7 +3260,6 @@ namespace AC
 				{
 					return;
 				}
-
 				allActionListAssets.Add (asset);
 				GetActionListAssetsFromActions (asset.actions);
 			}
@@ -3204,6 +3274,8 @@ namespace AC
 				{
 					if (action == null) continue;
 
+					action.Upgrade ();
+
 					if (action is ActionRunActionList)
 					{
 						ActionRunActionList actionRunActionList = (ActionRunActionList) action;
@@ -3212,8 +3284,8 @@ namespace AC
 							SmartAddAsset (actionRunActionList.invActionList);
 						}
 
-						if ((actionRunActionList.listSource == ActionRunActionList.ListSource.InScene && actionRunActionList.actionList != null && actionRunActionList.actionList.useParameters) ||
-							(actionRunActionList.listSource == ActionRunActionList.ListSource.AssetFile && actionRunActionList.invActionList != null && actionRunActionList.invActionList.useParameters))
+						if ((actionRunActionList.listSource == ActionRunActionList.ListSource.InScene && actionRunActionList.actionList && actionRunActionList.actionList.useParameters) ||
+							(actionRunActionList.listSource == ActionRunActionList.ListSource.AssetFile && actionRunActionList.invActionList && actionRunActionList.invActionList.useParameters))
 						{
 							if (actionRunActionList.localParameters != null)
 							{
@@ -3250,46 +3322,12 @@ namespace AC
 							}
 						}
 					}
-					
-					if (action is ActionCheck)
+
+					foreach (ActionEnd ending in action.endings)
 					{
-						ActionCheck actionCheck = (ActionCheck) action;
-						if (actionCheck.resultActionTrue == ResultAction.RunCutscene)
+						if (ending.resultAction == ResultAction.RunCutscene)
 						{
-							SmartAddAsset (actionCheck.linkedAssetTrue);
-						}
-						if (actionCheck.resultActionFail == ResultAction.RunCutscene)
-						{
-							SmartAddAsset (actionCheck.linkedAssetFail);
-						}
-					}
-					else if (action is ActionCheckMultiple)
-					{
-						ActionCheckMultiple actionCheckMultiple = (ActionCheckMultiple) action;
-						foreach (ActionEnd ending in actionCheckMultiple.endings)
-						{
-							if (ending.resultAction == ResultAction.RunCutscene)
-							{
-								SmartAddAsset (ending.linkedAsset);
-							}
-						}
-					}
-					else if (action is ActionParallel)
-					{
-						ActionParallel actionParallel = (ActionParallel) action;
-						foreach (ActionEnd ending in actionParallel.endings)
-						{
-							if (ending.resultAction == ResultAction.RunCutscene)
-							{
-								SmartAddAsset (ending.linkedAsset);
-							}
-						}
-					}
-					else
-					{
-						if (action != null && action.endAction == ResultAction.RunCutscene)
-						{
-							SmartAddAsset (action.linkedAsset);
+							SmartAddAsset (ending.linkedAsset);
 						}
 					}
 				}
@@ -3299,7 +3337,7 @@ namespace AC
 		
 		private void ProcessActionListAsset (ActionListAsset actionListAsset, bool onlySeekNew)
 		{
-			if (actionListAsset != null && !checkedAssets.Contains (actionListAsset))
+			if (actionListAsset && !checkedAssets.Contains (actionListAsset))
 			{
 				checkedAssets.Add (actionListAsset);
 				ProcessActions (actionListAsset.actions, onlySeekNew, false, actionListAsset.tagID, actionListAsset.name, actionListAsset.GetHashCode ());
@@ -3360,14 +3398,34 @@ namespace AC
 					continue;
 				}
 
-				action.name = action.name.Replace ("(Clone)", "");
-
 				if (action is ITranslatable)
 				{
 					ExtractTranslatable (action as ITranslatable, onlySeekNew, isInScene, false, action.comment, tagID, actionListName);
 				}
 
-#if !ACIgnoreTimeline
+				if (action is ActionInstantiate)
+				{
+					ActionInstantiate actionInstantiate = action as ActionInstantiate;
+					if (actionInstantiate.invAction == InvAction.Add || actionInstantiate.invAction == InvAction.Replace)
+					{
+						#if AddressableIsPresent
+						if (actionInstantiate.referenceByAddressable)
+						{
+							continue;
+						}
+						#endif
+						if (actionInstantiate.parameterID < 0 && actionInstantiate.gameObject && UnityVersionHandler.IsPrefabFile (actionInstantiate.gameObject))
+						{
+							ITranslatable[] prefabTranslatables = actionInstantiate.gameObject.GetComponentsInChildren <ITranslatable>();
+							foreach (ITranslatable prefabTranslatable in prefabTranslatables)
+							{
+								ExtractTranslatable (prefabTranslatable, onlySeekNew, false, true, string.Empty, -1, actionListName);
+							}
+						}
+					}
+				}
+
+				#if !ACIgnoreTimeline
 				if (!onlySeekNew)
 				{
 					if (action is ActionTimeline)
@@ -3376,7 +3434,7 @@ namespace AC
 						SmartAddAsset (actionTimeline.GetTimelineAsset ());
 					}
 				}
-#endif
+				#endif
 			}
 
 			if (onlySeekNew)
@@ -3553,103 +3611,21 @@ namespace AC
 				}
 				
 				_action.isMarked = false;
+				_action.Upgrade ();
 
-				if (_action is ActionCheckMultiple)
+				for (int j = _action.endings.Count - 1; j >= 0; j--)
 				{
-					ActionCheckMultiple _actionCheckMultiple = (ActionCheckMultiple) _action;
-					
-					for (int j=_actionCheckMultiple.endings.Count-1; j>=0; j--)
+					ActionEnd ending = _action.endings[j];
+					if (j >= 0)
 					{
-						ActionEnd ending = _actionCheckMultiple.endings [j];
-						if (j >= 0)
-						{
-							if (ending.resultAction == ResultAction.Skip)
-							{
-								ArrangeFromIndex (actionList, prefix, ending.skipAction);
-							}
-							else if (ending.resultAction == ResultAction.Continue)
-							{
-								ArrangeFromIndex (actionList, prefix, i+1);
-							}
-						}
-					}
-				}
-				else if (_action is ActionParallel)
-				{
-					ActionParallel _ActionParallel = (ActionParallel) _action;
-					
-					for (int j=_ActionParallel.endings.Count-1; j>=0; j--)
-					{
-						ActionEnd ending = _ActionParallel.endings [j];
 						if (ending.resultAction == ResultAction.Skip)
 						{
 							ArrangeFromIndex (actionList, prefix, ending.skipAction);
 						}
 						else if (ending.resultAction == ResultAction.Continue)
 						{
-							ArrangeFromIndex (actionList, prefix, i+1);
+							ArrangeFromIndex (actionList, prefix, i + 1);
 						}
-					}
-
-					i = -1;
-				}
-				else if (_action is ActionCheck)
-				{
-					ActionCheck _actionCheck = (ActionCheck) _action;
-
-					if (_actionCheck.resultActionFail == ResultAction.Stop || _actionCheck.resultActionFail == ResultAction.RunCutscene)
-					{
-						if (_actionCheck.resultActionTrue == ResultAction.Skip)
-						{
-							i = _actionCheck.skipActionTrue;
-						}
-						else if (_actionCheck.resultActionTrue == ResultAction.Continue)
-						{
-							i++;
-						}
-						else
-						{
-							i = -1;
-						}
-					}
-					else
-					{
-						if (_actionCheck.resultActionTrue == ResultAction.Skip)
-						{
-							ArrangeFromIndex (actionList, prefix, _actionCheck.skipActionTrue);
-						}
-						else if (_actionCheck.resultActionTrue == ResultAction.Continue)
-						{
-							ArrangeFromIndex (actionList, prefix, i+1);
-						}
-						
-						if (_actionCheck.resultActionFail == ResultAction.Skip)
-						{
-							i = _actionCheck.skipActionFail;
-						}
-						else if (_actionCheck.resultActionFail == ResultAction.Continue)
-						{
-							i++;
-						}
-						else
-						{
-							i = -1;
-						}
-					}
-				}
-				else
-				{
-					if (_action.endAction == ResultAction.Skip)
-					{
-						i = _action.skipAction;
-					}
-					else if (_action.endAction == ResultAction.Continue)
-					{
-						i++;
-					}
-					else
-					{
-						i = -1;
 					}
 				}
 			}
@@ -3858,7 +3834,7 @@ namespace AC
 					return line.GetFilename (speakerName);
 				}
 			}
-			return "";
+			return string.Empty;
 		}
 
 
@@ -3935,6 +3911,21 @@ namespace AC
 			int s1_modified = (int) Mathf.Pow (2f, (float) s1);
 			int s2 = (int) translatableTextTypes;
 			return (s1_modified & s2) != 0;
+		}
+
+
+		/** Checks if the method of animating character speech is based on the audio associated with the speech line. */
+		public bool LipSyncingIsAudioBased ()
+		{
+			switch (lipSyncMode)
+			{
+				case LipSyncMode.Off:
+				case LipSyncMode.FromSpeechText:
+					return false;
+
+				default:
+					return true;
+			}
 		}
 		
 	}

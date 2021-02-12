@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionHighlight.cs"
  * 
@@ -39,13 +39,9 @@ namespace AC
 		protected InventoryManager inventoryManager;
 
 
-		public ActionHighlight ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Highlight";
-			description = "Gives a glow effect to any mesh object with the Highlight script component attached to it. Can also be used to make Inventory items glow, making it useful for tutorial sections.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Highlight"; }}
+		public override string Description { get { return "Gives a glow effect to any mesh object with the Highlight script component attached to it. Can also be used to make Inventory items glow, making it useful for tutorial sections."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -217,8 +213,6 @@ namespace AC
 			{
 				isInstant = EditorGUILayout.Toggle ("Is instant?", isInstant);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -253,7 +247,7 @@ namespace AC
 				if (highlightObject != null && highlightObject.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -268,7 +262,7 @@ namespace AC
 		 */
 		public static ActionHighlight CreateNew_SceneObject (Highlight objectToAffect, HighlightType highlightType, bool isInstant = false)
 		{
-			ActionHighlight newAction = (ActionHighlight) CreateInstance <ActionHighlight>();
+			ActionHighlight newAction = CreateNew<ActionHighlight> ();
 			newAction.whatToHighlight = WhatToHighlight.SceneObject;
 			newAction.highlightObject = objectToAffect;
 			newAction.highlightType = highlightType;
@@ -286,7 +280,7 @@ namespace AC
 		 */
 		public static ActionHighlight CreateNew_InventoryItem (int itemIDToAffect, HighlightType highlightType, bool isInstant = false)
 		{
-			ActionHighlight newAction = (ActionHighlight) CreateInstance <ActionHighlight>();
+			ActionHighlight newAction = CreateNew<ActionHighlight> ();
 			newAction.whatToHighlight = WhatToHighlight.InventoryItem;
 			newAction.invID = itemIDToAffect;
 			newAction.highlightType = highlightType;

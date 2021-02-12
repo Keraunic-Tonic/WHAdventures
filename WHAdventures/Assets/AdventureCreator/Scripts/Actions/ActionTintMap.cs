@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionTintMap.cs"
  * 
@@ -45,14 +45,10 @@ namespace AC
 		protected TintMap runtimeNewTintMap;
 
 
-		public ActionTintMap ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Change Tint map";
-			description = "Changes which Tint map a Follow Tint Map component uses, and the intensity of the effect.";
-		}
-
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Change Tint map"; }}
+		public override string Description { get { return "Changes which Tint map a Follow Tint Map component uses, and the intensity of the effect."; }}
+		
 
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
@@ -206,8 +202,6 @@ namespace AC
 					}
 				}
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -258,14 +252,14 @@ namespace AC
 			if (followTintMapParameterID < 0)
 			{
 				if (followTintMap != null && followTintMap.gameObject == gameObject) return true;
-				if (followTintMapConstantID == id) return true;
+				if (followTintMapConstantID == id && id != 0) return true;
 			}
 			if (newTintMapParameterID < 0 && tintMapMethod == TintMapMethod.ChangeTintMap)
 			{
 				if (newTintMap != null && newTintMap.gameObject == gameObject) return true;
-				if (newTintMapConstantID == id) return true;
+				if (newTintMapConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -288,7 +282,7 @@ namespace AC
 		 */
 		public static ActionTintMap CreateNew_ChangeTintMap (FollowTintMap followTintMap, TintMap newTintMap)
 		{
-			ActionTintMap newAction = (ActionTintMap) CreateInstance <ActionTintMap>();
+			ActionTintMap newAction = CreateNew<ActionTintMap> ();
 			newAction.tintMapMethod = TintMapMethod.ChangeTintMap;
 			newAction.followTintMap = followTintMap;
 			newAction.newTintMap = newTintMap;
@@ -306,7 +300,7 @@ namespace AC
 		 */
 		public static ActionTintMap CreateNew_ChangeIntensity (FollowTintMap followTintMap, float newIntensity, float transitionTime = 0f, bool waitUntilFinish = false)
 		{
-			ActionTintMap newAction = (ActionTintMap) CreateInstance <ActionTintMap>();
+			ActionTintMap newAction = CreateNew<ActionTintMap> ();
 			newAction.tintMapMethod = TintMapMethod.ChangeIntensity;
 			newAction.followTintMap = followTintMap;
 			newAction.newIntensity = newIntensity;

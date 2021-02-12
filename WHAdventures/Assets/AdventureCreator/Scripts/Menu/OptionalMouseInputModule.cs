@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"OptionalMouseInputModule.cs"
  * 
@@ -43,7 +43,7 @@ namespace AC
 
 		protected void Update ()
 		{
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.inputMethod != InputMethod.TouchScreen)
+			if (KickStarter.settingsManager && KickStarter.settingsManager.inputMethod != InputMethod.TouchScreen)
 			{
 				AllowMouseInput = !CanDirectlyControlMenus ();
 			}
@@ -56,7 +56,7 @@ namespace AC
 
 		protected virtual bool CanDirectlyControlMenus ()
 		{
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.inputMethod == InputMethod.TouchScreen)
+			if (KickStarter.settingsManager && KickStarter.settingsManager.inputMethod == InputMethod.TouchScreen)
 			{
 				return false;
 			}
@@ -77,8 +77,6 @@ namespace AC
 			{
 				return base.GetMousePointerEventData (id);
 			}
-
-			
 
 			PointerEventData leftData;
 			var created = GetPointerData (kMouseLeftId, out leftData, true );

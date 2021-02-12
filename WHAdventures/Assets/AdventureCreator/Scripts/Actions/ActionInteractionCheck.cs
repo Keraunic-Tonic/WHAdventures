@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionInteraction.cs"
  * 
@@ -33,15 +33,11 @@ namespace AC
 		public int number = 0;
 
 
-		public ActionInteractionCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Hotspot;
-			title = "Check interaction enabled";
-			description = "Checks the enabled state of individual Interactions on a Hotspot.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Hotspot; }}
+		public override string Title { get { return "Check interaction enabled"; }}
+		public override string Description { get { return "Checks the enabled state of individual Interactions on a Hotspot."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			runtimeHotspot = AssignFile <Hotspot> (parameters, parameterID, constantID, hotspot);
@@ -55,31 +51,35 @@ namespace AC
 				return false;
 			}
 			
-			if (interactionType == InteractionType.Use)
+			switch (interactionType)
 			{
-				if (runtimeHotspot.useButtons.Count > number)
-				{
-					return !runtimeHotspot.useButtons [number].isDisabled;
-				}
-				else
-				{
-					ACDebug.LogWarning ("Cannot check Hotspot " + runtimeHotspot.gameObject.name + "'s Use button " + number.ToString () + " because it doesn't exist!", runtimeHotspot);
-				}
-			}
-			else if (interactionType == InteractionType.Examine)
-			{
-				return !runtimeHotspot.lookButton.isDisabled;
-			}
-			else if (interactionType == InteractionType.Inventory)
-			{
-				if (runtimeHotspot.invButtons.Count > number)
-				{
-					return !runtimeHotspot.invButtons [number].isDisabled;
-				}
-				else
-				{
-					ACDebug.LogWarning ("Cannot check Hotspot " + runtimeHotspot.gameObject.name + "'s Inventory button " + number.ToString () + " because it doesn't exist!", runtimeHotspot);
-				}
+				case InteractionType.Use:
+					if (runtimeHotspot.useButtons.Count > number)
+					{
+						return !runtimeHotspot.useButtons[number].isDisabled;
+					}
+					else
+					{
+						ACDebug.LogWarning ("Cannot check Hotspot " + runtimeHotspot.gameObject.name + "'s Use button " + number.ToString () + " because it doesn't exist!", runtimeHotspot);
+					}
+					break;
+
+				case InteractionType.Examine:
+					return !runtimeHotspot.lookButton.isDisabled;
+
+				case InteractionType.Inventory:
+					if (runtimeHotspot.invButtons.Count > number)
+					{
+						return !runtimeHotspot.invButtons[number].isDisabled;
+					}
+					else
+					{
+						ACDebug.LogWarning ("Cannot check Hotspot " + runtimeHotspot.gameObject.name + "'s Inventory button " + number.ToString () + " because it doesn't exist!", runtimeHotspot);
+					}
+					break;
+
+				default:
+					break;
 			}
 			
 			return false;
@@ -187,7 +187,7 @@ namespace AC
 				if (hotspot != null && hotspot.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 		
 		#endif
@@ -202,7 +202,7 @@ namespace AC
 		 */
 		public static ActionInteractionCheck CreateNew (Hotspot hotspotToCheck, InteractionType interactionType, int index)
 		{
-			ActionInteractionCheck newAction = (ActionInteractionCheck) CreateInstance <ActionInteractionCheck>();
+			ActionInteractionCheck newAction = CreateNew<ActionInteractionCheck> ();
 			newAction.hotspot = hotspotToCheck;
 			newAction.interactionType = interactionType;
 			newAction.number = index;

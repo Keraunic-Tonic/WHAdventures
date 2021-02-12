@@ -42,7 +42,7 @@ namespace AC
 			speechManager.useSpeechTags = EditorGUILayout.Toggle ("Use speech tags?", speechManager.useSpeechTags);
 			if (speechManager.useSpeechTags)
 			{
-				EditorGUILayout.BeginVertical ();
+				CustomGUILayout.BeginVertical ();
 				scrollPos = EditorGUILayout.BeginScrollView (scrollPos, GUILayout.Height (205f));
 
 				if (speechManager.speechTags.Count == 0)
@@ -52,7 +52,7 @@ namespace AC
 				
 				for (int i=0; i<speechManager.speechTags.Count; i++)
 				{
-					EditorGUILayout.BeginVertical ("Button");
+					CustomGUILayout.BeginVertical ();
 					EditorGUILayout.BeginHorizontal ();
 
 					if (i == 0)
@@ -74,11 +74,11 @@ namespace AC
 						}
 					}
 					EditorGUILayout.EndHorizontal ();
-					EditorGUILayout.EndVertical ();
+					CustomGUILayout.EndVertical ();
 				}
 			
 				EditorGUILayout.EndScrollView ();
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 				
 				if (GUILayout.Button ("Add new tag"))
 				{

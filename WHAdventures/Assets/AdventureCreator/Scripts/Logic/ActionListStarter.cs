@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionListStarter.cs"
  * 
@@ -47,12 +47,15 @@ namespace AC
 		{
 			EventManager.OnStartScene += OnStartScene;
 			EventManager.OnAfterChangeScene += OnAfterChangeScene;
+			EventManager.OnAddSubScene += OnAddSubScene;
 		}
 
 
 		protected void OnDisable ()
 		{
 			EventManager.OnStartScene -= OnStartScene;
+			EventManager.OnAfterChangeScene -= OnAfterChangeScene;
+			EventManager.OnAddSubScene -= OnAddSubScene;
 		}
 
 		#endregion
@@ -91,7 +94,7 @@ namespace AC
 			runOnStart = EditorGUILayout.Toggle ("Run on scene start?", runOnStart);
 			runOnLoad = EditorGUILayout.Toggle ("Run on scene load?", runOnLoad);
 
-			if (runOnLoad && KickStarter.settingsManager != null && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
+			if (runOnLoad && KickStarter.settingsManager && KickStarter.settingsManager.playerSwitching == PlayerSwitching.Allow)
 			{
 				sceneLoadCondition = (SceneLoadCondition) EditorGUILayout.EnumPopup ("Scene load condition:", sceneLoadCondition);
 			}
@@ -104,7 +107,12 @@ namespace AC
 				case ActionListSource.InScene:
 					actionList = (ActionList)EditorGUILayout.ObjectField ("ActionList to run:", actionList, typeof (ActionList), true);
 
-					if (actionList != null && actionList.IsSkippable ())
+					if (actionList == null && GetComponent <ActionList>())
+					{
+						actionList = GetComponent <ActionList>();
+					}
+
+					if (actionList && actionList.IsSkippable ())
 					{
 						runInstantly = EditorGUILayout.Toggle ("Run instantly?", runInstantly);
 					}
@@ -115,7 +123,7 @@ namespace AC
 				case ActionListSource.AssetFile:
 					actionListAsset = (ActionListAsset)EditorGUILayout.ObjectField ("Asset to run:", actionListAsset, typeof (ActionListAsset), false);
 
-					if (actionListAsset != null && actionListAsset.IsSkippable ())
+					if (actionListAsset && actionListAsset.IsSkippable ())
 					{
 						runInstantly = EditorGUILayout.Toggle ("Run instantly?", runInstantly);
 					}
@@ -133,7 +141,7 @@ namespace AC
 		{
 			if (_actionList != null)
 			{
-				if (_actionList.source == ActionListSource.AssetFile && _actionList.assetFile != null && _actionList.assetFile.NumParameters > 0)
+				if (_actionList.source == ActionListSource.AssetFile && _actionList.assetFile && _actionList.assetFile.NumParameters > 0)
 				{
 					setParameters = EditorGUILayout.Toggle ("Set parameters?", setParameters);
 
@@ -176,7 +184,7 @@ namespace AC
 			}
 		}
 
-#endif
+		#endif
 
 
 		#region ProtectedFunctions
@@ -216,6 +224,22 @@ namespace AC
 		}
 
 
+		protected void OnAddSubScene (SubScene subScene)
+		{
+			if (subScene.gameObject.scene == gameObject.scene)
+			{
+				if (KickStarter.saveSystem.loadingGame == LoadingGame.No)
+				{
+					OnStartScene ();
+				}
+				else
+				{
+					OnAfterChangeScene (KickStarter.saveSystem.loadingGame);
+				}
+			}
+		}
+
+
 		protected void RunActionLists ()
 		{
 			switch (actionListSource)
@@ -240,7 +264,7 @@ namespace AC
 					break;
 
 				case ActionListSource.AssetFile:
-					if (actionListAsset != null)
+					if (actionListAsset)
 					{
 						if (setParameters && runMultipleTimes)
 						{

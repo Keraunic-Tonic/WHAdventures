@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Cutscene.cs"
  * 
@@ -44,10 +44,28 @@ namespace AC
 			}
 
 			// Actions
+			
+			#if AC_ActionListPrefabs
+
+			JsonAction.ToCopyBuffer (actionListAsset.actions);
+			actions = JsonAction.CreatePasteBuffer ();
+			JsonAction.ClearCopyBuffer ();
+			
+			foreach (Action action in actions)
+			{
+				action.ClearIDs ();
+				action.isMarked = false;
+				action.isAssetFile = false;
+				action.parentActionListInEditor = this;
+			}
+
+			#else
+
 			actions = new List<Action>();
 			actions.Clear ();
 
 			Vector2 firstPosition = new Vector2 (14f, 14f);
+
 			foreach (Action originalAction in actionListAsset.actions)
 			{
 				if (originalAction == null)
@@ -55,7 +73,8 @@ namespace AC
 					continue;
 				}
 
-				AC.Action duplicatedAction = Object.Instantiate (originalAction) as AC.Action;
+
+				Action duplicatedAction = Instantiate (originalAction);
 				
 				if (actionListAsset.actions.IndexOf (originalAction) == 0)
 				{
@@ -73,7 +92,10 @@ namespace AC
 				duplicatedAction.isAssetFile = false;
 				duplicatedAction.parentActionListInEditor = this;
 				actions.Add (duplicatedAction);
+
 			}
+
+			#endif
 		}
 
 		#endif

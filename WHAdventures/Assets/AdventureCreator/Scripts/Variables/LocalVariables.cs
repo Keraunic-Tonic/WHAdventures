@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"LocalVariables.cs"
  * 
@@ -44,6 +44,7 @@ namespace AC
 			foreach (GVar _var in localVars)
 			{
 				_var.CreateRuntimeTranslations ();
+				_var.BackupValue ();
 			}
 		}
 
@@ -77,6 +78,7 @@ namespace AC
 						localVar.FloatValue = presetValue.floatVal;
 						localVar.TextValue = presetValue.textVal;
 						localVar.Vector3Value = presetValue.vector3Val;
+						localVar.GameObjectValue = presetValue.gameObjectVal;
 					}
 				}
 			}

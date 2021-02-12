@@ -48,6 +48,7 @@ MonoBehaviour:
   limitToCategory: 0
   categoryIDs: 
   maxSlots: 0
+  swapIfFull: 0
 --- !u!114 &11400002
 MonoBehaviour:
   m_ObjectHideFlags: 0

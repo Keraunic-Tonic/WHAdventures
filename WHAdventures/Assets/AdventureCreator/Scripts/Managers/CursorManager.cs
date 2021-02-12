@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"CursorManager.cs"
  * 
@@ -92,12 +92,23 @@ namespace AC
 		/** The "to" in the syntax "Give item to NPC" */
 		public HotspotPrefix hotspotPrefix4 = new HotspotPrefix ("to");
 
+		/** How large to display the count of the selected item instance */
+		public float displayCountSize = 1.6f;
+		/** The font when displaying the count of the selected item instance */
+		public Font displayCountFont = null;
+		/** The text effects when displaying the count of the selected item instance */
+		public TextEffects displayCountTextEffects = TextEffects.None;
+
 		/** A List of all CursorIcon instances that represent the various Interaction types */
 		public List<CursorIcon> cursorIcons = new List<CursorIcon>();
 		/** A List of ActionListAsset files that get run when an unhandled Interaction is triggered */
 		public List<ActionListAsset> unhandledCursorInteractions = new List<ActionListAsset>();
 		/** If True, the Hotspot clicked on to initiate unhandledCursorInteractions will be sent as a parameter to the ActionListAsset */
 		public bool passUnhandledHotspotAsParameter;
+		/** If True, then Hotspot labels will not show when no inventory item is selected unless the cursor is over another inventory item or a Hotspot */
+		public bool onlyShowCursorLabelOverHotspots = false;
+		/** If True, then the cursor can be cycled while the game is paused, if the current interaction method supports it */
+		public bool allowCursorCyclingWhenPaused = false;
 
 		/** What happens when hovering over a Hotspot that has both a Use and Examine Interaction (DisplayUseIcon, DisplayBothSideBySide, RightClickCyclesModes) */
 		public LookUseCursorAction lookUseCursorAction = LookUseCursorAction.DisplayBothSideBySide;
@@ -157,7 +168,7 @@ namespace AC
 
 				hideCursorWhenDraggingMoveables = CustomGUILayout.ToggleLeft ("Hide cursor when manipulating Draggables?", hideCursorWhenDraggingMoveables, "AC.KickStarter.cursorManager.hideCursorWhenDraggingMoveables", "If True, the cursor will be hidden when manipulating Draggable objects");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			EditorGUILayout.Space ();
 			EditorGUILayout.BeginVertical (CustomStyles.thinBox);
@@ -170,11 +181,11 @@ namespace AC
 					allowMainCursor = CustomGUILayout.Toggle ("Replace mouse cursor?", allowMainCursor, "AC.KickStarter.cursorManager.allowMainCursor", "If True, then the system's default hardware cursor will replaced with a custom one");
 					if (allowMainCursor || (settingsManager && settingsManager.inputMethod == InputMethod.KeyboardOrController))
 					{
-						IconBaseGUI ("", pointerIcon, "AC.KickStarter.cursorManager.pointerIcon", "The game's default cursor", false);
+						IconBaseGUI (string.Empty, pointerIcon, "AC.KickStarter.cursorManager.pointerIcon", "The game's default cursor", false);
 					}
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			EditorGUILayout.Space ();
 			EditorGUILayout.BeginVertical (CustomStyles.thinBox);
@@ -190,7 +201,7 @@ namespace AC
 						{
 							EditorGUILayout.LabelField ("Input button:", "Icon_Walk");
 						}
-						IconBaseGUI ("", walkIcon, "AC.KickStarter.cursorManager.walkIcon", "The cursor when in 'walk mode'");
+						IconBaseGUI (string.Empty, walkIcon, "AC.KickStarter.cursorManager.walkIcon", "The cursor when in 'walk mode'");
 						onlyWalkWhenOverNavMesh = CustomGUILayout.ToggleLeft ("Only show 'Walk' Cursor when over NavMesh?", onlyWalkWhenOverNavMesh, "AC.KickStarter.cursorManager.onlyWalkWhenOverNavMesh", "If True, then the walk cursor will only show when the cursor is hovering over a NavMesh");
 					}
 				}
@@ -200,7 +211,7 @@ namespace AC
 					walkPrefix.label = CustomGUILayout.TextField ("Walk prefix:", walkPrefix.label, "AC.KickStarter.cursorManager.walkPrefix");
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			EditorGUILayout.Space ();
 			EditorGUILayout.BeginVertical (CustomStyles.thinBox);
@@ -208,9 +219,9 @@ namespace AC
 			if (showHotspotCursor)
 			{
 				addHotspotPrefix = CustomGUILayout.Toggle ("Prefix cursor labels?", addHotspotPrefix, "AC.KickStarter.cursorManager.addHotspotPrefix", "If True, then the Cursor's interaction verb will prefix the Hotspot label when hovering over Hotspots");
-				IconBaseGUI ("", mouseOverIcon, "AC.KickStarter.cursorManager.mouseOverIcon");
+				IconBaseGUI (string.Empty, mouseOverIcon, "AC.KickStarter.cursorManager.mouseOverIcon");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 			EditorGUILayout.BeginVertical (CustomStyles.thinBox);
@@ -218,11 +229,12 @@ namespace AC
 			if (showInventoryCursor)
 			{
 				inventoryHandling = (InventoryHandling) CustomGUILayout.EnumPopup ("When inventory selected:", inventoryHandling, "AC.KickStarter.cursorManager.inventoryHandling", "What happens to the cursor when an inventory item is selected");
-				if (inventoryHandling != InventoryHandling.ChangeCursor)
+
+				if (inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel || inventoryHandling == InventoryHandling.ChangeHotspotLabel)
 				{
 					onlyShowInventoryLabelOverHotspots = CustomGUILayout.ToggleLeft ("Only show label when over Hotspots and Inventory?", onlyShowInventoryLabelOverHotspots, "AC.KickStarter.cursorManager.onlyShowInventoryLabelOverHotspots", "If True, then Hotspot labels will not show when an inventory item is selected unless the cursor is over another inventory item or a Hotspot");
 				}
-				if (inventoryHandling != InventoryHandling.ChangeHotspotLabel)
+				if (inventoryHandling == InventoryHandling.ChangeCursor || inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel)
 				{
 					inventoryCursorSize = CustomGUILayout.FloatField ("Inventory cursor size:", inventoryCursorSize, "AC.KickStarter.cursorManager.inventoryCursorSize", "The size of selected inventory item graphics when used as a cursor");
 				}
@@ -243,8 +255,16 @@ namespace AC
 					EditorGUILayout.LabelField ("(hotspot)", GUILayout.MaxWidth (55f));
 					EditorGUILayout.EndHorizontal ();
 				}
+
+				if ((inventoryHandling == InventoryHandling.ChangeCursorAndHotspotLabel || inventoryHandling == InventoryHandling.ChangeCursor) || KickStarter.settingsManager.cycleInventoryCursors)
+				{
+					EditorGUILayout.Space ();
+					displayCountFont = (Font) CustomGUILayout.ObjectField<Font> ("Display count font:", displayCountFont, false, "AC.KickStarter.cursorManager.displayCountFont", "The font to use when displaying the selected item's count");
+					displayCountSize = CustomGUILayout.FloatField ("Display count size:", displayCountSize, "AC.KickStarter.cursorManager.displayCountSize", "How large to display the selected item's count");
+					displayCountTextEffects = (TextEffects) CustomGUILayout.EnumPopup ("Display count effects:", displayCountTextEffects, "AC.KickStarter.cursorManager.displayCountTextEffects", "The text effect to use when displaying the selected item's count");
+				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			EditorGUILayout.Space ();
 			EditorGUILayout.BeginVertical (CustomStyles.thinBox);
@@ -263,8 +283,17 @@ namespace AC
 						cycleCursors = CustomGUILayout.ToggleLeft ("Cycle Interactions with right-click?", cycleCursors, "AC.KickStarter.cursorManager.cycleCursors", "If True, then cursor modes can by clicked by right-clicking");
 						allowIconInput = CustomGUILayout.ToggleLeft ("Set Interaction with specific inputs?", allowIconInput, "AC.KickStarter.cursorManager.allowIconInput", "then the player can switch the active icon by invoking a specific input");
 						onlyAnimateOverHotspots = CustomGUILayout.ToggleLeft ("Only animate icons when over Hotspots?", onlyAnimateOverHotspots, "AC.KickStarter.cursorManager.onlyAnimateOverHotspots", "If True, then animated cursors will only animate if the cursor is over a Hotspot");
+						onlyShowCursorLabelOverHotspots = CustomGUILayout.ToggleLeft ("Only show label when over Hotspots and Inventory?", onlyShowCursorLabelOverHotspots, "AC.KickStarter.cursorManager.onlyShowCursorLabelOverHotspots", "If True, then Hotspot labels will not show when no inventory item is selected unless the cursor is over another inventory item or a Hotspot");
 					}
 				}
+
+				if ((settingsManager && settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive && lookUseCursorAction == LookUseCursorAction.RightClickCyclesModes) ||
+					(settingsManager && settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot && settingsManager.inventoryInteractions == InventoryInteractions.Multiple) ||
+					(settingsManager && settingsManager.SelectInteractionMethod () == SelectInteractions.CyclingCursorAndClickingHotspot && settingsManager.inventoryInteractions == InventoryInteractions.Multiple))
+				{
+					allowCursorCyclingWhenPaused = CustomGUILayout.ToggleLeft ("Allow cursor cycling when paused?", allowCursorCyclingWhenPaused, "AC.KickStarter.cursorManager.allowCursorCyclingWhenPaused", "If True, then the cursor can be cycled while the game is paused");
+				}
+
 				
 				IconsGUI ();
 			
@@ -275,16 +304,16 @@ namespace AC
 					LookIconGUI ();
 				}
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			EditorGUILayout.Space ();
 			EditorGUILayout.BeginVertical (CustomStyles.thinBox);
 			showCutsceneCursor = CustomGUILayout.ToggleHeader (showCutsceneCursor, "Cutscene cursor");
 			if (showCutsceneCursor)
 			{
-				IconBaseGUI ("", waitIcon, "AC.KickStarter.cursorManager.waitIcon", "The cursor while the game is running a gameplay-blocking cutscene");
+				IconBaseGUI (string.Empty, waitIcon, "AC.KickStarter.cursorManager.waitIcon", "The cursor while the game is running a gameplay-blocking cutscene");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			if (GUI.changed)
 			{
@@ -302,6 +331,21 @@ namespace AC
 			menu.AddItem (new GUIContent ("Insert after"), false, MenuCallback, "Insert after");
 			menu.AddItem (new GUIContent ("Delete"), false, MenuCallback, "Delete");
 
+			if (i > 0 || i < cursorIcons.Count - 1)
+			{
+				menu.AddSeparator (string.Empty);
+			}
+			if (i > 0)
+			{
+				menu.AddItem (new GUIContent ("Re-arrange/Move to top"), false, MenuCallback, "Move to top");
+				menu.AddItem (new GUIContent ("Re-arrange/Move up"), false, MenuCallback, "Move up");
+			}
+			if (i < cursorIcons.Count - 1)
+			{
+				menu.AddItem (new GUIContent ("Re-arrange/Move down"), false, MenuCallback, "Move down");
+				menu.AddItem (new GUIContent ("Re-arrange/Move to bottom"), false, MenuCallback, "Move to bottom");
+			}
+
 			menu.ShowAsContext ();
 		}
 
@@ -311,20 +355,48 @@ namespace AC
 			if (iconSideMenu >= 0)
 			{
 				int i = iconSideMenu;
+				CursorIcon tempIcon = cursorIcons[i];
 
 				switch (obj.ToString ())
 				{
-				case "Insert after":
-					Undo.RecordObject (this, "Add icon");
-					cursorIcons.Insert (i+1, new CursorIcon (GetIDArray ()));
-					unhandledCursorInteractions.Insert (i+1, null);
-					break;
+					case "Insert after":
+						Undo.RecordObject (this, "Add icon");
+						cursorIcons.Insert (i+1, new CursorIcon (GetIDArray ()));
+						unhandledCursorInteractions.Insert (i+1, null);
+						break;
 
-				case "Delete":
-					Undo.RecordObject (this, "Delete icon");
-					cursorIcons.RemoveAt (i);
-					unhandledCursorInteractions.RemoveAt (i);
-					break;
+					case "Delete":
+						Undo.RecordObject (this, "Delete icon");
+						cursorIcons.RemoveAt (i);
+						unhandledCursorInteractions.RemoveAt (i);
+						break;
+
+					case "Move up":
+						Undo.RecordObject (this, "Move icon up");
+						cursorIcons.RemoveAt (i);
+						cursorIcons.Insert (i - 1, tempIcon);
+						break;
+
+					case "Move down":
+						Undo.RecordObject (this, "Move icon down");
+						cursorIcons.RemoveAt (i);
+						cursorIcons.Insert (i + 1, tempIcon);
+						break;
+
+					case "Move to top":
+						Undo.RecordObject (this, "Move icon to top");
+						cursorIcons.RemoveAt (i);
+						cursorIcons.Insert (0, tempIcon);
+						break;
+
+					case "Move to bottom":
+						Undo.RecordObject (this, "Move icon to bottom");
+						cursorIcons.Add (tempIcon);
+						cursorIcons.RemoveAt (i);
+						break;
+
+					default:
+						break;
 				}
 			}
 			
@@ -348,7 +420,7 @@ namespace AC
 			foreach (CursorIcon _cursorIcon in cursorIcons)
 			{
 				int i = cursorIcons.IndexOf (_cursorIcon);
-				GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
+				CustomGUILayout.DrawUILine ();
 
 				EditorGUILayout.BeginHorizontal ();
 				EditorGUILayout.LabelField ("Icon ID:", GUILayout.MaxWidth (145));
@@ -356,14 +428,14 @@ namespace AC
 
 				GUILayout.FlexibleSpace ();
 
-				if (GUILayout.Button ("", CustomStyles.IconCog))
+				if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
 				{
 					SideMenu (i);
 				}
 
 				EditorGUILayout.EndHorizontal ();
 
-				_cursorIcon.label = CustomGUILayout.TextField ("Label:", _cursorIcon.label, "AC.KickStarter.cursorManager.GetCursorIconFromID (" + i + ").label", "The display name of the icon");
+				_cursorIcon.label = CustomGUILayout.TextField ("Label:", _cursorIcon.label, "AC.KickStarter.cursorManager.GetCursorIconFromID (" + _cursorIcon.id.ToString () + ").label", "The display name of the icon");
 				if (KickStarter.settingsManager != null && KickStarter.settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot && allowIconInput)
 				{
 					EditorGUILayout.LabelField ("Input button:", _cursorIcon.GetButtonName ());
@@ -376,22 +448,27 @@ namespace AC
 					unhandledCursorInteractions[i] = ActionListAssetMenu.AssetGUI ("Unhandled interaction:", unhandledCursorInteractions[i], autoName, "AC.KickStarter.cursorManager.unhandledCursorInteractions[" + i + "]", "An ActionList asset that gets run when an unhandled Interaction is triggered");
 				}
 
-				if (settingsManager != null && settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot)
+				if (settingsManager && settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot)
 				{
 					_cursorIcon.dontCycle = CustomGUILayout.Toggle ("Leave out of Cursor cycle?", _cursorIcon.dontCycle, "AC.KickStarter.cursorManager.GetCursorIconFromID (" + i + ").dontCycle", "If True, then the cursor will be left out of the cycle when right-clicking");
 				}
 			}
 
+			EditorGUILayout.Space ();
 			if (GUILayout.Button("Create new icon"))
 			{
 				Undo.RecordObject (this, "Add icon");
 				cursorIcons.Add (new CursorIcon (GetIDArray ()));
 			}
 
-			passUnhandledHotspotAsParameter = CustomGUILayout.ToggleLeft ("Pass Hotspot as GameObject parameter?", passUnhandledHotspotAsParameter, "AC.KickStarter.cursorManager.passUnhandledHotspotAsParameter", "If True, the Hotspot clicked on to initiate unhandled Interactions will be sent as a parameter to the ActionList asset");
-			if (passUnhandledHotspotAsParameter)
+			if (AllowUnhandledIcons())
 			{
-				EditorGUILayout.HelpBox ("The Hotspot will be set as the Unhandled interaction's first parameter, which must be set to type 'GameObject'.", MessageType.Info);
+				EditorGUILayout.Space ();
+				passUnhandledHotspotAsParameter = CustomGUILayout.ToggleLeft ("Pass Hotspot as GameObject parameter?", passUnhandledHotspotAsParameter, "AC.KickStarter.cursorManager.passUnhandledHotspotAsParameter", "If True, the Hotspot clicked on to initiate unhandled Interactions will be sent as a parameter to the ActionList asset");
+				if (passUnhandledHotspotAsParameter)
+				{
+					EditorGUILayout.HelpBox ("The Hotspot will be set as the Unhandled interaction's first parameter, which must be set to type 'GameObject'.", MessageType.Info);
+				}
 			}
 		}
 
@@ -413,10 +490,7 @@ namespace AC
 
 				if (lookUseCursorAction != LookUseCursorAction.RightClickCyclesModes)
 				{
-					EditorGUILayout.BeginHorizontal ();
-					EditorGUILayout.LabelField (new GUIContent ("Left-click to examine when no use interaction exists?", "If True, then left-clicking a Hotspot will examine it if no 'Use' Interaction exists"), GUILayout.Width (300f));
-					leftClickExamine = CustomGUILayout.Toggle (leftClickExamine, "AC.KickStarter.cursorManager.leftClickExamine");
-					EditorGUILayout.EndHorizontal ();
+					leftClickExamine = CustomGUILayout.ToggleLeft ("Left-click to examine when no use interaction exists?", leftClickExamine, "AC.KickStarter.cursorManager.leftClickExamine", "If True, then left-clicking a Hotspot will examine it if no 'Use' Interaction exists");
 				}
 			}
 		}
@@ -572,6 +646,20 @@ namespace AC
 				}
 			}
 			return null;
+		}
+
+
+		public GUIStyle GetDisplayCountStyle ()
+		{
+			float xScale = (KickStarter.mainCamera) ? KickStarter.mainCamera.GetPlayableScreenArea (false).size.x : ACScreen.width;
+			int fontSize = (int) (xScale * displayCountSize / 100f);
+
+			GUIStyle countStyle = new GUIStyle ();
+			countStyle.font = displayCountFont;
+			countStyle.fontSize = fontSize;
+			countStyle.normal.textColor = Color.white;
+			countStyle.alignment = TextAnchor.MiddleCenter;
+			return countStyle;
 		}
 		
 		

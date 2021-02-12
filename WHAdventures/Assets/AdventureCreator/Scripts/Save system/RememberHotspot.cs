@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberHotspot.cs"
  * 
@@ -35,7 +35,8 @@ namespace AC
 
 			if (OwnHotspot != null &&
 				KickStarter.settingsManager &&
-				GameIsPlaying ())
+				GameIsPlaying () &&
+				isActiveAndEnabled)
 			{
 				if (startState == AC_OnOff.On)
 				{
@@ -59,7 +60,7 @@ namespace AC
 			hotspotData.objectID = constantID;
 			hotspotData.savePrevented = savePrevented;
 
-			if (OwnHotspot != null)
+			if (OwnHotspot)
 			{
 				hotspotData.isOn = OwnHotspot.IsOn ();
 				hotspotData.buttonStates = ButtonStatesToString (OwnHotspot);
@@ -95,7 +96,7 @@ namespace AC
 				gameObject.layer = LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer);
 			}
 
-			if (OwnHotspot != null)
+			if (OwnHotspot)
 			{
 				if (data.isOn)
 				{

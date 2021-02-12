@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"Options.cs"
  * 
@@ -48,7 +48,6 @@ namespace AC
 		public void OnInitPersistentEngine ()
 		{
 			LoadPrefs ();
-
 			KickStarter.runtimeLanguages.LoadAssetBundle (GetVoiceLanguage ());
 		}
 		
@@ -92,9 +91,11 @@ namespace AC
 			{
 				// Linked Variables
 				GlobalVariables.DownloadAll ();
-				optionsData.linkedVariables = SaveSystem.CreateVariablesData (KickStarter.runtimeVariables.globalVars, true, VariableLocation.Global);
+				if (KickStarter.runtimeVariables)
+				{
+					optionsData.linkedVariables = SaveSystem.CreateVariablesData (KickStarter.runtimeVariables.globalVars, true, VariableLocation.Global);
+				}
 			}
-			
 			SavePrefsToID (GetActiveProfileID (), null, true);
 		}
 		
@@ -111,6 +112,7 @@ namespace AC
 			{
 				_optionsData = Options.optionsData;
 			}
+
 			string optionsSerialized = Serializer.SerializeObject <OptionsData> (_optionsData, true, SaveSystem.OptionsFileFormatHandler);
 			if (!string.IsNullOrEmpty (optionsSerialized))
 			{
@@ -129,7 +131,7 @@ namespace AC
 			{
 				ACDebug.LogWarning ("No Options Data found!");
 			}
-			else
+			else if (KickStarter.runtimeLanguages)
 			{
 				int numLanguages = (Application.isPlaying) ? KickStarter.runtimeLanguages.Languages.Count : AdvGame.GetReferences ().speechManager.languages.Count;
 				if (optionsData.language >= numLanguages)
@@ -141,7 +143,7 @@ namespace AC
 					optionsData.language = 0;
 					SavePrefs (false);
 				}
-				if (optionsData.voiceLanguage >= numLanguages && KickStarter.speechManager != null && KickStarter.speechManager.separateVoiceAndTextLanguages)
+				if (optionsData.voiceLanguage >= numLanguages && KickStarter.speechManager && KickStarter.speechManager.separateVoiceAndTextLanguages)
 				{
 					if (numLanguages != 0)
 					{
@@ -150,7 +152,7 @@ namespace AC
 					optionsData.voiceLanguage = 0;
 					SavePrefs (false);
 				}
-				if (KickStarter.speechManager != null && KickStarter.speechManager.ignoreOriginalText && KickStarter.speechManager.languages.Count > 1)
+				if (KickStarter.speechManager && KickStarter.speechManager.ignoreOriginalText && KickStarter.speechManager.languages.Count > 1)
 				{
 					if (optionsData.language == 0)
 					{
@@ -167,10 +169,9 @@ namespace AC
 				}
 			}
 			
-			if (Application.isPlaying)
+			if (Application.isPlaying && KickStarter.saveSystem)
 			{
 				KickStarter.saveSystem.GatherSaveFiles ();
-				KickStarter.playerMenus.RecalculateAll ();
 			}
 		}
 
@@ -187,6 +188,7 @@ namespace AC
 			if (DoesProfileIDExist (profileID))
 			{
 				string optionsSerialized = OptionsFileHandler.LoadOptions (profileID, showLog);
+				
 				if (!string.IsNullOrEmpty (optionsSerialized))
 				{
 					try
@@ -198,7 +200,7 @@ namespace AC
 						ACDebug.LogWarning ("Error retrieving OptionsData for profile #" + profileID + " - rebuilding..\nException: " + e);
 
 						OptionsData fallbackOptionsData = new OptionsData (profileID);
-						if (KickStarter.settingsManager != null)
+						if (KickStarter.settingsManager)
 						{
 							fallbackOptionsData = GenerateDefaultOptionsData (profileID);
 						}
@@ -235,7 +237,17 @@ namespace AC
 									KickStarter.settingsManager.defaultSpeechVolume,
 									profileID);
 		}
-		
+
+
+		/** Displays Options-related information for the AC Status window */
+		public static void DrawStatus ()
+		{
+			if (KickStarter.settingsManager.useProfiles)
+			{
+				GUILayout.Label ("Current profile ID: " + GetActiveProfileID ());
+			}
+		}
+
 
 		/**
 		 * <summary>Switches to a specific profile, provided that it exists.</summary>
@@ -294,7 +306,7 @@ namespace AC
 		 */
 		public static int GetActiveProfileID ()
 		{
-			if (KickStarter.settingsManager != null && KickStarter.settingsManager.useProfiles)
+			if (KickStarter.settingsManager && KickStarter.settingsManager.useProfiles)
 			{
 				return OptionsFileHandler.GetActiveProfile ();
 			}
@@ -538,7 +550,7 @@ namespace AC
 		 */
 		public static bool DoesProfileIDExist (int profileID)
 		{
-			if (KickStarter.settingsManager != null && !KickStarter.settingsManager.useProfiles)
+			if (KickStarter.settingsManager && !KickStarter.settingsManager.useProfiles)
 			{
 				profileID = 0;
 			}
@@ -559,7 +571,7 @@ namespace AC
 				return false;
 			}
 
-			if (KickStarter.settingsManager != null && !KickStarter.settingsManager.useProfiles)
+			if (KickStarter.settingsManager && !KickStarter.settingsManager.useProfiles)
 			{
 				return false;
 			}
@@ -599,7 +611,7 @@ namespace AC
 			{
 				KickStarter.saveSystem.GatherSaveFiles ();
 				KickStarter.playerMenus.RecalculateAll ();
-				KickStarter.runtimeVariables.AssignOptionsLinkedVariabes ();
+				KickStarter.runtimeVariables.AssignOptionsLinkedVariables ();
 			}
 
 			KickStarter.eventManager.Call_OnSwitchProfile (profileID);
@@ -843,7 +855,7 @@ namespace AC
 		{
 			if (Application.isPlaying && optionsData != null)
 			{
-				if (KickStarter.speechManager != null && KickStarter.speechManager.separateVoiceAndTextLanguages)
+				if (KickStarter.speechManager && KickStarter.speechManager.separateVoiceAndTextLanguages)
 				{
 					return optionsData.voiceLanguage;
 				}

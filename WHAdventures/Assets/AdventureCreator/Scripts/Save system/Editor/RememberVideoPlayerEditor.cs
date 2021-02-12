@@ -17,14 +17,14 @@ namespace AC
 		{
 			RememberVideoPlayer _target = (RememberVideoPlayer) target;
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField ("Video", EditorStyles.boldLabel);
 			_target.saveClipAsset = CustomGUILayout.Toggle ("Save clip asset?", _target.saveClipAsset, "", "If True, the VideoClip assigned in the VideoPlayer component will be stored in save game files.");
 			if (_target.saveClipAsset)
 			{
 				EditorGUILayout.HelpBox ("Both the original and new 'Video clip' assets will need placing in a Resources folder.", MessageType.Info);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			SharedGUI ();
 		}

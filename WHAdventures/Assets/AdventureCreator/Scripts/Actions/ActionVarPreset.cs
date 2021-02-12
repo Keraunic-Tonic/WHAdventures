@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionVarPreset.cs"
  * 
@@ -31,15 +31,11 @@ namespace AC
 		protected LocalVariables localVariables;
 
 		
-		public ActionVarPreset ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Variable;
-			title = "Assign preset";
-			description = "Bulk-assigns the values of all Global or Local values to a predefined preset within the Variables Manager.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Variable; }}
+		public override string Title { get { return "Assign preset"; }}
+		public override string Description { get { return "Bulk-assigns the values of all Global or Local values to a predefined preset within the Variables Manager."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			presetID = AssignVariableID (parameters, parameterID, presetID);
@@ -117,8 +113,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("This Variable source type does not suppport presets.", MessageType.Info);
 			}
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -213,7 +207,7 @@ namespace AC
 		 */
 		public static ActionVarPreset CreateNew_Global (int presetID)
 		{
-			ActionVarPreset newAction = (ActionVarPreset) CreateInstance <ActionVarPreset>();
+			ActionVarPreset newAction = CreateNew<ActionVarPreset> ();
 			newAction.location = VariableLocation.Global;
 			newAction.presetID = presetID;
 			return newAction;
@@ -227,7 +221,7 @@ namespace AC
 		 */
 		public static ActionVarPreset CreateNew_Local (int presetID)
 		{
-			ActionVarPreset newAction = (ActionVarPreset) CreateInstance <ActionVarPreset>();
+			ActionVarPreset newAction = CreateNew<ActionVarPreset> ();
 			newAction.location = VariableLocation.Local;
 			newAction.presetID = presetID;
 			return newAction;

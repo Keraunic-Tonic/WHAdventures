@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionObjectCheck.cs"
  * 
@@ -30,13 +30,9 @@ namespace AC
 		protected GameObject runtimeGameObject;
 
 
-		public ActionObjectCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Check presence";
-			description = "Use to determine if a particular GameObject or prefab is present in the current scene.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Check presence"; }}
+		public override string Description { get { return "Use to determine if a particular GameObject or prefab is present in the current scene."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -98,7 +94,7 @@ namespace AC
 				if (gameObject != null && gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 		
 		#endif
@@ -111,7 +107,7 @@ namespace AC
 		 */
 		public static ActionObjectCheck CreateNew (GameObject objectToCheck)
 		{
-			ActionObjectCheck newAction = (ActionObjectCheck) CreateInstance <ActionObjectCheck>();
+			ActionObjectCheck newAction = CreateNew<ActionObjectCheck> ();
 			newAction.gameObject = objectToCheck;
 			return newAction;
 		}

@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionScene.cs"
  * 
@@ -39,13 +39,10 @@ namespace AC
 		public bool forceReload = false;
 
 
-		public ActionScene ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Scene;
-			title = "Switch";
-			description = "Moves the Player to a new scene. The scene must be listed in Unity's Build Settings. By default, the screen will cut to black during the transition, but the last frame of the current scene can instead be overlayed. This allows for cinematic effects: if the next scene fades in, it will cause a crossfade effect; if the next scene doesn't fade, it will cause a straight cut.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Scene; }}
+		public override string Title { get { return "Switch"; }}
+		public override string Description { get { return "Moves the Player to a new scene. The scene must be listed in Unity's Build Settings. By default, the screen will cut to black during the transition, but the last frame of the current scene can instead be overlayed. This allows for cinematic effects: if the next scene fades in, it will cause a crossfade effect; if the next scene doesn't fade, it will cause a straight cut."; }}
+		public override int NumSockets { get { return (onlyPreload || isAssetFile) ? 1 : 0; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -90,20 +87,6 @@ namespace AC
 			}
 			return 0f;
 		}
-
-
-		public override ActionEnd End (List<Action> actions)
-		{
-			if (onlyPreload)
-			{
-				return base.End (actions);
-			}
-			if (isAssetFile)
-			{
-				return base.End (actions);
-			}
-			return GenerateStopActionEnd ();
-		}
 		
 
 		#if UNITY_EDITOR
@@ -142,9 +125,6 @@ namespace AC
 				{
 					EditorGUILayout.HelpBox ("To pre-load scenes, 'Load scenes asynchronously?' must be enabled in the Settings Manager.", MessageType.Warning);
 				}
-
-				numSockets = 1;
-				AfterRunningOption ();
 			}
 			else
 			{
@@ -171,12 +151,6 @@ namespace AC
 				if (isAssetFile)
 				{
 					EditorGUILayout.HelpBox ("To perform any Actions afterwards, 'Is skippable?' must be unchecked, and 'Survive scene changes?' must be checked, in the ActionList asset's properties.", MessageType.Info);
-					numSockets = 1;
-					AfterRunningOption ();
-				}
-				else
-				{
-					numSockets = 0;
 				}
 			}
 		}
@@ -203,9 +177,9 @@ namespace AC
 			if (relativePosition && relativeMarkerParameterID < 0)
 			{
 				if (relativeMarker != null && relativeMarker.gameObject == gameObject) return true;
-				if (relativeMarkerID == id) return true;
+				if (relativeMarkerID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 		#endif
@@ -218,8 +192,7 @@ namespace AC
 		 */
 		public static ActionScene CreateNew_PreloadOnly (int preloadSceneIndex)
 		{
-			ActionScene newAction = (ActionScene) CreateInstance <ActionScene>();
-
+			ActionScene newAction = CreateNew<ActionScene> ();
 			newAction.sceneName = string.Empty;
 			newAction.sceneNumber = preloadSceneIndex;
 			newAction.chooseSceneBy = ChooseSceneBy.Number;
@@ -237,7 +210,7 @@ namespace AC
 		 */
 		public static ActionScene CreateNew_Switch (int newSceneIndex, bool forceReload, bool overlayCurrentScreen)
 		{
-			ActionScene newAction = (ActionScene) CreateInstance <ActionScene>();
+			ActionScene newAction = CreateNew<ActionScene> ();
 			newAction.sceneName = string.Empty;
 			newAction.sceneNumber = newSceneIndex;
 			newAction.chooseSceneBy = ChooseSceneBy.Number;
@@ -255,8 +228,7 @@ namespace AC
 		 */
 		public static ActionScene CreateNew_PreloadOnly (string preloadSceneName)
 		{
-			ActionScene newAction = (ActionScene)CreateInstance<ActionScene> ();
-
+			ActionScene newAction = CreateNew<ActionScene> ();
 			newAction.sceneName = preloadSceneName;
 			newAction.sceneNumber = -1;
 			newAction.chooseSceneBy = ChooseSceneBy.Name;
@@ -274,7 +246,7 @@ namespace AC
 		 */
 		public static ActionScene CreateNew_Switch (string newSceneName, bool forceReload, bool overlayCurrentScreen)
 		{
-			ActionScene newAction = (ActionScene)CreateInstance<ActionScene> ();
+			ActionScene newAction = CreateNew<ActionScene> ();
 			newAction.sceneName = newSceneName;
 			newAction.sceneNumber = -1;
 			newAction.chooseSceneBy = ChooseSceneBy.Name;

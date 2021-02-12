@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"_Camera.cs"
  * 
@@ -35,6 +35,9 @@ namespace AC
 		/** The camera's focal distance */
 		public float focalDistance = 10f;
 
+		private Transform _transform;
+		private Transform _cameraTransform;
+
 		protected Char targetChar;
 		protected Camera _camera;
 		protected Vector2 inputMovement;
@@ -48,7 +51,7 @@ namespace AC
 
 		protected virtual void Awake ()
 		{
-			if (Camera != null && Camera == GetComponent <Camera>())
+			if (Camera && Camera == GetComponent <Camera>())
 			{
 				if (KickStarter.mainCamera)
 				{
@@ -100,7 +103,7 @@ namespace AC
 		{
 			target = _target;
 
-			if (target != null)
+			if (target)
 			{
 				targetChar = _target.GetComponent <Char>();
 			}
@@ -136,7 +139,7 @@ namespace AC
 		{
 			if (targetIsPlayer && KickStarter.player)
 			{
-				SwitchTarget (KickStarter.player.transform);
+				SwitchTarget (KickStarter.player.Transform);
 			}
 		}
 
@@ -188,7 +191,7 @@ namespace AC
 		 */
 		public bool IsActive ()
 		{
-			if (KickStarter.mainCamera != null)
+			if (KickStarter.mainCamera)
 			{
 				return (KickStarter.mainCamera.attachedCamera == this);
 			}
@@ -208,7 +211,7 @@ namespace AC
 		
 		protected Vector3 RightVector ()
 		{
-			return (transform.right);
+			return (Transform.right);
 		}
 		
 		
@@ -216,7 +219,7 @@ namespace AC
 		{
 			Vector3 camForward;
 			
-			camForward = transform.forward;
+			camForward = Transform.forward;
 			camForward.y = 0;
 			
 			return (camForward);
@@ -255,9 +258,9 @@ namespace AC
 			{
 				if (targetIsPlayer)
 				{
-					if (KickStarter.player != null)
+					if (KickStarter.player)
 					{
-						return KickStarter.player.transform;
+						return KickStarter.player.Transform;
 					}
 					return null;
 				}
@@ -271,7 +274,19 @@ namespace AC
 		{
 			get
 			{
-				return Camera.transform;
+				if (_cameraTransform == null) _cameraTransform = Camera.transform;
+				return _cameraTransform;
+			}
+		}
+
+
+		/** A cache of the object's transform component */
+		public Transform Transform
+		{
+			get
+			{
+				if (_transform == null) _transform = transform;
+				return _transform;
 			}
 		}
 
@@ -332,11 +347,11 @@ namespace AC
 		{
 			get
 			{
-				if (targetChar != null)
+				if (targetChar)
 				{
 					return targetChar.TransformForward;
 				}
-				if (target != null)
+				if (target)
 				{
 					return target.forward;
 				}
@@ -354,7 +369,7 @@ namespace AC
 		{
 			if (Application.isPlaying)
 			{
-				if (KickStarter.mainCamera != null)
+				if (KickStarter.mainCamera)
 				{
 					KickStarter.mainCamera.SetGameCamera (this);
 				}

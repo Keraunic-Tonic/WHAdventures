@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AssetLoader.cs"
  * 
@@ -55,6 +55,15 @@ namespace AC
 		{
 			if (originalFile != null)
 			{
+				#if AddressableIsPresent
+				if (KickStarter.settingsManager.saveAssetReferencesWithAddressables)
+				{
+					string _name = originalFile.name;
+					_name = _name.Replace (" (Instance)", string.Empty);
+					return _name;
+				}
+				#endif
+
 				string name = originalFile.GetType () + originalFile.name;
 				name = name.Replace (" (Instance)", string.Empty);
 				return name;

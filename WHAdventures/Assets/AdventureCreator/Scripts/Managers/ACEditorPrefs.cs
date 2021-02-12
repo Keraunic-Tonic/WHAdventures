@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ACEditorPrefs.cs"
  * 
@@ -36,6 +36,9 @@ namespace AC
 		[SerializeField] protected Color pathGizmoColor = Color.blue;
 		[SerializeField] protected int menuItemsBeforeScroll = 15;
 		[SerializeField] protected CSVFormat csvFormat = CSVFormat.Standard;
+		[SerializeField] protected bool showHierarchyIcons = true;
+		[SerializeField] protected int editorLabelWidth = 0;
+		[SerializeField] protected int actionNodeWidth = 300;
 
 
 		internal static ACEditorPrefs GetOrCreateSettings ()
@@ -62,6 +65,9 @@ namespace AC
 					settings.pathGizmoColor = DefaultPathGizmoColor;
 					settings.menuItemsBeforeScroll = DefaultMenuItemsBeforeScroll;
 					settings.csvFormat = DefaultCSVFormat;
+					settings.showHierarchyIcons = DefaultShowHierarchyIcons;
+					settings.editorLabelWidth = DefaultEditorLabelWidth;
+					settings.actionNodeWidth = DefaultActionNodeWidth;
 					AssetDatabase.CreateAsset (settings, fullPath);
 					AssetDatabase.SaveAssets ();
 				}
@@ -108,6 +114,80 @@ namespace AC
 			get
 			{
 				return 0;
+			}
+		}
+
+
+		/** How wide to render labels in the Managers and other Editors */
+		public static int EditorLabelWidth
+		{
+			get
+			{
+				#if CAN_USE_EDITOR_PREFS
+				ACEditorPrefs settings = GetOrCreateSettings ();
+				return (settings != null) ? settings.editorLabelWidth : DefaultEditorLabelWidth;
+				#else
+				return DefaultHierarchyIconOffset;
+				#endif
+			}
+		}
+
+
+		private static int DefaultEditorLabelWidth
+		{
+			get
+			{
+				return 0;
+			}
+		}
+
+
+		/** How wide Action nodes are in the ActionList Editor window */
+		public static int ActionNodeWidth
+		{
+			get
+			{
+				int value = DefaultActionNodeWidth;
+				#if CAN_USE_EDITOR_PREFS
+				ACEditorPrefs settings = GetOrCreateSettings ();
+				if (settings != null) value = settings.actionNodeWidth;
+				#endif
+
+				if (value <= 0) return DefaultActionNodeWidth;
+				return Mathf.Clamp (value, 200, 800);
+			}
+		}
+
+
+		private static int DefaultActionNodeWidth
+		{
+			get
+			{
+				return 300;
+			}
+		}
+
+
+		/** If True, then icons can be displayed in the Hierarchy window */
+		public static bool ShowHierarchyIcons
+		{
+			get
+			{
+				#if CAN_USE_EDITOR_PREFS
+				ACEditorPrefs settings = GetOrCreateSettings ();
+				return (settings != null) ? settings.showHierarchyIcons : DefaultShowHierarchyIcons;
+				#else
+				return DefaultShowHierarchyIcons;
+				#endif
+			}
+		}
+
+
+		private static bool DefaultShowHierarchyIcons
+		{
+			get
+			{
+				return true;
 			}
 		}
 
@@ -276,22 +356,28 @@ namespace AC
 					if (settings != null)
 					{
 						EditorGUILayout.LabelField ("Gizmo colours", EditorStyles.boldLabel);
-						EditorGUILayout.PropertyField (settings.FindProperty ("hotspotGizmoColor"), new GUIContent ("Hotspots", "The colour to tint Hotspot gizmos with"));
-						EditorGUILayout.PropertyField (settings.FindProperty ("triggerGizmoColor"), new GUIContent ("Triggers", "The colour to tint Trigger gizmos with"));
-						EditorGUILayout.PropertyField (settings.FindProperty ("collisionGizmoColor"), new GUIContent ("Collisions", "The colour to tint Collision gizmos with"));
-						EditorGUILayout.PropertyField (settings.FindProperty ("pathGizmoColor"), new GUIContent ("Paths", "The colour to draw Path gizmos with"));
+						EditorGUILayout.PropertyField (settings.FindProperty ("hotspotGizmoColor"), new GUIContent ("Hotspots:", "The colour to tint Hotspot gizmos with"));
+						EditorGUILayout.PropertyField (settings.FindProperty ("triggerGizmoColor"), new GUIContent ("Triggers:", "The colour to tint Trigger gizmos with"));
+						EditorGUILayout.PropertyField (settings.FindProperty ("collisionGizmoColor"), new GUIContent ("Collisions:", "The colour to tint Collision gizmos with"));
+						EditorGUILayout.PropertyField (settings.FindProperty ("pathGizmoColor"), new GUIContent ("Paths:", "The colour to draw Path gizmos with"));
 
 						EditorGUILayout.Space ();
 						EditorGUILayout.LabelField ("Hierarchy icons", EditorStyles.boldLabel);
-						EditorGUILayout.PropertyField (settings.FindProperty ("hierarchyIconOffset"), new GUIContent ("Horizontal offset", "A horizontal offset to apply to AC icons in the Hierarchy"));
+						EditorGUILayout.PropertyField (settings.FindProperty ("showHierarchyIcons"), new GUIContent ("Show icons?", "If True, save and node icons will appear in the Hierarchy window"));
+						if (settings.FindProperty ("showHierarchyIcons") == null || settings.FindProperty ("showHierarchyIcons").boolValue)
+						{
+							EditorGUILayout.PropertyField (settings.FindProperty ("hierarchyIconOffset"), new GUIContent ("Horizontal offset:", "A horizontal offset to apply to AC icons in the Hierarchy"));
+						}
 
 						EditorGUILayout.Space ();
-						EditorGUILayout.LabelField ("Editor items", EditorStyles.boldLabel);
-						EditorGUILayout.PropertyField (settings.FindProperty ("menuItemsBeforeScroll"), new GUIContent ("Items before scrolling", "How many Menus, Inventory items, Variables etc can be listed in the AC Game Editor before scrolling becomes necessary"));
+						EditorGUILayout.LabelField ("Editor settings", EditorStyles.boldLabel);
+						EditorGUILayout.PropertyField (settings.FindProperty ("editorLabelWidth"), new GUIContent ("Label widths:", "How wide to render labels in Managers and other editors"));
+						EditorGUILayout.PropertyField (settings.FindProperty ("menuItemsBeforeScroll"), new GUIContent ("Items before scrolling:", "How many Menus, Inventory items, Variables etc can be listed in the AC Game Editor before scrolling becomes necessary"));
+						EditorGUILayout.PropertyField (settings.FindProperty ("actionNodeWidth"), new GUIContent ("Action node widths:", "How wide Actions are when rendered as nodes in the ActionList Editor window"));
 
 						EditorGUILayout.Space ();
 						EditorGUILayout.LabelField ("Import / export", EditorStyles.boldLabel);
-						EditorGUILayout.PropertyField (settings.FindProperty ("csvFormat"), new GUIContent ("CSV format", "The formatting method to apply to CSV files"));
+						EditorGUILayout.PropertyField (settings.FindProperty ("csvFormat"), new GUIContent ("CSV format:", "The formatting method to apply to CSV files"));
 
 						settings.ApplyModifiedProperties ();
 					}

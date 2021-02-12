@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"AutoCorrectUIDimensions.cs"
  * 
@@ -68,7 +68,7 @@ namespace AC
 		protected void Initialise ()
 		{
 			canvasScaler = GetComponent<CanvasScaler> ();
-			if (canvasScaler != null)
+			if (canvasScaler)
 			{
 				originalReferenceResolution = canvasScaler.referenceResolution;
 			}
@@ -89,10 +89,10 @@ namespace AC
 
 		protected void OnUpdatePlayableScreenArea ()
 		{
-			if (transformToControl == null && KickStarter.playerMenus != null)
+			if (transformToControl == null && KickStarter.playerMenus)
 			{
 				Canvas canvas = GetComponent<Canvas> ();
-				if (canvas != null)
+				if (canvas)
 				{
 					Menu menu = KickStarter.playerMenus.GetMenuWithCanvas (canvas);
 					if (menu != null)
@@ -108,14 +108,14 @@ namespace AC
 			}
 
 			// Position
-			if (updatePosition && transformToControl != null)
+			if (updatePosition && transformToControl)
 			{
 				transformToControl.anchorMin = ConvertToPlayableSpace (minAnchorPoint);
 				transformToControl.anchorMax = ConvertToPlayableSpace (maxAnchorPoint);
 			}
 
 			// Scale
-			if (updateScale && canvasScaler != null)
+			if (updateScale && canvasScaler)
 			{
 				Vector2 safeSize = KickStarter.mainCamera.GetPlayableScreenArea (true).size;
 				canvasScaler.referenceResolution = new Vector2 (originalReferenceResolution.x / safeSize.x, originalReferenceResolution.y / safeSize.y);

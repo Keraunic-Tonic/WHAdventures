@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"RememberMoveable.cs"
  * 
@@ -33,36 +33,33 @@ namespace AC
 		{
 			if (loadedData) return;
 
-			if (KickStarter.settingsManager && GameIsPlaying ())
+			if (KickStarter.settingsManager && GameIsPlaying () && isActiveAndEnabled)
 			{
-				if (GetComponent <DragBase>())
+				DragBase dragBase = GetComponent <DragBase>();
+				if (dragBase)
 				{
 					if (startState == AC_OnOff.On)
 					{
-						GetComponent <DragBase>().TurnOn ();
+						dragBase.TurnOn ();
 					}
 					else
 					{
-						GetComponent <DragBase>().TurnOff ();
+						dragBase.TurnOff ();
 					}
 				}
 
 				if (startState == AC_OnOff.On)
 				{
-					this.gameObject.layer = LayerMask.NameToLayer (KickStarter.settingsManager.hotspotLayer);
+					gameObject.layer = LayerMask.NameToLayer (KickStarter.settingsManager.hotspotLayer);
 				}
 				else
 				{
-					this.gameObject.layer = LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer);
+					gameObject.layer = LayerMask.NameToLayer (KickStarter.settingsManager.deactivatedLayer);
 				}
 			}
 		}
 
 
-		/**
-		 * <summary>Serialises appropriate GameObject values into a string.</summary>
-		 * <returns>The data, serialised as a string</returns>
-		 */
 		public override string SaveData ()
 		{
 			MoveableData moveableData = new MoveableData ();
@@ -70,26 +67,21 @@ namespace AC
 			moveableData.objectID = constantID;
 			moveableData.savePrevented = savePrevented;
 
-			if (gameObject.layer == LayerMask.NameToLayer (KickStarter.settingsManager.hotspotLayer))
+			Moveable_Drag moveable_Drag = GetComponent <Moveable_Drag>();
+			if (moveable_Drag)
 			{
-				moveableData.isOn = true;
-			}
-			else
-			{
-				moveableData.isOn = false;
-			}
-
-			if (GetComponent <Moveable_Drag>())
-			{
-				Moveable_Drag moveable_Drag = GetComponent <Moveable_Drag>();
-
+				moveableData.isOn = moveable_Drag.IsOn ();
 				moveableData.trackID = 0;
-				if (moveable_Drag.dragMode == DragMode.LockToTrack && moveable_Drag.track != null && moveable_Drag.track.GetComponent<ConstantID>() != null)
+				if (moveable_Drag.dragMode == DragMode.LockToTrack && moveable_Drag.track && moveable_Drag.track.GetComponent<ConstantID>())
 				{
 					moveableData.trackID = moveable_Drag.track.GetComponent<ConstantID>().constantID;
 				}
 				moveableData.trackValue = moveable_Drag.trackValue;
 				moveableData.revolutions = moveable_Drag.revolutions;
+			}
+			else
+			{
+				moveableData.isOn = (gameObject.layer == LayerMask.NameToLayer (KickStarter.settingsManager.hotspotLayer));
 			}
 			
 			moveableData.LocX = transform.position.x;
@@ -104,19 +96,16 @@ namespace AC
 			moveableData.ScaleY = transform.localScale.y;
 			moveableData.ScaleZ = transform.localScale.z;
 
-			if (GetComponent <Moveable>())
+			Moveable moveable = GetComponent <Moveable>();
+			if (moveable)
 			{
-				moveableData = GetComponent <Moveable>().SaveData (moveableData);
+				moveableData = moveable.SaveData (moveableData);
 			}
 
 			return Serializer.SaveScriptData <MoveableData> (moveableData);
 		}
 		
 
-		/**
-		 * <summary>Deserialises a string of data, and restores the GameObject to its previous state.</summary>
-		 * <param name = "stringData">The data, serialised as a string</param>
-		 */
 		public override void LoadData (string stringData)
 		{
 			MoveableData data = Serializer.LoadScriptData <MoveableData> (stringData);
@@ -127,15 +116,16 @@ namespace AC
 			}
 			SavePrevented = data.savePrevented; if (savePrevented) return;
 
-			if (GetComponent <DragBase>())
+			DragBase dragBase = GetComponent <DragBase>();
+			if (dragBase)
 			{
 				if (data.isOn)
 				{
-					GetComponent <DragBase>().TurnOn ();
+					dragBase.TurnOn ();
 				}
 				else
 				{
-					GetComponent <DragBase>().TurnOff ();
+					dragBase.TurnOff ();
 				}
 			}
 
@@ -152,19 +142,22 @@ namespace AC
 			transform.eulerAngles = new Vector3 (data.RotX, data.RotY, data.RotZ);
 			transform.localScale = new Vector3 (data.ScaleX, data.ScaleY, data.ScaleZ);
 
-			if (GetComponent <Moveable_Drag>())
+			Moveable_Drag moveable_Drag = GetComponent <Moveable_Drag>();
+			if (moveable_Drag)
 			{
-				Moveable_Drag moveable_Drag = GetComponent <Moveable_Drag>();
-				moveable_Drag.LetGo (true);
+				if (moveable_Drag.IsHeld)
+				{
+					moveable_Drag.LetGo ();
+				}
 				if (moveable_Drag.dragMode == DragMode.LockToTrack)
 				{
-					DragTrack dragTrack = ConstantID.GetComponent<DragTrack>(data.trackID);
-					if (dragTrack != null)
+					DragTrack dragTrack = ConstantID.GetComponent<DragTrack> (data.trackID);
+					if (dragTrack)
 					{
-						moveable_Drag.SnapToTrack(dragTrack, data.trackValue);
+						moveable_Drag.SnapToTrack (dragTrack, data.trackValue);
 					}
 
-					if (moveable_Drag.track != null)
+					if (moveable_Drag.track)
 					{
 						moveable_Drag.trackValue = data.trackValue;
 						moveable_Drag.revolutions = data.revolutions;
@@ -174,9 +167,10 @@ namespace AC
 				}
 			}
 
-			if (GetComponent <Moveable>())
+			Moveable moveable = GetComponent <Moveable>();
+			if (moveable)
 			{
-				GetComponent <Moveable>().LoadData (data);
+				moveable.LoadData (data);
 			}
 
 			loadedData = true;
@@ -232,9 +226,7 @@ namespace AC
 		public bool inWorldSpace;
 
 
-		/**
-		 * The default Constructor.
-		 */
+		/** The default Constructor. */
 		public MoveableData () { }
 		
 	}

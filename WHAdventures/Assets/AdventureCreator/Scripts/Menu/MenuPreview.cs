@@ -73,7 +73,7 @@ namespace AC
 				{
 					menuManager = AdvGame.GetReferences ().menuManager;
 
-					if (menuManager && menuManager.drawInEditor && KickStarter.mainCamera != null)
+					if (menuManager && menuManager.drawInEditor && KickStarter.mainCamera)
 					{
 						if (previewSpeechMenu != null)
 						{
@@ -130,7 +130,7 @@ namespace AC
 				return;
 			}
 
-			if (KickStarter.mainCamera != null)
+			if (KickStarter.mainCamera)
 			{
 				KickStarter.mainCamera.DrawBorders ();
 			}
@@ -139,7 +139,7 @@ namespace AC
 
 			if (menu.CanPause () && menu.pauseWhenEnabled && menuManager.pauseTexture)
 			{
-				if (KickStarter.mainCamera != null)
+				if (KickStarter.mainCamera)
 				{
 					GUI.DrawTexture (KickStarter.mainCamera.GetPlayableScreenArea (false), menuManager.pauseTexture);
 				}
@@ -211,7 +211,7 @@ namespace AC
 		 */
 		public void SetPreviewSpeech (Speech speech, int trackInstanceID)
 		{
-			if (speech != null && KickStarter.menuManager != null && KickStarter.speechManager != null)
+			if (speech != null && KickStarter.menuManager != null && KickStarter.speechManager)
 			{
 				if (previewSpeechMenu == null)
 				{

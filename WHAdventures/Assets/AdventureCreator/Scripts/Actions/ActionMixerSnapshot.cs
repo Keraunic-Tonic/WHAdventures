@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionMixerSnapshot.cs"
  * 
@@ -30,15 +30,11 @@ namespace AC
 		public float changeTime = 0.1f;
 
 
-		public ActionMixerSnapshot ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Sound;
-			title = "Set Mixer snapshot";
-			description = "Transitions to a single or multiple Audio Mixer snapshots.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Sound; }}
+		public override string Title { get { return "Set Mixer snapshot"; }}
+		public override string Description { get { return "Transitions to a single or multiple Audio Mixer snapshots."; }}
+
+
 		public override float Run ()
 		{
 			if (!isRunning)
@@ -128,8 +124,6 @@ namespace AC
 			{
 				willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
 			}
-
-			AfterRunningOption ();
 		}
 		
 		
@@ -158,7 +152,7 @@ namespace AC
 		 */
 		public static ActionMixerSnapshot CreateNew_Single (AudioMixerSnapshot snapshot, float transitionTime = 0f, bool waitUntilFinish = false)
 		{
-			ActionMixerSnapshot newAction = (ActionMixerSnapshot) CreateInstance <ActionMixerSnapshot>();
+			ActionMixerSnapshot newAction = CreateNew<ActionMixerSnapshot> ();
 			newAction.numSnapshots = 1;
 			newAction.snapshot = snapshot;
 			newAction.changeTime = transitionTime;
@@ -177,7 +171,7 @@ namespace AC
 		 */
 		public static ActionMixerSnapshot CreateNew_Mix (List<SnapshotMix> snapshotMixData, AudioMixer audioMixer, float transitionTime = 0f, bool waitUntilFinish = false)
 		{
-			ActionMixerSnapshot newAction = (ActionMixerSnapshot) CreateInstance <ActionMixerSnapshot>();
+			ActionMixerSnapshot newAction = CreateNew<ActionMixerSnapshot> ();
 			newAction.numSnapshots = 0;
 			newAction.audioMixer = audioMixer;
 			newAction.snapshotMixes = snapshotMixData;

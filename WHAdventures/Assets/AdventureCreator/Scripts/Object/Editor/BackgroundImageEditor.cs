@@ -27,14 +27,14 @@ namespace AC
 		
 		public override void OnInspectorGUI ()
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 
 			_target = ShowUnityUIMethod (_target);
 
 			#if ALLOW_VIDEO
 			if (_target.backgroundImageSource == BackgroundImage.BackgroundImageSource.VideoClip)
 			{
-				EditorGUILayout.EndVertical ();
+				CustomGUILayout.EndVertical ();
 				UnityVersionHandler.CustomSetDirty (_target);
 				return;
 			}
@@ -48,7 +48,7 @@ namespace AC
 
 			#endif
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			UnityVersionHandler.CustomSetDirty (_target);
 		}
 

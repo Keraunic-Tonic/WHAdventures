@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionFootstepSounds.cs"
  * 
@@ -37,15 +37,11 @@ namespace AC
 		public AudioClip[] newSounds;
 
 
-		public ActionFootstepSounds ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Sound;
-			title = "Change footsteps";
-			description = "Changes the sounds used by a FootstepSounds component.";
-		}
-		
-		
+		public override ActionCategory Category { get { return ActionCategory.Sound; }}
+		public override string Title { get { return "Change footsteps"; }}
+		public override string Description { get { return "Changes the sounds used by a FootstepSounds component."; }}
+
+
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
 			if (isPlayer)
@@ -118,14 +114,12 @@ namespace AC
 
 			footstepSoundType = (FootstepSoundType) EditorGUILayout.EnumPopup ("Clips to change:", footstepSoundType);
 			newSounds = ShowClipsGUI (newSounds, (footstepSoundType == FootstepSoundType.Walk) ? "New walk sounds:" : "New run sounds:");
-
-			AfterRunningOption ();
 		}
 
 
 		private AudioClip[] ShowClipsGUI (AudioClip[] clips, string headerLabel)
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.LabelField (headerLabel, EditorStyles.boldLabel);
 			List<AudioClip> clipsList = new List<AudioClip>();
 
@@ -164,7 +158,7 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("Sounds will be chosen at random.", MessageType.Info);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 
 			return clipsList.ToArray ();
 		}
@@ -220,7 +214,7 @@ namespace AC
 				if (constantID == id) return true;
 			}
 			if (isPlayer && _gameObject.GetComponent <Player>() != null) return true;
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -244,7 +238,7 @@ namespace AC
 		 */
 		public static ActionFootstepSounds CreateNew (FootstepSounds footstepSoundsToModify, FootstepSoundType footstepSoundType, AudioClip[] newSounds)
 		{
-			ActionFootstepSounds newAction = (ActionFootstepSounds) CreateInstance <ActionFootstepSounds>();
+			ActionFootstepSounds newAction = CreateNew<ActionFootstepSounds> ();
 			newAction.footstepSounds = footstepSoundsToModify;
 			newAction.footstepSoundType = footstepSoundType;
 			newAction.newSounds = newSounds;

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCharRender.cs"
  * 
@@ -59,13 +59,9 @@ namespace AC
 		public SpriteDirectionData spriteDirectionData = new SpriteDirectionData (true, true);
 
 
-		public ActionCharRender ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Character;
-			title = "Change rendering";
-			description = "Overrides a Character's scale, sorting order, sprite direction or Sorting Map. This is intended mainly for 2D games.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Character; }}
+		public override string Title { get { return "Change rendering"; }}
+		public override string Description { get { return "Overrides a Character's scale, sorting order, sprite direction or Sorting Map. This is intended mainly for 2D games."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -203,6 +199,10 @@ namespace AC
 				if (_char.GetAnimEngine ())
 				{
 					_char.GetAnimEngine ().ActionCharRenderGUI (this, parameters);
+
+					#if !AC_ActionListPrefabs
+					if (GUI.changed && this) EditorUtility.SetDirty (this);
+					#endif
 				}
 			}
 			else
@@ -211,7 +211,6 @@ namespace AC
 			}
 
 			EditorGUILayout.Space ();
-			AfterRunningOption ();
 		}
 
 
@@ -259,7 +258,7 @@ namespace AC
 				if (sortingMap != null && sortingMap.gameObject == _gameObject) return true;
 				if (sortingMapConstantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -294,7 +293,7 @@ namespace AC
 		 */
 		public static ActionCharRender CreateNew_Mecanim (AC.Char characterToAffect, RenderLock sortingLock, int newSortingOrder, RenderLock scaleLock, int newScale)
 		{
-			ActionCharRender newAction = (ActionCharRender) CreateInstance <ActionCharRender>();
+			ActionCharRender newAction = CreateNew<ActionCharRender> ();
 			newAction._char = characterToAffect;
 
 			newAction.renderLock_sorting = sortingLock;
@@ -319,7 +318,7 @@ namespace AC
 		 */
 		public static ActionCharRender CreateNew_Mecanim (AC.Char characterToAffect, RenderLock sortingLock, string newSortingLayer, RenderLock scaleLock, int newScale)
 		{
-			ActionCharRender newAction = (ActionCharRender) CreateInstance <ActionCharRender>();
+			ActionCharRender newAction = CreateNew<ActionCharRender> ();
 			newAction._char = characterToAffect;
 			newAction.renderLock_sorting = sortingLock;
 			newAction.mapType = SortingMapType.SortingLayer;
@@ -347,7 +346,7 @@ namespace AC
 		 */
 		public static ActionCharRender CreateNew_Sprites (AC.Char characterToAffect, RenderLock sortingLock, int newSortingOrder, RenderLock scaleLock, int newScale, RenderLock directionLock, CharDirection newDirection, RenderLock sortingMapLock, SortingMap newSortingMap)
 		{
-			ActionCharRender newAction = (ActionCharRender) CreateInstance <ActionCharRender>();
+			ActionCharRender newAction = CreateNew<ActionCharRender> ();
 			newAction._char = characterToAffect;
 
 			newAction.renderLock_sorting = sortingLock;
@@ -359,7 +358,7 @@ namespace AC
 
 			newAction.renderLock_direction = directionLock;
 			newAction.direction = newDirection;
-			newAction.renderLock_sortingMap = sortingLock;
+			newAction.renderLock_sortingMap = sortingMapLock;
 			newAction.sortingMap = newSortingMap;
 
 			return newAction;
@@ -381,7 +380,7 @@ namespace AC
 		 */
 		public static ActionCharRender CreateNew_Sprites (AC.Char characterToAffect, RenderLock sortingLock, string newSortingLayer, RenderLock scaleLock, int newScale, RenderLock directionLock, CharDirection newDirection, RenderLock sortingMapLock, SortingMap newSortingMap)
 		{
-			ActionCharRender newAction = (ActionCharRender) CreateInstance <ActionCharRender>();
+			ActionCharRender newAction = CreateNew<ActionCharRender> ();
 			newAction._char = characterToAffect;
 			newAction.renderLock_sorting = sortingLock;
 			newAction.mapType = SortingMapType.SortingLayer;
@@ -392,7 +391,7 @@ namespace AC
 
 			newAction.renderLock_direction = directionLock;
 			newAction.direction = newDirection;
-			newAction.renderLock_sortingMap = sortingLock;
+			newAction.renderLock_sortingMap = sortingMapLock;
 			newAction.sortingMap = newSortingMap;
 
 			return newAction;

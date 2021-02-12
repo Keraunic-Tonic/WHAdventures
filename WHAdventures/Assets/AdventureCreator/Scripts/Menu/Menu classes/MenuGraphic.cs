@@ -5,7 +5,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuGraphic.cs"
  * 
@@ -99,11 +99,7 @@ namespace AC
 		}
 		
 
-		/**
-		 * <summary>Initialises the linked Unity UI GameObjects.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 */
-		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas)
+		public override void LoadUnityUI (AC.Menu _menu, Canvas canvas, bool addEventListeners = true)
 		{
 			if (uiImageType == UIImageType.Image)
 			{
@@ -123,11 +119,11 @@ namespace AC
 		 */
 		public override RectTransform GetRectTransform (int _slot)
 		{
-			if (uiImageType == UIImageType.Image && uiImage != null)
+			if (uiImageType == UIImageType.Image && uiImage)
 			{
 				return uiImage.rectTransform;
 			}
-			else if (uiImageType == UIImageType.RawImage && uiRawImage != null)
+			else if (uiImageType == UIImageType.RawImage && uiRawImage)
 			{
 				return uiRawImage.rectTransform;
 			}
@@ -142,7 +138,7 @@ namespace AC
 			string apiPrefix = "(AC.PlayerMenus.GetElementWithName (\"" + menu.title + "\", \"" + title + "\") as AC.MenuGraphic)";
 
 			MenuSource source = menu.menuSource;
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			
 			if (source != MenuSource.AdventureCreator)
 			{
@@ -155,8 +151,8 @@ namespace AC
 				{
 					uiRawImage = LinkedUiGUI <RawImage> (uiRawImage, "Linked Raw Image:", source);
 				}
-				EditorGUILayout.EndVertical ();
-				EditorGUILayout.BeginVertical ("Button");
+				CustomGUILayout.EndVertical ();
+				CustomGUILayout.BeginVertical ();
 			}
 			
 			graphicType = (AC_GraphicType) CustomGUILayout.EnumPopup ("Graphic type:", graphicType, apiPrefix + ".graphicType", "The type of graphic that is shown");
@@ -164,21 +160,21 @@ namespace AC
 			{
 				graphic.ShowGUI (false, false, "Texture:", CursorRendering.Software, apiPrefix + ".graphic", "The texture to display");
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			base.ShowGUI (menu);
 		}
 
+		#endif
 
+		
 		public override bool ReferencesObjectOrID (GameObject gameObject, int id)
 		{
-			if (uiImageType == UIImageType.Image && uiImage != null && uiImage.gameObject == gameObject) return true;
-			if (uiImageType == UIImageType.RawImage && uiRawImage != null && uiRawImage.gameObject == gameObject) return true;
-			if (linkedUiID == id) return true;
+			if (uiImageType == UIImageType.Image && uiImage && uiImage.gameObject == gameObject) return true;
+			if (uiImageType == UIImageType.RawImage && uiRawImage && uiRawImage.gameObject == gameObject) return true;
+			if (linkedUiID == id && id != 0) return true;
 			return false;
 		}
-		
-		#endif
 
 
 		/**
@@ -251,7 +247,7 @@ namespace AC
 			switch (graphicType)
 			{
 				case AC_GraphicType.DialoguePortrait:
-					if (portraitCharacterOverride != null)
+					if (portraitCharacterOverride)
 					{
 						localTexture = portraitCharacterOverride.GetPortrait ().texture;
 						speechIsAnimating = portraitCharacterOverride.GetPortrait ().isAnimated;
@@ -259,10 +255,10 @@ namespace AC
 					else
 					{
 						UpdateSpeechLink ();
-						if (speech != null)
+						if (speech != null && speech.GetSpeakingCharacter ())
 						{
-							localTexture = speech.GetPortrait ();
-							speechIsAnimating = speech.IsAnimating ();
+							localTexture = speech.GetSpeakingCharacter ().GetPortrait ().texture;
+							speechIsAnimating = speech.GetSpeakingCharacter ().GetPortrait ().isAnimated;
 						}
 					}
 					break;
@@ -272,7 +268,7 @@ namespace AC
 					{
 						if (localTexture != KickStarter.runtimeDocuments.ActiveDocument.texture)
 						{
-							if (KickStarter.runtimeDocuments.ActiveDocument.texture != null)
+							if (KickStarter.runtimeDocuments.ActiveDocument.texture)
 							{
 								Texture2D docTex = KickStarter.runtimeDocuments.ActiveDocument.texture;
 								sprite = UnityEngine.Sprite.Create (docTex, new Rect (0f, 0f, docTex.width, docTex.height), new Vector2 (0.5f, 0.5f));
@@ -289,7 +285,7 @@ namespace AC
 				case AC_GraphicType.ObjectiveTexture:
 					if (Application.isPlaying && KickStarter.runtimeObjectives.SelectedObjective != null)
 					{
-						if (localTexture != KickStarter.runtimeObjectives.SelectedObjective.Objective.texture && KickStarter.runtimeObjectives.SelectedObjective.Objective.texture != null)
+						if (localTexture != KickStarter.runtimeObjectives.SelectedObjective.Objective.texture && KickStarter.runtimeObjectives.SelectedObjective.Objective.texture)
 						{
 							Texture2D objTex = KickStarter.runtimeObjectives.SelectedObjective.Objective.texture;
 							sprite = UnityEngine.Sprite.Create (objTex, new Rect (0f, 0f, objTex.width, objTex.height), new Vector2 (0.5f, 0.5f));
@@ -327,11 +323,11 @@ namespace AC
 					break;
 
 				case AC_GraphicType.DialoguePortrait:
-					if (localTexture != null)
+					if (localTexture)
 					{
 						if (speechIsAnimating)
 						{
-							if (portraitCharacterOverride != null)
+							if (portraitCharacterOverride)
 							{
 								speechRect = portraitCharacterOverride.GetAnimatedPortraitRect ();
 							}
@@ -350,7 +346,7 @@ namespace AC
 
 				case AC_GraphicType.DocumentTexture:
 				case AC_GraphicType.ObjectiveTexture:
-					if (localTexture != null)
+					if (localTexture)
 					{
 						GUI.DrawTexture (ZoomRect (relativeRect, zoom), localTexture, ScaleMode.StretchToFill, true, 0f);
 					}
@@ -374,7 +370,9 @@ namespace AC
 
 		private void SetUIGraphic ()
 		{
-			if (uiImageType == UIImageType.Image && uiImage != null)
+			if (!Application.isPlaying) return;
+
+			if (uiImageType == UIImageType.Image && uiImage)
 			{
 				switch (graphicType)
 				{
@@ -403,12 +401,12 @@ namespace AC
 				}
 				UpdateUIElement (uiImage);
 			}
-			if (uiImageType == UIImageType.RawImage && uiRawImage != null)
+			if (uiImageType == UIImageType.RawImage && uiRawImage)
 			{
 				switch (graphicType)
 				{
 					case AC_GraphicType.Normal:
-						if (graphic.texture != null && graphic.texture is RenderTexture)
+						if (graphic.texture && graphic.texture is RenderTexture)
 						{
 							uiRawImage.texture = graphic.texture;
 						}
@@ -437,7 +435,7 @@ namespace AC
 		
 		protected override void AutoSize ()
 		{
-			if (graphicType == AC_GraphicType.Normal && graphic.texture != null)
+			if (graphicType == AC_GraphicType.Normal && graphic.texture)
 			{
 				GUIContent content = new GUIContent (graphic.texture);
 				AutoSize (content);

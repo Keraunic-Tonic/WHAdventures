@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionPauseActionList.cs"
  * 
@@ -39,14 +39,10 @@ namespace AC
 
 		protected RuntimeActionList[] runtimeActionLists = new RuntimeActionList[0];
 
-		
-		public ActionPauseActionList ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.ActionList;
-			title = "Pause or resume";
-			description = "Pauses and resumes ActionLists.";
-		}
+
+		public override ActionCategory Category { get { return ActionCategory.ActionList; }}
+		public override string Title { get { return "Pause or resume"; }}
+		public override string Description { get { return "Pauses and resumes ActionLists."; }}
 		
 		
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -199,8 +195,6 @@ namespace AC
 			{
 				rerunPausedActions = EditorGUILayout.ToggleLeft ("Re-run Action(s) at time of pause?", rerunPausedActions);
 			}
-
-			AfterRunningOption ();
 		}
 
 
@@ -232,9 +226,9 @@ namespace AC
 			if (parameterID < 0 && listSource == ActionRunActionList.ListSource.InScene)
 			{
 				if (actionList != null && actionList.gameObject == gameObject) return true;
-				if (constantID == id) return true;
+				if (constantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -242,7 +236,7 @@ namespace AC
 		{
 			if (listSource == ActionRunActionList.ListSource.AssetFile && _actionListAsset == actionListAsset)
 				return true;
-			return false;
+			return base.ReferencesAsset (_actionListAsset);
 		}
 
 		#endif
@@ -256,7 +250,7 @@ namespace AC
 		 */
 		public static ActionPauseActionList CreateNew_Pause (ActionList actionList, bool waitUntilFinish = false)
 		{
-			ActionPauseActionList newAction = (ActionPauseActionList) CreateInstance <ActionPauseActionList>();
+			ActionPauseActionList newAction = CreateNew<ActionPauseActionList> ();
 			newAction.pauseResume = PauseResume.Pause;
 			newAction.listSource = ActionRunActionList.ListSource.InScene;
 			newAction.actionList = actionList;
@@ -273,7 +267,7 @@ namespace AC
 		 */
 		public static ActionPauseActionList CreateNew_Pause (ActionListAsset actionListAsset, bool waitUntilFinish = false)
 		{
-			ActionPauseActionList newAction = (ActionPauseActionList) CreateInstance <ActionPauseActionList>();
+			ActionPauseActionList newAction = CreateNew<ActionPauseActionList> ();
 			newAction.pauseResume = PauseResume.Pause;
 			newAction.listSource = ActionRunActionList.ListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;
@@ -290,7 +284,7 @@ namespace AC
 		 */
 		public static ActionPauseActionList CreateNew_Resume (ActionList actionList, bool rerunLastAction = false)
 		{
-			ActionPauseActionList newAction = (ActionPauseActionList) CreateInstance <ActionPauseActionList>();
+			ActionPauseActionList newAction = CreateNew<ActionPauseActionList> ();
 			newAction.pauseResume = PauseResume.Resume;
 			newAction.listSource = ActionRunActionList.ListSource.InScene;
 			newAction.actionList = actionList;
@@ -307,7 +301,7 @@ namespace AC
 		 */
 		public static ActionPauseActionList CreateNew_Resume (ActionListAsset actionListAsset, bool rerunLastAction = false)
 		{
-			ActionPauseActionList newAction = (ActionPauseActionList) CreateInstance <ActionPauseActionList>();
+			ActionPauseActionList newAction = CreateNew<ActionPauseActionList> ();
 			newAction.pauseResume = PauseResume.Resume;
 			newAction.listSource = ActionRunActionList.ListSource.AssetFile;
 			newAction.actionListAsset = actionListAsset;

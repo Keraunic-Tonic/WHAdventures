@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ParticleSwitch.cs"
  * 
@@ -69,7 +69,7 @@ namespace AC
 		 */
 		public void Pause ()
 		{
-			if (ParticleSystem != null && !ParticleSystem.isPaused)
+			if (ParticleSystem && !ParticleSystem.isPaused)
 			{
 				ParticleSystem.Pause ();
 			}
@@ -81,7 +81,7 @@ namespace AC
 		 */
 		public void Interact ()
 		{
-			if (ParticleSystem != null)
+			if (ParticleSystem)
 			{
 				ParticleSystem.Emit (ParticleSystem.main.maxParticles);
 			}
@@ -94,7 +94,7 @@ namespace AC
 		
 		protected void Switch (bool turnOn)
 		{
-			if (ParticleSystem != null)
+			if (ParticleSystem)
 			{
 				if (turnOn)
 				{

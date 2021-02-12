@@ -55,7 +55,7 @@ namespace AC
 
 				if (Application.isPlaying)
 				{
-					if (_target.gameObject.layer != LayerMask.NameToLayer (settingsManager.hotspotLayer))
+					if (settingsManager && _target.gameObject.layer != LayerMask.NameToLayer (settingsManager.hotspotLayer))
 					{
 						EditorGUILayout.HelpBox ("Current state: OFF", MessageType.Info);
 					}
@@ -66,18 +66,23 @@ namespace AC
 					EditorGUILayout.LabelField ("Speech Manager ID:", _target.lineID.ToString ());
 				}
 				
-				_target.interactionSource = (AC.InteractionSource) CustomGUILayout.EnumPopup ("Interaction source:", _target.interactionSource, "", "The source of the commands that are run when an option is chosen");
-				_target.hotspotName = CustomGUILayout.TextField ("Label (if not name):", _target.hotspotName, "", "The display name, if not the GameObject's name");
-				_target.highlight = (Highlight) CustomGUILayout.ObjectField <Highlight> ("Object to highlight:", _target.highlight, true, "", "The Highlight component that controls any highlighting effects associated with the Hotspot");
+				_target.interactionSource = (AC.InteractionSource) CustomGUILayout.EnumPopup ("Interaction source:", _target.interactionSource, string.Empty, "The source of the commands that are run when an option is chosen");
+				_target.hotspotName = CustomGUILayout.TextField ("Label (if not name):", _target.hotspotName, string.Empty, "The display name, if not the GameObject's name");
+
+				bool isPronoun = !_target.canBeLowerCase;
+				isPronoun = CustomGUILayout.Toggle ("Name is pronoun?", isPronoun, string.Empty, "If False, the name will be lower-cased when inside sentences.");
+				_target.canBeLowerCase = !isPronoun;
+
+				_target.highlight = (Highlight) CustomGUILayout.ObjectField <Highlight> ("Object to highlight:", _target.highlight, true, string.Empty, "The Highlight component that controls any highlighting effects associated with the Hotspot");
 
 				if (AdvGame.GetReferences ().settingsManager != null && AdvGame.GetReferences ().settingsManager.hotspotDrawing == ScreenWorld.WorldSpace)
 				{
-					_target.iconSortingLayer = CustomGUILayout.TextField ("Icon sorting layer:", _target.iconSortingLayer, "", "The 'Sorting Layer' of the icon's SpriteRenderer");
-					_target.iconSortingOrder = CustomGUILayout.IntField ("Icon sprite order:", _target.iconSortingOrder, "", "The 'Order in Layer' of the icon's SpriteRenderer");
+					_target.iconSortingLayer = CustomGUILayout.TextField ("Icon sorting layer:", _target.iconSortingLayer, string.Empty, "The 'Sorting Layer' of the icon's SpriteRenderer");
+					_target.iconSortingOrder = CustomGUILayout.IntField ("Icon sprite order:", _target.iconSortingOrder, string.Empty, "The 'Order in Layer' of the icon's SpriteRenderer");
 				}
 
 				EditorGUILayout.BeginHorizontal ();
-				_target.centrePoint = (Transform) CustomGUILayout.ObjectField <Transform> ("Centre point (override):", _target.centrePoint, true, "", "A Transform that represents the centre of the Hotspot, if it is not physically at the same point as the Hotspot's GameObject itself");
+				_target.centrePoint = (Transform) CustomGUILayout.ObjectField <Transform> ("Centre-point (override):", _target.centrePoint, true, string.Empty, "A Transform that represents the centre of the Hotspot, if it is not physically at the same point as the Hotspot's GameObject itself");
 
 				if (_target.centrePoint == null)
 				{
@@ -93,8 +98,13 @@ namespace AC
 				}
 				EditorGUILayout.EndHorizontal ();
 
+				if (_target.centrePoint)
+				{
+					_target.centrePointOverrides = (CentrePointOverrides) CustomGUILayout.EnumPopup ("Centre-point overrides:", _target.centrePointOverrides, string.Empty, "What the 'Centre-point (override)' Transform actually overrides");
+				}
+
 				EditorGUILayout.BeginHorizontal ();
-				_target.walkToMarker = (Marker) CustomGUILayout.ObjectField <Marker> ("Walk-to Marker:", _target.walkToMarker, true, "", "The Marker that the player can optionally automatically walk to before an Interaction runs");
+				_target.walkToMarker = (Marker) CustomGUILayout.ObjectField <Marker> ("Walk-to Marker:", _target.walkToMarker, true, string.Empty, "The Marker that the player can optionally automatically walk to before an Interaction runs");
 				if (_target.walkToMarker == null)
 				{
 					if (GUILayout.Button ("Create", autoWidth))
@@ -117,10 +127,10 @@ namespace AC
 				}
 				EditorGUILayout.EndHorizontal ();
 
-				_target.limitToCamera = (_Camera) CustomGUILayout.ObjectField <_Camera> ("Limit to camera:", _target.limitToCamera, true, "", "If assigned, then the Hotspot will only be interactive when the assigned _Camera is active");
+				_target.limitToCamera = (_Camera) CustomGUILayout.ObjectField <_Camera> ("Limit to camera:", _target.limitToCamera, true, string.Empty, "If assigned, then the Hotspot will only be interactive when the assigned _Camera is active");
 
 				EditorGUILayout.BeginHorizontal ();
-				_target.interactiveBoundary = (InteractiveBoundary) CustomGUILayout.ObjectField <InteractiveBoundary> ("Interactive boundary:", _target.interactiveBoundary, true, "", "If assigned, then the Hotspot will only be interactive when the player is within this Trigger Collider's boundary");
+				_target.interactiveBoundary = (InteractiveBoundary) CustomGUILayout.ObjectField <InteractiveBoundary> ("Interactive boundary:", _target.interactiveBoundary, true, string.Empty, "If assigned, then the Hotspot will only be interactive when the player is within this Trigger Collider's boundary");
 				if (_target.interactiveBoundary == null)
 				{
 					if (GUILayout.Button ("Create", autoWidth))
@@ -147,29 +157,29 @@ namespace AC
 				}
 				EditorGUILayout.EndHorizontal ();
 
-				_target.drawGizmos = CustomGUILayout.Toggle ("Draw yellow cube?", _target.drawGizmos, "", "If True, then a Gizmo may be drawn in the Scene window at the Hotspots's position");
+				_target.drawGizmos = CustomGUILayout.Toggle ("Draw yellow cube?", _target.drawGizmos, string.Empty, "If True, then a Gizmo may be drawn in the Scene window at the Hotspots's position");
 				
 				if (settingsManager != null && (settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction || settingsManager.interactionMethod == AC_InteractionMethod.ChooseInteractionThenHotspot || settingsManager.interactionMethod == AC_InteractionMethod.CustomScript))
 				{
-					_target.oneClick = CustomGUILayout.Toggle ("Single 'Use' Interaction?", _target.oneClick, "", "If True, then clicking the Hotspot will run the Hotspot's first interaction in useButtons, regardless of the Settings Manager's Interaction method");
+					_target.oneClick = CustomGUILayout.Toggle ("Single 'Use' Interaction?", _target.oneClick, string.Empty, "If True, then clicking the Hotspot will run the Hotspot's first interaction in useButtons, regardless of the Settings Manager's Interaction method");
 
 					if (_target.oneClick && settingsManager.interactionMethod == AC_InteractionMethod.CustomScript)
 					{
 						EditorGUILayout.HelpBox ("The above property can be accessed by reading the Hotspot script's IsSingleInteraction() method.", MessageType.Info);
 					}
 				}
-				if (_target.oneClick || (settingsManager != null && settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive))
+				if (_target.oneClick || (settingsManager != null && settingsManager.interactionMethod == AC_InteractionMethod.ContextSensitive) || (settingsManager != null && settingsManager.interactionMethod == AC_InteractionMethod.ChooseHotspotThenInteraction && _target.oneClick))
 			    {
 			    	if (settingsManager != null && settingsManager.interactionMethod == AC_InteractionMethod.CustomScript)
 			    	{}
 			    	else
 			    	{
-						_target.doubleClickingHotspot = (DoubleClickingHotspot) CustomGUILayout.EnumPopup ("Double-clicking:", _target.doubleClickingHotspot, "", "The effect that double-clicking on the Hotspot has");
+						_target.doubleClickingHotspot = (DoubleClickingHotspot) CustomGUILayout.EnumPopup ("Double-clicking:", _target.doubleClickingHotspot, string.Empty, "The effect that double-clicking on the Hotspot has");
 					}
 				}
 				if (settingsManager != null && settingsManager.playerFacesHotspots)
 				{
-					_target.playerTurnsHead = CustomGUILayout.Toggle ("Players turn heads when active?", _target.playerTurnsHead, "", "If True, then the player will turn their head when the Hotspot is selected");
+					_target.playerTurnsHead = CustomGUILayout.Toggle ("Players turn heads when active?", _target.playerTurnsHead, string.Empty, "If True, then the player will turn their head when the Hotspot is selected");
 				}
 
 				EditorGUILayout.Space ();
@@ -201,7 +211,7 @@ namespace AC
 		
 		private void LookInteractionGUI ()
 		{
-			EditorGUILayout.BeginVertical("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField ("Examine interaction", EditorStyles.boldLabel);
 			
@@ -227,7 +237,7 @@ namespace AC
 			{
 				ButtonGUI (_target.lookButton, "Examine", _target.interactionSource);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 		
 		
@@ -241,7 +251,7 @@ namespace AC
 				}
 			}
 			
-			EditorGUILayout.BeginVertical("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField ("Use interactions", EditorStyles.boldLabel);
 			
@@ -294,20 +304,21 @@ namespace AC
 							EditorGUILayout.Space ();
 							EditorGUILayout.BeginHorizontal ();
 							
-							iconNumber = CustomGUILayout.Popup ("Cursor / icon:", iconNumber, labelList.ToArray (), "", "The cursor/icon associated with the interaction");
+							iconNumber = CustomGUILayout.Popup ("Cursor / icon:", iconNumber, labelList.ToArray (), string.Empty, "The cursor/icon associated with the interaction");
 							
 							// Re-assign variableID based on PopUp selection
 							useButton.iconID = cursorManager.cursorIcons[iconNumber].id;
 							string iconLabel = cursorManager.cursorIcons[iconNumber].label;
 							
-							if (GUILayout.Button ("", CustomStyles.IconCog))
+							if (GUILayout.Button (string.Empty, CustomStyles.IconCog))
 							{
 								SideMenu ("Use", _target.useButtons.Count, _target.useButtons.IndexOf (useButton));
 							}
 							
 							EditorGUILayout.EndHorizontal ();
 							ButtonGUI (useButton, iconLabel, _target.interactionSource);
-							GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
+
+							CustomGUILayout.DrawUILine ();
 						}
 					}					
 					else
@@ -327,13 +338,14 @@ namespace AC
 				}
 			}
 			
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 		
 		
 		private void InvInteractionGUI ()
 		{
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
+			
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField ("Inventory interactions", EditorStyles.boldLabel);
 			
@@ -365,7 +377,7 @@ namespace AC
 							invNumber = -1;
 							
 							int j = 0;
-							string invName = "";
+							string invName = string.Empty;
 							foreach (InvItem _item in inventoryManager.items)
 							{
 								// If an item has been removed, make sure selected variable is still valid
@@ -390,14 +402,14 @@ namespace AC
 							EditorGUILayout.Space ();
 							EditorGUILayout.BeginHorizontal ();
 							
-							invNumber = CustomGUILayout.Popup ("Inventory item:", invNumber, labelList.ToArray (), "", "The inventory item associated with the interaction");
+							invNumber = CustomGUILayout.Popup ("Inventory item:", invNumber, labelList.ToArray (), string.Empty, "The inventory item associated with the interaction");
 							
 							// Re-assign variableID based on PopUp selection
 							invButton.invID = inventoryManager.items[invNumber].id;
 
 							if (settingsManager != null && settingsManager.CanGiveItems ())
 							{
-								if (_target.GetComponent <Char>() != null || _target.GetComponentInParent <Char>() != null)
+								if (_target.GetComponent <Char>() != null || _target.GetComponentInParent <Char>())
 								{
 									invButton.selectItemMode = (SelectItemMode) EditorGUILayout.EnumPopup (invButton.selectItemMode, GUILayout.Width (70f));
 								}
@@ -423,7 +435,8 @@ namespace AC
 							{
 								ButtonGUI (invButton, "Inventory", _target.interactionSource, true);
 							}
-							GUILayout.Box (string.Empty, GUILayout.ExpandWidth (true), GUILayout.Height (1));
+
+							CustomGUILayout.DrawUILine ();
 						}
 						
 					}					
@@ -443,13 +456,13 @@ namespace AC
 				}
 			}
 			
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
 		private void UnhandledUseInteractionGUI ()
 		{
-			EditorGUILayout.BeginVertical("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField ("Unhandled Use interaction", EditorStyles.boldLabel);
 
@@ -478,13 +491,13 @@ namespace AC
 				EditorGUILayout.HelpBox ("If the Interaction field is empty, the Cursor Manager's 'Unhandled interaction' asset file will be run following the Player action.", MessageType.Info);
 			}
 			
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
 		private void UnhandledInvInteractionGUI ()
 		{
-			EditorGUILayout.BeginVertical("Button");
+			CustomGUILayout.BeginVertical ();
 			EditorGUILayout.BeginHorizontal ();
 			EditorGUILayout.LabelField ("Unhandled Inventory interaction", EditorStyles.boldLabel);
 
@@ -513,20 +526,20 @@ namespace AC
 				EditorGUILayout.HelpBox ("This interaction will override any 'unhandled' ones defined in the Inventory Manager.", MessageType.Info);
 			}
 			
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 		
 		
 		private void ButtonGUI (Button button, string suffix, InteractionSource source, bool isForInventory = false)
 		{
 			bool isEnabled = !button.isDisabled;
-			isEnabled = EditorGUILayout.Toggle ("Enabled:", isEnabled);
+			isEnabled = CustomGUILayout.Toggle ("Enabled:", isEnabled);
 			button.isDisabled = !isEnabled;
 			
 			if (source == InteractionSource.AssetFile)
 			{
 				EditorGUILayout.BeginHorizontal ();
-				button.assetFile = (ActionListAsset) CustomGUILayout.ObjectField <ActionListAsset> ("Interaction:", button.assetFile, false, "", "The ActionList asset to run");
+				button.assetFile = (ActionListAsset) CustomGUILayout.ObjectField <ActionListAsset> ("Interaction:", button.assetFile, false, string.Empty, "The ActionList asset to run");
 				if (button.assetFile == null)
 				{
 					if (GUILayout.Button ("Create", autoWidth))
@@ -534,15 +547,15 @@ namespace AC
 						string defaultName = GenerateInteractionName (suffix, true);
 
 						#if !(UNITY_WP8 || UNITY_WINRT)
-						defaultName = System.Text.RegularExpressions.Regex.Replace (defaultName, "[^\\w\\._]", "");
+						defaultName = System.Text.RegularExpressions.Regex.Replace (defaultName, "[^\\w\\._]", string.Empty);
 						#else
-						defaultName = "";
+						defaultName = string.Empty;
 						#endif
 
 						button.assetFile = ActionListAssetMenu.CreateAsset (defaultName);
 					}
 				}
-				else if (GUILayout.Button ("", CustomStyles.IconNodes))
+				else if (GUILayout.Button (string.Empty, CustomStyles.IconNodes))
 				{
 					ActionListEditorWindow.Init (button.assetFile);
 				}
@@ -562,8 +575,8 @@ namespace AC
 			}
 			else if (source == InteractionSource.CustomScript)
 			{
-				button.customScriptObject = (GameObject) CustomGUILayout.ObjectField <GameObject> ("Object with script:", button.customScriptObject, true, "", "The GameObject with the custom script to run");
-				button.customScriptFunction = CustomGUILayout.TextField ("Message to send:", button.customScriptFunction, "", "The name of the function to run");
+				button.customScriptObject = (GameObject) CustomGUILayout.ObjectField <GameObject> ("Object with script:", button.customScriptObject, true, string.Empty, "The GameObject with the custom script to run");
+				button.customScriptFunction = CustomGUILayout.TextField ("Message to send:", button.customScriptFunction, string.Empty, "The name of the function to run");
 
 				if (isForInventory)
 				{
@@ -573,7 +586,7 @@ namespace AC
 			else if (source == InteractionSource.InScene)
 			{
 				EditorGUILayout.BeginHorizontal ();
-				button.interaction = (Interaction) CustomGUILayout.ObjectField <Interaction> ("Interaction:", button.interaction, true, "", "The Interaction ActionList to run");
+				button.interaction = (Interaction) CustomGUILayout.ObjectField <Interaction> ("Interaction:", button.interaction, true, string.Empty, "The Interaction ActionList to run");
 				
 				if (button.interaction == null)
 				{
@@ -588,7 +601,7 @@ namespace AC
 				}
 				else
 				{
-					if (GUILayout.Button ("", CustomStyles.IconNodes))
+					if (GUILayout.Button (string.Empty, CustomStyles.IconNodes))
 					{
 						ActionListEditorWindow.Init (button.interaction);
 					}
@@ -619,7 +632,7 @@ namespace AC
 				}
 			}
 			
-			button.playerAction = (PlayerAction) CustomGUILayout.EnumPopup ("Player action:", button.playerAction, "", "What the Player prefab does after clicking the Hotspot, but before the Interaction itself is run");
+			button.playerAction = (PlayerAction) CustomGUILayout.EnumPopup ("Player action:", button.playerAction, string.Empty, "What the Player prefab does after clicking the Hotspot, but before the Interaction itself is run");
 			
 			if (button.playerAction == PlayerAction.WalkTo || button.playerAction == PlayerAction.WalkToMarker)
 			{
@@ -627,15 +640,15 @@ namespace AC
 				{
 					EditorGUILayout.HelpBox ("You must assign a 'Walk-to marker' above for this option to work.", MessageType.Warning);
 				}
-				button.isBlocking = CustomGUILayout.Toggle ("Cutscene while moving?", button.isBlocking, "", "If True, then gameplay will be blocked while the Player moves");
-				button.faceAfter = CustomGUILayout.Toggle ("Face after moving?", button.faceAfter, "", "If True, then the Player will face the Hotspot after reaching the Marker");
+				button.isBlocking = CustomGUILayout.Toggle ("Cutscene while moving?", button.isBlocking, string.Empty, "If True, then gameplay will be blocked while the Player moves");
+				button.faceAfter = CustomGUILayout.Toggle ("Face after moving?", button.faceAfter, string.Empty, "If True, then the Player will face the Hotspot after reaching the Marker");
 				
 				if (button.playerAction == PlayerAction.WalkTo)
 				{
-					button.setProximity = CustomGUILayout.Toggle ("Set minimum distance?", button.setProximity, "", "If True, then the Interaction will be run once the Player is within a certain distance of the Hotspot");
+					button.setProximity = CustomGUILayout.Toggle ("Set minimum distance?", button.setProximity, string.Empty, "If True, then the Interaction will be run once the Player is within a certain distance of the Hotspot");
 					if (button.setProximity)
 					{
-						button.proximity = CustomGUILayout.FloatField ("Proximity:", button.proximity, "", "The proximity the Player must be within");
+						button.proximity = CustomGUILayout.FloatField ("Proximity:", button.proximity, string.Empty, "The proximity the Player must be within");
 					}
 				}
 			}
@@ -665,7 +678,7 @@ namespace AC
 			}
 			if (index > 0 || index < listSize-1)
 			{
-				menu.AddSeparator ("");
+				menu.AddSeparator (string.Empty);
 			}
 
 			if (index > 0)

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionHotspotEnable.cs"
  * 
@@ -32,13 +32,9 @@ namespace AC
 		public ChangeType changeType = ChangeType.Enable;
 
 		
-		public ActionHotspotEnable ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Hotspot;
-			title = "Enable or disable";
-			description = "Turns a Hotspot on or off. To record the state of a Hotspot in save games, be sure to add the RememberHotspot script to the Hotspot in question.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Hotspot; }}
+		public override string Title { get { return "Enable or disable"; }}
+		public override string Description { get { return "Turns a Hotspot on or off. To record the state of a Hotspot in save games, be sure to add the RememberHotspot script to the Hotspot in question."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -105,8 +101,6 @@ namespace AC
 
 			changeType = (ChangeType) EditorGUILayout.EnumPopup ("Change to make:", changeType);
 			affectChildren = EditorGUILayout.Toggle ("Also affect children?", affectChildren);
-
-			AfterRunningOption ();
 		}
 
 
@@ -137,7 +131,7 @@ namespace AC
 				if (hotspot != null && hotspot.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 		#endif
@@ -151,7 +145,7 @@ namespace AC
 		 */
 		public static ActionHotspotEnable CreateNew (Hotspot hotspotToAffect, ChangeType changeToMake)
 		{
-			ActionHotspotEnable newAction = (ActionHotspotEnable) CreateInstance <ActionHotspotEnable>();
+			ActionHotspotEnable newAction = CreateNew<ActionHotspotEnable> ();
 			newAction.hotspot = hotspotToAffect;
 			newAction.changeType = changeToMake;
 			return newAction;

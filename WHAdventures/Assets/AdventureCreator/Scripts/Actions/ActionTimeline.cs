@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionDirector.cs"
  * 
@@ -45,14 +45,10 @@ namespace AC
 		[SerializeField] protected BindingData[] newBindings = new BindingData[0];
 
 
-		public ActionTimeline ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Engine;
-			title = "Control Timeline";
-			description = "Controls a Timeline.  This is only compatible with Unity 2017 or newer.";
-		}
-		
+		public override ActionCategory Category { get { return ActionCategory.Engine; }}
+		public override string Title { get { return "Control Timeline"; }}
+		public override string Description { get { return "Controls a Timeline.  This is only compatible with Unity 2017 or newer."; }}
+
 		
 		public override void AssignValues (List<ActionParameter> parameters)
 		{
@@ -276,8 +272,6 @@ namespace AC
 			}
 
 			#endif
-
-			AfterRunningOption ();
 		}
 
 
@@ -328,13 +322,13 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("All bindings will be affected - not just the one selected above.", MessageType.Info);
 			}
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 		}
 
 
 		protected void ShowBindingUI (int i, List<ActionParameter> parameters)
 		{
-			if (newBindings == null || newBindings.Length < i) return;
+			if (newBindings == null || newBindings.Length <= i) return;
 			
 			newBindings[i].isPlayer = EditorGUILayout.Toggle ("Bind to Player?", newBindings[i].isPlayer);
 			if (newBindings[i].isPlayer)
@@ -415,9 +409,9 @@ namespace AC
 			if (directorParameterID < 0)
 			{
 				if (director != null && director.gameObject == gameObject) return true;
-				if (directorConstantID == id) return true;
+				if (directorConstantID == id && id != 0) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 
 
@@ -605,7 +599,7 @@ namespace AC
 		 */
 		public static ActionTimeline CreateNew_Play (PlayableDirector director, TimelineAsset timelineAsset = null, bool playFromBeginning = true, bool disableACCamera = false, bool waitUntilFinish = false)
 		{
-			ActionTimeline newAction = (ActionTimeline) CreateInstance <ActionTimeline>();
+			ActionTimeline newAction = CreateNew<ActionTimeline> ();
 			newAction.method = ActionDirectorMethod.Play;
 			newAction.director = director;
 			newAction.newTimeline = timelineAsset;
@@ -627,7 +621,7 @@ namespace AC
 		 */
 		public static ActionTimeline CreateNew_Stop (PlayableDirector director, bool pauseTimeline = true, bool enableACCamera = true)
 		{
-			ActionTimeline newAction = (ActionTimeline) CreateInstance <ActionTimeline>();
+			ActionTimeline newAction = CreateNew<ActionTimeline> ();
 			newAction.method = ActionDirectorMethod.Stop;
 			newAction.director = director;
 			newAction.pause = pauseTimeline;

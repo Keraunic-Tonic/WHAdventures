@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"MenuDrag.cs"
  * 
@@ -99,7 +99,7 @@ namespace AC
 				return;
 			}
 
-			EditorGUILayout.BeginVertical ("Button");
+			CustomGUILayout.BeginVertical ();
 			label = CustomGUILayout.TextField ("Button text:", label, apiPrefix + ".label", "The text that's displayed on-screen");
 			anchor = (TextAnchor) CustomGUILayout.EnumPopup ("Text alignment:", anchor, apiPrefix + ".anchor", "The text alignment");
 			textEffects = (TextEffects) CustomGUILayout.EnumPopup ("Text effect:", textEffects, apiPrefix + ".textEffects", "The special FX applied to the text");
@@ -114,7 +114,7 @@ namespace AC
 
 			ChangeCursorGUI (menu);
 
-			EditorGUILayout.EndVertical ();
+			CustomGUILayout.EndVertical ();
 			
 			base.ShowGUI (menu);
 		}
@@ -128,7 +128,7 @@ namespace AC
 			}
 			else
 			{
-				if (elementName != "")
+				if (!string.IsNullOrEmpty (elementName))
 				{
 					MenuElement element = MenuManager.GetElementWithName (_menu.title, elementName);
 					if (element != null)
@@ -195,7 +195,7 @@ namespace AC
 		
 		protected override void AutoSize ()
 		{
-			if (string.IsNullOrEmpty (label) && backgroundTexture != null)
+			if (string.IsNullOrEmpty (label) && backgroundTexture)
 			{
 				GUIContent content = new GUIContent (backgroundTexture);
 				AutoSize (content);
@@ -332,20 +332,17 @@ namespace AC
 		}
 
 
-		/**
-		 * <summary>Performs what should happen when the element is clicked on.</summary>
-		 * <param name = "_menu">The element's parent Menu</param>
-		 * <param name = "_slot">Ignored by this subclass</param>
-		 * <param name = "_mouseState">The state of the mouse button</param>
-		 */
-		public override void ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
+		public override bool ProcessClick (AC.Menu _menu, int _slot, MouseState _mouseState)
 		{
 			if (_mouseState == MouseState.SingleClick)
 			{
 				StartDrag (_menu);
 				KickStarter.playerInput.SetActiveDragElement (this);
 				base.ProcessClick (_menu, _slot, _mouseState);
+				return true;
 			}
+
+			return false;
 		}
 
 

@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionVisibleCheck.cs"
  * 
@@ -31,13 +31,9 @@ namespace AC
 		public CheckVisState checkVisState = CheckVisState.InScene;
 
 
-		public ActionVisibleCheck ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Object;
-			title = "Check visibility";
-			description = "Checks the visibility of a GameObject.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Object; }}
+		public override string Title { get { return "Check visibility"; }}
+		public override string Description { get { return "Checks the visibility of a GameObject."; }}
 		
 		
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -66,6 +62,9 @@ namespace AC
 
 						case CheckVisState.InScene:
 							return _renderer.enabled;
+
+						default:
+							break;
 					}
 				}
 				ACDebug.LogWarning ("Cannot check visibility of " + runtimeObToAffect.name + " as it has no renderer component", runtimeObToAffect);
@@ -117,9 +116,9 @@ namespace AC
 			if (parameterID < 0)
 			{
 				if (obToAffect != null && obToAffect == gameObject) return true;
-				return (constantID == id);
+				return (constantID == id && id != 0);
 			}
-			return false;
+			return base.ReferencesObjectOrID (gameObject, id);
 		}
 		
 		#endif
@@ -133,7 +132,7 @@ namespace AC
 		 */
 		public static ActionVisibleCheck CreateNew (GameObject objectToCheck, CheckVisState visibilityToCheck)
 		{
-			ActionVisibleCheck newAction = (ActionVisibleCheck) CreateInstance <ActionVisibleCheck>();
+			ActionVisibleCheck newAction = CreateNew<ActionVisibleCheck> ();
 			newAction.obToAffect = objectToCheck;
 			newAction.checkVisState = visibilityToCheck;
 			return newAction;

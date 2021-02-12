@@ -1,7 +1,7 @@
 /*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCharHold.cs"
  * 
@@ -51,13 +51,9 @@ namespace AC
 		public Hand hand;
 
 
-		public ActionCharHold ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Character;
-			title = "Hold object";
-			description = "Parents a GameObject to a Character's hand Transform, as chosen in the Character's inspector. The local transforms of the GameObject will be cleared. Note that this action only works with 3D characters.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Character; }}
+		public override string Title { get { return "Hold object"; }}
+		public override string Description { get { return "Parents a GameObject to a Character's hand Transform, as chosen in the Character's inspector. The local transforms of the GameObject will be cleared. Note that this action only works with 3D characters."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -66,7 +62,7 @@ namespace AC
 
 			if (objectToHold != null && !objectToHold.activeInHierarchy)
 			{
-				loadedObject = (GameObject) Instantiate (objectToHold);
+				loadedObject = (GameObject) Object.Instantiate (objectToHold);
 			}
 
 			if (isPlayer)
@@ -261,8 +257,6 @@ namespace AC
 			{
 				EditorGUILayout.HelpBox ("This Action requires a Character before more options will show.", MessageType.Info);
 			}
-			
-			AfterRunningOption ();
 		}
 
 
@@ -317,7 +311,7 @@ namespace AC
 				if (objectToHold != null && objectToHold == _gameObject) return true;
 				if (objectToHoldID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 
 
@@ -342,7 +336,7 @@ namespace AC
 		 */
 		public static ActionCharHold CreateNew (Char characterToUpdate, GameObject objectToHold, Hand handToUse, Vector3 localEulerAngles = default(Vector3))
 		{
-			ActionCharHold newAction = (ActionCharHold) CreateInstance <ActionCharHold>();
+			ActionCharHold newAction = CreateNew<ActionCharHold> ();
 			newAction._char = characterToUpdate;
 			newAction.objectToHold = objectToHold;
 			newAction.hand = handToUse;

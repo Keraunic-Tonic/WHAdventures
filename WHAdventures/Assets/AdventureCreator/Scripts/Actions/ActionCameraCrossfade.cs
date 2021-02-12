@@ -1,7 +1,7 @@
 ﻿/*
  *
  *	Adventure Creator
- *	by Chris Burton, 2013-2020
+ *	by Chris Burton, 2013-2021
  *	
  *	"ActionCameraCrossfade.cs"
  * 
@@ -36,13 +36,9 @@ namespace AC
 		public bool returnToLast;
 
 
-		public ActionCameraCrossfade ()
-		{
-			this.isDisplayed = true;
-			category = ActionCategory.Camera;
-			title = "Crossfade";
-			description = "Crossfades the camera from its current GameCamera to a new one, over a specified time.";
-		}
+		public override ActionCategory Category { get { return ActionCategory.Camera; }}
+		public override string Title { get { return "Crossfade"; }}
+		public override string Description { get { return "Crossfades the camera from its current GameCamera to a new one, over a specified time."; }}
 
 
 		public override void AssignValues (List<ActionParameter> parameters)
@@ -64,7 +60,7 @@ namespace AC
 				isRunning = true;
 				MainCamera mainCam = KickStarter.mainCamera;
 
-				if (runtimeLinkedCamera != null && mainCam.attachedCamera != runtimeLinkedCamera)
+				if (runtimeLinkedCamera && mainCam.attachedCamera != runtimeLinkedCamera)
 				{
 					if (runtimeLinkedCamera is GameCameraThirdPerson)
 					{
@@ -99,7 +95,7 @@ namespace AC
 		{
 			MainCamera mainCam = KickStarter.mainCamera;
 
-			if (runtimeLinkedCamera != null && mainCam.attachedCamera != runtimeLinkedCamera)
+			if (runtimeLinkedCamera && mainCam.attachedCamera != runtimeLinkedCamera)
 			{
 				if (runtimeLinkedCamera is GameCameraThirdPerson)
 				{
@@ -148,8 +144,6 @@ namespace AC
 
 			fadeCurve = (AnimationCurve)EditorGUILayout.CurveField ("Transition curve:", fadeCurve);
 			willWait = EditorGUILayout.Toggle ("Wait until finish?", willWait);
-
-			AfterRunningOption ();
 		}
 
 
@@ -177,10 +171,10 @@ namespace AC
 		{
 			if (!returnToLast && parameterID < 0)
 			{
-				if (linkedCamera != null && linkedCamera.gameObject == _gameObject) return true;
+				if (linkedCamera && linkedCamera.gameObject == _gameObject) return true;
 				if (constantID == id) return true;
 			}
-			return false;
+			return base.ReferencesObjectOrID (_gameObject, id);
 		}
 		
 		#endif
@@ -195,7 +189,7 @@ namespace AC
 		 */
 		public static ActionCameraCrossfade CreateNew (_Camera newCamera, float transitionTime = 1f, bool waitUntilFinish = false)
 		{
-			ActionCameraCrossfade newAction = (ActionCameraCrossfade) CreateInstance <ActionCameraCrossfade>();
+			ActionCameraCrossfade newAction = CreateNew<ActionCameraCrossfade> ();
 			newAction.linkedCamera = newCamera;
 			newAction.transitionTime = transitionTime;
 			newAction.willWait = waitUntilFinish;
