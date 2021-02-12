@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
-using SFAPI;
 using UnityEngine;
+using SFAPI;
 
 public class StoryforgeTest : MonoBehaviour
 {
@@ -10,8 +11,9 @@ public class StoryforgeTest : MonoBehaviour
     void Start()
     {
         Storyforge sf = Storyforge.Get();
-        Script scriptById = sf.GetSceneItem<Script>("Fcn-e3x-KVE2");
-        print(scriptById);
+        // Character character = GetCharacterByGameID("VV");
+        // Debug.Log("The character is called: " + character.SubtitleName);
+        Debug.Log(sf);
     }
 
     // Update is called once per frame
