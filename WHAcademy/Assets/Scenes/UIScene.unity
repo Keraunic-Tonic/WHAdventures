@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 61215287}
   - component: {fileID: 61215286}
   m_Layer: 0
-  m_Name: WHAcademyScreen AssetsWIP_1
+  m_Name: ScrollSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -216,7 +216,7 @@ GameObject:
   - component: {fileID: 101985561}
   - component: {fileID: 101985560}
   m_Layer: 0
-  m_Name: WHAcademyScreen AssetsWIP_5
+  m_Name: InventoryBagSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -381,7 +381,7 @@ GameObject:
   - component: {fileID: 1483070382}
   - component: {fileID: 1483070381}
   m_Layer: 0
-  m_Name: WHAcademyScreen AssetsWIP_3
+  m_Name: InventoryBoxSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -446,7 +446,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1483070380}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.76, y: -3.83, z: 0.41}
+  m_LocalPosition: {x: -2.76, y: -3.83, z: 1}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
@@ -463,7 +463,7 @@ GameObject:
   - component: {fileID: 1827347285}
   - component: {fileID: 1827347284}
   m_Layer: 0
-  m_Name: VVPortrait
+  m_Name: VVPortraitSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
