@@ -383,7 +383,7 @@ MonoBehaviour:
   showWhenPaused: 0
   canClickInCutscene: 0
   enabledOnStart: 0
-  actionListOnTurnOn: {fileID: 0}
+  actionListOnTurnOn: {fileID: 11400000, guid: 90ae7a6f888aa9c4983d49dbceea5df1, type: 2}
   actionListOnTurnOff: {fileID: 11400000, guid: 791a62385d668e447a5dc2001353b62e, type: 2}
   updateWhenFadeOut: 1
   hideDuringSaveScreenshots: 1
@@ -6850,7 +6850,7 @@ MonoBehaviour:
   showWhenPaused: 0
   canClickInCutscene: 0
   enabledOnStart: 0
-  actionListOnTurnOn: {fileID: 0}
+  actionListOnTurnOn: {fileID: 11400000, guid: 90ae7a6f888aa9c4983d49dbceea5df1, type: 2}
   actionListOnTurnOff: {fileID: 11400000, guid: 791a62385d668e447a5dc2001353b62e, type: 2}
   updateWhenFadeOut: 1
   hideDuringSaveScreenshots: 1
