@@ -141,7 +141,7 @@ TextureImporter:
         width: 418
         height: 1018
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -149,27 +149,6 @@ TextureImporter:
       bones: []
       spriteID: f152093babc08ffd0800000000000000
       internalID: -2308080813011360481
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: VVSprite_1
-      rect:
-        serializedVersion: 2
-        x: 546
-        y: 14
-        width: 418
-        height: 1018
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 21da6e5ac584e6a70800000000000000
-      internalID: 8822068282822929682
       vertices: []
       indices: 
       edges: []

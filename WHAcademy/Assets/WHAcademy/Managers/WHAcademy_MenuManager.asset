@@ -1419,7 +1419,7 @@ MonoBehaviour:
   title: SubsLineLabel
   slotSize: {x: 50, y: 4.8}
   sizeType: 1
-  positionType: 0
+  positionType: 2
   slotSpacing: 0
   lineID: 87
   alternativeInputButton: 
@@ -1443,10 +1443,10 @@ MonoBehaviour:
   relativeRect:
     serializedVersion: 2
     x: 0
-    y: 25.199999
-    width: 209.99998
-    height: 17.28
-  relativePosition: {x: 0, y: 0}
+    y: 146.3616
+    width: 1920.0001
+    height: 103.68001
+  relativePosition: {x: 0, y: 24.2}
   numSlots: 1
   uiText: {fileID: 0}
   label: Hi!
@@ -1455,7 +1455,7 @@ MonoBehaviour:
   outlineSize: 2
   labelType: 2
   variableID: 0
-  useCharacterColour: 0
+  useCharacterColour: 1
   autoAdjustHeight: 1
   updateIfEmpty: 1
   showPendingWhileMovingToHotspot: 0
@@ -2566,7 +2566,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5f455f0e4a864975bf60bc153fbe20d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  menuSource: 1
+  menuSource: 0
   canvas: {fileID: 22300000, guid: 939d2bf2b65241843a5ee3b9cf0aa879, type: 3}
   canvasID: 0
   rectTransform: {fileID: 0}
@@ -2652,10 +2652,10 @@ MonoBehaviour:
   biggestElementSize: {x: 0, y: 0}
   rect:
     serializedVersion: 2
-    x: 105
-    y: 237.24002
-    width: 210
-    height: 100.8
+    x: 960
+    y: 1423.4401
+    width: 1920
+    height: 604.8
   showInFilter: 1
 --- !u!114 &-3406980745005511329
 MonoBehaviour:
@@ -3054,7 +3054,7 @@ MonoBehaviour:
   title: SubsSpeakerLabel
   slotSize: {x: 50, y: 7}
   sizeType: 1
-  positionType: 0
+  positionType: 2
   slotSpacing: 0
   lineID: 86
   alternativeInputButton: 
@@ -3079,8 +3079,8 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 209.99998
-    height: 25.199999
+    width: 1920.0001
+    height: 151.2
   relativePosition: {x: 0, y: 0}
   numSlots: 1
   uiText: {fileID: 0}
