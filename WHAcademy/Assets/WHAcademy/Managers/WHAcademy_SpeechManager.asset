@@ -47,7 +47,7 @@ MonoBehaviour:
   usePlayerRealName: 0
   separateSharedPlayerAudio: 0
   placeAudioInSubfolders: 0
-  separateLines: 0
+  separateLines: 1
   separateLinePause: 1
   resetExpressionsEachLine: 1
   lines: []
@@ -71,6 +71,8 @@ MonoBehaviour:
   activeLineID: -1
   mergeMatchingSpeechIDs: 0
   useSpeechTags: 0
-  speechTags: []
+  speechTags:
+  - ID: 0
+    label: (Untagged)
   previewMenuName: Subtitles
   mergeMatchingIDs: 0

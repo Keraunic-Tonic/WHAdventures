@@ -222,6 +222,17 @@ MonoBehaviour:
   fadeTexture: {fileID: 2800000, guid: 2de7d16b4ac4b402182d4f2ca40e0b2d, type: 3}
   renderFading: 1
   forwardDirection: 0
+--- !u!114 &138627453 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1572239086090221767, guid: 985155a100794b94d8c2013c76160a25, type: 3}
+  m_PrefabInstance: {fileID: 1722559947}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e75a04a147624aa9b6f89d5d4759155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &165931431
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,8 +589,8 @@ MonoBehaviour:
   linkedAsset: {fileID: 0}
   endings:
   - resultAction: 2
-    skipAction: 3
-    skipActionActual: {fileID: 2072535474}
+    skipAction: 1
+    skipActionActual: {fileID: 1273046577}
     linkedCutscene: {fileID: 0}
     linkedAsset: {fileID: 0}
   isEnabled: 1
@@ -599,7 +610,7 @@ MonoBehaviour:
   isInstant: 0
   direction: 1
   directionParameterID: -1
-  charToMove: {fileID: 0}
+  charToMove: {fileID: 138627453}
   isPlayer: 0
   playerID: -1
   relativeTo: 0
@@ -732,7 +743,7 @@ MonoBehaviour:
   nodeRect:
     serializedVersion: 2
     x: 14
-    y: 464
+    y: 256
     width: 300
     height: 187
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
@@ -744,7 +755,7 @@ MonoBehaviour:
   isPlayer: 1
   playerID: -1
   speaker: {fileID: 0}
-  messageText: Oh, good.[wait:2][expression:None] I made it to class on time.
+  messageText: '[expression:Shock] Oh, good. I made it to class on time.'
   lineID: -1
   multiLineIDs: 
   isBackground: 0
@@ -1007,11 +1018,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1572239086090221770, guid: 985155a100794b94d8c2013c76160a25, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -2.81
       objectReference: {fileID: 0}
     - target: {fileID: 1572239086090221770, guid: 985155a100794b94d8c2013c76160a25, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -2.52
       objectReference: {fileID: 0}
     - target: {fileID: 1572239086090221770, guid: 985155a100794b94d8c2013c76160a25, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1141,9 +1152,9 @@ MonoBehaviour:
   nodeRect:
     serializedVersion: 2
     x: 14
-    y: 692
+    y: 473
     width: 300
-    height: 167
+    height: 197
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 8646445352144095537}
@@ -1153,7 +1164,8 @@ MonoBehaviour:
   isPlayer: 1
   playerID: -1
   speaker: {fileID: 0}
-  messageText: Today's the big school trip, so I hope I'm not keeping everyone waiting.
+  messageText: '[expression:None] Today''s the big school trip,[wait:1]  [expression:Annoy]
+    so I hope I''m not keeping everyone waiting.'
   lineID: -1
   multiLineIDs: 
   isBackground: 0
@@ -1227,52 +1239,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2072535474
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57a72d74a258e413bacd504f0fdb611b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  id: 0
-  isDisplayed: 1
-  showComment: 0
-  comment: 
-  willWait: 0
-  endAction: 0
-  skipAction: -1
-  skipActionActual: {fileID: 0}
-  linkedCutscene: {fileID: 0}
-  linkedAsset: {fileID: 0}
-  endings:
-  - resultAction: 2
-    skipAction: 1
-    skipActionActual: {fileID: 1273046577}
-    linkedCutscene: {fileID: 0}
-    linkedAsset: {fileID: 0}
-  isEnabled: 1
-  isAssetFile: 0
-  isBreakPoint: 0
-  nodeRect:
-    serializedVersion: 2
-    x: 14
-    y: 256
-    width: 300
-    height: 178
-  overrideColor: {r: 1, g: 1, b: 1, a: 1}
-  showOutputSockets: 1
-  parentActionListInEditor: {fileID: 8646445352144095537}
-  parameterID: -1
-  constantID: 0
-  isPlayer: 1
-  playerID: -1
-  _char: {fileID: 0}
-  newPortraitGraphic: {fileID: 2800000, guid: 1674eb82a128fc74bb67d66a6b1205f7, type: 3}
 --- !u!1 &2082848735
 GameObject:
   m_ObjectHideFlags: 0
@@ -1731,7 +1697,6 @@ MonoBehaviour:
   - {fileID: 910363744}
   - {fileID: 1273046577}
   - {fileID: 1907218050}
-  - {fileID: 2072535474}
   isSkippable: 1
   triggerTime: 0
   autosaveAfter: 0
