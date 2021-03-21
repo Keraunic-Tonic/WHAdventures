@@ -4535,8 +4535,9 @@ MonoBehaviour:
   - {fileID: -177868526435881467}
   - {fileID: 3182597015774141577}
   - {fileID: -6441838491484815131}
+  - {fileID: 0}
   transitionProgress: 0
-  appearType: 1
+  appearType: 0
   speechMenuType: 0
   speechMenuLimit: 0
   limitToCharacters: 
