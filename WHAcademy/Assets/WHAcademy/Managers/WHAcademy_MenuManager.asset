@@ -378,7 +378,7 @@ MonoBehaviour:
   isClickable: 0
   orientation: 1
   gridWidth: 3
-  backgroundTexture: {fileID: 2800000, guid: 3d9249ecbc2da374f9ec72edbb22eea4, type: 3}
+  backgroundTexture: {fileID: 0}
   singleSlotBackgrounds: 0
   highlightTexture: {fileID: 0}
   hoverSound: {fileID: 0}
@@ -756,8 +756,8 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 19.2
-    y: 400.80002
+    x: 1920
+    y: 19.2
     width: 614.4
     height: 108
   relativePosition: {x: 0, y: 0}
@@ -2743,9 +2743,9 @@ MonoBehaviour:
   isLocked: 0
   id: 15
   title: Title
-  manualSize: {x: 17.000002, y: 24.444445}
-  positionType: 0
-  manualPosition: {x: 1920, y: 1080}
+  manualSize: {x: 66.5, y: 6.7777777}
+  positionType: 2
+  manualPosition: {x: 50, y: 75.1}
   positionSmoothing: 0
   alignment: 4
   toggleKey: Menu
@@ -2785,7 +2785,7 @@ MonoBehaviour:
   spacing: 0.5
   sizeType: 0
   autoSizeEveryFrame: 0
-  orientation: 1
+  orientation: 0
   transitionType: 0
   panDirection: 0
   panMovement: 0
@@ -2821,13 +2821,13 @@ MonoBehaviour:
   speechProximityLimit: 0
   speechProximityDistance: 10
   deleteUIWhenTurnOff: 0
-  biggestElementSize: {x: 633.60004, y: 508.80002}
+  biggestElementSize: {x: 2534.4, y: 127.2}
   rect:
     serializedVersion: 2
-    x: 1593.6
-    y: 816
-    width: 652.80005
-    height: 528
+    x: 643.2001
+    y: 1548.96
+    width: 2553.5999
+    height: 146.4
   showInFilter: 1
 --- !u!114 &-3366472601717226232
 MonoBehaviour:
@@ -5506,8 +5506,8 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 19.2
-    y: 146.4
+    x: 652.80005
+    y: 19.2
     width: 614.4
     height: 108
   relativePosition: {x: 0, y: 0}
@@ -5891,8 +5891,8 @@ MonoBehaviour:
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
-    x: 19.2
-    y: 273.6
+    x: 1286.4
+    y: 19.2
     width: 614.4
     height: 108
   relativePosition: {x: 0, y: 0}
