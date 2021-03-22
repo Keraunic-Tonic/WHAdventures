@@ -36,7 +36,7 @@ MonoBehaviour:
   actionListOnStart: {fileID: 0}
   blackOutWhenSkipping: 0
   playerSwitching: 1
-  player: {fileID: 0}
+  player: {fileID: 1572239086090221767, guid: 985155a100794b94d8c2013c76160a25, type: 3}
   players: []
   movementMethod: 0
   inputMethod: 0
@@ -165,7 +165,7 @@ MonoBehaviour:
   loadingSceneIs: 0
   loadingSceneName: 
   loadingScene: 0
-  useAsyncLoading: 0
+  useAsyncLoading: 1
   loadingDelay: 0
   blackOutWhenInitialising: 1
   spawnPersistentEnginePrefab: 1
