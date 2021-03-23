@@ -7,6 +7,7 @@ tpsheetFileNames:
 - Assets/Sprites/ExpressionsRay.tpsheet
 - Assets/Sprites/ExpressionsVV.tpsheet
 - Assets/Sprites/OverworldSprites.tpsheet
+- Assets/Sprites/UI_WIP.tpsheet
 textureFileNames:
 - Assets/Sprites/ExpressionsBlaze.png
 - Assets/Sprites/Expressions.png
@@ -14,7 +15,9 @@ textureFileNames:
 - Assets/Sprites/ExpressionsRay.png
 - Assets/Sprites/ExpressionsVV.png
 - Assets/Sprites/OverworldSprites.png
+- Assets/Sprites/UI_WIP.png
 normalmapFileNames:
+- 
 - 
 - 
 - 
