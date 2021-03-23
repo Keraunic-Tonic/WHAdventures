@@ -415,7 +415,7 @@ MonoBehaviour:
     x: 14
     y: 683
     width: 300
-    height: 237
+    height: 222
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
@@ -425,8 +425,8 @@ MonoBehaviour:
   isPlayer: 1
   playerID: -1
   speaker: {fileID: 0}
-  messageText: '[expression:None] Today''s the big school trip,[wait:1]  [expression:Annoy]
-    so I hope I''m not keeping everyone waiting.'
+  messageText: '[expression:None] Today''s the big school trip, so I hope I''m not
+    keeping everyone waiting.'
   lineID: -1
   multiLineIDs: 
   isBackground: 0
