@@ -319,7 +319,7 @@ MonoBehaviour:
   displayLineID: -1
   speechColor: {r: 0.8352942, g: 0.89019614, b: 0.43529415, a: 1}
   portraitIcon:
-    texture: {fileID: 2800000, guid: e4c2053da9be26e47badbd9930ace4ba, type: 3}
+    texture: {fileID: 2800000, guid: 926cf36be71e89c4daddf38bd3fbb18b, type: 3}
     isAnimated: 0
     numFrames: 1
     numRows: 1
@@ -336,7 +336,7 @@ MonoBehaviour:
   - ID: 0
     label: Bum
     portraitIcon:
-      texture: {fileID: 2800000, guid: e8b21ffa48889594ab805f22dd592a95, type: 3}
+      texture: {fileID: 2800000, guid: 11f283c569de3d54b9a08e08bafdabcd, type: 3}
       isAnimated: 0
       numFrames: 1
       numRows: 1
@@ -351,7 +351,7 @@ MonoBehaviour:
   - ID: 1
     label: Peeve
     portraitIcon:
-      texture: {fileID: 2800000, guid: 10a00ef1ae029c14c893faf4a0584840, type: 3}
+      texture: {fileID: 2800000, guid: a47e013545bbc76409d8b5fd4737d289, type: 3}
       isAnimated: 0
       numFrames: 1
       numRows: 1
@@ -366,7 +366,7 @@ MonoBehaviour:
   - ID: 2
     label: Zen
     portraitIcon:
-      texture: {fileID: 2800000, guid: df22652b0e785354888dd93797ea090b, type: 3}
+      texture: {fileID: 2800000, guid: 5cee9eae3730c78428134bea3a7c3bd7, type: 3}
       isAnimated: 0
       numFrames: 1
       numRows: 1
@@ -584,12 +584,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: aac9af9a756e0c546a06d0ce0adaa758, type: 3}
+  m_Sprite: {fileID: -2290645218009577830, guid: 17a79e3e0a7f1d64398c9553d0f744e5, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 4.61, y: 10.33}
+  m_Size: {x: 4.23, y: 10.16}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -648,9 +648,9 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 1}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 4.61, y: 10.33}
-    newSize: {x: 4.61, y: 10.33}
+    pivot: {x: 0.53782505, y: -0.002952756}
+    oldSize: {x: 4.23, y: 10.16}
+    newSize: {x: 4.23, y: 10.16}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0

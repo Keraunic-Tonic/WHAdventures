@@ -569,7 +569,7 @@ MonoBehaviour:
   displayLineID: -1
   speechColor: {r: 0.3372549, g: 0.7607844, b: 0.9215687, a: 1}
   portraitIcon:
-    texture: {fileID: 2800000, guid: be207e94065c8644b8a5fda56e064622, type: 3}
+    texture: {fileID: 2800000, guid: bbbd388ca44848241bc84b872a2753ea, type: 3}
     isAnimated: 0
     numFrames: 1
     numRows: 1
@@ -586,7 +586,7 @@ MonoBehaviour:
   - ID: 0
     label: Craze
     portraitIcon:
-      texture: {fileID: 2800000, guid: 7a722945215975b469a4f177db10ea36, type: 3}
+      texture: {fileID: 2800000, guid: b6036e7328a6c534cb0242d3616b39b0, type: 3}
       isAnimated: 0
       numFrames: 1
       numRows: 1
@@ -601,7 +601,7 @@ MonoBehaviour:
   - ID: 1
     label: Mellow
     portraitIcon:
-      texture: {fileID: 2800000, guid: 51108be2b6d36114582bfe065dcadd0d, type: 3}
+      texture: {fileID: 2800000, guid: 4661fe1033774464299f431193b33069, type: 3}
       isAnimated: 0
       numFrames: 1
       numRows: 1
@@ -616,7 +616,7 @@ MonoBehaviour:
   - ID: 2
     label: Scheme
     portraitIcon:
-      texture: {fileID: 2800000, guid: a36d26c25eb6b4f4eb75451acd0377a3, type: 3}
+      texture: {fileID: 2800000, guid: 3a318a6bd4d21864f8f5006f1bdb7f3c, type: 3}
       isAnimated: 0
       numFrames: 1
       numRows: 1
