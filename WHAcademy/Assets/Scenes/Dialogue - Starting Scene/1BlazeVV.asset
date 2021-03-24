@@ -166,7 +166,7 @@ MonoBehaviour:
   messageParameterID: -1
   isPlayer: 0
   playerID: -1
-  speaker: {fileID: 4048441825409756973, guid: aae40fffc52981948906ccc8d146ee68, type: 3}
+  speaker: {fileID: 0}
   messageText: '[expression:Delight]Morning, V.V.!'
   lineID: -1
   multiLineIDs: 
