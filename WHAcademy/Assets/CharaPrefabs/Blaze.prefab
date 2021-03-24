@@ -514,10 +514,10 @@ MonoBehaviour:
   turn2DCharactersIn3DSpace: 1
   spriteChild: {fileID: 77487314607388073}
   rotateSprite3D: 0
-  idleAnimSprite: idle
+  idleAnimSprite: 
   walkAnimSprite: 
   runAnimSprite: 
-  talkAnimSprite: talk
+  talkAnimSprite: 
   lockScale: 0
   spriteScale: 1
   lockDirection: 0
