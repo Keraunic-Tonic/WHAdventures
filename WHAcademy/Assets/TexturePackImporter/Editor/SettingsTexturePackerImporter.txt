@@ -1,0 +1,27 @@
+version: 2
+importPivots: 1
+tpsheetFileNames:
+- Assets/Sprites/ExpressionsBlaze.tpsheet
+- Assets/Sprites/ExpressionsDahlia.tpsheet
+- Assets/Sprites/ExpressionsEgan.tpsheet
+- Assets/Sprites/ExpressionsRay.tpsheet
+- Assets/Sprites/ExpressionsVV.tpsheet
+- Assets/Sprites/OverworldSprites.tpsheet
+- Assets/Sprites/UI_WIP.tpsheet
+textureFileNames:
+- Assets/Sprites/ExpressionsBlaze.png
+- Assets/Sprites/Expressions.png
+- Assets/Sprites/ExpressionsEgan.png
+- Assets/Sprites/ExpressionsRay.png
+- Assets/Sprites/ExpressionsVV.png
+- Assets/Sprites/OverworldSprites.png
+- Assets/Sprites/UI_WIP.png
+normalmapFileNames:
+- 
+- 
+- 
+- 
+- 
+- 
+- 
+enableDebugOutput: 0
