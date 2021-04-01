@@ -2014,16 +2014,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5f455f0e4a864975bf60bc153fbe20d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  menuSource: 1
+  menuSource: 2
   canvas: {fileID: 22300000, guid: a0557f96af03e9d4ba82df20bbe2ee4c, type: 3}
-  canvasID: 0
+  canvasID: 34772
   rectTransform: {fileID: 0}
   rectTransformID: 1765320
   uiTransitionType: 1
   uiPositionType: 0
   isLocked: 0
   id: 19
-  title: Inventory (Copy)
+  title: Inventory Custom
   manualSize: {x: 100, y: 12.60303}
   positionType: 1
   manualPosition: {x: 210, y: 22.685453}
@@ -2106,7 +2106,7 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
-  showInFilter: 0
+  showInFilter: 1
 --- !u!114 &-5629325815217523604
 MonoBehaviour:
   m_ObjectHideFlags: 1
