@@ -157,7 +157,7 @@ MonoBehaviour:
     x: 14
     y: 216
     width: 300
-    height: 220
+    height: 240
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
@@ -277,7 +277,7 @@ MonoBehaviour:
     x: 14
     y: 2409
     width: 300
-    height: 250
+    height: 270
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
@@ -338,7 +338,7 @@ MonoBehaviour:
     x: 14
     y: 1677
     width: 300
-    height: 235
+    height: 255
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
@@ -675,7 +675,7 @@ MonoBehaviour:
     x: 14
     y: 1942
     width: 300
-    height: 235
+    height: 255
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
@@ -735,7 +735,7 @@ MonoBehaviour:
     x: 14
     y: 2689
     width: 300
-    height: 235
+    height: 255
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
@@ -745,7 +745,7 @@ MonoBehaviour:
   isPlayer: 0
   playerID: -1
   speaker: {fileID: 0}
-  messageText: I mean, Jojo is still late, so I guess we still have to wait for him,
+  messageText: I mean, J.J. is still late, so I guess we still have to wait for him,
     but even so!
   lineID: -1
   multiLineIDs: 

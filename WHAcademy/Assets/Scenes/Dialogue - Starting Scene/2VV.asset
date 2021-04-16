@@ -106,7 +106,7 @@ MonoBehaviour:
   isPlayer: 1
   playerID: -1
   speaker: {fileID: 0}
-  messageText: If Jojo's not here, and I turn in my permission slip, Noah will wake
+  messageText: If J.J. isn't here, and I turn in my permission slip, Noah will wake
     up Mr. Whittraper and he'll end up missing out on the field trip.
   lineID: -1
   multiLineIDs: 
