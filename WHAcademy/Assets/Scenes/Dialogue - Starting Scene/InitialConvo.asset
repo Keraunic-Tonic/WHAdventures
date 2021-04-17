@@ -42,7 +42,7 @@ MonoBehaviour:
   parentActionListInEditor: {fileID: 0}
   charToMoveParameterID: -1
   markerParameterID: -1
-  charToMoveID: 11652
+  charToMoveID: 67588
   markerID: 1068548
   marker: {fileID: 0}
   isPlayer: 0
@@ -258,7 +258,7 @@ MonoBehaviour:
     x: 14
     y: 14
     width: 300
-    height: 220
+    height: 180
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
@@ -361,7 +361,7 @@ MonoBehaviour:
     x: 14
     y: 1438
     width: 300
-    height: 220
+    height: 180
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
