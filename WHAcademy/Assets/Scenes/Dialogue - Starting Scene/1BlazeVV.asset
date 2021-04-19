@@ -157,11 +157,11 @@ MonoBehaviour:
     x: 14
     y: 216
     width: 300
-    height: 240
+    height: 220
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
-  constantID: 11652
+  constantID: 67588
   parameterID: -1
   messageParameterID: -1
   isPlayer: 0
@@ -277,11 +277,11 @@ MonoBehaviour:
     x: 14
     y: 2409
     width: 300
-    height: 270
+    height: 250
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
-  constantID: 11652
+  constantID: 67588
   parameterID: -1
   messageParameterID: -1
   isPlayer: 0
@@ -338,11 +338,11 @@ MonoBehaviour:
     x: 14
     y: 1677
     width: 300
-    height: 255
+    height: 235
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
-  constantID: 11652
+  constantID: 67588
   parameterID: -1
   messageParameterID: -1
   isPlayer: 0
@@ -402,13 +402,13 @@ MonoBehaviour:
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
-  constantID: 11652
+  constantID: 67588
   parameterID: -1
   messageParameterID: -1
   isPlayer: 0
   playerID: -1
-  speaker: {fileID: 4048441825409756973, guid: aae40fffc52981948906ccc8d146ee68, type: 3}
-  messageText: '[expression:Confuse]Nope, but Mr. Whittrappr is having Noah collect
+  speaker: {fileID: 0}
+  messageText: '[expression:Confuse]Nope, but Mr. Whittrapper is having Noah collect
     the permission slips while he takes a nap in the back of the room.'
   lineID: -1
   multiLineIDs: 
@@ -675,11 +675,11 @@ MonoBehaviour:
     x: 14
     y: 1942
     width: 300
-    height: 255
+    height: 235
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
-  constantID: 11652
+  constantID: 67588
   parameterID: -1
   messageParameterID: -1
   isPlayer: 0
@@ -735,11 +735,11 @@ MonoBehaviour:
     x: 14
     y: 2689
     width: 300
-    height: 255
+    height: 235
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
-  constantID: 11652
+  constantID: 67588
   parameterID: -1
   messageParameterID: -1
   isPlayer: 0
@@ -800,12 +800,12 @@ MonoBehaviour:
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 0}
-  constantID: 11652
+  constantID: 67588
   parameterID: -1
   messageParameterID: -1
   isPlayer: 0
   playerID: -1
-  speaker: {fileID: 4048441825409756973, guid: aae40fffc52981948906ccc8d146ee68, type: 3}
+  speaker: {fileID: 0}
   messageText: '[expression:None]Haha. Still, you should probably get that to him.'
   lineID: -1
   multiLineIDs: 
