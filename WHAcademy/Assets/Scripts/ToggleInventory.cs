@@ -8,6 +8,8 @@ public class ToggleInventory : MonoBehaviour
     public Button inventoryButton;
     private bool isImageOn;
     public Image panelImage;
+    public Sprite closedBagSprite;
+    public Sprite openBagSprite;
 
     // Start is called before the first frame update
     void Start()
@@ -22,15 +24,17 @@ public class ToggleInventory : MonoBehaviour
     void ToggleInventoryPanel()
     {
         Debug.Log("The inventory button has been clicked");
-        if (isImageOn == true)
+        if (isImageOn == true) //turning off the inventory
         {
             panelImage.enabled = false;
             isImageOn = false;
+            inventoryButton.image.sprite = closedBagSprite;
         }
-        else
+        else // turning on the inventory
         {
             panelImage.enabled = true;
             isImageOn = true;
+            inventoryButton.image.sprite = openBagSprite;
         }
     }
 
