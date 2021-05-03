@@ -105,7 +105,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 318248
+  linkedUiID: 272474
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
@@ -752,7 +752,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 335904
+  linkedUiID: 272872
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
@@ -3319,11 +3319,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5f455f0e4a864975bf60bc153fbe20d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  menuSource: 0
-  canvas: {fileID: 22300000, guid: df8c93f5aab0fc84f9cbf46c6c9ddb13, type: 3}
+  menuSource: 1
+  canvas: {fileID: 3891930402756283820, guid: e7d8400b6a420fe48901efe65df538bf, type: 3}
   canvasID: 0
-  rectTransform: {fileID: 0}
-  rectTransformID: 310968
+  rectTransform: {fileID: 8185833844437267895, guid: 93568062b3854ba45932c0119988dc2f, type: 3}
+  rectTransformID: 532618
   uiTransitionType: 1
   uiPositionType: 0
   isLocked: 0
@@ -3360,7 +3360,7 @@ MonoBehaviour:
   moveWithCharacter: 1
   selected_element: {fileID: 0}
   selected_slot: 0
-  autoSelectFirstVisibleElement: 0
+  autoSelectFirstVisibleElement: 1
   firstSelectedElement: 
   elements:
   - {fileID: -9178536653267269813}
@@ -3892,7 +3892,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 27694
+  linkedUiID: 504738
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
@@ -6398,7 +6398,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 0
+  linkedUiID: 272626
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
@@ -6893,7 +6893,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 326570
+  linkedUiID: 272748
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
