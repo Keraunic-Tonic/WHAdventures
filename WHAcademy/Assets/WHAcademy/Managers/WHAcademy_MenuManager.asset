@@ -105,7 +105,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 272474
+  linkedUiID: 156224
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
@@ -752,7 +752,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 272872
+  linkedUiID: 156682
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
@@ -3320,10 +3320,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   menuSource: 1
-  canvas: {fileID: 3891930402756283820, guid: e7d8400b6a420fe48901efe65df538bf, type: 3}
+  canvas: {fileID: 4235208873831751435, guid: 6c4db5bbc8fa44d46aeacaf9f649fc14, type: 3}
   canvasID: 0
-  rectTransform: {fileID: 8185833844437267895, guid: 93568062b3854ba45932c0119988dc2f, type: 3}
-  rectTransformID: 532618
+  rectTransform: {fileID: 8107454857466765332, guid: 583fd26745991fb41a7f15e07051eff2, type: 3}
+  rectTransformID: 156078
   uiTransitionType: 1
   uiPositionType: 0
   isLocked: 0
@@ -3348,7 +3348,7 @@ MonoBehaviour:
   backgroundTexture: {fileID: 2800000, guid: 5f4f3dd6223164fe49aea7eb6c0bc529, type: 3}
   visibleElements:
   - {fileID: -9178536653267269813}
-  - {fileID: 3464749145609579600}
+  - {fileID: -1962994202678944127}
   - {fileID: 5233020662314759819}
   - {fileID: -7458767604137454500}
   transitionProgress: 0
@@ -3364,9 +3364,8 @@ MonoBehaviour:
   firstSelectedElement: 
   elements:
   - {fileID: -9178536653267269813}
-  - {fileID: 3464749145609579600}
-  - {fileID: 5233020662314759819}
   - {fileID: -1962994202678944127}
+  - {fileID: 5233020662314759819}
   - {fileID: -7458767604137454500}
   spacing: 0.5
   sizeType: 0
@@ -3407,7 +3406,7 @@ MonoBehaviour:
   speechProximityLimit: 0
   speechProximityDistance: 10
   deleteUIWhenTurnOff: 0
-  biggestElementSize: {x: 2534.4, y: 127.2}
+  biggestElementSize: {x: 0, y: 0}
   rect:
     serializedVersion: 2
     x: 643.2001
@@ -3676,7 +3675,7 @@ MonoBehaviour:
   parameterID: -1
   parameterValue: 0
   doFade: 0
-  switchMenuTitle: Pause
+  switchMenuTitle: Title
   inventoryBoxTitle: 
   shiftInventory: 0
   shiftAmount: 1
@@ -3881,7 +3880,7 @@ MonoBehaviour:
   fontScaleFactor: 2
   fontColor: {r: 1, g: 1, b: 1, a: 1}
   fontHighlightColor: {r: 1, g: 1, b: 1, a: 1}
-  isVisible: 0
+  isVisible: 1
   isClickable: 1
   orientation: 0
   gridWidth: 3
@@ -3892,7 +3891,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 504738
+  linkedUiID: 156366
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
@@ -6336,76 +6335,6 @@ MonoBehaviour:
   inventoryPropertyType: 0
   selectedObjectiveLabelType: 0
   itemSlotNumber: 0
---- !u!114 &3464749145609579600
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64747f67d47cb4e04a88bea43b7c1cfd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ID: 3
-  title: LoadButton
-  slotSize: {x: 16, y: 5}
-  sizeType: 1
-  positionType: 0
-  slotSpacing: 0
-  lineID: -1
-  alternativeInputButton: 
-  font: {fileID: 12800000, guid: c6e3b07edbe7e4f62837dde56356b819, type: 3}
-  fontScaleFactor: 2
-  fontColor: {r: 1, g: 1, b: 1, a: 1}
-  fontHighlightColor: {r: 1, g: 1, b: 1, a: 1}
-  isVisible: 1
-  isClickable: 1
-  orientation: 0
-  gridWidth: 3
-  backgroundTexture: {fileID: 0}
-  singleSlotBackgrounds: 0
-  highlightTexture: {fileID: 2800000, guid: ac2dde689ce194d9a81a41f09e6b56b4, type: 3}
-  hoverSound: {fileID: 0}
-  clickSound: {fileID: 0}
-  changeCursor: 0
-  cursorID: 0
-  linkedUiID: 272626
-  maxAutoWidthFactor: 0.5
-  relativeRect:
-    serializedVersion: 2
-    x: 652.80005
-    y: 19.2
-    width: 614.4
-    height: 108
-  relativePosition: {x: 0, y: 0}
-  numSlots: 1
-  uiButton: {fileID: 0}
-  uiPointerState: 0
-  label: Load
-  hotspotLabel: 
-  hotspotLabelID: -1
-  anchor: 4
-  textEffects: 0
-  outlineSize: 2
-  buttonClickType: 1
-  actionList: {fileID: 0}
-  parameterID: -1
-  parameterValue: 0
-  doFade: 0
-  switchMenuTitle: Load
-  inventoryBoxTitle: 
-  shiftInventory: 0
-  shiftAmount: 1
-  onlyShowWhenEffective: 0
-  loopJournal: 0
-  inputAxis: 
-  simulateInput: 0
-  simulateValue: 1
-  clickTexture: {fileID: 0}
-  allowContinuousClick: 0
-  uiSelectableHideStyle: 0
 --- !u!114 &3480251968758733528
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6866,7 +6795,7 @@ MonoBehaviour:
   clickSound: {fileID: 0}
   changeCursor: 0
   cursorID: 0
-  linkedUiID: 272748
+  linkedUiID: 156508
   maxAutoWidthFactor: 0.5
   relativeRect:
     serializedVersion: 2
