@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
+using Button = UnityEngine.UI.Button;
+using Image = UnityEngine.UI.Image;
 
 public class ToggleInventory : MonoBehaviour
 {
@@ -10,6 +12,9 @@ public class ToggleInventory : MonoBehaviour
     public Image panelImage;
     public Sprite closedBagSprite;
     public Sprite openBagSprite;
+    public GameObject inventoryGrid;
+    public Button leftButton;
+    public Button rightButton;
 
     // Start is called before the first frame update
     void Start()
@@ -19,6 +24,9 @@ public class ToggleInventory : MonoBehaviour
 
         panelImage.enabled = false;
         isImageOn = false;
+        leftButton.image.enabled = false;
+        rightButton.image.enabled = false;
+        inventoryGrid.SetActive(false);
     }
 
     void ToggleInventoryPanel()
@@ -26,14 +34,20 @@ public class ToggleInventory : MonoBehaviour
         Debug.Log("The inventory button has been clicked");
         if (isImageOn == true) //turning off the inventory
         {
+            inventoryGrid.SetActive(false);
             panelImage.enabled = false;
             isImageOn = false;
+            leftButton.image.enabled = false;
+            rightButton.image.enabled = false;
             inventoryButton.image.sprite = closedBagSprite;
         }
         else // turning on the inventory
         {
+            inventoryGrid.SetActive(true);
             panelImage.enabled = true;
             isImageOn = true;
+            leftButton.image.enabled = true;
+            rightButton.image.enabled = true;
             inventoryButton.image.sprite = openBagSprite;
         }
     }
