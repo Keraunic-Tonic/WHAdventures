@@ -47,7 +47,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Did I miss anything?
-  lineID: -1
+  lineID: 275
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: '[expression:Shock] Oh wow... [wait:2] [expression:Annoy] Who knew
     that being teacher''s pet came with benefits? What privilege.'
-  lineID: -1
+  lineID: 277
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -168,7 +168,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: '[expression:Delight]Morning, V.V.!'
-  lineID: -1
+  lineID: 274
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -228,7 +228,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Okay! As always, thanks Blaze!
-  lineID: -1
+  lineID: 282
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -289,7 +289,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: No problem! Now hurry and get your permission slip in so we can get
     started soon!
-  lineID: -1
+  lineID: 283
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -349,7 +349,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: '[expression:Confuse] Do you remember how to get that out?'
-  lineID: -1
+  lineID: 280
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -410,7 +410,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: '[expression:Confuse]Nope, but Mr. Whittrapper is having Noah collect
     the permission slips while he takes a nap in the back of the room.'
-  lineID: -1
+  lineID: 276
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -470,7 +470,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Yeah, that sounds like him, haha.
-  lineID: -1
+  lineID: 285
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -530,7 +530,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: '[expression:None] Right.'
-  lineID: -1
+  lineID: 279
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -626,7 +626,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: '[expression:None]Hey, Blaze!'
-  lineID: -1
+  lineID: 273
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -686,7 +686,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: '[expression:None] *Insert technical instructions here*'
-  lineID: -1
+  lineID: 281
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -747,7 +747,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: I mean, J.J. is still late, so I guess we still have to wait for him,
     but even so!
-  lineID: -1
+  lineID: 284
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -807,7 +807,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: '[expression:None]Haha. Still, you should probably get that to him.'
-  lineID: -1
+  lineID: 278
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0

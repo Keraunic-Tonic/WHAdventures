@@ -47,7 +47,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Maybe I can pass the time by talking to the rest of my classmates.
-  lineID: -1
+  lineID: 289
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: If J.J. isn't here, and I turn in my permission slip, Noah will wake
     up Mr. Whittraper and he'll end up missing out on the field trip.
-  lineID: -1
+  lineID: 288
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0

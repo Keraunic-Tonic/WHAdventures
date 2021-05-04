@@ -1,0 +1,214 @@
+ID,Type,Original text,Scene
+66,MenuElement,Resume, 
+67,MenuElement,Options, 
+68,MenuElement,Save, 
+69,MenuElement,Load, 
+70,MenuElement,Quit, 
+71,MenuElement,Options, 
+72,MenuElement,Speech volume, 
+73,MenuElement,Music volume, 
+74,MenuElement,SFX volume, 
+75,MenuElement,Language, 
+76,MenuElement,Subtitles, 
+77,MenuElement,Back, 
+78,MenuElement,Save game, 
+88,MenuElement,New save, 
+79,MenuElement,Back, 
+80,MenuElement,Load game, 
+81,MenuElement,Back, 
+84,MenuElement,Menu, 
+89,MenuElement,Container, 
+90,MenuElement,Close, 
+91,MenuElement,Take all, 
+92,MenuElement,Inventory, 
+99,MenuElement,Create, 
+100,MenuElement,Close, 
+101,MenuElement,Ingredients, 
+102,MenuElement,Inventory, 
+103,MenuElement,Output, 
+104,MenuElement,Objectives, 
+105,MenuElement,Back, 
+106,MenuElement,New Game, 
+107,MenuElement,Options, 
+108,MenuElement,Quit, 
+109,Speech,"Your hair is looking really cool, Blaze. Did you do something different with it?",StartingScene
+110,Speech,Yeah! I did! Thanks for noticing!,StartingScene
+111,Speech,"This style of hair is kind of a rite of passage for my family, so it's now my time to carry that torch.",StartingScene
+112,Speech,"One day I'll have locs so long, they'll reach the floor!",StartingScene
+113,Speech,Ooo! I can't wait!,StartingScene
+114,Speech,So...learn any new spells recently?,StartingScene
+115,Speech,Why do you want to know?,StartingScene
+116,Speech,I'm just curious.,StartingScene
+117,Speech,"I know your game, V.V.. You're trying to get ahead of me in Conjuration class, but it's not gonna work!",StartingScene
+118,Speech,I'm not taking Conjuration this semester. I'm in Evocation for my magic focus requirement.,StartingScene
+119,Speech,Hmph. I'm not buying it.,StartingScene
+120,Speech,Ugh...,StartingScene
+121,Speech,I should get back to stalling until J.J. gets here.,StartingScene
+122,Speech,Here's hoping he gets here soon.,StartingScene
+123,Speech,( Guh...I should probably leave. This conversation is going nowhere.),StartingScene
+124,Speech,"Hey, V.V....",StartingScene
+125,Speech,"Yes, Dahlia?",StartingScene
+126,Speech,I notice you've been paying extra attention to Ray recently. Do you have a crush on him?,StartingScene
+127,Speech,You know you can tell me.,StartingScene
+128,Speech,...,StartingScene
+129,Speech,"Listen, I get it. It must be tough knowing that you don't have a chance with him, but down't give up.",StartingScene
+130,Speech,Just be true to you.,StartingScene
+131,Speech,Mm.,StartingScene
+132,Speech,So...you excited for your birthday next week?,StartingScene
+133,Speech,"Yes and no. I mean, it's exciting because this is the first time my parents are allowing me to have a party...",StartingScene
+134,Speech,But I'm not sure if my face will be clear in time.,StartingScene
+135,Speech,"Well, it's just going to be you, your parents, Blaze, J.J. and me at the party, right?",StartingScene
+136,Speech,The family and friends who care about you most! None of us would ever think about making fun of you.,StartingScene
+137,Speech,J.J. would.,StartingScene
+138,Speech,J.J. *might*,StartingScene
+139,Speech,"Regardless, the gift I have planned for you will make you forget all about it. I'm really excited to show you!",StartingScene
+140,Speech,I can't wait to see it.,StartingScene
+141,Speech,So...,StartingScene
+142,Speech,So?,StartingScene
+143,Speech,Uh...are you excited about the field trip today?,StartingScene
+144,Speech,"Yeah, I'm pretty pumped for it.",StartingScene
+145,Speech,"That is, if Mr. Whittrapper ever stops with his nap.",StartingScene
+146,Speech,I should go wake him up huh?,StartingScene
+147,Speech,"But J.J.'s not here yet, so maybe we can wait a few more minutes.",StartingScene
+148,Speech,I wish he could at least make the effort of getting to class on time.,StartingScene
+149,Speech,We shouldn't have to be delayed just because of him.,StartingScene
+150,Speech,"Well...the school is pretty far from his house, so he has to come a long way to get here.",StartingScene
+151,Speech,But aren't you guys next door neightbors?,StartingScene
+152,Speech,Yeah...,StartingScene
+153,Speech,And somehow you manage to get to class early or on time every day.,StartingScene
+154,Speech,...Uh...,StartingScene
+155,Speech,Sigh...,StartingScene
+156,Speech,"I won't wake up Mr. Whittrapper just yet. Only cause it's for you, V.V..",StartingScene
+157,Speech,"Thanks, Ray.",StartingScene
+158,Speech,"So, uh, I'm gonna head out now.",StartingScene
+159,Speech,"All right. Till next time. And one last thing, V.V.",StartingScene
+160,Speech,Y-yeah?,StartingScene
+161,Speech,Take it easy.,StartingScene
+162,Speech,Okay.,StartingScene
+163,Speech,So Egan...uh...I don't know the best way to say this...,StartingScene
+164,Speech,You want to know what's going on with my face?,StartingScene
+165,Speech,Yeah...,StartingScene
+166,Speech,Did you know that trees could get acne? Because I didn't!,StartingScene
+167,Speech,Apparently most dryads in my genus get these bumps on their face during this season.,StartingScene
+168,Speech,Oh...,StartingScene
+169,Speech,I was in my tree form because I didn't want to give Dahlia more opportunities to mock me.,StartingScene
+170,Speech,"What? Ugh, that's so unnecessary.",StartingScene
+171,Speech,You're telling me.,StartingScene
+172,Speech,Maybe after school today we can stop by the library and we can look up some home remedies.,StartingScene
+173,Speech,"One of the perks of having a librarian mom, she taught me to find the books I need with ease.",StartingScene
+174,Speech,"I...I would really appreciate that, V.V., thanks.",StartingScene
+175,Speech,"Anytime, Egan!",StartingScene
+176,Speech,"I haven't had a chance to see you over the weekend, what were you up to?",StartingScene
+177,Speech,"Oh you know, just helping my older sister get ready for her coronation. The regular duke stuff.",StartingScene
+178,Speech,So...you could say that you were...duking it out?,StartingScene
+179,Speech,Pfft....,StartingScene
+180,Speech,Hahahahaha!,StartingScene
+181,Speech,"Oh gosh, why do I always laugh at those bad jokes?",StartingScene
+182,Speech,Because they're genius that's why.,StartingScene
+183,Speech,So...how was your weekend?,StartingScene
+184,Speech,It was pretty good actually. Spent a lot of time out in the sun.,StartingScene
+185,Speech,Not that you would know what that's like...,StartingScene
+186,Speech,"Because, you know, you're a vampire.",StartingScene
+187,Speech,Sigh...,StartingScene
+188,Speech,"( I *could* waste my breath in explaining that sun sensitivity isn't a real thing for vampires, but there's no point.)",StartingScene
+189,Speech,"Well, Egan, I have to get back to stalling for J.J. so he doesn't miss out on the field trip.",StartingScene
+190,Speech,All right.,StartingScene
+191,Speech,...,StartingScene
+192,Speech,You're not going back into your tree form?,StartingScene
+193,Speech,Nah...may as well uproot myself.,StartingScene
+194,Speech,"Thanks for checking up on me, V.V.",StartingScene
+195,Speech,I appreciate it.,StartingScene
+196,Speech,Any time!,StartingScene
+197,Speech,Peace.,StartingScene
+198,Speech,Well this has certainly been unpleasant.,StartingScene
+199,Speech,As always.,StartingScene
+200,Speech,Talk to you only when it's absolutely necessary!,StartingScene
+201,Speech,"So, what else is going on with you?",StartingScene
+202,Speech,Not much. Just trying to keep up with you in all our classes.,StartingScene
+203,Speech,"From your battle skills to magic abilities, I can tell you're going to be a top mercenary one day.",StartingScene
+204,Speech,You're talking about my ability?,StartingScene
+205,Speech,You're the one that's already mastered a weapon class. ,StartingScene
+206,Speech,Most of us won't be able to do that until we get to the upper school.,StartingScene
+207,Speech,"Oh, you flatter me. It's just all in the wrist.",StartingScene
+208,Speech,"Eeeheehee, yeah.",StartingScene
+209,Speech,...,StartingScene
+210,Speech,...,StartingScene
+211,Speech,Is there something on my face?,StartingScene
+212,Speech,"Uh, nope! Sorrry, I kind of spaced out there.",StartingScene
+213,Speech,"Nah, all good.",StartingScene
+214,Hotspot,EganSprite,StartingScene
+215,Hotspot,DahliaSprite,StartingScene
+216,Hotspot,RaySprite,StartingScene
+217,Character,Ray,StartingScene
+218,Character,Blaze,StartingScene
+219,Character,Dahlia,StartingScene
+220,Hotspot,Blaze,StartingScene
+221,Character,Egan,StartingScene
+222,DialogueOption,Are you excited for the field trip?,StartingScene
+223,DialogueOption,What else is going on?,StartingScene
+224,DialogueOption,Talk to you later!,StartingScene
+225,DialogueOption,What's going on with your face?,StartingScene
+226,DialogueOption,Excited for your birthday?,StartingScene
+227,DialogueOption,Talk to you later!,StartingScene
+228,DialogueOption,How was your weekend?,StartingScene
+229,DialogueOption,Have you done something different with your hair?,StartingScene
+230,DialogueOption,Talk to you later!,StartingScene
+231,DialogueOption,What's up?,StartingScene
+232,DialogueOption,Learn any new spells recently?,StartingScene
+233,DialogueOption,(I should probably leave),StartingScene
+234,DialogueOption,Talk to you later!,StartingScene
+235,MenuElement,Save, 
+236,MenuElement,Import, 
+237,MenuElement,Autosave, 
+238,Character,V.V., 
+239,InventoryItem,PermissionSlip, 
+240,HotspotPrefix,Use, 
+241,HotspotPrefix,on, 
+242,HotspotPrefix,Give, 
+243,HotspotPrefix,to, 
+244,HotspotPrefix,Walk to, 
+245,CursorIcon,Use, 
+246,CursorIcon,Talk to, 
+247,CursorIcon,Look at, 
+248,MenuElement,Profiles, 
+249,MenuElement,On, 
+250,MenuElement,Off, 
+251,MenuElement,Profiles, 
+252,MenuElement,Current:, 
+253,MenuElement,Create new profile, 
+254,MenuElement,Back, 
+255,MenuElement,Close, 
+256,MenuElement,Profiles, 
+257,Speech,"Hey, V.V., uh...any reason you're talking with me instead of [wait: 2], you know, turning in your permisssion slip?", 
+258,Speech,"Well you said it yourself, J.J.'s running late. If I give it away before he gets here...", 
+259,Speech,We will start the field trip without him. I got ya., 
+260,Speech,"Still, he's always late. Maybe this could be a teaching moment for him.", 
+261,Speech,"His house is really far from the Academy, Blaze. Cut him some slack.", 
+262,Speech,V.V....aren't you two next door neighbors?, 
+263,Speech,Uh..., 
+264,Speech,"But hey! No worries. I don't mind waiting a little while longer. In the meantime, anything else you want to talk about?", 
+265,Speech,Hey., 
+266,Speech,..., 
+267,Speech,"It's just me, Egan. Unless, you're not up for talking. Then I can leave you alone.", 
+268,Speech,I...well...hmm...Just don't laugh okay?, 
+269,Speech,I promise., 
+270,Speech,*rustle rustle*, 
+271,Speech,Sigh...there. What's up?, 
+272,Speech,Oh., 
+273,Speech,"[expression:None]Hey, Blaze!", 
+274,Speech,"[expression:Delight]Morning, V.V.!", 
+275,Speech,Did I miss anything?, 
+276,Speech,"[expression:Confuse]Nope, but Mr. Whittrapper is having Noah collect the permission slips while he takes a nap in the back of the room.", 
+277,Speech,[expression:Shock] Oh wow... [wait:2] [expression:Annoy] Who knew that being teacher's pet came with benefits? What privilege., 
+278,Speech,"[expression:None]Haha. Still, you should probably get that to him.", 
+279,Speech,[expression:None] Right., 
+280,Speech,[expression:Confuse] Do you remember how to get that out?, 
+281,Speech,[expression:None] *Insert technical instructions here*, 
+282,Speech,"Okay! As always, thanks Blaze!", 
+283,Speech,No problem! Now hurry and get your permission slip in so we can get started soon!, 
+284,Speech,"I mean, J.J. is still late, so I guess we still have to wait for him, but even so!", 
+285,Speech,"Yeah, that sounds like him, haha.", 
+286,Speech,"[expression:Shock] Oh, good. I made it to class on time.", 
+287,Speech,"[expression:None] Today's the big school trip, so I hope I'm not keeping everyone waiting.", 
+288,Speech,"If J.J. isn't here, and I turn in my permission slip, Noah will wake up Mr. Whittraper and he'll end up missing out on the field trip.", 
+289,Speech,Maybe I can pass the time by talking to the rest of my classmates., 

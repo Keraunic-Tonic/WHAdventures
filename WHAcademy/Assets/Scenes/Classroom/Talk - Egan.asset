@@ -48,7 +48,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: It's just me, Egan. Unless, you're not up for talking. Then I can
     leave you alone.
-  lineID: -1
+  lineID: 267
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Sigh...there. What's up?
-  lineID: -1
+  lineID: 271
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -168,7 +168,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Hey.
-  lineID: -1
+  lineID: 265
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -228,7 +228,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Oh.
-  lineID: -1
+  lineID: 272
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -288,7 +288,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: '*rustle rustle*'
-  lineID: -1
+  lineID: 270
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -380,7 +380,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: I...well...hmm...Just don't laugh okay?
-  lineID: -1
+  lineID: 268
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -440,7 +440,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: ...
-  lineID: -1
+  lineID: 266
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -545,7 +545,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: I promise.
-  lineID: -1
+  lineID: 269
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0

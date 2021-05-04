@@ -48,7 +48,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: 'Hey, V.V., uh...any reason you''re talking with me instead of [wait:
     2], you know, turning in your permisssion slip?'
-  lineID: -1
+  lineID: 257
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -153,7 +153,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: His house is really far from the Academy, Blaze. Cut him some slack.
-  lineID: -1
+  lineID: 261
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -213,7 +213,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: V.V....aren't you two next door neighbors?
-  lineID: -1
+  lineID: 262
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -306,7 +306,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: Still, he's always late. Maybe this could be a teaching moment for
     him.
-  lineID: -1
+  lineID: 260
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -367,7 +367,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: But hey! No worries. I don't mind waiting a little while longer. In
     the meantime, anything else you want to talk about?
-  lineID: -1
+  lineID: 264
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -428,7 +428,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: Well you said it yourself, J.J.'s running late. If I give it away
     before he gets here...
-  lineID: -1
+  lineID: 258
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -488,7 +488,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Uh...
-  lineID: -1
+  lineID: 263
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -548,7 +548,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: We will start the field trip without him. I got ya.
-  lineID: -1
+  lineID: 259
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0

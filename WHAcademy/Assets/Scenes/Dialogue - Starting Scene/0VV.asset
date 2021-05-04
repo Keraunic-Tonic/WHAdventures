@@ -48,7 +48,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: '[expression:None] Today''s the big school trip, so I hope I''m not
     keeping everyone waiting.'
-  lineID: -1
+  lineID: 287
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -133,7 +133,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: '[expression:Shock] Oh, good. I made it to class on time.'
-  lineID: -1
+  lineID: 286
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
