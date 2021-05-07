@@ -320,7 +320,7 @@ MonoBehaviour:
   talkingAnimation: 0
   separateTalkingLayer: 0
   speechLabel: V.V.
-  lineID: -1
+  lineID: 238
   displayLineID: -1
   speechColor: {r: 0.5411765, g: 0.32156864, b: 0.5529412, a: 1}
   portraitIcon:

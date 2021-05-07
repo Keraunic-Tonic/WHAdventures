@@ -170,7 +170,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: Just be true to you.
-  lineID: -1
+  lineID: 130
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -231,7 +231,7 @@ MonoBehaviour:
   speaker: {fileID: 1768837930}
   messageText: I was in my tree form because I didn't want to give Dahlia more opportunities
     to mock me.
-  lineID: -1
+  lineID: 169
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -370,7 +370,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: I can't wait to see it.
-  lineID: -1
+  lineID: 140
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -419,7 +419,7 @@ MonoBehaviour:
     x: 14
     y: 1396
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 5124679059561481277}
@@ -430,7 +430,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Because they're genius that's why.
-  lineID: -1
+  lineID: 182
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -490,7 +490,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Well this has certainly been unpleasant.
-  lineID: -1
+  lineID: 198
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -550,7 +550,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: I'm just curious.
-  lineID: -1
+  lineID: 116
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -599,7 +599,7 @@ MonoBehaviour:
     x: 14
     y: 877
     width: 300
-    height: 172
+    height: 192
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 3680394355180926594}
@@ -610,7 +610,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Okay.
-  lineID: -1
+  lineID: 162
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -670,7 +670,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Any time!
-  lineID: -1
+  lineID: 196
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -897,7 +897,7 @@ MonoBehaviour:
     x: 14
     y: 3137
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -908,7 +908,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: Sigh...
-  lineID: -1
+  lineID: 155
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -968,7 +968,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: Peace.
-  lineID: -1
+  lineID: 197
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1017,7 +1017,7 @@ MonoBehaviour:
     x: 13
     y: 239
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 1782555173652900918}
@@ -1028,7 +1028,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 642677348}
   messageText: Here's hoping he gets here soon.
-  lineID: -1
+  lineID: 122
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1088,7 +1088,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: Not much. Just trying to keep up with you in all our classes.
-  lineID: -1
+  lineID: 202
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1178,7 +1178,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: What? Ugh, that's so unnecessary.
-  lineID: -1
+  lineID: 170
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1317,7 +1317,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: Why do you want to know?
-  lineID: -1
+  lineID: 115
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1377,7 +1377,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: ...
-  lineID: -1
+  lineID: 209
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1397,6 +1397,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2048607715}
     m_Modifications:
+    - target: {fileID: 3251070716744926218, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: lineID
+      value: 217
+      objectReference: {fileID: 0}
     - target: {fileID: 3590061634294322262, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
       propertyPath: m_RootOrder
       value: 3
@@ -1444,6 +1448,38 @@ PrefabInstance:
     - target: {fileID: 8596805010506682088, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
       propertyPath: m_Name
       value: Ray
+      objectReference: {fileID: 0}
+    - target: {fileID: 8736875627369830699, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: lineID
+      value: 216
+      objectReference: {fileID: 0}
+    - target: {fileID: 8736875627369830699, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: provideUseInteraction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8736875627369830699, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: useButtons.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8736875627369830699, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: useButtons.Array.data[0].iconID
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8736875627369830699, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: useButtons.Array.data[0].proximity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8736875627369830699, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: useButtons.Array.data[0].interaction
+      value: 
+      objectReference: {fileID: 1941657101405047387}
+    - target: {fileID: 8736875627369830699, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: useButtons.Array.data[0].parameterID
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8736875627369830699, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
+      propertyPath: useButtons.Array.data[0].invParameterID
+      value: -1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 52ef8ec8f0a2aaa4883071bfdd02ff00, type: 3}
@@ -1530,7 +1566,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: Because, you know, you're a vampire.
-  lineID: -1
+  lineID: 186
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1579,7 +1615,7 @@ MonoBehaviour:
     x: 14
     y: 1790
     width: 300
-    height: 207
+    height: 227
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -1590,7 +1626,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: We shouldn't have to be delayed just because of him.
-  lineID: -1
+  lineID: 149
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1650,7 +1686,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: ...
-  lineID: -1
+  lineID: 128
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1755,7 +1791,7 @@ MonoBehaviour:
   speaker: {fileID: 842193565}
   messageText: I know your game, V.V.. You're trying to get ahead of me in Conjuration
     class, but it's not gonna work!
-  lineID: -1
+  lineID: 117
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1815,7 +1851,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: Did you know that trees could get acne? Because I didn't!
-  lineID: -1
+  lineID: 166
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -1894,7 +1930,7 @@ MonoBehaviour:
     x: 14
     y: 877
     width: 300
-    height: 207
+    height: 227
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -1905,7 +1941,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: That is, if Mr. Whittrapper ever stops with his nap.
-  lineID: -1
+  lineID: 145
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2084,8 +2120,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 2039012382}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2136,7 +2171,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: But I'm not sure if my face will be clear in time.
-  lineID: -1
+  lineID: 134
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2178,6 +2213,8 @@ Transform:
   m_Children:
   - {fileID: 1353812191677384321}
   - {fileID: 4386148199284594746}
+  - {fileID: 1794136750502595863}
+  - {fileID: 1941657101398385563}
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2217,7 +2254,7 @@ MonoBehaviour:
     x: 14
     y: 715
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 5124679059561481277}
@@ -2228,7 +2265,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 642677348}
   messageText: Pfft....
-  lineID: -1
+  lineID: 179
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2288,7 +2325,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: Nah, all good.
-  lineID: -1
+  lineID: 213
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2337,7 +2374,7 @@ MonoBehaviour:
     x: 14
     y: 2027
     width: 300
-    height: 202
+    height: 222
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -2349,7 +2386,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: Well...the school is pretty far from his house, so he has to come
     a long way to get here.
-  lineID: -1
+  lineID: 150
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2410,7 +2447,7 @@ MonoBehaviour:
   speaker: {fileID: 237602946}
   messageText: From your battle skills to magic abilities, I can tell you're going
     to be a top mercenary one day.
-  lineID: -1
+  lineID: 203
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2423,6 +2460,63 @@ MonoBehaviour:
   mouthClip2D: 
   mouthLayer: 0
   waitTimeOffset: 0
+--- !u!114 &454879201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea4c3ba658ee84d51a7ccd6f9fc22176, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  id: 0
+  isDisplayed: 1
+  showComment: 0
+  comment: 
+  willWait: 0
+  endAction: 0
+  skipAction: -1
+  skipActionActual: {fileID: 0}
+  linkedCutscene: {fileID: 0}
+  linkedAsset: {fileID: 0}
+  endings:
+  - resultAction: 1
+    skipAction: -1
+    skipActionActual: {fileID: 0}
+    linkedCutscene: {fileID: 0}
+    linkedAsset: {fileID: 0}
+  isEnabled: 1
+  isAssetFile: 0
+  isBreakPoint: 0
+  nodeRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 300
+    height: 60
+  overrideColor: {r: 1, g: 1, b: 1, a: 1}
+  showOutputSockets: 1
+  parentActionListInEditor: {fileID: 1794136750508319959}
+  listSource: 1
+  actionList: {fileID: 0}
+  constantID: 0
+  parameterID: -1
+  invActionList: {fileID: 11400000, guid: 49e0bf4e93115cd40a4cee37d4cb2702, type: 2}
+  assetParameterID: -1
+  runFromStart: 1
+  jumpToAction: 0
+  jumpToActionParameterID: -1
+  jumpToActionActual: {fileID: 0}
+  runInParallel: 1
+  isSkippable: 0
+  localParameters: []
+  parameterIDs: 
+  setParameters: 0
+  runMode: 0
+  hasUpgradedAgain: 0
 --- !u!114 &457803020
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2471,7 +2565,7 @@ MonoBehaviour:
   speaker: {fileID: 842193565}
   messageText: Listen, I get it. It must be tough knowing that you don't have a chance
     with him, but down't give up.
-  lineID: -1
+  lineID: 129
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2531,7 +2625,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: Hey, V.V....
-  lineID: -1
+  lineID: 124
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2592,7 +2686,7 @@ MonoBehaviour:
   speaker: {fileID: 1768837930}
   messageText: Yes and no. I mean, it's exciting because this is the first time my
     parents are allowing me to have a party...
-  lineID: -1
+  lineID: 133
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2652,7 +2746,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Oh...
-  lineID: -1
+  lineID: 168
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2713,7 +2807,7 @@ MonoBehaviour:
   speaker: {fileID: 642677348}
   messageText: This style of hair is kind of a rite of passage for my family, so
     it's now my time to carry that torch.
-  lineID: -1
+  lineID: 111
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -2943,7 +3037,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: You're telling me.
-  lineID: -1
+  lineID: 171
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3003,7 +3097,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Uh, nope! Sorrry, I kind of spaced out there.
-  lineID: -1
+  lineID: 212
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3064,7 +3158,7 @@ MonoBehaviour:
   speaker: {fileID: 1768837930}
   messageText: Apparently most dryads in my genus get these bumps on their face during
     this season.
-  lineID: -1
+  lineID: 167
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3124,7 +3218,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: So...you excited for your birthday next week?
-  lineID: -1
+  lineID: 132
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3387,6 +3481,10 @@ PrefabInstance:
       propertyPath: m_Offset.y
       value: 5.4203057
       objectReference: {fileID: 0}
+    - target: {fileID: 4048441825409756973, guid: aae40fffc52981948906ccc8d146ee68, type: 3}
+      propertyPath: lineID
+      value: 218
+      objectReference: {fileID: 0}
     - target: {fileID: 5581498510122436638, guid: aae40fffc52981948906ccc8d146ee68, type: 3}
       propertyPath: m_Name
       value: Blaze
@@ -3457,7 +3555,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Most of us won't be able to do that until we get to the upper school.
-  lineID: -1
+  lineID: 206
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3517,7 +3615,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: ...
-  lineID: -1
+  lineID: 191
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3566,7 +3664,7 @@ MonoBehaviour:
     x: 14
     y: 453
     width: 300
-    height: 172
+    height: 192
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 3680394355180926594}
@@ -3577,7 +3675,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Y-yeah?
-  lineID: -1
+  lineID: 160
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3668,7 +3766,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: ...
-  lineID: -1
+  lineID: 210
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3773,7 +3871,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: I'm not taking Conjuration this semester. I'm in Evocation for my
     magic focus requirement.
-  lineID: -1
+  lineID: 118
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -3822,7 +3920,7 @@ MonoBehaviour:
     x: 14
     y: 246
     width: 300
-    height: 222
+    height: 242
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 5124679059561481277}
@@ -3834,7 +3932,7 @@ MonoBehaviour:
   speaker: {fileID: 642677348}
   messageText: Oh you know, just helping my older sister get ready for her coronation.
     The regular duke stuff.
-  lineID: -1
+  lineID: 177
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4034,7 +4132,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Yeah...
-  lineID: -1
+  lineID: 165
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4083,7 +4181,7 @@ MonoBehaviour:
     x: 14
     y: 1336
     width: 300
-    height: 187
+    height: 207
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -4094,7 +4192,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: But J.J.'s not here yet, so maybe we can wait a few more minutes.
-  lineID: -1
+  lineID: 147
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4117,6 +4215,42 @@ PrefabInstance:
     - target: {fileID: 1081367374259797631, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
       propertyPath: m_FlipX
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2358901777989588087, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: lineID
+      value: 219
+      objectReference: {fileID: 0}
+    - target: {fileID: 6913322986714333878, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: lineID
+      value: 215
+      objectReference: {fileID: 0}
+    - target: {fileID: 6913322986714333878, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: provideUseInteraction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6913322986714333878, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: useButtons.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6913322986714333878, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: useButtons.Array.data[0].iconID
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6913322986714333878, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: useButtons.Array.data[0].proximity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6913322986714333878, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: useButtons.Array.data[0].interaction
+      value: 
+      objectReference: {fileID: 1794136750508319959}
+    - target: {fileID: 6913322986714333878, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: useButtons.Array.data[0].parameterID
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6913322986714333878, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
+      propertyPath: useButtons.Array.data[0].invParameterID
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 8167531972549232193, guid: 4c42514941f00aa46a7dfecc26e44130, type: 3}
       propertyPath: m_RootOrder
@@ -4251,7 +4385,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: ( Guh...I should probably leave. This conversation is going nowhere.)
-  lineID: -1
+  lineID: 123
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4378,7 +4512,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Ugh...
-  lineID: -1
+  lineID: 120
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4439,7 +4573,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: Regardless, the gift I have planned for you will make you forget all
     about it. I'm really excited to show you!
-  lineID: -1
+  lineID: 139
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4657,7 +4791,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: J.J. would.
-  lineID: -1
+  lineID: 137
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4750,7 +4884,7 @@ MonoBehaviour:
     x: 14
     y: 14
     width: 300
-    height: 202
+    height: 222
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 5124679059561481277}
@@ -4762,7 +4896,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: I haven't had a chance to see you over the weekend, what were you
     up to?
-  lineID: -1
+  lineID: 176
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4822,7 +4956,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Yes, Dahlia?
-  lineID: -1
+  lineID: 125
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -4967,7 +5101,7 @@ MonoBehaviour:
     x: 14
     y: 3596
     width: 300
-    height: 172
+    height: 192
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -4978,7 +5112,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Thanks, Ray.
-  lineID: -1
+  lineID: 157
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5038,7 +5172,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 642677348}
   messageText: Ooo! I can't wait!
-  lineID: -1
+  lineID: 113
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5117,7 +5251,7 @@ MonoBehaviour:
     x: 14
     y: 655
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -5128,7 +5262,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: Yeah, I'm pretty pumped for it.
-  lineID: -1
+  lineID: 144
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5188,7 +5322,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: Thanks for checking up on me, V.V.
-  lineID: -1
+  lineID: 194
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5346,7 +5480,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: One of the perks of having a librarian mom, she taught me to find
     the books I need with ease.
-  lineID: -1
+  lineID: 173
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5462,7 +5596,7 @@ MonoBehaviour:
     x: 14
     y: 937
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 5124679059561481277}
@@ -5473,7 +5607,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 642677348}
   messageText: Hahahahaha!
-  lineID: -1
+  lineID: 180
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5522,7 +5656,7 @@ MonoBehaviour:
     x: 14
     y: 655
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 3680394355180926594}
@@ -5533,7 +5667,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: Take it easy.
-  lineID: -1
+  lineID: 161
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5593,7 +5727,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: I appreciate it.
-  lineID: -1
+  lineID: 195
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5653,7 +5787,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Talk to you only when it's absolutely necessary!
-  lineID: -1
+  lineID: 200
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5713,7 +5847,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: You're not going back into your tree form?
-  lineID: -1
+  lineID: 192
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5773,7 +5907,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: Hmph. I'm not buying it.
-  lineID: -1
+  lineID: 119
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5896,7 +6030,7 @@ MonoBehaviour:
     x: 14
     y: 216
     width: 300
-    height: 207
+    height: 227
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 3680394355180926594}
@@ -5907,7 +6041,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: All right. Till next time. And one last thing, V.V.
-  lineID: -1
+  lineID: 159
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -5986,7 +6120,7 @@ MonoBehaviour:
     x: 14
     y: 498
     width: 300
-    height: 187
+    height: 207
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 5124679059561481277}
@@ -5997,7 +6131,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: So...you could say that you were...duking it out?
-  lineID: -1
+  lineID: 178
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -6166,7 +6300,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Eeeheehee, yeah.
-  lineID: -1
+  lineID: 208
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -6267,7 +6401,7 @@ MonoBehaviour:
   limitToCamera: {fileID: 0}
   interactiveBoundary: {fileID: 0}
   hotspotName: Blaze
-  lineID: -1
+  lineID: 220
   highlight: {fileID: 0}
   walkToMarker: {fileID: 0}
   centrePoint: {fileID: 0}
@@ -6618,7 +6752,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 642677348}
   messageText: One day I'll have locs so long, they'll reach the floor!
-  lineID: -1
+  lineID: 112
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -6667,7 +6801,7 @@ MonoBehaviour:
     x: 14
     y: 438
     width: 300
-    height: 187
+    height: 207
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -6678,7 +6812,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Uh...are you excited about the field trip today?
-  lineID: -1
+  lineID: 143
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -6876,7 +7010,7 @@ MonoBehaviour:
     x: 14
     y: 14
     width: 300
-    height: 172
+    height: 192
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 3680394355180926594}
@@ -6887,7 +7021,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: So, uh, I'm gonna head out now.
-  lineID: -1
+  lineID: 158
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -6947,7 +7081,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: So...learn any new spells recently?
-  lineID: -1
+  lineID: 114
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7065,7 +7199,7 @@ MonoBehaviour:
   speaker: {fileID: 842193565}
   messageText: I notice you've been paying extra attention to Ray recently. Do you
     have a crush on him?
-  lineID: -1
+  lineID: 126
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7125,7 +7259,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: Is there something on my face?
-  lineID: -1
+  lineID: 211
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7185,7 +7319,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Anytime, Egan!
-  lineID: -1
+  lineID: 175
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7594,7 +7728,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: So...how was your weekend?
-  lineID: -1
+  lineID: 183
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7643,7 +7777,7 @@ MonoBehaviour:
     x: 14
     y: 2259
     width: 300
-    height: 207
+    height: 227
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -7654,7 +7788,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: But aren't you guys next door neightbors?
-  lineID: -1
+  lineID: 151
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7789,7 +7923,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: The family and friends who care about you most! None of us would ever
     think about making fun of you.
-  lineID: -1
+  lineID: 136
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7849,7 +7983,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 642677348}
   messageText: Yeah! I did! Thanks for noticing!
-  lineID: -1
+  lineID: 110
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7909,7 +8043,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: I...I would really appreciate that, V.V., thanks.
-  lineID: -1
+  lineID: 174
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -7958,7 +8092,7 @@ MonoBehaviour:
     x: 14
     y: 14
     width: 300
-    height: 172
+    height: 192
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -7969,7 +8103,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: So...
-  lineID: -1
+  lineID: 141
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8018,7 +8152,7 @@ MonoBehaviour:
     x: 14
     y: 2496
     width: 300
-    height: 172
+    height: 192
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -8029,7 +8163,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Yeah...
-  lineID: -1
+  lineID: 152
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8152,7 +8286,7 @@ MonoBehaviour:
     x: 14
     y: 1553
     width: 300
-    height: 207
+    height: 227
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -8163,7 +8297,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: I wish he could at least make the effort of getting to class on time.
-  lineID: -1
+  lineID: 148
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8212,7 +8346,7 @@ MonoBehaviour:
     x: 14
     y: 14
     width: 300
-    height: 187
+    height: 207
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 1782555173652900918}
@@ -8223,7 +8357,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: I should get back to stalling until J.J. gets here.
-  lineID: -1
+  lineID: 121
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8283,7 +8417,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: Not that you would know what that's like...
-  lineID: -1
+  lineID: 185
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8343,7 +8477,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: 'You''re the one that''s already mastered a weapon class. '
-  lineID: -1
+  lineID: 205
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8470,7 +8604,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: You're talking about my ability?
-  lineID: -1
+  lineID: 204
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8530,7 +8664,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: It was pretty good actually. Spent a lot of time out in the sun.
-  lineID: -1
+  lineID: 184
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8579,7 +8713,7 @@ MonoBehaviour:
     x: 14
     y: 216
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -8590,7 +8724,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: So?
-  lineID: -1
+  lineID: 142
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -8610,6 +8744,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2048607715}
     m_Modifications:
+    - target: {fileID: 3723668284259484449, guid: b7013844db695ee49a5a1835100fd030, type: 3}
+      propertyPath: lineID
+      value: 214
+      objectReference: {fileID: 0}
     - target: {fileID: 3723668284259484449, guid: b7013844db695ee49a5a1835100fd030, type: 3}
       propertyPath: provideUseInteraction
       value: 1
@@ -8637,6 +8775,10 @@ PrefabInstance:
     - target: {fileID: 3723668284259484449, guid: b7013844db695ee49a5a1835100fd030, type: 3}
       propertyPath: useButtons.Array.data[0].invParameterID
       value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273239626230412116, guid: b7013844db695ee49a5a1835100fd030, type: 3}
+      propertyPath: lineID
+      value: 221
       objectReference: {fileID: 0}
     - target: {fileID: 6114849944843417999, guid: b7013844db695ee49a5a1835100fd030, type: 3}
       propertyPath: m_Name
@@ -8764,7 +8906,7 @@ MonoBehaviour:
     x: 14
     y: 1159
     width: 300
-    height: 207
+    height: 227
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 5124679059561481277}
@@ -8775,7 +8917,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 642677348}
   messageText: Oh gosh, why do I always laugh at those bad jokes?
-  lineID: -1
+  lineID: 181
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9024,7 +9166,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: Nah...may as well uproot myself.
-  lineID: -1
+  lineID: 193
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9073,7 +9215,7 @@ MonoBehaviour:
     x: 14
     y: 2935
     width: 300
-    height: 172
+    height: 192
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -9084,7 +9226,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: ...Uh...
-  lineID: -1
+  lineID: 154
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9145,7 +9287,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: Maybe after school today we can stop by the library and we can look
     up some home remedies.
-  lineID: -1
+  lineID: 172
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9281,7 +9423,7 @@ MonoBehaviour:
     x: 14
     y: 1114
     width: 300
-    height: 192
+    height: 212
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -9292,7 +9434,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: I should go wake him up huh?
-  lineID: -1
+  lineID: 146
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9352,7 +9494,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Sigh...
-  lineID: -1
+  lineID: 187
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9401,7 +9543,7 @@ MonoBehaviour:
     x: 14
     y: 3359
     width: 300
-    height: 207
+    height: 227
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -9413,7 +9555,7 @@ MonoBehaviour:
   speaker: {fileID: 237602946}
   messageText: I won't wake up Mr. Whittrapper just yet. Only cause it's for you,
     V.V..
-  lineID: -1
+  lineID: 156
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9474,7 +9616,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: Well, it's just going to be you, your parents, Blaze, J.J. and me
     at the party, right?
-  lineID: -1
+  lineID: 135
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9535,7 +9677,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: Your hair is looking really cool, Blaze. Did you do something different
     with it?
-  lineID: -1
+  lineID: 109
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9596,7 +9738,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: ( I *could* waste my breath in explaining that sun sensitivity isn't
     a real thing for vampires, but there's no point.)
-  lineID: -1
+  lineID: 188
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9656,7 +9798,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: All right.
-  lineID: -1
+  lineID: 190
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9716,7 +9858,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: So Egan...uh...I don't know the best way to say this...
-  lineID: -1
+  lineID: 163
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -9776,7 +9918,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: J.J. *might*
-  lineID: -1
+  lineID: 138
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -10025,7 +10167,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: Mm.
-  lineID: -1
+  lineID: 131
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -10153,7 +10295,7 @@ MonoBehaviour:
     x: 14
     y: 2698
     width: 300
-    height: 207
+    height: 227
   overrideColor: {r: 1, g: 1, b: 1, a: 1}
   showOutputSockets: 1
   parentActionListInEditor: {fileID: 2785877913300115080}
@@ -10164,7 +10306,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: And somehow you manage to get to class early or on time every day.
-  lineID: -1
+  lineID: 153
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -10268,7 +10410,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: As always.
-  lineID: -1
+  lineID: 199
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -10329,7 +10471,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   messageText: Well, Egan, I have to get back to stalling for J.J. so he doesn't
     miss out on the field trip.
-  lineID: -1
+  lineID: 189
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -10389,7 +10531,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 842193565}
   messageText: You know you can tell me.
-  lineID: -1
+  lineID: 127
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -10402,105 +10544,6 @@ MonoBehaviour:
   mouthClip2D: 
   mouthLayer: 0
   waitTimeOffset: 0
---- !u!1 &2039012381
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2039012382}
-  - component: {fileID: 2039012385}
-  - component: {fileID: 2039012384}
-  - component: {fileID: 2039012383}
-  m_Layer: 0
-  m_Name: Canvas
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &2039012382
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039012381}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
-  m_Children: []
-  m_Father: {fileID: 402339627}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 0}
---- !u!114 &2039012383
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039012381}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!114 &2039012384
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039012381}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
-  m_ReferencePixelsPerUnit: 100
-  m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
-  m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
-  m_PhysicalUnit: 3
-  m_FallbackScreenDPI: 96
-  m_DefaultSpriteDPI: 96
-  m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
---- !u!223 &2039012385
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039012381}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 25
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
 --- !u!114 &2045476947
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10548,7 +10591,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 0}
   messageText: So, what else is going on with you?
-  lineID: -1
+  lineID: 201
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -10595,6 +10638,63 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2078360944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea4c3ba658ee84d51a7ccd6f9fc22176, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  id: 0
+  isDisplayed: 1
+  showComment: 0
+  comment: 
+  willWait: 0
+  endAction: 0
+  skipAction: -1
+  skipActionActual: {fileID: 0}
+  linkedCutscene: {fileID: 0}
+  linkedAsset: {fileID: 0}
+  endings:
+  - resultAction: 1
+    skipAction: -1
+    skipActionActual: {fileID: 0}
+    linkedCutscene: {fileID: 0}
+    linkedAsset: {fileID: 0}
+  isEnabled: 1
+  isAssetFile: 0
+  isBreakPoint: 0
+  nodeRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 300
+    height: 60
+  overrideColor: {r: 1, g: 1, b: 1, a: 1}
+  showOutputSockets: 1
+  parentActionListInEditor: {fileID: 1941657101405047387}
+  listSource: 1
+  actionList: {fileID: 0}
+  constantID: 0
+  parameterID: -1
+  invActionList: {fileID: 11400000, guid: a516515a4fc197d4a81e6670c9d0c21a, type: 2}
+  assetParameterID: -1
+  runFromStart: 1
+  jumpToAction: 0
+  jumpToActionParameterID: -1
+  jumpToActionActual: {fileID: 0}
+  runInParallel: 1
+  isSkippable: 0
+  localParameters: []
+  parameterIDs: 
+  setParameters: 0
+  runMode: 0
+  hasUpgradedAgain: 0
 --- !u!1 &2082848735
 GameObject:
   m_ObjectHideFlags: 0
@@ -10674,7 +10774,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 1768837930}
   messageText: You want to know what's going on with my face?
-  lineID: -1
+  lineID: 164
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -10734,7 +10834,7 @@ MonoBehaviour:
   playerID: -1
   speaker: {fileID: 237602946}
   messageText: Oh, you flatter me. It's just all in the wrist.
-  lineID: -1
+  lineID: 207
   multiLineIDs: 
   isBackground: 0
   noAnimation: 0
@@ -11108,6 +11208,122 @@ Transform:
   m_Father: {fileID: 1639417836}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1794136750502302007
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1794136750502595863}
+  - component: {fileID: 1794136750508319959}
+  m_Layer: 0
+  m_Name: 'DahliaSprite: Talk to'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1794136750502595863
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1794136750502302007}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 406589468}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1794136750508319959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1794136750502302007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a1e6413216104fd580c7ce85907039c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actions:
+  - {fileID: 454879201}
+  isSkippable: 1
+  triggerTime: 0
+  autosaveAfter: 0
+  actionListType: 0
+  conversation: {fileID: 0}
+  assetFile: {fileID: 0}
+  source: 0
+  unfreezePauseMenus: 1
+  useParameters: 0
+  parameters: []
+  tagID: 0
+  syncParamValues: 1
+  backupData: []
+--- !u!1 &1941657101397966779
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1941657101398385563}
+  - component: {fileID: 1941657101405047387}
+  m_Layer: 0
+  m_Name: 'RaySprite: Talk to'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1941657101398385563
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941657101397966779}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 406589468}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1941657101405047387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941657101397966779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a1e6413216104fd580c7ce85907039c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actions:
+  - {fileID: 2078360944}
+  isSkippable: 1
+  triggerTime: 0
+  autosaveAfter: 0
+  actionListType: 0
+  conversation: {fileID: 0}
+  assetFile: {fileID: 0}
+  source: 0
+  unfreezePauseMenus: 1
+  useParameters: 0
+  parameters: []
+  tagID: 0
+  syncParamValues: 1
+  backupData: []
 --- !u!1 &2087913204047482050
 GameObject:
   m_ObjectHideFlags: 0
@@ -11386,7 +11602,7 @@ MonoBehaviour:
   interactionSource: 0
   options:
   - label: Are you excited for the field trip?
-    lineID: -1
+    lineID: 222
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -11414,7 +11630,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: What else is going on?
-    lineID: -1
+    lineID: 223
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -11442,7 +11658,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: Talk to you later!
-    lineID: -1
+    lineID: 224
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13014,7 +13230,7 @@ MonoBehaviour:
   interactionSource: 0
   options:
   - label: What's going on with your face?
-    lineID: -1
+    lineID: 225
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13042,7 +13258,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: Excited for your birthday?
-    lineID: -1
+    lineID: 226
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13070,7 +13286,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: Talk to you later!
-    lineID: -1
+    lineID: 227
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13336,7 +13552,7 @@ MonoBehaviour:
   interactionSource: 0
   options:
   - label: How was your weekend?
-    lineID: -1
+    lineID: 228
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13364,7 +13580,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: Have you done something different with your hair?
-    lineID: -1
+    lineID: 229
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13392,7 +13608,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: Talk to you later!
-    lineID: -1
+    lineID: 230
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13515,7 +13731,7 @@ MonoBehaviour:
   interactionSource: 0
   options:
   - label: What's up?
-    lineID: -1
+    lineID: 231
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13543,7 +13759,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: Learn any new spells recently?
-    lineID: -1
+    lineID: 232
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13571,7 +13787,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: (I should probably leave)
-    lineID: -1
+    lineID: 233
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}
@@ -13599,7 +13815,7 @@ MonoBehaviour:
     customScriptObject: {fileID: 0}
     customScriptFunction: 
   - label: Talk to you later!
-    lineID: -1
+    lineID: 234
     icon: {fileID: 0}
     cursorIcon:
       texture: {fileID: 0}

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17e62d8d078be49cf8ad9ebe2efcaeb2, type: 3}
   m_Name: WHAcademy_SpeechManager
   m_EditorClassIdentifier: 
-  scrollSubtitles: 1
+  scrollSubtitles: 0
   scrollNarration: 0
   textScrollSpeed: 50
   textScrollCLip: {fileID: 0}
@@ -50,7 +50,3870 @@ MonoBehaviour:
   separateLines: 1
   separateLinePause: 1
   resetExpressionsEachLine: 1
-  lines: []
+  lines:
+  - isPlayer: 0
+    lineID: 66
+    scene: 
+    owner: ResumeButton
+    text: Resume
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 67
+    scene: 
+    owner: OptionsButton
+    text: Options
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 68
+    scene: 
+    owner: SaveButton
+    text: Save
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 69
+    scene: 
+    owner: LoadButton
+    text: Load
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 70
+    scene: 
+    owner: QuitButton
+    text: Quit
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 71
+    scene: 
+    owner: TitleLabel
+    text: Options
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 72
+    scene: 
+    owner: SpeechSlider
+    text: Speech volume
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 73
+    scene: 
+    owner: MusicSlider
+    text: Music volume
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 74
+    scene: 
+    owner: SFXSlider
+    text: SFX volume
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 75
+    scene: 
+    owner: LanguageCycle
+    text: Language
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 76
+    scene: 
+    owner: SubtitlesToggle
+    text: Subtitles
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 77
+    scene: 
+    owner: BackButton
+    text: Back
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 78
+    scene: 
+    owner: TitleLabel
+    text: Save game
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 88
+    scene: 
+    owner: SavesList
+    text: New save
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 79
+    scene: 
+    owner: BackButton
+    text: Back
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 80
+    scene: 
+    owner: TitleLabel
+    text: Load game
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 81
+    scene: 
+    owner: BackButton
+    text: Back
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 84
+    scene: 
+    owner: MenuButton
+    text: Menu
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 89
+    scene: 
+    owner: ContainerLabel
+    text: Container
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 90
+    scene: 
+    owner: CloseButton
+    text: Close
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 91
+    scene: 
+    owner: TakeAllButton
+    text: Take all
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 92
+    scene: 
+    owner: InventoryLabel
+    text: Inventory
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 99
+    scene: 
+    owner: CreateButton
+    text: Create
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 100
+    scene: 
+    owner: CloseButton
+    text: Close
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 101
+    scene: 
+    owner: IngredientsLabel
+    text: Ingredients
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 102
+    scene: 
+    owner: InventoryLabel
+    text: Inventory
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 103
+    scene: 
+    owner: OutputLabel
+    text: Output
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 104
+    scene: 
+    owner: Header
+    text: Objectives
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 105
+    scene: 
+    owner: BackButton
+    text: Back
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 106
+    scene: 
+    owner: NewGameButton
+    text: New Game
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 107
+    scene: 
+    owner: OptionsButton
+    text: Options
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 108
+    scene: 
+    owner: QuitButton
+    text: Quit
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 1
+    lineID: 109
+    scene: StartingScene
+    owner: VVPlayer
+    text: Your hair is looking really cool, Blaze. Did you do something different
+      with it?
+    description: 'From: ConversationBlaze_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationBlaze_Option2_74068_
+  - isPlayer: 0
+    lineID: 110
+    scene: StartingScene
+    owner: Blaze
+    text: Yeah! I did! Thanks for noticing!
+    description: 'From: ConversationBlaze_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationBlaze_Option2_74068_
+  - isPlayer: 0
+    lineID: 111
+    scene: StartingScene
+    owner: Blaze
+    text: This style of hair is kind of a rite of passage for my family, so it's
+      now my time to carry that torch.
+    description: 'From: ConversationBlaze_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationBlaze_Option2_74068_
+  - isPlayer: 0
+    lineID: 112
+    scene: StartingScene
+    owner: Blaze
+    text: One day I'll have locs so long, they'll reach the floor!
+    description: 'From: ConversationBlaze_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationBlaze_Option2_74068_
+  - isPlayer: 1
+    lineID: 113
+    scene: StartingScene
+    owner: VVPlayer
+    text: Ooo! I can't wait!
+    description: 'From: ConversationBlaze_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationBlaze_Option2_74068_
+  - isPlayer: 1
+    lineID: 114
+    scene: StartingScene
+    owner: VVPlayer
+    text: So...learn any new spells recently?
+    description: 'From: ConversationDahlia_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationDahlia_Option2_74074_
+  - isPlayer: 0
+    lineID: 115
+    scene: StartingScene
+    owner: Dahlia
+    text: Why do you want to know?
+    description: 'From: ConversationDahlia_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationDahlia_Option2_74074_
+  - isPlayer: 1
+    lineID: 116
+    scene: StartingScene
+    owner: VVPlayer
+    text: I'm just curious.
+    description: 'From: ConversationDahlia_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationDahlia_Option2_74074_
+  - isPlayer: 0
+    lineID: 117
+    scene: StartingScene
+    owner: Dahlia
+    text: I know your game, V.V.. You're trying to get ahead of me in Conjuration
+      class, but it's not gonna work!
+    description: 'From: ConversationDahlia_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationDahlia_Option2_74074_
+  - isPlayer: 1
+    lineID: 118
+    scene: StartingScene
+    owner: VVPlayer
+    text: I'm not taking Conjuration this semester. I'm in Evocation for my magic
+      focus requirement.
+    description: 'From: ConversationDahlia_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationDahlia_Option2_74074_
+  - isPlayer: 0
+    lineID: 119
+    scene: StartingScene
+    owner: Dahlia
+    text: Hmph. I'm not buying it.
+    description: 'From: ConversationDahlia_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationDahlia_Option2_74074_
+  - isPlayer: 1
+    lineID: 120
+    scene: StartingScene
+    owner: VVPlayer
+    text: Ugh...
+    description: 'From: ConversationDahlia_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: ConversationDahlia_Option2_74074_
+  - isPlayer: 1
+    lineID: 121
+    scene: StartingScene
+    owner: VVPlayer
+    text: I should get back to stalling until J.J. gets here.
+    description: 'From: ConversationBlaze_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationBlaze_Option3_74082_
+  - isPlayer: 0
+    lineID: 122
+    scene: StartingScene
+    owner: Blaze
+    text: Here's hoping he gets here soon.
+    description: 'From: ConversationBlaze_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationBlaze_Option3_74082_
+  - isPlayer: 1
+    lineID: 123
+    scene: StartingScene
+    owner: VVPlayer
+    text: ( Guh...I should probably leave. This conversation is going nowhere.)
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 0
+    lineID: 124
+    scene: StartingScene
+    owner: Dahlia
+    text: Hey, V.V....
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 1
+    lineID: 125
+    scene: StartingScene
+    owner: VVPlayer
+    text: Yes, Dahlia?
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 0
+    lineID: 126
+    scene: StartingScene
+    owner: Dahlia
+    text: I notice you've been paying extra attention to Ray recently. Do you have
+      a crush on him?
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 0
+    lineID: 127
+    scene: StartingScene
+    owner: Dahlia
+    text: You know you can tell me.
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 1
+    lineID: 128
+    scene: StartingScene
+    owner: VVPlayer
+    text: ...
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 0
+    lineID: 129
+    scene: StartingScene
+    owner: Dahlia
+    text: Listen, I get it. It must be tough knowing that you don't have a chance
+      with him, but down't give up.
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 0
+    lineID: 130
+    scene: StartingScene
+    owner: Dahlia
+    text: Just be true to you.
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 1
+    lineID: 131
+    scene: StartingScene
+    owner: VVPlayer
+    text: Mm.
+    description: 'From: ConversationDahlia_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 8
+    orderPrefix: ConversationDahlia_Option3_74092_
+  - isPlayer: 1
+    lineID: 132
+    scene: StartingScene
+    owner: VVPlayer
+    text: So...you excited for your birthday next week?
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 0
+    lineID: 133
+    scene: StartingScene
+    owner: Egan
+    text: Yes and no. I mean, it's exciting because this is the first time my parents
+      are allowing me to have a party...
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 0
+    lineID: 134
+    scene: StartingScene
+    owner: Egan
+    text: But I'm not sure if my face will be clear in time.
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 1
+    lineID: 135
+    scene: StartingScene
+    owner: VVPlayer
+    text: Well, it's just going to be you, your parents, Blaze, J.J. and me at the
+      party, right?
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 1
+    lineID: 136
+    scene: StartingScene
+    owner: VVPlayer
+    text: The family and friends who care about you most! None of us would ever think
+      about making fun of you.
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 0
+    lineID: 137
+    scene: StartingScene
+    owner: Egan
+    text: J.J. would.
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 1
+    lineID: 138
+    scene: StartingScene
+    owner: VVPlayer
+    text: J.J. *might*
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 1
+    lineID: 139
+    scene: StartingScene
+    owner: VVPlayer
+    text: Regardless, the gift I have planned for you will make you forget all about
+      it. I'm really excited to show you!
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 0
+    lineID: 140
+    scene: StartingScene
+    owner: Egan
+    text: I can't wait to see it.
+    description: 'From: ConversationEgan_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 8
+    orderPrefix: ConversationEgan_Option2_74098_
+  - isPlayer: 1
+    lineID: 141
+    scene: StartingScene
+    owner: VVPlayer
+    text: So...
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 142
+    scene: StartingScene
+    owner: Ray
+    text: So?
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 1
+    lineID: 143
+    scene: StartingScene
+    owner: VVPlayer
+    text: Uh...are you excited about the field trip today?
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 144
+    scene: StartingScene
+    owner: Ray
+    text: Yeah, I'm pretty pumped for it.
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 145
+    scene: StartingScene
+    owner: Ray
+    text: That is, if Mr. Whittrapper ever stops with his nap.
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 146
+    scene: StartingScene
+    owner: Ray
+    text: I should go wake him up huh?
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 1
+    lineID: 147
+    scene: StartingScene
+    owner: VVPlayer
+    text: But J.J.'s not here yet, so maybe we can wait a few more minutes.
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 148
+    scene: StartingScene
+    owner: Ray
+    text: I wish he could at least make the effort of getting to class on time.
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 149
+    scene: StartingScene
+    owner: Ray
+    text: We shouldn't have to be delayed just because of him.
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 8
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 1
+    lineID: 150
+    scene: StartingScene
+    owner: VVPlayer
+    text: Well...the school is pretty far from his house, so he has to come a long
+      way to get here.
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 9
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 151
+    scene: StartingScene
+    owner: Ray
+    text: But aren't you guys next door neightbors?
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 10
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 1
+    lineID: 152
+    scene: StartingScene
+    owner: VVPlayer
+    text: Yeah...
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 11
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 153
+    scene: StartingScene
+    owner: Ray
+    text: And somehow you manage to get to class early or on time every day.
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 12
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 1
+    lineID: 154
+    scene: StartingScene
+    owner: VVPlayer
+    text: ...Uh...
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 13
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 155
+    scene: StartingScene
+    owner: Ray
+    text: Sigh...
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 14
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 0
+    lineID: 156
+    scene: StartingScene
+    owner: Ray
+    text: I won't wake up Mr. Whittrapper just yet. Only cause it's for you, V.V..
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 15
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 1
+    lineID: 157
+    scene: StartingScene
+    owner: VVPlayer
+    text: Thanks, Ray.
+    description: 'From: ConversationRay_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 16
+    orderPrefix: ConversationRay_Option_74104_
+  - isPlayer: 1
+    lineID: 158
+    scene: StartingScene
+    owner: VVPlayer
+    text: So, uh, I'm gonna head out now.
+    description: 'From: ConversationRay_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationRay_Option3_74180_
+  - isPlayer: 0
+    lineID: 159
+    scene: StartingScene
+    owner: Ray
+    text: All right. Till next time. And one last thing, V.V.
+    description: 'From: ConversationRay_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationRay_Option3_74180_
+  - isPlayer: 1
+    lineID: 160
+    scene: StartingScene
+    owner: VVPlayer
+    text: Y-yeah?
+    description: 'From: ConversationRay_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationRay_Option3_74180_
+  - isPlayer: 0
+    lineID: 161
+    scene: StartingScene
+    owner: Ray
+    text: Take it easy.
+    description: 'From: ConversationRay_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationRay_Option3_74180_
+  - isPlayer: 1
+    lineID: 162
+    scene: StartingScene
+    owner: VVPlayer
+    text: Okay.
+    description: 'From: ConversationRay_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationRay_Option3_74180_
+  - isPlayer: 1
+    lineID: 163
+    scene: StartingScene
+    owner: VVPlayer
+    text: So Egan...uh...I don't know the best way to say this...
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 0
+    lineID: 164
+    scene: StartingScene
+    owner: Egan
+    text: You want to know what's going on with my face?
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 1
+    lineID: 165
+    scene: StartingScene
+    owner: VVPlayer
+    text: Yeah...
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 0
+    lineID: 166
+    scene: StartingScene
+    owner: Egan
+    text: Did you know that trees could get acne? Because I didn't!
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 0
+    lineID: 167
+    scene: StartingScene
+    owner: Egan
+    text: Apparently most dryads in my genus get these bumps on their face during
+      this season.
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 1
+    lineID: 168
+    scene: StartingScene
+    owner: VVPlayer
+    text: Oh...
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 0
+    lineID: 169
+    scene: StartingScene
+    owner: Egan
+    text: I was in my tree form because I didn't want to give Dahlia more opportunities
+      to mock me.
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 1
+    lineID: 170
+    scene: StartingScene
+    owner: VVPlayer
+    text: What? Ugh, that's so unnecessary.
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 0
+    lineID: 171
+    scene: StartingScene
+    owner: Egan
+    text: You're telling me.
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 8
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 1
+    lineID: 172
+    scene: StartingScene
+    owner: VVPlayer
+    text: Maybe after school today we can stop by the library and we can look up
+      some home remedies.
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 9
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 1
+    lineID: 173
+    scene: StartingScene
+    owner: VVPlayer
+    text: One of the perks of having a librarian mom, she taught me to find the books
+      I need with ease.
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 10
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 0
+    lineID: 174
+    scene: StartingScene
+    owner: Egan
+    text: I...I would really appreciate that, V.V., thanks.
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 11
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 1
+    lineID: 175
+    scene: StartingScene
+    owner: VVPlayer
+    text: Anytime, Egan!
+    description: 'From: ConversationEgan_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 12
+    orderPrefix: ConversationEgan_Option_74182_
+  - isPlayer: 1
+    lineID: 176
+    scene: StartingScene
+    owner: VVPlayer
+    text: I haven't had a chance to see you over the weekend, what were you up to?
+    description: 'From: ConversationBlaze_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationBlaze_Option_74214_
+  - isPlayer: 0
+    lineID: 177
+    scene: StartingScene
+    owner: Blaze
+    text: Oh you know, just helping my older sister get ready for her coronation.
+      The regular duke stuff.
+    description: 'From: ConversationBlaze_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationBlaze_Option_74214_
+  - isPlayer: 1
+    lineID: 178
+    scene: StartingScene
+    owner: VVPlayer
+    text: So...you could say that you were...duking it out?
+    description: 'From: ConversationBlaze_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationBlaze_Option_74214_
+  - isPlayer: 0
+    lineID: 179
+    scene: StartingScene
+    owner: Blaze
+    text: Pfft....
+    description: 'From: ConversationBlaze_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationBlaze_Option_74214_
+  - isPlayer: 0
+    lineID: 180
+    scene: StartingScene
+    owner: Blaze
+    text: Hahahahaha!
+    description: 'From: ConversationBlaze_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationBlaze_Option_74214_
+  - isPlayer: 0
+    lineID: 181
+    scene: StartingScene
+    owner: Blaze
+    text: Oh gosh, why do I always laugh at those bad jokes?
+    description: 'From: ConversationBlaze_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationBlaze_Option_74214_
+  - isPlayer: 1
+    lineID: 182
+    scene: StartingScene
+    owner: VVPlayer
+    text: Because they're genius that's why.
+    description: 'From: ConversationBlaze_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: ConversationBlaze_Option_74214_
+  - isPlayer: 1
+    lineID: 183
+    scene: StartingScene
+    owner: VVPlayer
+    text: So...how was your weekend?
+    description: 'From: ConversationDahlia_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationDahlia_Option_74224_
+  - isPlayer: 0
+    lineID: 184
+    scene: StartingScene
+    owner: Dahlia
+    text: It was pretty good actually. Spent a lot of time out in the sun.
+    description: 'From: ConversationDahlia_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationDahlia_Option_74224_
+  - isPlayer: 0
+    lineID: 185
+    scene: StartingScene
+    owner: Dahlia
+    text: Not that you would know what that's like...
+    description: 'From: ConversationDahlia_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationDahlia_Option_74224_
+  - isPlayer: 0
+    lineID: 186
+    scene: StartingScene
+    owner: Dahlia
+    text: Because, you know, you're a vampire.
+    description: 'From: ConversationDahlia_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationDahlia_Option_74224_
+  - isPlayer: 1
+    lineID: 187
+    scene: StartingScene
+    owner: VVPlayer
+    text: Sigh...
+    description: 'From: ConversationDahlia_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationDahlia_Option_74224_
+  - isPlayer: 1
+    lineID: 188
+    scene: StartingScene
+    owner: VVPlayer
+    text: ( I *could* waste my breath in explaining that sun sensitivity isn't a
+      real thing for vampires, but there's no point.)
+    description: 'From: ConversationDahlia_Option'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationDahlia_Option_74224_
+  - isPlayer: 1
+    lineID: 189
+    scene: StartingScene
+    owner: VVPlayer
+    text: Well, Egan, I have to get back to stalling for J.J. so he doesn't miss
+      out on the field trip.
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 0
+    lineID: 190
+    scene: StartingScene
+    owner: Egan
+    text: All right.
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 0
+    lineID: 191
+    scene: StartingScene
+    owner: Egan
+    text: ...
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 1
+    lineID: 192
+    scene: StartingScene
+    owner: VVPlayer
+    text: You're not going back into your tree form?
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 0
+    lineID: 193
+    scene: StartingScene
+    owner: Egan
+    text: Nah...may as well uproot myself.
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 0
+    lineID: 194
+    scene: StartingScene
+    owner: Egan
+    text: Thanks for checking up on me, V.V.
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 0
+    lineID: 195
+    scene: StartingScene
+    owner: Egan
+    text: I appreciate it.
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 1
+    lineID: 196
+    scene: StartingScene
+    owner: VVPlayer
+    text: Any time!
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 0
+    lineID: 197
+    scene: StartingScene
+    owner: Egan
+    text: Peace.
+    description: 'From: ConversationEgan_Option3'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 8
+    orderPrefix: ConversationEgan_Option3_74242_
+  - isPlayer: 1
+    lineID: 198
+    scene: StartingScene
+    owner: VVPlayer
+    text: Well this has certainly been unpleasant.
+    description: 'From: ConversationDahlia_Option4'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationDahlia_Option4_74276_
+  - isPlayer: 0
+    lineID: 199
+    scene: StartingScene
+    owner: Dahlia
+    text: As always.
+    description: 'From: ConversationDahlia_Option4'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationDahlia_Option4_74276_
+  - isPlayer: 1
+    lineID: 200
+    scene: StartingScene
+    owner: VVPlayer
+    text: Talk to you only when it's absolutely necessary!
+    description: 'From: ConversationDahlia_Option4'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationDahlia_Option4_74276_
+  - isPlayer: 1
+    lineID: 201
+    scene: StartingScene
+    owner: VVPlayer
+    text: So, what else is going on with you?
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 0
+    lineID: 202
+    scene: StartingScene
+    owner: Ray
+    text: Not much. Just trying to keep up with you in all our classes.
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 0
+    lineID: 203
+    scene: StartingScene
+    owner: Ray
+    text: From your battle skills to magic abilities, I can tell you're going to
+      be a top mercenary one day.
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 1
+    lineID: 204
+    scene: StartingScene
+    owner: VVPlayer
+    text: You're talking about my ability?
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 1
+    lineID: 205
+    scene: StartingScene
+    owner: VVPlayer
+    text: 'You''re the one that''s already mastered a weapon class. '
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 1
+    lineID: 206
+    scene: StartingScene
+    owner: VVPlayer
+    text: Most of us won't be able to do that until we get to the upper school.
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 0
+    lineID: 207
+    scene: StartingScene
+    owner: Ray
+    text: Oh, you flatter me. It's just all in the wrist.
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 1
+    lineID: 208
+    scene: StartingScene
+    owner: VVPlayer
+    text: Eeeheehee, yeah.
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 0
+    lineID: 209
+    scene: StartingScene
+    owner: Ray
+    text: ...
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 8
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 1
+    lineID: 210
+    scene: StartingScene
+    owner: VVPlayer
+    text: ...
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 9
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 0
+    lineID: 211
+    scene: StartingScene
+    owner: Ray
+    text: Is there something on my face?
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 10
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 1
+    lineID: 212
+    scene: StartingScene
+    owner: VVPlayer
+    text: Uh, nope! Sorrry, I kind of spaced out there.
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 11
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 0
+    lineID: 213
+    scene: StartingScene
+    owner: Ray
+    text: Nah, all good.
+    description: 'From: ConversationRay_Option2'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 12
+    orderPrefix: ConversationRay_Option2_74282_
+  - isPlayer: 0
+    lineID: 214
+    scene: StartingScene
+    owner: 
+    text: EganSprite
+    description: 'From: EganSprite'
+    textType: 1
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 215
+    scene: StartingScene
+    owner: 
+    text: DahliaSprite
+    description: 'From: DahliaSprite'
+    textType: 1
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 216
+    scene: StartingScene
+    owner: 
+    text: RaySprite
+    description: 'From: RaySprite'
+    textType: 1
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 217
+    scene: StartingScene
+    owner: 
+    text: Ray
+    description: 'From: Ray'
+    textType: 10
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 218
+    scene: StartingScene
+    owner: 
+    text: Blaze
+    description: 'From: Blaze'
+    textType: 10
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 219
+    scene: StartingScene
+    owner: 
+    text: Dahlia
+    description: 'From: Dahlia'
+    textType: 10
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 220
+    scene: StartingScene
+    owner: 
+    text: Blaze
+    description: 'From: BlazeSprite'
+    textType: 1
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 221
+    scene: StartingScene
+    owner: 
+    text: Egan
+    description: 'From: Egan'
+    textType: 10
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 222
+    scene: StartingScene
+    owner: 
+    text: Are you excited for the field trip?
+    description: 'From: ConversationRay'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 223
+    scene: StartingScene
+    owner: 
+    text: What else is going on?
+    description: 'From: ConversationRay'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 224
+    scene: StartingScene
+    owner: 
+    text: Talk to you later!
+    description: 'From: ConversationRay'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 225
+    scene: StartingScene
+    owner: 
+    text: What's going on with your face?
+    description: 'From: ConversationEgan'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 226
+    scene: StartingScene
+    owner: 
+    text: Excited for your birthday?
+    description: 'From: ConversationEgan'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 227
+    scene: StartingScene
+    owner: 
+    text: Talk to you later!
+    description: 'From: ConversationEgan'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 228
+    scene: StartingScene
+    owner: 
+    text: How was your weekend?
+    description: 'From: ConversationBlaze'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 229
+    scene: StartingScene
+    owner: 
+    text: Have you done something different with your hair?
+    description: 'From: ConversationBlaze'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 230
+    scene: StartingScene
+    owner: 
+    text: Talk to you later!
+    description: 'From: ConversationBlaze'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 231
+    scene: StartingScene
+    owner: 
+    text: What's up?
+    description: 'From: ConversationDahlia'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 232
+    scene: StartingScene
+    owner: 
+    text: Learn any new spells recently?
+    description: 'From: ConversationDahlia'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 233
+    scene: StartingScene
+    owner: 
+    text: (I should probably leave)
+    description: 'From: ConversationDahlia'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 234
+    scene: StartingScene
+    owner: 
+    text: Talk to you later!
+    description: 'From: ConversationDahlia'
+    textType: 2
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 235
+    scene: 
+    owner: 
+    text: Save
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 236
+    scene: 
+    owner: 
+    text: Import
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 237
+    scene: 
+    owner: 
+    text: Autosave
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 238
+    scene: 
+    owner: 
+    text: V.V.
+    description: 
+    textType: 10
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 239
+    scene: 
+    owner: 
+    text: PermissionSlip
+    description: 
+    textType: 3
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 240
+    scene: 
+    owner: 
+    text: Use
+    description: 
+    textType: 6
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 241
+    scene: 
+    owner: 
+    text: on
+    description: 
+    textType: 6
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 242
+    scene: 
+    owner: 
+    text: Give
+    description: 
+    textType: 6
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 243
+    scene: 
+    owner: 
+    text: to
+    description: 
+    textType: 6
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 244
+    scene: 
+    owner: 
+    text: Walk to
+    description: 
+    textType: 6
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 245
+    scene: 
+    owner: 
+    text: Use
+    description: 
+    textType: 4
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 246
+    scene: 
+    owner: 
+    text: Talk to
+    description: 
+    textType: 4
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 247
+    scene: 
+    owner: 
+    text: Look at
+    description: 
+    textType: 4
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 248
+    scene: 
+    owner: ProfilesButton
+    text: Profiles
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 249
+    scene: 
+    owner: SubtitlesToggle
+    text: On
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 250
+    scene: 
+    owner: SubtitlesToggle
+    text: Off
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 251
+    scene: 
+    owner: TitleLabel
+    text: Profiles
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 252
+    scene: 
+    owner: CurrentLabel
+    text: 'Current:'
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 253
+    scene: 
+    owner: NewButton
+    text: Create new profile
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 254
+    scene: 
+    owner: BackButton
+    text: Back
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 255
+    scene: 
+    owner: CloseButton
+    text: Close
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 256
+    scene: 
+    owner: ProfilesButton
+    text: Profiles
+    description: 
+    textType: 5
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: -1
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: -1
+    orderPrefix: 
+  - isPlayer: 0
+    lineID: 257
+    scene: 
+    owner: Blaze
+    text: 'Hey, V.V., uh...any reason you''re talking with me instead of [wait: 2],
+      you know, turning in your permisssion slip?'
+    description: 'From: Talk - Blaze'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: Talk - Blaze_35100_
+  - isPlayer: 1
+    lineID: 258
+    scene: 
+    owner: VVPlayer
+    text: Well you said it yourself, J.J.'s running late. If I give it away before
+      he gets here...
+    description: 'From: Talk - Blaze'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: Talk - Blaze_35100_
+  - isPlayer: 0
+    lineID: 259
+    scene: 
+    owner: Blaze
+    text: We will start the field trip without him. I got ya.
+    description: 'From: Talk - Blaze'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: Talk - Blaze_35100_
+  - isPlayer: 0
+    lineID: 260
+    scene: 
+    owner: Blaze
+    text: Still, he's always late. Maybe this could be a teaching moment for him.
+    description: 'From: Talk - Blaze'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: Talk - Blaze_35100_
+  - isPlayer: 1
+    lineID: 261
+    scene: 
+    owner: VVPlayer
+    text: His house is really far from the Academy, Blaze. Cut him some slack.
+    description: 'From: Talk - Blaze'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: Talk - Blaze_35100_
+  - isPlayer: 0
+    lineID: 262
+    scene: 
+    owner: Blaze
+    text: V.V....aren't you two next door neighbors?
+    description: 'From: Talk - Blaze'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: Talk - Blaze_35100_
+  - isPlayer: 1
+    lineID: 263
+    scene: 
+    owner: VVPlayer
+    text: Uh...
+    description: 'From: Talk - Blaze'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: Talk - Blaze_35100_
+  - isPlayer: 0
+    lineID: 264
+    scene: 
+    owner: Blaze
+    text: But hey! No worries. I don't mind waiting a little while longer. In the
+      meantime, anything else you want to talk about?
+    description: 'From: Talk - Blaze'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: Talk - Blaze_35100_
+  - isPlayer: 1
+    lineID: 265
+    scene: 
+    owner: VVPlayer
+    text: Hey.
+    description: 'From: Talk - Egan'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: Talk - Egan_35054_
+  - isPlayer: 0
+    lineID: 266
+    scene: 
+    owner: Egan
+    text: ...
+    description: 'From: Talk - Egan'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: Talk - Egan_35054_
+  - isPlayer: 1
+    lineID: 267
+    scene: 
+    owner: VVPlayer
+    text: It's just me, Egan. Unless, you're not up for talking. Then I can leave
+      you alone.
+    description: 'From: Talk - Egan'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: Talk - Egan_35054_
+  - isPlayer: 0
+    lineID: 268
+    scene: 
+    owner: Egan
+    text: I...well...hmm...Just don't laugh okay?
+    description: 'From: Talk - Egan'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: Talk - Egan_35054_
+  - isPlayer: 1
+    lineID: 269
+    scene: 
+    owner: VVPlayer
+    text: I promise.
+    description: 'From: Talk - Egan'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: Talk - Egan_35054_
+  - isPlayer: 0
+    lineID: 270
+    scene: 
+    owner: Egan
+    text: '*rustle rustle*'
+    description: 'From: Talk - Egan'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: Talk - Egan_35054_
+  - isPlayer: 1
+    lineID: 271
+    scene: 
+    owner: VVPlayer
+    text: Sigh...there. What's up?
+    description: 'From: Talk - Egan'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: Talk - Egan_35054_
+  - isPlayer: 1
+    lineID: 272
+    scene: 
+    owner: VVPlayer
+    text: Oh.
+    description: 'From: Talk - Egan'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: Talk - Egan_35054_
+  - isPlayer: 1
+    lineID: 273
+    scene: 
+    owner: VVPlayer
+    text: '[expression:None]Hey, Blaze!'
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 0
+    lineID: 274
+    scene: 
+    owner: Blaze
+    text: '[expression:Delight]Morning, V.V.!'
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 1
+    lineID: 275
+    scene: 
+    owner: VVPlayer
+    text: Did I miss anything?
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 2
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 0
+    lineID: 276
+    scene: 
+    owner: Blaze
+    text: '[expression:Confuse]Nope, but Mr. Whittrapper is having Noah collect the
+      permission slips while he takes a nap in the back of the room.'
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 3
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 1
+    lineID: 277
+    scene: 
+    owner: VVPlayer
+    text: '[expression:Shock] Oh wow... [wait:2] [expression:Annoy] Who knew that
+      being teacher''s pet came with benefits? What privilege.'
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 4
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 0
+    lineID: 278
+    scene: 
+    owner: Blaze
+    text: '[expression:None]Haha. Still, you should probably get that to him.'
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 5
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 1
+    lineID: 279
+    scene: 
+    owner: VVPlayer
+    text: '[expression:None] Right.'
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 6
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 0
+    lineID: 280
+    scene: 
+    owner: Blaze
+    text: '[expression:Confuse] Do you remember how to get that out?'
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 7
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 0
+    lineID: 281
+    scene: 
+    owner: Blaze
+    text: '[expression:None] *Insert technical instructions here*'
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 8
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 1
+    lineID: 282
+    scene: 
+    owner: VVPlayer
+    text: Okay! As always, thanks Blaze!
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 9
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 0
+    lineID: 283
+    scene: 
+    owner: Blaze
+    text: No problem! Now hurry and get your permission slip in so we can get started
+      soon!
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 10
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 0
+    lineID: 284
+    scene: 
+    owner: Blaze
+    text: I mean, J.J. is still late, so I guess we still have to wait for him, but
+      even so!
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 11
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 1
+    lineID: 285
+    scene: 
+    owner: VVPlayer
+    text: Yeah, that sounds like him, haha.
+    description: 'From: 1BlazeVV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 12
+    orderPrefix: 1BlazeVV_35162_
+  - isPlayer: 1
+    lineID: 286
+    scene: 
+    owner: VVPlayer
+    text: '[expression:Shock] Oh, good. I made it to class on time.'
+    description: 'From: 0VV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: 0VV_35158_
+  - isPlayer: 1
+    lineID: 287
+    scene: 
+    owner: VVPlayer
+    text: '[expression:None] Today''s the big school trip, so I hope I''m not keeping
+      everyone waiting.'
+    description: 'From: 0VV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: 0VV_35158_
+  - isPlayer: 1
+    lineID: 288
+    scene: 
+    owner: VVPlayer
+    text: If J.J. isn't here, and I turn in my permission slip, Noah will wake up
+      Mr. Whittraper and he'll end up missing out on the field trip.
+    description: 'From: 2VV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 0
+    orderPrefix: 2VV_35160_
+  - isPlayer: 1
+    lineID: 289
+    scene: 
+    owner: VVPlayer
+    text: Maybe I can pass the time by talking to the rest of my classmates.
+    description: 'From: 2VV'
+    textType: 0
+    translationText: []
+    customAudioClip: {fileID: 0}
+    customLipsyncFile: {fileID: 0}
+    customTranslationAudioClips: []
+    customTranslationLipsyncFiles: []
+    tagID: 0
+    onlyPlaySpeechOnce: 0
+    alwaysRetainInSpeechManager: 0
+    customFilename: 
+    orderID: 1
+    orderPrefix: 2VV_35160_
   languages:
   - Original
   languageIsRightToLeft: 00
@@ -66,7 +3929,7 @@ MonoBehaviour:
   phonemes: []
   lipSyncSpeed: 1
   translatableTextTypes: -1
-  maxID: -1
+  maxID: 289
   speechIDRecycling: 0
   activeLineID: -1
   mergeMatchingSpeechIDs: 0
@@ -74,5 +3937,5 @@ MonoBehaviour:
   speechTags:
   - ID: 0
     label: (Untagged)
-  previewMenuName: Subtitles
+  previewMenuName: Subtitles VV
   mergeMatchingIDs: 0
