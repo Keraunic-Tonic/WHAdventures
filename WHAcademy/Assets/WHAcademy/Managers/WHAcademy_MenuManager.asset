@@ -6746,7 +6746,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   menuSource: 1
-  canvas: {fileID: 22300000, guid: 5b96cd0394bf0df479e1f877d612d95e, type: 3}
+  canvas: {fileID: 22300000, guid: 0212bfb2ca18da04bb031246392cb42d, type: 3}
   canvasID: 0
   rectTransform: {fileID: 0}
   rectTransformID: 87948
