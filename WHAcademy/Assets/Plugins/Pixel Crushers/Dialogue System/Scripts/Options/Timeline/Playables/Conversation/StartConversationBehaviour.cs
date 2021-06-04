@@ -26,6 +26,9 @@ namespace PixelCrushers.DialogueSystem
         [Tooltip("Dialogue entry to jump to.")]
         public int entryID;
 
+        //[HideInInspector]
+        //public bool computed
+
         public string GetEditorDialogueText()
         {
             var dialogueText = PreviewUI.GetDialogueText(conversation, jumpToSpecificEntry ? entryID : -1);

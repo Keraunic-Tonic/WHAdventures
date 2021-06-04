@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Ludiq.Peek
 {
@@ -60,7 +62,7 @@ namespace Ludiq.Peek
 
 			return transformType;
 		}
-		
+
 		private static GameObject CreateGroup(string name, Type transformType)
 		{
 			if (transformType == typeof(RectTransform))
@@ -72,20 +74,38 @@ namespace Ludiq.Peek
 				return new GameObject(name);
 			}
 		}
-
+		
 		public static Transform GroupLocally(Transform[] targets, string name = "Group")
 		{
 			var transformType = InferTransformTypeOrFail(targets);
+			var scene = TransformOperations.FindCommonScene(targets);
+			var haveCommonScene = scene != null;
+			scene = scene ?? EditorSceneManager.GetActiveScene();
+			
+			var firstSiblingIndex = targets.Select(t => t.GetSiblingIndex()).Min();
 
 			var group = CreateGroup(name, transformType);
 			Undo.RegisterCreatedObjectUndo(group, "Group");
+			Undo.MoveGameObjectToScene(group.gameObject, scene.Value, "Group");
 
-			var shallowestTarget = TransformOperations.FindShallowest(targets);
-			Undo.SetTransformParent(group.transform, shallowestTarget.transform.parent, "Group");
-
-			foreach (var target in targets)
+			if (haveCommonScene)
 			{
+				var shallowestTarget = TransformOperations.FindShallowest(targets);
+				Undo.SetTransformParent(group.transform, shallowestTarget.transform.parent, "Group");
+			}
+
+			foreach (var target in targets.OrderBy(t => t.GetSiblingIndex()))
+			{
+				Undo.SetTransformParent(target.transform, null, "Group");
+				Undo.MoveGameObjectToScene(target.gameObject, scene.Value, "Group");
 				Undo.SetTransformParent(target.transform, group.transform, "Group");
+			}
+			
+			Undo.RecordObject(group.transform, "Group");
+
+			if (haveCommonScene)
+			{
+				group.transform.SetSiblingIndex(firstSiblingIndex);
 			}
 
 			if (transformType == typeof(RectTransform))
@@ -103,12 +123,16 @@ namespace Ludiq.Peek
 		public static Transform GroupGlobally(Transform[] targets, string name = "Group")
 		{
 			var transformType = InferTransformTypeOrFail(targets);
+			var scene = TransformOperations.FindCommonScene(targets) ?? EditorSceneManager.GetActiveScene();
 
 			var group = CreateGroup(name, transformType);
 			Undo.RegisterCreatedObjectUndo(group, "Group");
-			
-			foreach (var target in targets)
+			Undo.MoveGameObjectToScene(group.gameObject, scene, "Group");
+
+			foreach (var target in targets.OrderBy(t => t.GetSiblingIndex()))
 			{
+				Undo.SetTransformParent(target.transform, null, "Group");
+				Undo.MoveGameObjectToScene(target.gameObject, scene, "Group");
 				Undo.SetTransformParent(target.transform, group.transform, "Group");
 			}
 			

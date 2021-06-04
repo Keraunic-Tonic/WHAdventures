@@ -41,6 +41,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
 
         [SerializeField]
         private DialogueDatabase database = null;
+        public static DialogueDatabase GetCurrentlyEditedDatabase() { return (instance != null) ? instance.database : null; }
 
         private SerializedObject serializedObject = null;
 
@@ -183,6 +184,8 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
             toolbar.UpdateTabNames(template.treatItemsAsQuests);
             currentConversationState = null;
             currentRuntimeEntry = null;
+            actorPortraitCache = null;
+            UITools.ClearSpriteCache();
             ResetWatchSection();
             SetReorderableListInspectorSelection();
             SelectObject(database);
@@ -221,6 +224,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 var needToReset = (database != null) && (databaseID != newDatabaseID);
                 if (debug) Debug.Log("<color=yellow>Dialogue Editor: SelectDatabase " + newDatabase + "(ID=" + newDatabaseID + "), old=" + database + "(ID=" + databaseID + "), reset=" + needToReset + "</color>", newDatabase);
                 database = newDatabase;
+                ClearDatabaseNameStyle();
                 LoadTemplateFromDatabase();
                 serializedObject = new SerializedObject(database);
                 if (needToReset)
@@ -288,6 +292,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
         {
             try
             {
+                if (instance == null) instance = this;
                 RecordUndo();
                 var isInNodeEditor = (toolbar.Current == Toolbar.Tab.Conversations) && showNodeEditor;
                 if (!isInNodeEditor) DrawDatabaseName(); // Node editor draws name after grid.
@@ -303,6 +308,8 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
 
         private Color proDatabaseNameColor = new Color(1, 1, 1, 0.2f);
         private Color freeDatabaseNameColor = new Color(0, 0, 0, 0.2f);
+        private Color proDatabaseBackupNameColor = new Color(1, 0, 0, 0.5f);
+        private Color freeDatabaseBackupNameColor = new Color(1, 0, 0, 0.5f);
 
         private GUIStyle _databaseNameStyle = null;
         private GUIStyle databaseNameStyle
@@ -315,13 +322,18 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     _databaseNameStyle.fontSize = 20;
                     _databaseNameStyle.fontStyle = FontStyle.Bold;
                     _databaseNameStyle.alignment = TextAnchor.LowerLeft;
-                    _databaseNameStyle.normal.textColor = EditorGUIUtility.isProSkin
-                        ? proDatabaseNameColor
+                    _databaseNameStyle.normal.textColor = database.name.EndsWith("(Auto-Backup)")
+                        ? EditorGUIUtility.isProSkin
+                            ? proDatabaseBackupNameColor
+                            : freeDatabaseBackupNameColor
+                        : EditorGUIUtility.isProSkin
+                            ? proDatabaseNameColor
                             : freeDatabaseNameColor;
                 }
                 return _databaseNameStyle;
             }
         }
+        private void ClearDatabaseNameStyle() { _databaseNameStyle = null; }
 
         private GUIStyle _conversationParticipantsStyle = null;
         private GUIStyle conversationParticipantsStyle
@@ -331,7 +343,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 if (_conversationParticipantsStyle == null || _conversationParticipantsStyle.fontSize != 20)
                 {
                     _conversationParticipantsStyle = new GUIStyle(databaseNameStyle);
-                    _conversationParticipantsStyle.alignment = TextAnchor.LowerRight;
+                    _conversationParticipantsStyle.alignment = TextAnchor.UpperRight;
                 }
                 return _conversationParticipantsStyle;
             }

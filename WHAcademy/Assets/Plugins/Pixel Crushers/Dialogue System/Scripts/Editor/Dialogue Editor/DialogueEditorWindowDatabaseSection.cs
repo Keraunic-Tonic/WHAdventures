@@ -85,6 +85,8 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
         [SerializeField]
         private static bool exportConversationsAfterEntries = false;
         [SerializeField]
+        private static bool omitNoneSequenceEntriesInScreenplay = false;
+        [SerializeField]
         private EntrytagFormat entrytagFormat = EntrytagFormat.ActorName_ConversationID_EntryID;
         [SerializeField]
         private EncodingType encodingType = EncodingType.UTF8;
@@ -252,12 +254,12 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 var result = globalSearchSpecificConversation ? "Conversation '" + specificConversation + "' matches for '" + globalSearchText + "': (click this log entry to see full report)"
                     : "Database matches for '" + globalSearchText + "': (click this log entry to see full report)";
 
-                if (!globalSearchSpecificConversation && database.globalUserScript.Contains(globalSearchText))
+                if (!globalSearchSpecificConversation && !string.IsNullOrEmpty(database.globalUserScript) && database.globalUserScript.Contains(globalSearchText))
                 {
                     result += "\nGlobal User Script: " + database.globalUserScript;
                 }
 
-                if (!globalSearchSpecificConversation && database.description.Contains(globalSearchText))
+                if (!globalSearchSpecificConversation && !string.IsNullOrEmpty(database.description) && database.description.Contains(globalSearchText))
                 {
                     result += "\nDescription: " + database.description;
                 }
@@ -350,7 +352,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 var specificConversation = globalSearchSpecificConversation ? conversationTitles[globalSearchConversationIndex] : string.Empty;
 
                 bool cancel = false;
-                if (!globalSearchSpecificConversation && database.globalUserScript.Contains(globalSearchText))
+                if (!globalSearchSpecificConversation && !string.IsNullOrEmpty(database.globalUserScript) && database.globalUserScript.Contains(globalSearchText))
                 {
                     matches++;
                     var confirmed = !interactive || ConfirmReplacement("Global User Script:\n" + database.globalUserScript, out cancel);
@@ -361,7 +363,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     }
                 }
 
-                if (!globalSearchSpecificConversation && database.description.Contains(globalSearchText))
+                if (!globalSearchSpecificConversation && !string.IsNullOrEmpty(database.description) && database.description.Contains(globalSearchText))
                 {
                     matches++;
                     var confirmed = !interactive || ConfirmReplacement("Description:\n" + database.description, out cancel);
@@ -402,7 +404,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     {
                         matches += RunGlobalSearchAndReplaceFieldList(entry.fields, null, interactive, out cancel);
                         if (cancel) return;
-                        if (entry.conditionsString.Contains(globalSearchText))
+                        if (!string.IsNullOrEmpty(entry.conditionsString) && entry.conditionsString.Contains(globalSearchText))
                         {
                             matches++;
                             var confirmed = !interactive || ConfirmReplacement("Dialogue Entry Conditions:\n" + entry.conditionsString, out cancel);
@@ -412,7 +414,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                                 entry.conditionsString = entry.conditionsString.Replace(globalSearchText, globalReplaceText);
                             }
                         }
-                        if (entry.userScript.Contains(globalSearchText))
+                        if (!string.IsNullOrEmpty(entry.userScript) && entry.userScript.Contains(globalSearchText))
                         {
                             matches++;
                             var confirmed = !interactive || ConfirmReplacement("Dialogue Entry Script:\n" + entry.userScript, out cancel);
@@ -596,6 +598,10 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 if (exportFormat == ExportFormat.CSV) exportConversationsAfterEntries = EditorGUILayout.Toggle(new GUIContent("Convs. After Entries", "Put the Conversations section after the DialogueEntries section in the CSV file. Normally the Conversations section is before."), exportConversationsAfterEntries);
                 entrytagFormat = (EntrytagFormat)EditorGUILayout.EnumPopup("Entrytag Format", entrytagFormat, GUILayout.Width(400));
             }
+            if (exportFormat == ExportFormat.Screenplay)
+            {
+                omitNoneSequenceEntriesInScreenplay = EditorGUILayout.Toggle(new GUIContent("Omit Hidden Lines", "Omit entries whose Sequence fields are None() or Continue()."), omitNoneSequenceEntriesInScreenplay);
+            }
             encodingType = (EncodingType)EditorGUILayout.EnumPopup("Encoding", encodingType, GUILayout.Width(400));
             EditorGUILayout.BeginHorizontal();
             exportFormat = (ExportFormat)EditorGUILayout.EnumPopup("Format", exportFormat, GUILayout.Width(400));
@@ -734,7 +740,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 {
                     screenplayExportPath = screenplayExportPath.Replace("/", "\\");
                 }
-                ScreenplayExporter.Export(database, screenplayExportPath, encodingType);
+                ScreenplayExporter.Export(database, screenplayExportPath, encodingType, omitNoneSequenceEntriesInScreenplay);
                 EditorUtility.DisplayDialog("Export Complete", "The screenplay files were exported to " + screenplayExportPath + ".", "OK");
             }
         }

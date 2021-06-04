@@ -164,7 +164,7 @@ namespace PixelCrushers.DialogueSystem
 
         public override void OnDisable()
         {
-            base.OnEnable();
+            base.OnDisable();
             Stop();
         }
 
@@ -219,7 +219,7 @@ namespace PixelCrushers.DialogueSystem
             StartTypewriterCoroutine(fromIndex);
         }
 
-        protected void StartTypewriterCoroutine(int fromIndex)
+        protected virtual void StartTypewriterCoroutine(int fromIndex)
         {
             if (coroutineController == null || !coroutineController.gameObject.activeInHierarchy)
             {

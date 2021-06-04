@@ -40,6 +40,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands
             else
             {
                 if (DialogueDebug.logInfo) Debug.Log(string.Format("{0}: Sequencer: AnimatorPlayWait({1}, {2}, {3})", new object[] { DialogueDebug.Prefix, stateName, subject, crossfadeDuration }));
+                if (!animator.gameObject.activeSelf) animator.gameObject.SetActive(true);
                 if (Tools.ApproximatelyZero(crossfadeDuration))
                 {
                     animator.Play(stateName, layer);

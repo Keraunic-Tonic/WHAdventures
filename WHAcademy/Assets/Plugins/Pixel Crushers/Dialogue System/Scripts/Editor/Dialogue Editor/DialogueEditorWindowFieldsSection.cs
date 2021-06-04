@@ -19,7 +19,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
     {
 
         private List<string> textAreaFields = new List<string>() { "Description", "Success Description", "Failure Description" };
-        private static readonly string[] questStateStrings = { "(None)", "unassigned", "active", "success", "failure", "done", "abandoned", "grantable" };
+        private static readonly string[] questStateStrings = { "(None)", "unassigned", "active", "success", "failure", "done", "abandoned", "grantable", "returnToNPC" };
 
         private bool showStateFieldAsQuest = true;
 
@@ -159,17 +159,45 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
 
             // Delete button:
             if (GUILayout.Button(new GUIContent(" ", string.Format("Delete field {0}.", fieldTitle)), "OL Minus", GUILayout.Width(16))) fieldToRemove = i;
-
         }
 
-        private void DrawTextAreaFirstPart(Field field, bool isTitleEditable = true)
+        private void DrawMainSectionField(Field field)
         {
-            EditorGUI.BeginDisabledGroup(!isTitleEditable);
-            field.title = EditorGUILayout.TextField(field.title);
-            EditorGUI.EndDisabledGroup();
-            GUI.enabled = false;
-            EditorGUILayout.TextField(" ");
-            GUI.enabled = true;
+            EditorGUILayout.BeginHorizontal();
+            if (field.type == FieldType.Text)
+            {
+                DrawTextAreaFirstPart(field, false, false);
+                DrawTextAreaSecondPart(field);
+            }
+            else
+            {
+                DrawField(field, false, false);
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawTextAreaFirstPart(Field field, bool isTitleEditable = true, bool showMiddleField = true)
+        {
+            if (!isTitleEditable && !showMiddleField)
+            {
+                EditorGUILayout.LabelField(field.title);
+            }
+            else
+            {
+                EditorGUI.BeginDisabledGroup(!isTitleEditable);
+                field.title = EditorGUILayout.TextField(field.title);
+                EditorGUI.EndDisabledGroup();
+                if (showMiddleField)
+                {
+                    GUI.enabled = false;
+                    EditorGUILayout.TextField(" ");
+                    GUI.enabled = true;
+                }
+                else
+                {
+                    GUILayout.FlexibleSpace();
+                }
+            }
             DrawFieldType(field);
         }
 

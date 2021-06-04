@@ -120,15 +120,17 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     {
                         menu.AddItem(new GUIContent("Center on Current Entry"), false, GotoCurrentRuntimeEntry);
                     }
+                    menu.AddItem(new GUIContent("Conversation Properties"), false, InspectConversationProperties);
                 }
                 else
                 {
                     menu.AddDisabledItem(new GUIContent("Center on START"));
+                    menu.AddDisabledItem(new GUIContent("Conversation Properties"));
                 }
                 menu.AddItem(new GUIContent("New Conversation"), false, AddNewConversationToNodeEditor);
                 if (currentConversation != null)
                 {
-                    menu.AddItem(new GUIContent("Copy Conversation"), false, CopyConversationCallback, null);
+                    menu.AddItem(new GUIContent("Duplicate Conversation"), false, CopyConversationCallback, null);
                     menu.AddItem(new GUIContent("Delete Conversation"), false, DeleteConversationCallback, null);
                     menu.AddItem(new GUIContent("Split Pipes Into Nodes/Process Conversation"), false, SplitPipesIntoEntries, null);
                     menu.AddItem(new GUIContent("Split Pipes Into Nodes/Trim Whitespace Around Pipes"), trimWhitespaceAroundPipes, ToggleTrimWhitespaceAroundPipes);
@@ -267,15 +269,41 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
 
         private string[] GetConversationTitles()
         {
-            List<string> titles = new List<string>();
+            int numDuplicates = 0;
+            var titles = new List<string>();
+            var titlesWithoutAmpersand = new List<string>();
             if (database != null)
             {
                 foreach (var conversation in database.conversations)
                 {
-                    titles.Add(conversation.Title.Replace("&", "<AMPERSAND>"));
+                    // Make sure titles will work with GUI popup menus:
+                    var title = conversation.Title;
+                    if (title.StartsWith("/"))
+                    {
+                        title = "?" + title;
+                        conversation.Title = title;
+                    }
+                    if (title.EndsWith("/"))
+                    {
+                        title += "?";
+                        conversation.Title = title;
+                    }
+                    if (title.Contains("//"))
+                    {
+                        title = title.Replace("//", "/");
+                        conversation.Title = title;
+                    }
+                    if (titles.Contains(title))
+                    {
+                        numDuplicates++;
+                        title += " " + numDuplicates;
+                        conversation.Title = title;
+                    }
+                    titles.Add(title);
+                    titlesWithoutAmpersand.Add(title.Replace("&", "<AMPERSAND>"));
                 }
             }
-            return titles.ToArray();
+            return titlesWithoutAmpersand.ToArray();
         }
 
         private int GetCurrentConversationIndex()

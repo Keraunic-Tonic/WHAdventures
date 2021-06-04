@@ -88,7 +88,10 @@ namespace PixelCrushers.DialogueSystem
             if (SpecifierSpecifiesTag(specifier))
             {
                 var tag = GetSpecifiedTag(specifier);
-                return GameObject.FindGameObjectWithTag(tag);
+                var taggedGO = GameObject.FindGameObjectWithTag(tag);
+                if (taggedGO != null) return taggedGO;
+                var results = Tools.FindGameObjectsWithTagHard(tag);
+                return (results.Length > 0) ? results[0] : null;
             }
 
             // Search registered actors:
@@ -258,7 +261,13 @@ namespace PixelCrushers.DialogueSystem
         {
             GameObject go = (subject != null) ? subject.gameObject : DialogueManager.instance.gameObject;
             AudioSource audio = go.GetComponentInChildren<AudioSource>();
-            return (audio != null) ? audio : go.AddComponent<AudioSource>();
+            if (audio == null)
+            { 
+                audio = go.AddComponent<AudioSource>();
+                audio.playOnAwake = false;
+                audio.loop = false;
+            }
+            return audio;
         }
 
         /// <summary>

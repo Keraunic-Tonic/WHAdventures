@@ -176,6 +176,7 @@ namespace PixelCrushers.DialogueSystem
                 {
                     EditorWindowTools.EditorGUILayoutBeginGroup();
                     EditorGUILayout.PropertyField(displaySettingsProperty.FindPropertyRelative("dialogueUI"), true);
+                    EditorGUILayout.PropertyField(displaySettingsProperty.FindPropertyRelative("defaultCanvas"), true);
                     DrawLocalizationSettings();
                     DrawSubtitleSettings();
                     DrawCameraSettings();

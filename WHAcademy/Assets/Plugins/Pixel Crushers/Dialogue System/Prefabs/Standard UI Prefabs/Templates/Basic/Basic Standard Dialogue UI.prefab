@@ -1106,6 +1106,7 @@ MonoBehaviour:
       Culture=neutral, PublicKeyToken=null
   focusAnimationTrigger: 
   unfocusAnimationTrigger: 
+  waitForClose: 0
   onFocus:
     m_PersistentCalls:
       m_Calls: []
@@ -1254,6 +1255,7 @@ MonoBehaviour:
   unfocusAnimationTrigger: 
   useAnimatedPortraits: 0
   onlyShowNPCPortraits: 0
+  waitForClose: 0
   clearTextOnClose: 1
   onFocus:
     m_PersistentCalls:
@@ -1550,6 +1552,7 @@ MonoBehaviour:
     - {fileID: 11411294}
     defaultMenuPanel: {fileID: 11411294}
     useFirstResponseForMenuPortrait: 0
+    waitForClose: 1
   QTEIndicatorElements:
     QTEIndicators:
     - {fileID: 155762}
@@ -1995,8 +1998,8 @@ MonoBehaviour:
   m_IgnoreLayout: 0
   m_MinWidth: 64
   m_MinHeight: 64
-  m_PreferredWidth: -1
-  m_PreferredHeight: -1
+  m_PreferredWidth: 64
+  m_PreferredHeight: 64
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
@@ -2698,6 +2701,7 @@ MonoBehaviour:
   unfocusAnimationTrigger: 
   useAnimatedPortraits: 0
   onlyShowNPCPortraits: 0
+  waitForClose: 0
   clearTextOnClose: 1
   onFocus:
     m_PersistentCalls:
@@ -3199,6 +3203,8 @@ MonoBehaviour:
   scrollRect: {fileID: 11450908}
   scrollContent: {fileID: 22433532}
   scrollbar: {fileID: 11447230}
+  smoothScroll: 0
+  smoothScrollSpeed: 5
 --- !u!114 &11487422
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3360,8 +3366,8 @@ MonoBehaviour:
   m_IgnoreLayout: 0
   m_MinWidth: 64
   m_MinHeight: 64
-  m_PreferredWidth: -1
-  m_PreferredHeight: -1
+  m_PreferredWidth: 64
+  m_PreferredHeight: 64
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1

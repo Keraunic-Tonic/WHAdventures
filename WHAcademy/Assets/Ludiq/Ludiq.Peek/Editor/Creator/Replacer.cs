@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityObject = UnityEngine.Object;
 
 namespace Ludiq.Peek
@@ -39,14 +41,23 @@ namespace Ludiq.Peek
 						var rotation = target.transform.rotation;
 						var scale = target.transform.localScale;
 						var parent = target.transform.parent;
+						var siblingIndex = target.transform.GetSiblingIndex();
+						var scene = target.scene;
 
 						Undo.DestroyObjectImmediate(target);
 						var replacement = DuplicateGameObject(template);
+						Undo.MoveGameObjectToScene(replacement, scene, "Move Replacement To Scene");
 
 						replacement.transform.position = position;
 						replacement.transform.rotation = rotation;
-						//replacement.transform.localScale = scale;
+
+						if (PeekPlugin.Configuration.preserveScaleOnReplace)
+						{
+							replacement.transform.localScale = scale;
+						}
+
 						replacement.transform.SetParent(parent, true);
+						replacement.transform.SetSiblingIndex(siblingIndex);
 
 						if (selected)
 						{
@@ -63,20 +74,21 @@ namespace Ludiq.Peek
 			return FuzzyWindow.instance;
 		}
 
-		private static GameObject DuplicateGameObject(GameObject go)
+		private static GameObject DuplicateGameObject(GameObject original)
 		{
-			UnityObject prefabRoot = PrefabUtility.GetCorrespondingObjectFromSource(go);
+			UnityObject prefabRoot = PrefabUtility.GetCorrespondingObjectFromSource(original);
 
 			GameObject result;
 
 			if (prefabRoot != null)
 			{
-				result = (GameObject)PrefabUtility.InstantiatePrefab(prefabRoot);
+				result = (GameObject)PrefabUtility.InstantiatePrefab(prefabRoot, original.scene);
 			}
 			else
 			{
-				result = (GameObject)UnityObject.Instantiate(go);
-				result.name = go.name;
+				result = (GameObject)UnityObject.Instantiate(original);
+				result.name = original.name;
+				Undo.MoveGameObjectToScene(result, original.scene, "Duplicate " + result.name);
 			}
 
 			Undo.RegisterCreatedObjectUndo(result, "Duplicate " + result.name);

@@ -14,7 +14,13 @@ namespace Ludiq.Peek
 
 		public ITool tool { get; }
 
-		public Rect screenPosition { get; set; }
+		private Rect _screenPosition;
+
+		public Rect screenPosition
+		{
+			get => _screenPosition;
+			set => _screenPosition = value;
+		}
 
 		public Rect guiPosition
 		{
@@ -24,8 +30,10 @@ namespace Ludiq.Peek
 
 		public EventModifiers shortcutModifiers = EventModifiers.None;
 
-		public int? shortcutIndex { get; set; }
+		public int? shortcutIndex { get; set; } 
 
+		public string shortcutLabel { get; set; }
+		
 		public ToolbarControl toolbarControl { get; }
 
 		public Rect activatorScreenPosition
@@ -43,8 +51,21 @@ namespace Ludiq.Peek
 			}
 		}
 
-		public Rect activatorGuiPosition => GUIUtility.ScreenToGUIRect(activatorScreenPosition);
-
+		public Rect activatorGuiPosition
+		{
+			get
+			{
+				if (toolbarControl.isActivator)
+				{
+					return toolbarControl.guiPosition;
+				}
+				else
+				{
+					return guiPosition;
+				}
+			}
+		}
+		
 		private Rect previousScreenPosition;
 
 		private bool isPressed;
@@ -130,6 +151,8 @@ namespace Ludiq.Peek
 					tool.OnDropExited(this);
 					isDropping = false;
 				}
+
+				isPressed = false;
 			}
 
 			if (e.rawType == EventType.MouseUp)
@@ -275,16 +298,10 @@ namespace Ludiq.Peek
 			var icon = showPreview ? tool.preview : tool.icon;
 			var content = new GUIContent(showText ? tool.label : string.Empty, ColorUtility.GetPixel(ColorPalette.transparent));
 			var style = tool.SceneViewStyle(isFirst, isLast);
-			var guiPosition = GUILayoutUtility.GetRect(content, style);
 
-			if (e.type == EventType.Repaint)
+			if (e.type == EventType.Repaint && screenPosition != previousScreenPosition)
 			{
-				this.guiPosition = guiPosition;
-
-				if (screenPosition != previousScreenPosition)
-				{
-					tool.OnMove(this);
-				}
+				tool.OnMove(this);
 			}
 
 			var isHovered = guiPosition.Contains(e.mousePosition);
@@ -369,7 +386,7 @@ namespace Ludiq.Peek
 
 			if (showTooltip)
 			{
-				var tooltipContent = new GUIContent(hasShortcut ? (shortcutIndex % 10).ToString() : tool.tooltip);
+				var tooltipContent = new GUIContent(hasShortcut ? shortcutLabel : tool.tooltip);
 				var tooltipStyle = PeekStyles.sceneViewTooltip;
 				var tooltipSize = tooltipStyle.CalcSize(tooltipContent);
 
@@ -389,10 +406,12 @@ namespace Ludiq.Peek
 				};
 			}
 
-			if (e.type != EventType.Layout)
+			if (e.type == EventType.Repaint)
 			{
 				previousScreenPosition = screenPosition;
 			}
+
+			// EditorGUI.DrawRect(guiPosition, Color.red.WithAlpha(0.5f));
 
 			return delayedTooltip;
 		}

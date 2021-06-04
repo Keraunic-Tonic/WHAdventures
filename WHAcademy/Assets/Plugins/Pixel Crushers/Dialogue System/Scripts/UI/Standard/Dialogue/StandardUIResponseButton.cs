@@ -1,6 +1,7 @@
 // Copyright (c) Pixel Crushers. All rights reserved.
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace PixelCrushers.DialogueSystem
 {
@@ -10,7 +11,7 @@ namespace PixelCrushers.DialogueSystem
     /// response button in the dialogue UI.
     /// </summary>
     [AddComponentMenu("")] // Use wrapper.
-    public class StandardUIResponseButton : MonoBehaviour
+    public class StandardUIResponseButton : MonoBehaviour, ISelectHandler
     {
 
         public UnityEngine.UI.Button button;
@@ -89,7 +90,10 @@ namespace PixelCrushers.DialogueSystem
 
         public virtual void Start()
         {
-            if (button != null) button.onClick.AddListener(OnClick);
+            if (button != null && button.onClick.GetPersistentEventCount() == 0)
+            {
+                button.onClick.AddListener(OnClick);
+            }
         }
 
         /// <summary>
@@ -124,6 +128,13 @@ namespace PixelCrushers.DialogueSystem
             if (target != null) target.SendMessage("OnClick", response, SendMessageOptions.RequireReceiver);
         }
 
+        public void OnSelect(BaseEventData eventData)
+        {
+            if (DialogueManager.instance.conversationController != null)
+            {
+                DialogueManager.instance.conversationController.SetCurrentResponse(response);
+            }
+        }
     }
 
 }

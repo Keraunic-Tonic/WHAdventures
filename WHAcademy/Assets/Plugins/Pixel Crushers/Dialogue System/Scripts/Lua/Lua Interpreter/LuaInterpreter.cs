@@ -31,9 +31,16 @@ namespace Language.Lua
 
         public static LuaValue Interpreter(string luaCode, LuaTable enviroment)
         {
-            Chunk chunk = Parse(luaCode);
-            chunk.Enviroment = enviroment;
-            return chunk.Execute();
+            try
+            {
+                Chunk chunk = Parse(luaCode);
+                chunk.Enviroment = enviroment;
+                return chunk.Execute();
+            }
+            finally
+            {
+                parser.ClearErrors();
+            }
         }
 
         static Parser parser = new Parser();
@@ -48,7 +55,10 @@ namespace Language.Lua
             }
             else
             {
-                throw new ArgumentException("Code has syntax errors:\r\n" + parser.GetEorrorMessages());
+                //[PixelCrushers] Clear error stack:
+                var errorMessages = parser.GetErrorMessages();
+                parser.ClearErrors();
+                throw new ArgumentException("Code has syntax errors:\r\n" + errorMessages);
             }
         }
 

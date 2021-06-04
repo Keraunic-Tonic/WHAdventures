@@ -18,6 +18,9 @@ namespace PixelCrushers.DialogueSystem
         [Tooltip("Assign a GameObject that contains an active dialogue UI component. Can be a prefab. If unassigned, Dialogue Manager will search its children for an active dialogue UI component.")]
         public GameObject dialogueUI;
 
+        [Tooltip("Optional. Assign Canvas into which dialogue UI will be instantiated if it's a prefab.")]
+        public Canvas defaultCanvas;
+
         [System.Serializable]
         public class LocalizationSettings
         {
@@ -493,6 +496,18 @@ namespace PixelCrushers.DialogueSystem
         {
             return ShouldUseInputOverrides() ? conversationOverrideSettings.responseTimeout :
                 ((inputSettings != null) ? inputSettings.responseTimeout : 0);
+        }
+
+        public InputTrigger GetCancelSubtitleInput()
+        {
+            return ShouldUseInputOverrides() ? conversationOverrideSettings.cancelSubtitle :
+                ((inputSettings != null) ? inputSettings.cancel : null);
+        }
+
+        public InputTrigger GetCancelConversationInput()
+        {
+            return ShouldUseInputOverrides() ? conversationOverrideSettings.cancelConversation :
+                ((inputSettings != null) ? inputSettings.cancelConversation : null);
         }
 
     }

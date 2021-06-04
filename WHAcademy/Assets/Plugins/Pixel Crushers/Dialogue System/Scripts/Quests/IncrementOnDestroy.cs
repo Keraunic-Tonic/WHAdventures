@@ -57,6 +57,7 @@ namespace PixelCrushers.DialogueSystem
         public UnityEvent onIncrement = new UnityEvent();
 
         private bool listenForOnDestroy = false;
+        private bool awakeMarkedForDestroy = false;
 
         protected string actualVariableName
         {
@@ -64,12 +65,40 @@ namespace PixelCrushers.DialogueSystem
         }
         protected string ActualVariableName { get { return actualVariableName; } } // Kept for 1.x compatibility.
 
+        protected virtual void Awake()
+        {
+            // Check if a DestructibleSaver on the same GameObject will be destroying this
+            // object when save data is applied. If so, ignore the OnDestroy:
+            var destructibleSaver = GetComponent<DestructibleSaver>();
+            if (destructibleSaver != null)
+            {
+                var saveSystem = FindObjectOfType<SaveSystem>();
+                if (saveSystem != null)
+                {
+                    if (SaveSystem.currentSavedGameData != null)
+                    {
+                        var destructibleSaverKey = destructibleSaver.key;
+                        var s = SaveSystem.currentSavedGameData.GetData(destructibleSaverKey);
+                        if (!string.IsNullOrEmpty(s))
+                        {
+                            var data = SaveSystem.Deserialize<DestructibleSaver.DestructibleData>(s);
+                            if (data != null && data.destroyed)
+                            {
+                                listenForOnDestroy = false;
+                                awakeMarkedForDestroy = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
         /// <summary>
         /// Only listen for OnDestroy if the script has been enabled.
         /// </summary>
         public void OnEnable()
         {
-            listenForOnDestroy = true;
+            listenForOnDestroy = !awakeMarkedForDestroy;
             PersistentDataManager.RegisterPersistentData(gameObject);
         }
 

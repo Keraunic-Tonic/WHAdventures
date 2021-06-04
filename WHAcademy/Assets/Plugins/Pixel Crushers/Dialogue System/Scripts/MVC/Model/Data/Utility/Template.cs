@@ -64,7 +64,7 @@ namespace PixelCrushers.DialogueSystem
 
             template.locationFields.Clear();
             template.locationFields.Add(new Field("Name", string.Empty, FieldType.Text));
-            template.locationFields.Add(new Field("Pictures", "[]", FieldType.Files));
+            //template.locationFields.Add(new Field("Pictures", "[]", FieldType.Files));
             template.locationFields.Add(new Field("Description", string.Empty, FieldType.Text));
 
             template.variableFields.Add(new Field("Name", string.Empty, FieldType.Text));
@@ -72,22 +72,26 @@ namespace PixelCrushers.DialogueSystem
             template.variableFields.Add(new Field("Description", string.Empty, FieldType.Text));
 
             template.conversationFields.Add(new Field("Title", string.Empty, FieldType.Text));
-            template.conversationFields.Add(new Field("Pictures", "[]", FieldType.Files));
+            //template.conversationFields.Add(new Field("Pictures", "[]", FieldType.Files));
             template.conversationFields.Add(new Field("Description", string.Empty, FieldType.Text));
             template.conversationFields.Add(new Field("Actor", "0", FieldType.Actor));
             template.conversationFields.Add(new Field("Conversant", "0", FieldType.Actor));
 
             template.dialogueEntryFields.Add(new Field("Title", string.Empty, FieldType.Text));
-            template.dialogueEntryFields.Add(new Field("Pictures", "[]", FieldType.Files));
+            //template.dialogueEntryFields.Add(new Field("Pictures", "[]", FieldType.Files));
             template.dialogueEntryFields.Add(new Field("Description", string.Empty, FieldType.Text));
             template.dialogueEntryFields.Add(new Field("Actor", string.Empty, FieldType.Actor));
             template.dialogueEntryFields.Add(new Field("Conversant", string.Empty, FieldType.Actor));
             template.dialogueEntryFields.Add(new Field("Menu Text", string.Empty, FieldType.Text));
             template.dialogueEntryFields.Add(new Field("Dialogue Text", string.Empty, FieldType.Text));
-            template.dialogueEntryFields.Add(new Field("Parenthetical", string.Empty, FieldType.Text));
-            template.dialogueEntryFields.Add(new Field("Audio Files", "[]", FieldType.Files));
-            template.dialogueEntryFields.Add(new Field("Video File", string.Empty, FieldType.Text));
+            //template.dialogueEntryFields.Add(new Field("Parenthetical", string.Empty, FieldType.Text));
+            //template.dialogueEntryFields.Add(new Field("Audio Files", "[]", FieldType.Files));
+            //template.dialogueEntryFields.Add(new Field("Video File", string.Empty, FieldType.Text));
             template.dialogueEntryFields.Add(new Field("Sequence", string.Empty, FieldType.Text));
+
+            // Note: 2021-04-10: Removed default Chat Mapper fields from DS template. No need for them to
+            // take space unless you're using Chat Mapper, in which case the ChatMapperExporter will
+            // automatically re-add any missing mandatory fields.
 
             return template;
         }

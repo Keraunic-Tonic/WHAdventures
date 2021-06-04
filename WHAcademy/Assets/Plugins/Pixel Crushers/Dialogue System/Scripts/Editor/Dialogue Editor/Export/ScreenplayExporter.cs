@@ -13,16 +13,21 @@ namespace PixelCrushers.DialogueSystem
     /// </summary>
     public static class ScreenplayExporter
     {
+        private static bool omitNoneOrContinueEntries = false;
+        private static string lastActorName = string.Empty;
 
         /// <summary>
         /// The main export method. Exports screenplay text files for each language.
         /// </summary>
         /// <param name="database">Source database.</param>
         /// <param name="filename">Target filename.</param>
-        /// <param name="exportActors">If set to <c>true</c> export actors.</param>
-        public static void Export(DialogueDatabase database, string filename, EncodingType encodingType)
+        /// <param name="encodingType">Encoding type.</param>
+        /// <param name="omitNoneSequenceEntries">Omit lines whose Sequence fields are set to None() or Continue().</param>
+        public static void Export(DialogueDatabase database, string filename, EncodingType encodingType, bool omitNoneSequenceEntries)
         {
             if (database == null || string.IsNullOrEmpty(filename)) return;
+            omitNoneOrContinueEntries = omitNoneSequenceEntries;
+            lastActorName = string.Empty;
             var otherLanguages = FindOtherLanguages(database);
             ExportFile(database, string.Empty, filename, encodingType);
             foreach (var language in otherLanguages)
@@ -124,13 +129,16 @@ namespace PixelCrushers.DialogueSystem
             visited.Add(entry);
             if (entry.id > 0)
             {
+                var omit = omitNoneOrContinueEntries && (entry.Sequence == "None()" || entry.Sequence == "Continue()");
+                var show = !omit;
+
                 // Write this entry (the root of the subtree).
 
                 // Write entry ID if necessary:
                 if (siblingIndex == -1)
                 {
-                    file.WriteLine(string.Format("\tUnconnected entry [{0}]:", entry.id));
-                    file.WriteLine(string.Empty);
+                    if (show) file.WriteLine(string.Format("\tUnconnected entry [{0}]:", entry.id));
+                    if (show) file.WriteLine(string.Empty);
                 }
                 else if ((siblingIndex == 0 && !string.IsNullOrEmpty(entry.conditionsString)) ||
                     (siblingIndex > 0)  ||
@@ -138,24 +146,33 @@ namespace PixelCrushers.DialogueSystem
                 {
                     if (string.IsNullOrEmpty(entry.conditionsString))
                     {
-                        file.WriteLine(string.Format("\tEntry [{0}]:", entry.id));
+                        if (show) file.WriteLine(string.Format("\tEntry [{0}]:", entry.id));
                     }
                     else
                     {
-                        file.WriteLine(string.Format("\tEntry [{0}]: ({1})", entry.id, entry.conditionsString));
+                        if (show) file.WriteLine(string.Format("\tEntry [{0}]: ({1})", entry.id, entry.conditionsString));
                     }
-                    file.WriteLine(string.Empty);
+                    if (show) file.WriteLine(string.Empty);
                 }
                 if (!actorNames.ContainsKey(entry.ActorID))
                 {
                     Actor actor = database.GetActor(entry.ActorID);
                     actorNames.Add(entry.ActorID, (actor != null) ? actor.Name.ToUpper() : "ACTOR");
                 }
-                file.WriteLine(string.Format("\t\t\t\t{0}", actorNames[entry.ActorID]));
+                if (show)
+                {
+                    var actorName = actorNames[entry.ActorID];
+                    if (actorName != lastActorName)
+                    {
+                        lastActorName = actorName;
+                        file.WriteLine(string.Format("\t\t\t\t{0}", actorName));
+                    }
+                }
+
                 var description = Field.LookupValue(entry.fields, "Description");
                 if (!string.IsNullOrEmpty(description))
                 {
-                    file.WriteLine(string.Format("\t\t\t({0})", description));
+                    if (show) file.WriteLine(string.Format("\t\t\t({0})", description));
                 }
                 var lineText = string.IsNullOrEmpty(language) ? entry.subtitleText : Field.LookupValue(entry.fields, language);
                 if (entry.isGroup)
@@ -164,8 +181,8 @@ namespace PixelCrushers.DialogueSystem
                     lineText = Field.LookupValue(entry.fields, "Title");
                     lineText = !string.IsNullOrEmpty(lineText) ? ("(" + lineText + ")") : "(Group entry; no dialogue)";
                 }
-                file.WriteLine(string.Format("\t\t{0}", lineText));
-                file.WriteLine(string.Empty);
+                if (show) file.WriteLine(string.Format("\t\t{0}", lineText));
+                if (show) file.WriteLine(string.Empty);
             }
 
             // Handle link summary:

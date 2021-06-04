@@ -2,6 +2,7 @@
 
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 using System.Collections.Generic;
 
 namespace PixelCrushers.DialogueSystem.DialogueEditor
@@ -18,7 +19,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
         private const int NoID = -1;
 
         [SerializeField]
-        private bool showNodeEditor = true;
+        public bool showNodeEditor = true;
 
         private Conversation _currentConversation = null;
         [SerializeField]
@@ -43,6 +44,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
         private int conversantID = NoID;
         private bool areParticipantsValid = false;
         private DialogueEntry startEntry = null;
+        private ReorderableList conversationReorderableList = null;
 
         private void SetCurrentConversation(Conversation conversation)
         {
@@ -122,20 +124,46 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
             if (showNodeEditor) CheckNodeArrangement();
         }
 
+        private void OpenPreviousConversation()
+        {
+            if (database == null) return;
+            Conversation conversationToOpen = (database.conversations.Count > 0) ? database.conversations[0] : null;
+            if (currentConversation != null)
+            {
+                conversationIndex = database.conversations.IndexOf(currentConversation);
+                conversationIndex = (conversationIndex == 0) ? (database.conversations.Count - 1) : (conversationIndex - 1);
+                conversationToOpen = database.conversations[conversationIndex];
+            }
+            OpenConversation(conversationToOpen);
+        }
+
+        private void OpenNextConversation()
+        {
+            if (database == null) return;
+            Conversation conversationToOpen = (database.conversations.Count > 0) ? database.conversations[0] : null;
+            if (currentConversation != null)
+            {
+                conversationIndex = database.conversations.IndexOf(currentConversation);
+                conversationIndex = (conversationIndex == database.conversations.Count - 1) ? 0 : (conversationIndex + 1);
+                conversationToOpen = database.conversations[conversationIndex];
+            }
+            OpenConversation(conversationToOpen);
+        }
+
         private void DrawConversationSection()
         {
             if (showNodeEditor)
             {
                 DrawConversationSectionNodeStyle();
             }
-            else {
+            else 
+            {
                 DrawConversationSectionOutlineStyle();
             }
         }
 
         private void DrawConversationSectionOutlineStyle()
         {
-            inspectorSelection = null;
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Conversations", EditorStyles.boldLabel);
             GUILayout.FlexibleSpace();
@@ -260,64 +288,155 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
 
         private void DrawConversations()
         {
-            EditorWindowTools.StartIndentedSection();
-            showStateFieldAsQuest = false;
-            Conversation conversationToRemove = null;
-            int indexToMoveUp = -1;
-            int indexToMoveDown = -1;
-            for (int index = 0; index < database.conversations.Count; index++)
+            if (conversationReorderableList == null)
             {
-                Conversation conversation = database.conversations[index];
-                EditorGUILayout.BeginHorizontal();
-                bool isCurrentConversation = (conversation == currentConversation);
-                bool foldout = isCurrentConversation;
-                foldout = EditorGUILayout.Foldout(foldout, conversation.Title);
-                EditorGUI.BeginDisabledGroup(index >= (database.conversations.Count - 1));
-                if (GUILayout.Button(new GUIContent("↓", "Move down"), GUILayout.Width(16))) indexToMoveDown = index;
-                EditorGUI.EndDisabledGroup();
-                EditorGUI.BeginDisabledGroup(index == 0);
-                if (GUILayout.Button(new GUIContent("↑", "Move up"), GUILayout.Width(16))) indexToMoveUp = index;
-                EditorGUI.EndDisabledGroup();
-                if (GUILayout.Button(new GUIContent(" ", string.Format("Delete {0}.", conversation.Title)), "OL Minus", GUILayout.Width(16))) conversationToRemove = conversation;
-                EditorGUILayout.EndHorizontal();
-                if (foldout)
-                {
-                    if (!isCurrentConversation) OpenConversation(conversation);
-                    DrawConversation();
-                }
-                else if (isCurrentConversation)
-                {
-                    ResetConversationSection();
-                }
+                conversationReorderableList = new ReorderableList(database.conversations, typeof(Conversation), true, true, true, true);
+                conversationReorderableList.drawHeaderCallback = DrawConversationListHeader;
+                conversationReorderableList.drawElementCallback = DrawConversationListElement;
+                //conversationReorderableList.drawElementBackgroundCallback = DrawConversationListElementBackground;
+                conversationReorderableList.onAddCallback = OnConversationListAdd;
+                conversationReorderableList.onRemoveCallback = OnConversationListRemove;
+                conversationReorderableList.onSelectCallback = OnConversationListSelect;
+                conversationReorderableList.onReorderCallback = OnConversationListReorder;
             }
-            if (indexToMoveDown >= 0)
-            {
-                var conversation = database.conversations[indexToMoveDown];
-                database.conversations.RemoveAt(indexToMoveDown);
-                database.conversations.Insert(indexToMoveDown + 1, conversation);
-                SetDatabaseDirty("Move Conversation Up");
-            }
-            else if (indexToMoveUp >= 0)
-            {
-                var conversation = database.conversations[indexToMoveUp];
-                database.conversations.RemoveAt(indexToMoveUp);
-                database.conversations.Insert(indexToMoveUp - 1, conversation);
-                SetDatabaseDirty("Move Conversation Down");
-            }
-            else if (conversationToRemove != null)
-            {
-                if (EditorUtility.DisplayDialog(string.Format("Delete '{0}'?", conversationToRemove.Title),
-                    "Are you sure you want to delete this conversation?\nYou cannot undo this operation!", "Delete", "Cancel"))
-                {
-                    if (conversationToRemove == currentConversation) ResetConversationSection();
-                    database.conversations.Remove(conversationToRemove);
-                    SetDatabaseDirty("Delete Conversation");
-                }
-            }
-            EditorWindowTools.EndIndentedSection();
+            conversationReorderableList.DoLayoutList();
+
+            //--- 2021-04-10: Switched to reorderable list for easier reordering and more consistency with other pages.
+
+            //EditorWindowTools.StartIndentedSection();
+            //showStateFieldAsQuest = false;
+            //Conversation conversationToRemove = null;
+            //int indexToMoveUp = -1;
+            //int indexToMoveDown = -1;
+            //for (int index = 0; index < database.conversations.Count; index++)
+            //{
+            //    Conversation conversation = database.conversations[index];
+            //    EditorGUILayout.BeginHorizontal();
+            //    bool isCurrentConversation = (conversation == currentConversation);
+            //    bool foldout = isCurrentConversation;
+            //    foldout = EditorGUILayout.Foldout(foldout, conversation.Title);
+            //    EditorGUI.BeginDisabledGroup(index >= (database.conversations.Count - 1));
+            //    if (GUILayout.Button(new GUIContent("↓", "Move down"), GUILayout.Width(16))) indexToMoveDown = index;
+            //    EditorGUI.EndDisabledGroup();
+            //    EditorGUI.BeginDisabledGroup(index == 0);
+            //    if (GUILayout.Button(new GUIContent("↑", "Move up"), GUILayout.Width(16))) indexToMoveUp = index;
+            //    EditorGUI.EndDisabledGroup();
+            //    if (GUILayout.Button(new GUIContent(" ", string.Format("Delete {0}.", conversation.Title)), "OL Minus", GUILayout.Width(16))) conversationToRemove = conversation;
+            //    EditorGUILayout.EndHorizontal();
+            //    if (foldout)
+            //    {
+            //        if (!isCurrentConversation) OpenConversation(conversation);
+            //        DrawConversation();
+            //    }
+            //    else if (isCurrentConversation)
+            //    {
+            //        ResetConversationSection();
+            //    }
+            //}
+            //if (indexToMoveDown >= 0)
+            //{
+            //    var conversation = database.conversations[indexToMoveDown];
+            //    database.conversations.RemoveAt(indexToMoveDown);
+            //    database.conversations.Insert(indexToMoveDown + 1, conversation);
+            //    SetDatabaseDirty("Move Conversation Up");
+            //}
+            //else if (indexToMoveUp >= 0)
+            //{
+            //    var conversation = database.conversations[indexToMoveUp];
+            //    database.conversations.RemoveAt(indexToMoveUp);
+            //    database.conversations.Insert(indexToMoveUp - 1, conversation);
+            //    SetDatabaseDirty("Move Conversation Down");
+            //}
+            //else if (conversationToRemove != null)
+            //{
+            //    if (EditorUtility.DisplayDialog(string.Format("Delete '{0}'?", conversationToRemove.Title),
+            //        "Are you sure you want to delete this conversation?\nYou cannot undo this operation!", "Delete", "Cancel"))
+            //    {
+            //        if (conversationToRemove == currentConversation) ResetConversationSection();
+            //        database.conversations.Remove(conversationToRemove);
+            //        SetDatabaseDirty("Delete Conversation");
+            //    }
+            //}
+            //EditorWindowTools.EndIndentedSection();
         }
 
-        private void DrawConversation()
+        private void DrawConversationListHeader(Rect rect)
+        {
+            EditorGUI.LabelField(rect, "Title");
+        }
+
+        private void DrawConversationListElement(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            if (!(0 <= index && index < database.conversations.Count)) return;
+            var nameControl = "ConversationTitle" + index;
+            var conversation = database.conversations[index];
+            var conversationTitle = conversation.Title;
+            EditorGUI.BeginChangeCheck();
+            GUI.SetNextControlName(nameControl);
+            conversationTitle = EditorGUI.TextField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), GUIContent.none, conversationTitle);
+            if (EditorGUI.EndChangeCheck()) conversation.Title = conversationTitle;
+            var focusedControl = GUI.GetNameOfFocusedControl();
+            if (string.Equals(nameControl, focusedControl))
+            {
+                inspectorSelection = conversation;
+                if (conversation != currentConversation) OpenConversation(conversation);
+            }
+        }
+
+        //private void DrawConversationListElementBackground(Rect rect, int index, bool isActive, bool isFocused)
+        //{
+        //    if (!(0 <= index && index < database.conversations.Count)) return;
+        //    var conversation = database.conversations[index];
+        //    ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, true);
+        //}
+
+        private void OnConversationListAdd(ReorderableList list)
+        {
+            AddNewConversation();
+        }
+
+        private void OnConversationListRemove(ReorderableList list)
+        {
+            if (!(0 <= list.index && list.index < database.conversations.Count)) return;
+            var conversation = database.conversations[list.index];
+            if (conversation == null) return;
+            var deletedLastOne = list.count == 1;
+            if (EditorUtility.DisplayDialog(string.Format("Delete '{0}'?", EditorTools.GetAssetName(conversation)), "Are you sure you want to delete this conversation?", "Delete", "Cancel"))
+            {
+                ReorderableList.defaultBehaviours.DoRemoveButton(list);
+                if (deletedLastOne) inspectorSelection = null;
+                else
+                {
+                    var nextConversation = (list.index < list.count) ? database.conversations[list.index] : (list.count > 0) ? database.conversations[list.count - 1] : null;
+                    if (nextConversation != null)
+                    {
+                        OpenConversation(nextConversation);
+                    }
+                    else
+                    {
+                        currentConversation = null;
+                        inspectorSelection = null;
+                    }
+                }
+                SetDatabaseDirty("Remove Conversation");
+            }
+        }
+
+        private void OnConversationListReorder(ReorderableList list)
+        {
+            SetDatabaseDirty("Reorder Conversations");
+        }
+
+        private void OnConversationListSelect(ReorderableList list)
+        {
+            if (!(0 <= list.index && list.index < database.conversations.Count)) return;
+            var conversation = database.conversations[list.index];
+            Debug.Log("Select " + conversation.Title);
+            if (conversation != currentConversation) OpenConversation(conversation);
+            inspectorSelection = conversation;
+        }
+
+        public void DrawConversationOutline()
         {
             if (currentConversation == null) return;
             EditorWindowTools.StartIndentedSection();
@@ -388,9 +507,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 if (string.IsNullOrEmpty(fieldTitle)) continue;
                 if (!template.conversationPrimaryFieldTitles.Contains(field.title)) continue;
                 if (conversationBuiltInFieldTitles.Contains(fieldTitle)) continue;
-                EditorGUILayout.BeginHorizontal();
-                DrawField(field, false, false);
-                EditorGUILayout.EndHorizontal();
+                DrawMainSectionField(field);
             }
         }
 
@@ -614,6 +731,10 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 settings.alwaysForceResponseMenu = EditorGUILayout.Toggle("Always Force Response Menu", settings.alwaysForceResponseMenu);
                 settings.includeInvalidEntries = EditorGUILayout.Toggle("Include Invalid Entries", settings.includeInvalidEntries);
                 settings.responseTimeout = EditorGUILayout.FloatField("Response Timeout", settings.responseTimeout);
+                settings.cancelSubtitle.key = (KeyCode)EditorGUILayout.EnumPopup("Cancel Subtitle Key", settings.cancelSubtitle.key);
+                settings.cancelSubtitle.buttonName = EditorGUILayout.TextField("Cancel Subtitle Button", settings.cancelSubtitle.buttonName);
+                settings.cancelConversation.key = (KeyCode)EditorGUILayout.EnumPopup("Cancel Conversation Key", settings.cancelConversation.key);
+                settings.cancelConversation.buttonName = EditorGUILayout.TextField("Cancel Conversation Button", settings.cancelConversation.buttonName);
             }
 
             EditorWindowTools.EndIndentedSection();

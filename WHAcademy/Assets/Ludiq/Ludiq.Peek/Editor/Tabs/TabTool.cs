@@ -144,7 +144,7 @@ namespace Ludiq.Peek
 
 		public override void OnMove(ToolControl control)
 		{
-			if (tab != null && activatorControl == control && !isPinned && GUIUtility.hotControl == 0)
+			if (tab != null && activatorControl == control && !isPinned)
 			{
 				AlignWindow();
 			}

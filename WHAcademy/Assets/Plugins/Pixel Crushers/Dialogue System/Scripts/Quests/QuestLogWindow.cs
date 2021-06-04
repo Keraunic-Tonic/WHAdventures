@@ -318,10 +318,11 @@ namespace PixelCrushers.DialogueSystem
         }
 
         protected virtual QuestInfo GetQuestInfo(string group, string title)
-        {
+        {            
             FormattedText description = FormattedText.Parse(QuestLog.GetQuestDescription(title), DialogueManager.masterDatabase.emphasisSettings);
             FormattedText localizedTitle = FormattedText.Parse(QuestLog.GetQuestTitle(title), DialogueManager.masterDatabase.emphasisSettings);
             FormattedText heading = (questHeadingSource == QuestHeadingSource.Description) ? description : localizedTitle;
+            string localizedGroup = string.IsNullOrEmpty(group) ? string.Empty : QuestLog.GetQuestGroup(title);
             bool abandonable = QuestLog.IsQuestAbandonable(title) && isShowingActiveQuests;
             bool trackable = QuestLog.IsQuestTrackingAvailable(title) && isShowingActiveQuests;
             bool track = QuestLog.IsQuestTrackingEnabled(title);
@@ -333,7 +334,7 @@ namespace PixelCrushers.DialogueSystem
                 entries[i] = FormattedText.Parse(QuestLog.GetQuestEntry(title, i + 1), DialogueManager.masterDatabase.emphasisSettings);
                 entryStates[i] = QuestLog.GetQuestEntryState(title, i + 1);
             }
-            return new QuestInfo(group, title, heading, description, entries, entryStates, trackable, track, abandonable);
+            return new QuestInfo(localizedGroup, title, heading, description, entries, entryStates, trackable, track, abandonable);
         }
 
         /// <summary>

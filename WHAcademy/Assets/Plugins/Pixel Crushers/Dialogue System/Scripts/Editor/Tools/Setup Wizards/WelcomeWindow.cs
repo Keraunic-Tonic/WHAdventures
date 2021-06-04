@@ -287,7 +287,7 @@ namespace PixelCrushers.DialogueSystem
 
         private void DrawFooter()
         {
-            var newShowOnStart = EditorGUI.ToggleLeft(new Rect(5, position.height - 5 - EditorGUIUtility.singleLineHeight, position.width - 90, EditorGUIUtility.singleLineHeight), "Show at start", showOnStart);
+            var newShowOnStart = EditorGUI.ToggleLeft(new Rect(5, position.height - 5 - EditorGUIUtility.singleLineHeight, position.width - (70+150), EditorGUIUtility.singleLineHeight), "Show at start", showOnStart);
             if (newShowOnStart != showOnStart)
             {
                 showOnStart = newShowOnStart;
@@ -297,6 +297,12 @@ namespace PixelCrushers.DialogueSystem
             {
                 Application.OpenURL("http://www.pixelcrushers.com/support-form/");
             }
+#if EVALUATION_VERSION
+            if (GUI.Button(new Rect(position.width - 154, position.height - 5 - EditorGUIUtility.singleLineHeight, 70, EditorGUIUtility.singleLineHeight), new GUIContent("Buy", "Buy a license")))
+            {
+                Application.OpenURL("https://assetstore.unity.com/packages/tools/ai/dialogue-system-for-unity-11672");
+            }
+#endif
         }
 
     }

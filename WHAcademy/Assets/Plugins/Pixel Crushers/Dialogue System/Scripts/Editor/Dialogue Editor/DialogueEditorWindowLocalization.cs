@@ -34,6 +34,18 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
 
         private ReorderableList exportLanguageList = null;
 
+        [SerializeField]
+        private bool exportLocalizationConversationTitle = false;
+
+        [SerializeField]
+        private bool exportLocalizationKeyField = false;
+
+        [SerializeField]
+        private string localizationKeyField = "Articy Id";
+
+        private GUIContent exportLocalizationConversationTitleLabel = new GUIContent("Export Conversation Title Instead Of ID", "Export conversation title instead of ID. Titles should be unique.");
+        private GUIContent exportLocalizationKeyFieldLabel = new GUIContent("Use Key Field (articy)", "Tie each dialogue entry row to a key field instead of conversation & entry IDs.");
+
         #endregion
 
         #region Draw Localization Foldout Section
@@ -41,6 +53,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
         private void DrawLocalizationSection()
         {
             EditorWindowTools.StartIndentedSection();
+
             if (exportLanguageList == null)
             {
                 exportLanguageList = new ReorderableList(localizationLanguages.languages, typeof(string), true, true, true, true);
@@ -50,13 +63,22 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
             }
             exportLanguageList.DoLayoutList();
 
+            exportLocalizationConversationTitle = EditorGUILayout.ToggleLeft(exportLocalizationConversationTitleLabel, exportLocalizationConversationTitle);
             EditorGUILayout.BeginHorizontal();
-            GUILayout.Label("Checkbox also imports updated main text from file.");
+            exportLocalizationKeyField = EditorGUILayout.ToggleLeft(exportLocalizationKeyFieldLabel, exportLocalizationKeyField, GUILayout.Width(200));
+            if (exportLocalizationKeyField)
+            {
+                localizationKeyField = EditorGUILayout.TextField(GUIContent.none, localizationKeyField, GUILayout.Width(200));
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("Find Languages", GUILayout.Width(120)))
             {
                 FindLanguagesForLocalizationExportImport();
             }
+            EditorGUI.BeginDisabledGroup(exportLocalizationKeyField && string.IsNullOrEmpty(localizationKeyField));
             if (GUILayout.Button("Export...", GUILayout.Width(100)))
             {
                 var newOutputFolder = EditorUtility.OpenFolderPanel("Export Localization Files", localizationLanguages.outputFolder, string.Empty);
@@ -75,20 +97,21 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     ImportLocalizationFiles();
                 }
             }
+            EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
             EditorWindowTools.EndIndentedSection();
         }
 
         private void OnDrawExportLanguageListHeader(Rect rect)
         {
-            EditorGUI.LabelField(rect, "Languages");
+            EditorGUI.LabelField(rect, "Languages (checkbox also updates main text when reimporting language file)");
         }
 
         private void OnDrawExportLanguageListElement(Rect rect, int index, bool isActive, bool isFocused)
         {
             if (!(0 <= index && index < localizationLanguages.languages.Count)) return;
             var toggleWidth = 18f;
-            var langRect = new Rect(rect.x, rect.y, rect.width - toggleWidth - 4, rect.height);
+            var langRect = new Rect(rect.x, rect.y, rect.width - toggleWidth - 4, EditorGUIUtility.singleLineHeight);
             var mainRect = new Rect(rect.x + rect.width - toggleWidth, rect.y, toggleWidth, rect.height);
             localizationLanguages.languages[index] = EditorGUI.TextField(langRect, localizationLanguages.languages[index]);
             EditorGUI.BeginChangeCheck();
@@ -183,8 +206,9 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     {
                         file.WriteLine(language);
                         var orderedFields = new string[] { "Dialogue Text", language, "Menu Text", "Menu Text " + language, "Description" };
-                        file.WriteLine("{0},{1},{2},{3},{4},{5},{6},{7}",
-                            "Conversation ID",
+                        var line = string.Format
+                        ("{0},{1},{2},{3},{4},{5},{6},{7}",
+                            (exportLocalizationConversationTitle ? "Conversation" : "Conversation ID"),
                             "Entry ID",
                             "Actor",
                             "Original Text",
@@ -192,8 +216,14 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                             "Original Menu",
                             "Translated Menu [" + language + "]",
                             "Description");
+                        if (exportLocalizationKeyField)
+                        {
+                            line = localizationKeyField + "," + line;
+                        }
+                        file.WriteLine(line);
                         foreach (var c in database.conversations)
                         {
+                            var conversationTitle = c.Title;
                             foreach (var de in c.dialogueEntries)
                             {
                                 var fields = new List<string>();
@@ -203,7 +233,14 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                                     fields.Add((f != null) ? f.value : string.Empty);
                                 }
                                 var sb = new StringBuilder();
-                                sb.AppendFormat("{0},{1},{2}", c.id, de.id, WrapCSVValue(LookupActorName(de.ActorID)));
+                                if (exportLocalizationKeyField)
+                                {
+                                    sb.AppendFormat("{0},", WrapCSVValue(Field.LookupValue(de.fields, localizationKeyField)));
+                                }
+                                sb.AppendFormat("{0},{1},{2}", 
+                                    (exportLocalizationConversationTitle ? WrapCSVValue(conversationTitle) : c.id.ToString()), 
+                                    de.id, 
+                                    WrapCSVValue(LookupActorName(de.ActorID)));
                                 foreach (string value in fields)
                                     sb.AppendFormat(",{0}", WrapCSVValue(value));
                                 file.WriteLine(sb.ToString());
@@ -330,10 +367,15 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
 
         #region Import Section
 
+        private Dictionary<string, int> conversationIDCache = new Dictionary<string, int>();
+        private Conversation lastCachedConversation = null;
+
         private void ImportLocalizationFiles()
         {
             try
             {
+                conversationIDCache.Clear();
+                lastCachedConversation = null;
                 var numLanguages = localizationLanguages.languages.Count;
                 for (int i = 0; i < numLanguages; i++)
                 {
@@ -352,21 +394,66 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                     for (int j = 2; j < lines.Count; j++)
                     {
                         var columns = GetCSVColumnsFromLine(lines[j]);
-                        if (columns.Length < 7)
+                        if (columns.Count < 7)
                         {
                             Debug.LogError(filename + ":" + (j + 1) + " Invalid line: " + lines[j]);
                         }
                         else
                         {
-                            var conversationID = Tools.StringToInt(columns[0]);
-                            var entryID = Tools.StringToInt(columns[1]);
-                            //columns[2] is Actor. Ignore it.
-                            var entry = database.GetDialogueEntry(conversationID, entryID);
-                            if (entry == null)
+                            // Peel key field value off front if exporting key fields:
+                            string keyFieldValue = null;
+                            if (exportLocalizationKeyField)
                             {
-                                Debug.LogError(filename + ":" + (j + 1) + " Database doesn't contain conversation " + conversationID + " dialogue entry " + entryID);
+                                keyFieldValue = columns[0];
+                                columns.RemoveAt(0);
+                            }
+
+                            // Get conversation ID:
+                            int conversationID = 0;
+                            if (exportLocalizationConversationTitle)
+                            {
+                                var conversationTitle = columns[0];
+                                if (!conversationIDCache.ContainsKey(conversationTitle))
+                                {
+                                    var conversation = database.GetConversation(columns[0]);
+                                    if (conversation == null)
+                                    {
+                                        Debug.LogError(filename + ":" + (j + 1) + " Database doesn't contain conversation '" + columns[0] + "'.");
+                                        continue;
+                                    }
+                                    conversationIDCache[conversationTitle] = conversation.id;
+                                }
+                                conversationID = conversationIDCache[conversationTitle];
                             }
                             else
+                            {
+                                conversationID = Tools.StringToInt(columns[0]);
+                            }
+
+                            var entryID = Tools.StringToInt(columns[1]);
+                            //columns[2] is Actor. Ignore it.
+                            DialogueEntry entry = null;
+                            if (exportLocalizationKeyField)
+                            {
+                                // Find entry by key field:
+                                if (lastCachedConversation == null || lastCachedConversation.id != conversationID)
+                                {
+                                    lastCachedConversation = database.GetConversation(conversationID);
+                                }
+                                entry = lastCachedConversation.dialogueEntries.Find(x => Field.LookupValue(x.fields, localizationKeyField) == keyFieldValue);
+                            }
+                            else
+                            {
+                                // Find entry by ID:
+                                entry = database.GetDialogueEntry(conversationID, entryID);
+                                if (entry == null)
+                                {
+                                    Debug.LogError(filename + ":" + (j + 1) + " Database doesn't contain conversation " + conversationID + " dialogue entry " + entryID);
+                                }
+                            }
+
+                            // If we found the entry, update its fields:
+                            if (entry != null)
                             {
                                 Field.SetValue(entry.fields, language, columns[4], FieldType.Localization);
                                 Field.SetValue(entry.fields, "Menu Text " + language, columns[6], FieldType.Localization);
@@ -390,7 +477,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                         for (int j = 2; j < lines.Count; j++)
                         {
                             var columns = GetCSVColumnsFromLine(lines[j]);
-                            if (columns.Length < 11)
+                            if (columns.Count < 11)
                             {
                                 Debug.LogError(filename + ":" + (j + 1) + " Invalid line: " + lines[j]);
                             }
@@ -449,7 +536,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
             EditorUtility.DisplayDialog("Imported Localization CSV", "The CSV files have been imported back into your dialogue database.", "OK");
         }
 
-        private string[] GetCSVColumnsFromLine(string line)
+        private List<string> GetCSVColumnsFromLine(string line)
         {
             Regex csvSplit = new Regex("(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)");
             List<string> values = new List<string>();
@@ -457,7 +544,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
             {
                 values.Add(UnwrapCSVValue(match.Value.TrimStart(',')));
             }
-            return values.ToArray();
+            return values;
         }
 
         private List<string> ReadCSV(string filename)

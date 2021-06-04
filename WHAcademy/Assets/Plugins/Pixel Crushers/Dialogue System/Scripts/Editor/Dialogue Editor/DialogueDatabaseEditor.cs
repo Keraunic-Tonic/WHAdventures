@@ -17,6 +17,8 @@ namespace PixelCrushers.DialogueSystem
 
         public static DialogueDatabaseEditor instance = null;
 
+        private static bool showDefaultInspector = false;
+
         public enum RefreshSource
         {
             None,
@@ -70,7 +72,14 @@ namespace PixelCrushers.DialogueSystem
             else
             {
                 DrawExtraFeatures();
-                DrawDefaultInspector();
+                if (showDefaultInspector)
+                {
+                    DrawDefaultInspector();
+                }
+                else
+                {
+                    DrawSummary();
+                }
             }
         }
 
@@ -86,11 +95,23 @@ namespace PixelCrushers.DialogueSystem
             EditorGUILayout.EndHorizontal();
             EditorWindowTools.DrawHorizontalLine();
             if (GUI.changed) EditorUtility.SetDirty(target);
+            showDefaultInspector = EditorGUILayout.ToggleLeft("Show Default Inspector", showDefaultInspector);
             if (clickedReconvert)
             {
                 ReconvertDatabase();
                 EditorUtility.SetDirty(target);
             }
+        }
+
+        private void DrawSummary()
+        {
+            var database = target as DialogueDatabase;
+            if (database == null) return;
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUILayout.TextField("Version", database.version);
+            EditorGUILayout.TextField("Author", database.author);
+            EditorGUILayout.TextField("Description", database.description);
+            EditorGUI.EndDisabledGroup();
         }
 
         private void OpenDialogueEditorWindow()
@@ -177,11 +198,18 @@ namespace PixelCrushers.DialogueSystem
                 else if (selectionType == typeof(Conversation))
                 {
                     DrawInspectorSelectionTitle("Conversation");
-                    if (DialogueEditor.DialogueEditorWindow.instance.DrawConversationProperties())
+                    if (DialogueEditor.DialogueEditorWindow.instance.showNodeEditor)
                     {
-                        DialogueEditor.DialogueEditorWindow.instance.UpdateConversationTitles();
+                        if (DialogueEditor.DialogueEditorWindow.instance.DrawConversationProperties())
+                        {
+                            DialogueEditor.DialogueEditorWindow.instance.UpdateConversationTitles();
+                        }
+                        DialogueEditor.DialogueEditorWindow.instance.DrawConversationFieldsFoldout();
                     }
-                    DialogueEditor.DialogueEditorWindow.instance.DrawConversationFieldsFoldout();
+                    else
+                    {
+                        DialogueEditor.DialogueEditorWindow.instance.DrawConversationOutline();
+                    }
                 }
                 else if (selectionType == typeof(DialogueEntry))
                 {

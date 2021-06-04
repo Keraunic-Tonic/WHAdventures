@@ -56,13 +56,26 @@ namespace PixelCrushers.DialogueSystem
         /// </summary>
         private static Dictionary<string, float> relationshipTable = new Dictionary<string, float>();
 
+        // If we're delaying Lua function registration while starting a conversation, cache the
+        // actor and conversant so we can set them after registering.
+        private static bool isRegistering = false;
+        private static bool hasCachedParticipants = false;
+        private static string cachedActorName;
+        private static string cachedConversantName;
+        private static string cachedActorIndex;
+        private static string cachedConversantIndex;
+
 #if UNITY_2019_3_OR_NEWER
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void InitStaticVariables()
         {
+            isRegistering = false;
+            hasCachedParticipants = false;
             includeSimStatus = true;
             statusTable = new Dictionary<string, string>();
             relationshipTable = new Dictionary<string, float>();
+            if (DialogueManager.instance != null) DialogueManager.instance.StartCoroutine(RegisterLuaFunctionsAfterFrame());
+            else RegisterLuaFunctions();
         }
 #endif
 
@@ -72,9 +85,30 @@ namespace PixelCrushers.DialogueSystem
         /// </summary>
         static DialogueLua()
         {
+            InitializeChatMapperVariables();
+            RegisterLuaFunctions();
+        }
+
+        public static void RegisterLuaFunctions()
+        {
+            var originalWarnValue = Lua.warnRegisteringExistingFunction;
+            Lua.warnRegisteringExistingFunction = false;
             RegisterChatMapperFunctions();
             RegisterDialogueSystemFunctions();
-            InitializeChatMapperVariables();
+            Lua.warnRegisteringExistingFunction = originalWarnValue;
+        }
+
+        static System.Collections.IEnumerator RegisterLuaFunctionsAfterFrame()
+        {
+            isRegistering = true;
+            yield return new WaitForEndOfFrame();
+            RegisterLuaFunctions();
+            isRegistering = false;
+            if (hasCachedParticipants)
+            {
+                hasCachedParticipants = false;
+                SetParticipants(cachedActorName, cachedConversantName, cachedActorIndex, cachedConversantIndex);
+            }
         }
 
         /// <summary>
@@ -145,6 +179,14 @@ namespace PixelCrushers.DialogueSystem
             SetVariable("Conversant", conversantName);
             SetVariable("ActorIndex", StringToTableIndex(string.IsNullOrEmpty(actorIndex) ? actorName : actorIndex));
             SetVariable("ConversantIndex", StringToTableIndex(string.IsNullOrEmpty(conversantIndex) ? actorName : conversantIndex));
+            if (isRegistering) // Cache participants to set after Lua funcs are registered.
+            {
+                hasCachedParticipants = true;
+                cachedActorName = actorName;
+                cachedConversantName = conversantName;
+                cachedActorIndex = actorIndex;
+                cachedConversantIndex = conversantIndex;
+            }
         }
 
         /// <summary>
@@ -422,7 +464,7 @@ namespace PixelCrushers.DialogueSystem
             return dialogTable;
         }
 
-        private static LuaValue GetFieldLuaValue(Field field)
+        public static LuaValue GetFieldLuaValue(Field field)
         {
             if (field == null) return LuaNil.Nil;
             switch (field.type)

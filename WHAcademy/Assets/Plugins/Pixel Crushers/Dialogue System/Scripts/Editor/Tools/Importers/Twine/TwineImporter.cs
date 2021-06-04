@@ -69,7 +69,10 @@ namespace PixelCrushers.DialogueSystem.Twine
                 entry.ActorID = entryActorID;
                 entry.ConversantID = conversantID;
                 entry.Sequence = AppendCode(entry.Sequence, sequence);
+                string falseConditionAction;
+                CheckConditionsForPassthrough(conditions, out conditions, out falseConditionAction);
                 entry.conditionsString = AppendCode(entry.conditionsString, conditions);
+                entry.falseConditionAction = falseConditionAction;
                 entry.userScript = AppendCode(entry.userScript, script);
                 conversation.dialogueEntries.Add(entry);
             }
@@ -116,7 +119,6 @@ namespace PixelCrushers.DialogueSystem.Twine
                             linkEntry.Sequence = sequence;
                             linkEntry.conditionsString = AppendCode(linkEntry.conditionsString, conditions);
                             linkEntry.userScript = AppendCode(linkEntry.userScript, script);
-                            conversation.dialogueEntries.Add(linkEntry);
                         }
                         conversation.dialogueEntries.Add(linkEntry);
                         if (!willLinkInHook)
@@ -148,7 +150,12 @@ namespace PixelCrushers.DialogueSystem.Twine
                             midEntry.DialogueText = hook.text;
                             midEntry.ActorID = hookActorID;
                             midEntry.ConversantID = hookConversantID;
+
+                            string falseConditionAction;
+                            CheckConditionsForPassthrough(conditions, out conditions, out falseConditionAction);
                             midEntry.conditionsString = AppendCode(midEntry.conditionsString, conditions);
+                            midEntry.falseConditionAction = falseConditionAction;
+
                             conversation.dialogueEntries.Add(midEntry);
                             passageEntry.outgoingLinks.Add(new Link(conversation.id, passageEntry.id, conversation.id, midEntry.id));
                         }
@@ -235,6 +242,21 @@ namespace PixelCrushers.DialogueSystem.Twine
         {
             var index = text.IndexOf(heading, startIndex);
             return (index == -1) ? text.Length : index;
+        }
+
+        protected void CheckConditionsForPassthrough(string originalConditions, out string conditions, out string falseConditionAction)
+        {
+            var passthrough = false;
+            if (!string.IsNullOrEmpty(originalConditions) && originalConditions.StartsWith("(passthrough)"))
+            {
+                passthrough = true;
+                conditions = originalConditions.Substring("(passthrough)".Length);
+            }
+            else
+            {
+                conditions = originalConditions;
+            }
+            falseConditionAction = passthrough ? "Passthrough" : "Block";
         }
 
         protected string AppendCode(string block, string extra)

@@ -632,7 +632,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 EditorWindowTools.EditorGUILayoutBeginGroup();
 
                 entry.Sequence = SequenceEditorTools.DrawLayout(new GUIContent("Sequence", "Cutscene played when speaking this entry. If set, overrides Dialogue Manager's Default Sequence. Drag audio clips to add AudioWait() commands."), entry.Sequence, ref sequenceRect, ref sequenceSyntaxState);
-                DrawLocalizedVersions(entry.fields, "Sequence {0}", false, FieldType.Text);
+                DrawLocalizedVersions(entry.fields, "Sequence {0}", false, FieldType.Text, true);
 
                 // Response Menu Sequence:
                 bool hasResponseMenuSequence = entry.HasResponseMenuSequence();
@@ -882,9 +882,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
                 if (!template.dialogueEntryPrimaryFieldTitles.Contains(field.title)) continue;
                 if (dialogueEntryBuiltInFieldTitles.Contains(fieldTitle)) continue;
                 if (fieldTitle.StartsWith("Menu Text") || fieldTitle.StartsWith("Sequence") || fieldTitle.StartsWith("Response Menu Sequence")) continue;
-                EditorGUILayout.BeginHorizontal();
-                DrawField(field, false, false);
-                EditorGUILayout.EndHorizontal();
+                DrawMainSectionField(field);
             }
         }
 
@@ -1104,7 +1102,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
 
         private bool IsActorIDUnassigned(Field field)
         {
-            return (field == null) || string.IsNullOrEmpty(field.value) || string.Equals(field.value, "0");
+            return (field == null) || string.IsNullOrEmpty(field.value) || string.Equals(field.value, "-1");
         }
 
         private void DrawParticipantField(Field participantField, string tooltipText)
@@ -1429,7 +1427,7 @@ namespace PixelCrushers.DialogueSystem.DialogueEditor
         {
             if (source != null)
             {
-                DialogueEntry newEntry = CreateNewDialogueEntry("New Dialogue Entry");
+                DialogueEntry newEntry = CreateNewDialogueEntry(string.Empty);
                 if (useSameActorAssignments)
                 {
                     newEntry.ActorID = (source.ActorID == source.ConversantID) ? database.playerID : source.ActorID;

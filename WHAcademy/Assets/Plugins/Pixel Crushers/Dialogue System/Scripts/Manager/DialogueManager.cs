@@ -36,6 +36,16 @@ namespace PixelCrushers.DialogueSystem
         /// <value><c>true</c> if has instance; otherwise, <c>false</c>.</value>
         public static bool hasInstance { get { return instance != null; } }
 
+#if UNITY_2019_3_OR_NEWER
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void InitStaticVariables()
+        {
+            m_instance = null;
+        }
+#endif
+
+
+
         /// <summary>
         /// Gets the database manager.
         /// </summary>
@@ -87,6 +97,12 @@ namespace PixelCrushers.DialogueSystem
         public static bool allowSimultaneousConversations { get { return hasInstance ? instance.allowSimultaneousConversations : false; } }
 
         /// <summary>
+        /// If not allowing simultaneous conversations and a conversation is active, stop it if another conversation wants to start.
+        /// </summary>
+        /// <value><c>true</c> to interrupt active conversation if another wants to start; otherwise, <c>false</c>.</value>
+        public static bool interruptActiveConversations { get { return hasInstance ? instance.interruptActiveConversations : false; } }
+
+        /// <summary>
         /// The IsDialogueEntryValid delegate (if one is assigned). This is an optional delegate that you
         /// can add to check if a dialogue entry is valid before allowing a conversation to use it.
         /// It should return <c>true</c> if the entry is valid.
@@ -95,6 +111,15 @@ namespace PixelCrushers.DialogueSystem
         {
             get { return hasInstance ? instance.isDialogueEntryValid : null; }
             set { instance.isDialogueEntryValid = value; }
+        }
+
+        /// <summary>
+        /// If response timeout action is set to Custom and menu times out, call this method.
+        /// </summary>
+        public static System.Action customResponseTimeoutHandler
+        {
+            get { return hasInstance ? instance.customResponseTimeoutHandler : null; }
+            set { instance.customResponseTimeoutHandler = value; }
         }
 
         /// <summary>

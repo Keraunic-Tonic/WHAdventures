@@ -181,6 +181,7 @@ namespace PixelCrushers.DialogueSystem
             ReplaceLuaTags(ref text);
             string variableInputPrompt = ExtractVariableInputPrompt(ref text);
             ReplaceVarTags(ref text);
+            ReplaceAutocaseTags(ref text);
             ReplacePipes(ref text); // Was: ExtractTag("|", ref text);
             int pic = FormattedText.NoPicOverride;
             int pica = FormattedText.NoPicOverride;
@@ -315,6 +316,91 @@ namespace PixelCrushers.DialogueSystem
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Replaces the [autocase=varName] tags with the value of the Lua variable varName, 
+        /// capitalized if at the beginning of the string or after end-of-sentence punctuation
+        /// and optional whitespace; lowercase otherwise.
+        /// </summary>
+        /// <param name='text'>
+        /// Text with autocase tags replaced.
+        /// </param>
+        private static void ReplaceAutocaseTags(ref string text)
+        {
+            const string autocaseTagStart = "[autocase=";
+            const int maxReplacements = 100;
+            if (text.Contains(autocaseTagStart))
+            {
+                // Match "[autocase=" and then anything up to "]":
+                Regex regex = new Regex(@"\[autocase=[^\]]*\]");
+                int endPosition = text.Length - 1;
+                int numReplacements = 0; // Sanity check to prevent infinite loops in case of bug.
+                while ((endPosition >= 0) && (numReplacements < maxReplacements))
+                {
+                    numReplacements++;
+                    int varTagPosition = text.LastIndexOf(autocaseTagStart, endPosition, System.StringComparison.OrdinalIgnoreCase);
+                    endPosition = varTagPosition - 1;
+                    if (varTagPosition >= 0)
+                    {
+                        string firstPart = text.Substring(0, varTagPosition);
+                        bool capitalize = ShouldCapitalizeNextChar(firstPart);
+                        string secondPart = text.Substring(varTagPosition);
+                        string secondPartVarReplaced = regex.Replace(secondPart, delegate (Match match)
+                        {
+                            string varName = match.Value.Substring(10, match.Value.Length - 11).Trim(); // Remove "[autocase=" and "]"
+                            try
+                            {
+                                var variableValue = DialogueLua.GetVariable(varName).asString;
+                                if (variableValue.Length > 0)
+                                {
+                                    variableValue = SetCapitalization(capitalize, variableValue);
+                                }
+                                return variableValue;
+                            }
+                            catch (System.Exception)
+                            {
+                                if (DialogueDebug.logWarnings) Debug.LogWarning(string.Format("{0}: Failed to get variable: '{1}'", new System.Object[] { DialogueDebug.Prefix, varName }));
+                                return string.Empty;
+                            }
+                        });
+                        text = firstPart + secondPartVarReplaced;
+                    }
+                }
+            }
+        }
+
+        private static bool ShouldCapitalizeNextChar(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return true;
+            for (int i = s.Length - 1; i >= 0; i--)
+            {
+                var c = s[i];
+                if (c == ' ' || c == '\n') continue;
+                return (c == '.' || c == '!' || c == '?');
+            }
+            return true;
+        }
+
+        private static string SetCapitalization(bool capitalize, string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            else if (capitalize) return FirstLetterToUpper(s);
+            else return FirstLetterToLower(s);
+        }
+
+        private static string FirstLetterToUpper(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            if (s.Length == 1) return s.ToUpper();
+            else return char.ToUpper(s[0]) + s.Substring(1);
+        }
+
+        private static string FirstLetterToLower(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            if (s.Length == 1) return s.ToUpper();
+            else return char.ToLower(s[0]) + s.Substring(1);
         }
 
         /// <summary>
